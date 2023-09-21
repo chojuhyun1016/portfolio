@@ -1,0 +1,10 @@
+2021/07/14 00:16:42,247 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting Log4j2Application using Java 1.8.0_282 on 조주현-LAPTOP with PID 17012 (D:\study\log4j2\workspace\log4j2\target\classes started by choju in D:\study\log4j2\workspace\log4j2)
+2021/07/14 00:16:42,258 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/14 00:16:42,905 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started Log4j2Application in 1.29 seconds (JVM running for 2.72)
+2021/07/14 00:16:42,908 [INFO] [com.example.Log4j2Application] [main]- ---원본 args---
+2021/07/14 00:16:42,911 [INFO] [com.example.Log4j2Application] [main]- --spring.output.ansi.enabled=always
+2021/07/14 00:16:42,917 [INFO] [com.example.Log4j2Application] [main]- ---옵션아닌 args---
+2021/07/14 00:16:42,917 [INFO] [com.example.Log4j2Application] [main]- ---옵션 args---
+2021/07/14 00:16:42,918 [INFO] [com.example.Log4j2Application] [main]- spring.output.ansi.enabled : always
+2021/07/14 00:16:42,919 [INFO] [com.example.Log4j2Application] [main]- Hi I'm INFO log
+2021/07/14 00:16:42,920 [ERROR] [com.example.Log4j2Application] [main]- Hi I'm ERROR log

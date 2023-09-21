@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uplus.mp.gw.doc.mappers.altibase.DocumentMapper">
+
+	<insert id="insertDocumentIssueRcd" parameterType="documentIssueRcd">
+        <selectKey keyProperty="dcmntRcdSeq" order="BEFORE" resultType="int">
+            SELECT
+                   MP_DCMNT_RCD_SEQ.NEXTVAL
+              FROM
+                   DUAL
+        </selectKey>
+
+		INSERT INTO MP_DCMNT_RCD
+		                         (
+		                           DCMNT_RCD_SEQ 
+		                         , DCMNT_INFO_ID
+								 , ELCTRC_DCMNT_NO
+							     , ELCTRC_DCMNT_SBJCT
+							     , SND_CEA
+							     , SND_NAME
+							     , RSV_CEA
+							     , RSV_NAME
+		                         <if test="reqCea!=null and !reqCea.equals('')">
+							     , REQ_CEA
+                                 </if>
+		                         <if test="reqName!=null and !reqName.equals('')">
+							     , REQ_NAME
+                                 </if>
+		                         <if test="reqBusiMngNm!=null and !reqBusiMngNm.equals('')">
+							     , REQ_BUSI_MNG_NM
+                                 </if>
+							     , REQ_GUBUN
+							     , ISD_DTM
+							     , SND_DTM
+							     , RSV_DTM
+							     <if test="rdDtm!=null and !rdDtm.equals('')">
+							     , RD_DTM
+                                 </if>
+							     )
+						  VALUES 
+						         (
+						           #{dcmntRcdSeq}
+						   		 , #{dcmntInfoId}
+								 , #{elctrcDcmntNo}
+								 , #{elctrcDcmntSbjct}
+								 , #{sndCea}
+								 , #{sndName}
+								 , #{rsvCea}
+								 , #{rsvName}
+		                         <if test="reqCea!=null and !reqCea.equals('')">
+								 , #{reqCea}
+                                 </if>
+		                         <if test="reqName!=null and !reqName.equals('')">
+								 , #{reqName}
+                                 </if>
+		                         <if test="reqBusiMngNm!=null and !reqBusiMngNm.equals('')">
+								 , #{reqBusiMngNm}
+                                 </if>
+								 , #{reqGubun}
+								 , TO_CHAR(SYSDATE, 'YYYYMMDDhh24miss')
+								 , #{sndDtm}
+								 , #{rsvDtm}
+							     <if test="rdDtm!=null and !rdDtm.equals('')">
+								 , #{rdDtm}
+                                 </if>
+						         )
+	</insert>
+
+	<insert id="insertDocumentIssueIsd" parameterType="documentIssueIsd">
+        <selectKey keyProperty="dcmntIsdId" order="BEFORE" resultType="int">
+            SELECT
+                   MP_DCMNT_ISD_SEQ.NEXTVAL
+              FROM
+                   DUAL
+        </selectKey>
+
+		INSERT INTO MP_DCMNT_ISD (
+		                           DCMNT_ISD_ID
+								 , DCMNT_INFO_ID
+								 , ELCTRC_DCMNT_NO
+								 , ELCTRC_DCMNT_SBJCT
+								 , SND_CEA
+								 , SND_NAME
+								 , RSV_CEA
+								 , RSV_NAME
+								 , REQ_CEA
+								 , REQ_NAME
+								 , REQ_BUSI_MNG_NM
+								 , REQ_GUBUN
+								 , ISD_DTM
+								 , SND_DTM
+								 , RSV_DTM
+								 , RD_DTM
+								 , ISD_STATUS
+								 ) 
+						  VALUES (
+						   		   #{dcmntIsdId}
+						         , #{dcmntInfoId}
+						         , #{elctrcDcmntNo}
+						         , #{elctrcDcmntSbjct}
+						         , #{sndCea}
+						         , #{sndName}
+						         , #{rsvCea}
+						         , #{rsvName}
+						         , #{reqCea}
+						         , #{reqName}
+						         , #{reqBusiMngNm}
+						         , #{reqGubun}
+						         , TO_CHAR(SYSDATE, 'YYYYMMDDhh24miss')
+						         , #{sndDtm}
+						         , #{rsvDtm}
+						         , #{rdDtm}
+						         , #{isdStatus}
+						         )
+	</insert>
+
+	<insert id="insertDocumentStatIssueRcd" parameterType="documentIssueStatConfirmationRcd">
+        <selectKey keyProperty="dcmntStsRcdSeq" order="BEFORE" resultType="int">
+            SELECT
+                   MP_DCMNT_STS_RCD_SEQ.NEXTVAL
+              FROM
+                   DUAL
+        </selectKey>
+
+		INSERT INTO MP_DCMNT_STS_RCD (
+		                               DCMNT_STS_RCD_SEQ
+								     , EADDR
+								     , PERIOD
+								     , REG_DTM
+								     ) 
+						      VALUES (
+						   		       #{dcmntStsRcdSeq}
+						             , #{eaddr}
+						             , #{period}
+						             , TO_CHAR(SYSDATE, 'YYYYMMDDhh24miss')
+						             )
+	</insert>
+
+	<insert id="insertDocumentStatIssueIsd" parameterType="documentIssueStatConfirmationIsd">
+        <selectKey keyProperty="dcmntStsIsdSeq" order="BEFORE" resultType="int">
+            SELECT
+                   MP_DCMNT_STS_ISD_SEQ.NEXTVAL
+              FROM
+                   DUAL
+        </selectKey>
+
+		INSERT INTO MP_DCMNT_STS_ISD (
+		                               DCMNT_STS_ISD_SEQ
+								    , EADDR
+								    , PERIOD
+								    , ISS_SEQ
+								    , ISD_STATUS
+								    , REG_DTM
+								    ) 
+						     VALUES (
+						   		      #{dcmntStsIsdSeq}
+						            , #{eaddr}
+						            , #{period}
+						            , #{issSeq}
+						            , #{isdStatus}
+						            , TO_CHAR(SYSDATE, 'YYYYMMDDhh24miss')
+						            )
+	</insert>
+
+	<select id="selectDcmntInfo" parameterType="documentIssueRequest" resultType="document">
+		SELECT
+		       TA.DCMNT_INFO_ID
+		     , TA.MESSAGE_ID
+		     , TA.ELCTRC_DCMNT_NO
+		     , TA.ELCTRC_DCMNT_SBJCT
+		     , TA.SND_CEA
+		     , TA.RSV_CEA
+		     , TA.SND_DTM
+		     , TA.RSV_DTM
+		     , TA.RD_DTM
+		     , TA.CNTNT_HASH
+		     , TA.FILE_HASH
+		     , TA.REG_DTM
+		     , TA.SND_NAME
+             , TA.RSV_NAME
+		FROM
+             MP_DCMNT_INFO TA
+	   WHERE
+             TA.DCMNT_INFO_ID = #{dcmntInfoId}
+         <if test="partMm!=null and !partMm.equals('')">
+         AND TA.PART_MM       = #{partMm}
+         </if>
+         AND TA.TEST_SNDN_YN  <![CDATA[<>]]> 'Y'   
+         AND TA.DCMNT_STAT IN ('R', 'U', 'H')
+         AND TA.SND_DTM IS NOT NULL
+         AND TA.RSV_DTM IS NOT NULL
+         AND TA.RSV_CEA IS NOT NULL
+	   LIMIT 1
+	</select>
+
+	<select id="selectDcmntInfoByMessageId" parameterType="documentIssueBcRequest" resultType="document">
+		SELECT
+		       TA.DCMNT_INFO_ID
+		     , TA.MESSAGE_ID
+		     , TA.ELCTRC_DCMNT_NO
+		     , TA.ELCTRC_DCMNT_SBJCT
+		     , TA.SND_CEA
+		     , TA.RSV_CEA
+		     , TA.SND_DTM
+		     , TA.RSV_DTM
+		     , TA.RD_DTM
+		     , TA.CNTNT_HASH
+		     , TA.FILE_HASH
+		     , TA.REG_DTM
+		     , TA.SND_NAME
+             , TA.RSV_NAME
+		FROM
+             MP_DCMNT_INFO TA
+	   WHERE
+             TA.MESSAGE_ID = #{messageId}
+         <if test="part_mm!=null and !part_mm.equals('')">
+         AND TA.PART_MM       = #{part_mm}
+         </if>
+         AND TA.TEST_SNDN_YN  <![CDATA[<>]]> 'Y'   
+         AND TA.DCMNT_STAT IN ('R', 'U', 'H')
+         AND TA.SND_DTM IS NOT NULL
+         AND TA.RSV_DTM IS NOT NULL
+         AND TA.RSV_CEA IS NOT NULL
+	   LIMIT 1
+	</select>
+
+	<select id="selectDocumentRsvInfoByDocument" parameterType="document" resultType="document">
+		SELECT
+		       TA.MESSAGE_ID
+			 , TA.RSV_CEA
+			 , TA.RSV_PLFM_ID
+		  FROM 
+		       MP_DCMNT_INFO TA
+		 WHERE 
+		       TA.PART_MM    = SUBSTR(#{regDtm}, 5, 2)
+           AND TA.MESSAGE_ID = #{messageId}
+         LIMIT 1
+	</select>
+
+</mapper>

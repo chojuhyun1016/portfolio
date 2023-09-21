@@ -1,0 +1,11 @@
+   
+spring:
+  config:
+    activate:
+      on-profile: optional_prod
+
+    
+optional:
+    ip : 100.0.0.3
+    port: 10003
+    

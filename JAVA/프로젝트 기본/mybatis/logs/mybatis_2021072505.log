@@ -1,0 +1,261 @@
+2021/07/25 17:23:12,174 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting MybatisApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 4420 (D:\study\mybatis\workspace\mybatis\target\classes started by choju in D:\study\mybatis\workspace\mybatis)
+2021/07/25 17:23:12,182 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/25 17:23:13,271 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/07/25 17:23:13,514 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/07/25 17:23:13,551 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 13 msec}
+2021/07/25 17:23:13,554 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/07/25 17:23:13,562 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS board
+ {executed in 3 msec}
+2021/07/25 17:23:13,564 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title varchar( 255 ) NOT null , content varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) )
+ {executed in 2 msec}
+2021/07/25 17:23:13,578 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() )
+ {executed in 10 msec}
+2021/07/25 17:23:13,579 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() )
+ {executed in 0 msec}
+2021/07/25 17:23:13,580 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 3, '제목3', '내용3', 'user3', CURRENT_TIMESTAMP() )
+ {executed in 0 msec}
+2021/07/25 17:23:13,580 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 4, '제목3', '내용4', 'user4', CURRENT_TIMESTAMP() )
+ {executed in 0 msec}
+2021/07/25 17:23:13,662 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started MybatisApplication in 2.119 seconds (JVM running for 3.593)
+2021/07/25 17:23:13,665 [INFO] [com.example.MybatisApplication] [main]- ---원본 args---
+2021/07/25 17:23:13,666 [INFO] [com.example.MybatisApplication] [main]- --spring.output.ansi.enabled=always
+2021/07/25 17:23:13,666 [INFO] [com.example.MybatisApplication] [main]- ---옵션아닌 args---
+2021/07/25 17:23:13,666 [INFO] [com.example.MybatisApplication] [main]- ---옵션 args---
+2021/07/25 17:23:13,666 [INFO] [com.example.MybatisApplication] [main]- spring.output.ansi.enabled : always
+2021/07/25 17:23:13,704 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+ {executed in 0 msec}
+2021/07/25 17:23:13,719 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|1  |제목1   |[unread] |[unread] |[unread] |
+|2  |제목2   |[unread] |[unread] |[unread] |
+|3  |제목3   |[unread] |[unread] |[unread] |
+|4  |제목3   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:23:13,726 [INFO] [com.example.board.BoardController] [main]- id: 1 title: 제목1
+2021/07/25 17:23:13,726 [INFO] [com.example.board.BoardController] [main]- id: 2 title: 제목2
+2021/07/25 17:23:13,726 [INFO] [com.example.board.BoardController] [main]- id: 3 title: 제목3
+2021/07/25 17:23:13,726 [INFO] [com.example.board.BoardController] [main]- id: 4 title: 제목3
+2021/07/25 17:23:13,730 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+         WHERE id = 2
+ {executed in 1 msec}
+2021/07/25 17:23:13,731 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:23:13,732 [INFO] [com.example.board.BoardController] [main]- Object id: 2 Object title: 제목2
+2021/07/25 17:23:13,738 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown initiated...
+2021/07/25 17:23:13,740 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown completed.
+2021/07/25 17:37:12,649 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting MybatisApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 6444 (D:\study\mybatis\workspace\mybatis\target\classes started by choju in D:\study\mybatis\workspace\mybatis)
+2021/07/25 17:37:12,654 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/25 17:37:13,806 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/07/25 17:37:14,002 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/07/25 17:37:14,033 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 14 msec}
+2021/07/25 17:37:14,035 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/07/25 17:37:14,044 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS board
+ {executed in 4 msec}
+2021/07/25 17:37:14,046 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title varchar( 255 ) NOT null , content varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) )
+ {executed in 2 msec}
+2021/07/25 17:37:14,060 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() )
+ {executed in 10 msec}
+2021/07/25 17:37:14,061 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() )
+ {executed in 1 msec}
+2021/07/25 17:37:14,062 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 3, '제목3', '내용3', 'user3', CURRENT_TIMESTAMP() )
+ {executed in 0 msec}
+2021/07/25 17:37:14,063 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 4, '제목3', '내용4', 'user4', CURRENT_TIMESTAMP() )
+ {executed in 0 msec}
+2021/07/25 17:37:14,164 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started MybatisApplication in 2.17 seconds (JVM running for 3.747)
+2021/07/25 17:37:14,167 [INFO] [com.example.MybatisApplication] [main]- ---원본 args---
+2021/07/25 17:37:14,167 [INFO] [com.example.MybatisApplication] [main]- --spring.output.ansi.enabled=always
+2021/07/25 17:37:14,168 [INFO] [com.example.MybatisApplication] [main]- ---옵션아닌 args---
+2021/07/25 17:37:14,168 [INFO] [com.example.MybatisApplication] [main]- ---옵션 args---
+2021/07/25 17:37:14,169 [INFO] [com.example.MybatisApplication] [main]- spring.output.ansi.enabled : always
+2021/07/25 17:37:14,199 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+ {executed in 0 msec}
+2021/07/25 17:37:14,214 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|1  |제목1   |[unread] |[unread] |[unread] |
+|2  |제목2   |[unread] |[unread] |[unread] |
+|3  |제목3   |[unread] |[unread] |[unread] |
+|4  |제목3   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:37:14,221 [INFO] [com.example.board.BoardController] [main]- id: 1 title: 제목1
+2021/07/25 17:37:14,221 [INFO] [com.example.board.BoardController] [main]- id: 2 title: 제목2
+2021/07/25 17:37:14,221 [INFO] [com.example.board.BoardController] [main]- id: 3 title: 제목3
+2021/07/25 17:37:14,222 [INFO] [com.example.board.BoardController] [main]- id: 4 title: 제목3
+2021/07/25 17:37:14,225 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+         WHERE id = 2
+ {executed in 1 msec}
+2021/07/25 17:37:14,227 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:37:14,228 [INFO] [com.example.board.BoardController] [main]- Object id: 2 Object title: 제목2
+2021/07/25 17:37:14,229 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+         WHERE id = 2
+ {executed in 0 msec}
+2021/07/25 17:37:14,232 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:37:14,232 [INFO] [com.example.board.BoardController] [main]- Map id: 2 Map title: 제목2
+2021/07/25 17:37:14,239 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown initiated...
+2021/07/25 17:37:14,242 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown completed.
+2021/07/25 17:58:17,557 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting MybatisApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 11792 (D:\study\mybatis\workspace\mybatis\target\classes started by choju in D:\study\mybatis\workspace\mybatis)
+2021/07/25 17:58:17,561 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/25 17:58:18,626 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/07/25 17:58:18,825 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/07/25 17:58:18,855 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 13 msec}
+2021/07/25 17:58:18,858 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/07/25 17:58:18,866 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS board
+ {executed in 3 msec}
+2021/07/25 17:58:18,868 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title varchar( 255 ) NOT null , content varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) )
+ {executed in 2 msec}
+2021/07/25 17:58:18,882 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() )
+ {executed in 10 msec}
+2021/07/25 17:58:18,883 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() )
+ {executed in 1 msec}
+2021/07/25 17:58:18,883 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 3, '제목3', '내용3', 'user3', CURRENT_TIMESTAMP() )
+ {executed in 0 msec}
+2021/07/25 17:58:18,884 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 4, '제목3', '내용4', 'user4', CURRENT_TIMESTAMP() )
+ {executed in 0 msec}
+2021/07/25 17:58:18,953 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started MybatisApplication in 2.031 seconds (JVM running for 3.539)
+2021/07/25 17:58:18,956 [INFO] [com.example.MybatisApplication] [main]- ---원본 args---
+2021/07/25 17:58:18,956 [INFO] [com.example.MybatisApplication] [main]- --spring.output.ansi.enabled=always
+2021/07/25 17:58:18,956 [INFO] [com.example.MybatisApplication] [main]- ---옵션아닌 args---
+2021/07/25 17:58:18,956 [INFO] [com.example.MybatisApplication] [main]- ---옵션 args---
+2021/07/25 17:58:18,957 [INFO] [com.example.MybatisApplication] [main]- spring.output.ansi.enabled : always
+2021/07/25 17:58:18,986 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+ {executed in 0 msec}
+2021/07/25 17:58:19,000 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|1  |제목1   |[unread] |[unread] |[unread] |
+|2  |제목2   |[unread] |[unread] |[unread] |
+|3  |제목3   |[unread] |[unread] |[unread] |
+|4  |제목3   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:58:19,008 [INFO] [com.example.board.BoardController] [main]- id: 1 title: 제목1
+2021/07/25 17:58:19,008 [INFO] [com.example.board.BoardController] [main]- id: 2 title: 제목2
+2021/07/25 17:58:19,008 [INFO] [com.example.board.BoardController] [main]- id: 3 title: 제목3
+2021/07/25 17:58:19,008 [INFO] [com.example.board.BoardController] [main]- id: 4 title: 제목3
+2021/07/25 17:58:19,011 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+         WHERE id = 2
+ {executed in 0 msec}
+2021/07/25 17:58:19,012 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:58:19,013 [INFO] [com.example.board.BoardController] [main]- Object id: 2 Object title: 제목2
+2021/07/25 17:58:19,015 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+         WHERE id = 2
+ {executed in 2 msec}
+2021/07/25 17:58:19,015 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:58:19,016 [INFO] [com.example.board.BoardController] [main]- Map id: 2 Map title: 제목2
+2021/07/25 17:58:19,023 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown initiated...
+2021/07/25 17:58:19,026 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown completed.
+2021/07/25 17:59:43,435 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting MybatisApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 16780 (D:\study\mybatis\workspace\mybatis\target\classes started by choju in D:\study\mybatis\workspace\mybatis)
+2021/07/25 17:59:43,438 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/25 17:59:44,581 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/07/25 17:59:44,820 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/07/25 17:59:44,851 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 14 msec}
+2021/07/25 17:59:44,855 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/07/25 17:59:44,865 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS board
+ {executed in 3 msec}
+2021/07/25 17:59:44,867 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title varchar( 255 ) NOT null , content varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) )
+ {executed in 2 msec}
+2021/07/25 17:59:44,885 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() )
+ {executed in 13 msec}
+2021/07/25 17:59:44,886 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() )
+ {executed in 1 msec}
+2021/07/25 17:59:44,887 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 3, '제목3', '내용3', 'user3', CURRENT_TIMESTAMP() )
+ {executed in 1 msec}
+2021/07/25 17:59:44,888 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 4, '제목3', '내용4', 'user4', CURRENT_TIMESTAMP() )
+ {executed in 1 msec}
+2021/07/25 17:59:44,980 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started MybatisApplication in 2.116 seconds (JVM running for 3.565)
+2021/07/25 17:59:44,982 [INFO] [com.example.MybatisApplication] [main]- ---원본 args---
+2021/07/25 17:59:44,982 [INFO] [com.example.MybatisApplication] [main]- --spring.output.ansi.enabled=always
+2021/07/25 17:59:44,982 [INFO] [com.example.MybatisApplication] [main]- ---옵션아닌 args---
+2021/07/25 17:59:44,983 [INFO] [com.example.MybatisApplication] [main]- ---옵션 args---
+2021/07/25 17:59:44,983 [INFO] [com.example.MybatisApplication] [main]- spring.output.ansi.enabled : always
+2021/07/25 17:59:45,022 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+ {executed in 1 msec}
+2021/07/25 17:59:45,046 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|1  |제목1   |[unread] |[unread] |[unread] |
+|2  |제목2   |[unread] |[unread] |[unread] |
+|3  |제목3   |[unread] |[unread] |[unread] |
+|4  |제목3   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:59:45,052 [INFO] [com.example.board.BoardController] [main]- id: 1 title: 제목1
+2021/07/25 17:59:45,052 [INFO] [com.example.board.BoardController] [main]- id: 2 title: 제목2
+2021/07/25 17:59:45,053 [INFO] [com.example.board.BoardController] [main]- id: 3 title: 제목3
+2021/07/25 17:59:45,053 [INFO] [com.example.board.BoardController] [main]- id: 4 title: 제목3
+2021/07/25 17:59:45,056 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+         WHERE id = 2
+ {executed in 0 msec}
+2021/07/25 17:59:45,058 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:59:45,059 [INFO] [com.example.board.BoardController] [main]- Object id: 2 Object title: 제목2
+2021/07/25 17:59:45,062 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT *
+          FROM board
+         WHERE id = 2
+           AND title = '제목2'
+ {executed in 0 msec}
+2021/07/25 17:59:45,064 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/25 17:59:45,065 [INFO] [com.example.board.BoardController] [main]- Map id: 2 Map title: 제목2
+2021/07/25 17:59:45,071 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown initiated...
+2021/07/25 17:59:45,074 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown completed.

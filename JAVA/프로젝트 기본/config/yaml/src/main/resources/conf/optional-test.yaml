@@ -1,0 +1,11 @@
+
+spring:
+  config:
+    activate:
+      on-profile: optional_test
+ 
+    
+optional:
+    ip : 100.0.0.2
+    port: 10002
+    

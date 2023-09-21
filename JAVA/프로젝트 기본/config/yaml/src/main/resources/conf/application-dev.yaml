@@ -1,0 +1,15 @@
+   
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+    
+server:
+  name: Dev Server
+  num: 1
+    
+  info:
+    ip : 172.20.245.1
+    port: 6001
+    

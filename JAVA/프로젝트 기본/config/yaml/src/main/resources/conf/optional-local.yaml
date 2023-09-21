@@ -1,0 +1,11 @@
+    
+spring:
+  config:
+    activate:
+      on-profile: optional_local
+
+    
+optional:
+    ip : 100.0.0.0
+    port: 10000
+    

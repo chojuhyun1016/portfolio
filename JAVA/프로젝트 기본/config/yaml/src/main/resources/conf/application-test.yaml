@@ -1,0 +1,15 @@
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+    
+server:
+    name: Test Server
+    num: 2
+    
+    info:
+        ip : 172.20.245.1
+        port: 6002
+        

@@ -1,0 +1,72 @@
+plugins {
+	id 'org.springframework.boot' version '2.4.3'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'war'
+}
+
+group = 'com.uplus.mp'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	runtime fileTree(dir: 'lib', include: ['*.jar'])
+	compile fileTree(dir: 'lib', include: ['*.jar'])
+
+	annotationProcessor 'org.projectlombok:lombok'
+
+	compileOnly 'org.projectlombok:lombok'
+	compile('javax.servlet:jstl:1.2')
+	compile 'com.googlecode.json-simple:json-simple:1.1.1'
+	compile('org.apache.tomcat.embed:tomcat-embed-jasper')
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-tomcat'
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+ 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.4'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis' 
+	implementation 'org.springframework.session:spring-session-data-redis:2.4.2'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+//	implementation group: 'com.oracle.database.jdbc', name: 'ojdbc8', version: '21.1.0.0'
+	implementation group: 'org.sitemesh', name: 'sitemesh', version: '3.0.1'
+	implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+	implementation group: 'commons-codec', name: 'commons-codec', version: '1.5'
+	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+//	implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
+//	implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+//	implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+//	implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+//	implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+//	implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-multipart', version: '3.0.2'
+//	implementation group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2'
+
+	testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+test {
+	ignoreFailures = true
+	useJUnitPlatform()
+}
+
+bootJar{	//build/libs/dm.jar
+	archiveBaseName = 'fd'
+	archiveFileName = 'fd.jar'
+	archiveVersion = '0.0.0'
+}

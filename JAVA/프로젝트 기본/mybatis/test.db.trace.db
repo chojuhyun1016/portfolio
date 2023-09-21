@@ -1,0 +1,3 @@
+2021-07-11 18:29:16 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "BOARD" not found; SQL statement:
+SELECT * FROM board [42102-200]

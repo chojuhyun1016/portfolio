@@ -1,0 +1,338 @@
+2021/07/13 23:51:10,316 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting MybatisApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 10832 (D:\study\mybatis\workspace\mybatis\target\classes started by choju in D:\study\mybatis\workspace\mybatis)
+2021/07/13 23:51:10,324 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/13 23:51:11,473 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/07/13 23:51:11,731 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection opened. {executed in 245ms} 
+2021/07/13 23:51:11,733 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.new Connection returned 
+2021/07/13 23:51:11,734 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/07/13 23:51:11,749 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,749 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,755 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.new Statement returned 
+2021/07/13 23:51:11,756 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.createStatement() returned net.sf.log4jdbc.sql.jdbcapi.StatementSpy@4eb30d44
+2021/07/13 23:51:11,783 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. SELECT 1  {executed in 25 ms}
+2021/07/13 23:51:11,783 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(SELECT 1) returned true
+2021/07/13 23:51:11,785 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.close() returned 
+2021/07/13 23:51:11,785 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.getTransactionIsolation() returned 2
+2021/07/13 23:51:11,789 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/07/13 23:51:11,796 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.new Statement returned 
+2021/07/13 23:51:11,796 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.createStatement() returned net.sf.log4jdbc.sql.jdbcapi.StatementSpy@1686f0b4
+2021/07/13 23:51:11,806 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. DROP TABLE IF EXISTS board  {executed in 7 ms}
+2021/07/13 23:51:11,806 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(DROP TABLE IF EXISTS board) returned false
+2021/07/13 23:51:11,808 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.getUpdateCount() returned 0
+2021/07/13 23:51:11,811 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title VARCHAR( 255 ) NOT null , content 
+varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) )  {executed in 2 ms}
+2021/07/13 23:51:11,811 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title VARCHAR( 255 ) NOT null , content varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) )) returned false
+2021/07/13 23:51:11,811 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.getUpdateCount() returned 0
+2021/07/13 23:51:11,813 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.close() returned 
+2021/07/13 23:51:11,818 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.clearWarnings() returned 
+2021/07/13 23:51:11,819 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.new Statement returned 
+2021/07/13 23:51:11,821 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.createStatement() returned net.sf.log4jdbc.sql.jdbcapi.StatementSpy@6e495b48
+2021/07/13 23:51:11,841 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() )  {executed in 19 ms}
+2021/07/13 23:51:11,842 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() )) returned false
+2021/07/13 23:51:11,843 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.getUpdateCount() returned 1
+2021/07/13 23:51:11,844 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() )  {executed in 1 ms}
+2021/07/13 23:51:11,845 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() )) returned false
+2021/07/13 23:51:11,846 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.getUpdateCount() returned 1
+2021/07/13 23:51:11,847 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.close() returned 
+2021/07/13 23:51:11,848 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.clearWarnings() returned 
+2021/07/13 23:51:11,898 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 2. Connection opened. {executed in 0ms} 
+2021/07/13 23:51:11,899 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 2. Connection.new Connection returned 
+2021/07/13 23:51:11,899 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 2. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,899 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 2. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,900 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 3. Connection opened. {executed in 0ms} 
+2021/07/13 23:51:11,900 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 3. Connection.new Connection returned 
+2021/07/13 23:51:11,901 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 3. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,902 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 3. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,903 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 4. Connection opened. {executed in 0ms} 
+2021/07/13 23:51:11,903 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 4. Connection.new Connection returned 
+2021/07/13 23:51:11,904 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 4. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,905 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 4. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,906 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 5. Connection opened. {executed in 1ms} 
+2021/07/13 23:51:11,907 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 5. Connection.new Connection returned 
+2021/07/13 23:51:11,907 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 5. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,908 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 5. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,909 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 6. Connection opened. {executed in 1ms} 
+2021/07/13 23:51:11,910 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 6. Connection.new Connection returned 
+2021/07/13 23:51:11,911 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 6. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,911 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 6. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,913 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 7. Connection opened. {executed in 0ms} 
+2021/07/13 23:51:11,914 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 7. Connection.new Connection returned 
+2021/07/13 23:51:11,915 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 7. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,915 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 7. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,917 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 8. Connection opened. {executed in 1ms} 
+2021/07/13 23:51:11,918 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 8. Connection.new Connection returned 
+2021/07/13 23:51:11,919 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 8. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,919 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 8. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,920 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 9. Connection opened. {executed in 1ms} 
+2021/07/13 23:51:11,920 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 9. Connection.new Connection returned 
+2021/07/13 23:51:11,921 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 9. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,922 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 9. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,923 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 10. Connection opened. {executed in 1ms} 
+2021/07/13 23:51:11,923 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 10. Connection.new Connection returned 
+2021/07/13 23:51:11,924 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 10. Connection.isReadOnly() returned false
+2021/07/13 23:51:11,925 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 10. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,955 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started MybatisApplication in 2.387 seconds (JVM running for 3.919)
+2021/07/13 23:51:11,958 [INFO] [com.example.MybatisApplication] [main]- ---원본 args---
+2021/07/13 23:51:11,958 [INFO] [com.example.MybatisApplication] [main]- --spring.output.ansi.enabled=always
+2021/07/13 23:51:11,958 [INFO] [com.example.MybatisApplication] [main]- ---옵션아닌 args---
+2021/07/13 23:51:11,959 [INFO] [com.example.MybatisApplication] [main]- ---옵션 args---
+2021/07/13 23:51:11,959 [INFO] [com.example.MybatisApplication] [main]- spring.output.ansi.enabled : always
+2021/07/13 23:51:11,978 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.getAutoCommit() returned true
+2021/07/13 23:51:11,984 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. PreparedStatement.new PreparedStatement returned 
+2021/07/13 23:51:11,984 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.prepareStatement(SELECT * FROM board) returned net.sf.log4jdbc.sql.jdbcapi.PreparedStatementSpy@4ca8dbfa
+2021/07/13 23:51:11,988 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. SELECT * FROM board  {executed in 1 ms}
+2021/07/13 23:51:11,988 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. PreparedStatement.execute() returned true
+2021/07/13 23:51:11,995 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.new ResultSet returned 
+2021/07/13 23:51:11,995 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. PreparedStatement.getResultSet() returned net.sf.log4jdbc.sql.jdbcapi.ResultSetSpy@19b047fe
+2021/07/13 23:51:12,004 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getMetaData() returned rsMeta0: columns=5
+2021/07/13 23:51:12,005 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getType() returned 1003
+2021/07/13 23:51:12,006 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.isClosed() returned false
+2021/07/13 23:51:12,006 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.next() returned true
+2021/07/13 23:51:12,015 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getInt(ID) returned 1
+2021/07/13 23:51:12,015 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getString(TITLE) returned 제목1
+2021/07/13 23:51:12,016 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.isClosed() returned false
+2021/07/13 23:51:12,017 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.next() returned true
+2021/07/13 23:51:12,017 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getInt(ID) returned 2
+2021/07/13 23:51:12,018 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getString(TITLE) returned 제목2
+2021/07/13 23:51:12,018 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.isClosed() returned false
+2021/07/13 23:51:12,020 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|1  |제목1   |[unread] |[unread] |[unread] |
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/13 23:51:12,021 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.next() returned false
+2021/07/13 23:51:12,021 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.close() returned void
+2021/07/13 23:51:12,025 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.getMetaData() returned dbMeta0: conn0: url=jdbc:h2:file:./test.db user=SA
+2021/07/13 23:51:12,030 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. PreparedStatement.close() returned 
+2021/07/13 23:51:12,031 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.clearWarnings() returned 
+2021/07/13 23:51:12,031 [INFO] [com.example.board.BoardController] [main]- id: 1 title: 제목1
+2021/07/13 23:51:12,032 [INFO] [com.example.board.BoardController] [main]- id: 2 title: 제목2
+2021/07/13 23:51:12,037 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown initiated...
+2021/07/13 23:51:12,038 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 1. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,039 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 1. Connection.close() returned 
+2021/07/13 23:51:12,039 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 2. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,039 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 2. Connection.close() returned 
+2021/07/13 23:51:12,039 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 3. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,039 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 3. Connection.close() returned 
+2021/07/13 23:51:12,040 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 4. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,041 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 4. Connection.close() returned 
+2021/07/13 23:51:12,041 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 5. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,042 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 5. Connection.close() returned 
+2021/07/13 23:51:12,042 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 6. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,042 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 6. Connection.close() returned 
+2021/07/13 23:51:12,042 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 7. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,042 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 7. Connection.close() returned 
+2021/07/13 23:51:12,043 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 8. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,043 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 8. Connection.close() returned 
+2021/07/13 23:51:12,043 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 9. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,043 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 9. Connection.close() returned 
+2021/07/13 23:51:12,044 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 10. Connection closed. {executed in 0ms} 
+2021/07/13 23:51:12,044 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 10. Connection.close() returned 
+2021/07/13 23:51:12,044 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown completed.
+2021/07/13 23:54:38,369 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting MybatisApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 17952 (D:\study\mybatis\workspace\mybatis\target\classes started by choju in D:\study\mybatis\workspace\mybatis)
+2021/07/13 23:54:38,375 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/13 23:54:39,496 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/07/13 23:54:39,719 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/07/13 23:54:39,748 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1 
+ {executed in 14 msec}
+2021/07/13 23:54:39,751 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/07/13 23:54:39,760 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS board 
+ {executed in 3 msec}
+2021/07/13 23:54:39,762 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title VARCHAR( 255 ) NOT null , content 
+varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) ) 
+ {executed in 1 msec}
+2021/07/13 23:54:39,775 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() ) 
+ {executed in 10 msec}
+2021/07/13 23:54:39,776 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() ) 
+ {executed in 0 msec}
+2021/07/13 23:54:39,852 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started MybatisApplication in 2.135 seconds (JVM running for 3.482)
+2021/07/13 23:54:39,854 [INFO] [com.example.MybatisApplication] [main]- ---원본 args---
+2021/07/13 23:54:39,854 [INFO] [com.example.MybatisApplication] [main]- --spring.output.ansi.enabled=always
+2021/07/13 23:54:39,855 [INFO] [com.example.MybatisApplication] [main]- ---옵션아닌 args---
+2021/07/13 23:54:39,855 [INFO] [com.example.MybatisApplication] [main]- ---옵션 args---
+2021/07/13 23:54:39,855 [INFO] [com.example.MybatisApplication] [main]- spring.output.ansi.enabled : always
+2021/07/13 23:54:39,881 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT * FROM board 
+ {executed in 0 msec}
+2021/07/13 23:54:39,902 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|1  |제목1   |[unread] |[unread] |[unread] |
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/13 23:54:39,909 [INFO] [com.example.board.BoardController] [main]- id: 1 title: 제목1
+2021/07/13 23:54:39,909 [INFO] [com.example.board.BoardController] [main]- id: 2 title: 제목2
+2021/07/13 23:54:39,913 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown initiated...
+2021/07/13 23:54:39,915 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown completed.
+2021/07/13 23:55:41,138 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting MybatisApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 4216 (D:\study\mybatis\workspace\mybatis\target\classes started by choju in D:\study\mybatis\workspace\mybatis)
+2021/07/13 23:55:41,142 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/13 23:55:42,218 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/07/13 23:55:42,445 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/07/13 23:55:42,481 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1 
+ {executed in 13 msec}
+2021/07/13 23:55:42,483 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/07/13 23:55:42,492 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS board 
+ {executed in 4 msec}
+2021/07/13 23:55:42,494 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title VARCHAR( 255 ) NOT null , content 
+varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) ) 
+ {executed in 2 msec}
+2021/07/13 23:55:42,508 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() ) 
+ {executed in 10 msec}
+2021/07/13 23:55:42,509 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() ) 
+ {executed in 1 msec}
+2021/07/13 23:55:42,606 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started MybatisApplication in 2.13 seconds (JVM running for 3.502)
+2021/07/13 23:55:42,609 [INFO] [com.example.MybatisApplication] [main]- ---원본 args---
+2021/07/13 23:55:42,610 [INFO] [com.example.MybatisApplication] [main]- --spring.output.ansi.enabled=always
+2021/07/13 23:55:42,611 [INFO] [com.example.MybatisApplication] [main]- ---옵션아닌 args---
+2021/07/13 23:55:42,611 [INFO] [com.example.MybatisApplication] [main]- ---옵션 args---
+2021/07/13 23:55:42,612 [INFO] [com.example.MybatisApplication] [main]- spring.output.ansi.enabled : always
+2021/07/13 23:55:42,655 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT * FROM board 
+ {executed in 1 msec}
+2021/07/13 23:55:42,683 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|1  |제목1   |[unread] |[unread] |[unread] |
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/13 23:55:42,690 [INFO] [com.example.board.BoardController] [main]- id: 1 title: 제목1
+2021/07/13 23:55:42,690 [INFO] [com.example.board.BoardController] [main]- id: 2 title: 제목2
+2021/07/13 23:55:42,696 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown initiated...
+2021/07/13 23:55:42,698 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown completed.
+2021/07/13 23:56:25,578 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting MybatisApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 17776 (D:\study\mybatis\workspace\mybatis\target\classes started by choju in D:\study\mybatis\workspace\mybatis)
+2021/07/13 23:56:25,585 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/13 23:56:26,837 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/07/13 23:56:27,085 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection opened. {executed in 237ms} 
+2021/07/13 23:56:27,085 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.new Connection returned 
+2021/07/13 23:56:27,086 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/07/13 23:56:27,107 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,107 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,115 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.new Statement returned 
+2021/07/13 23:56:27,116 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.createStatement() returned net.sf.log4jdbc.sql.jdbcapi.StatementSpy@57a48985
+2021/07/13 23:56:27,142 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. SELECT 1  {executed in 24 ms}
+2021/07/13 23:56:27,145 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(SELECT 1) returned true
+2021/07/13 23:56:27,146 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.close() returned 
+2021/07/13 23:56:27,147 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.getTransactionIsolation() returned 2
+2021/07/13 23:56:27,151 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/07/13 23:56:27,158 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.new Statement returned 
+2021/07/13 23:56:27,159 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.createStatement() returned net.sf.log4jdbc.sql.jdbcapi.StatementSpy@26722665
+2021/07/13 23:56:27,168 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. DROP TABLE IF EXISTS board  {executed in 5 ms}
+2021/07/13 23:56:27,168 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(DROP TABLE IF EXISTS board) returned false
+2021/07/13 23:56:27,169 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.getUpdateCount() returned 0
+2021/07/13 23:56:27,173 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title VARCHAR( 255 ) NOT null , content 
+varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) )  {executed in 4 ms}
+2021/07/13 23:56:27,174 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title VARCHAR( 255 ) NOT null , content varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) )) returned false
+2021/07/13 23:56:27,175 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.getUpdateCount() returned 0
+2021/07/13 23:56:27,175 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.close() returned 
+2021/07/13 23:56:27,181 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.clearWarnings() returned 
+2021/07/13 23:56:27,183 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.new Statement returned 
+2021/07/13 23:56:27,183 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.createStatement() returned net.sf.log4jdbc.sql.jdbcapi.StatementSpy@6f9ad11c
+2021/07/13 23:56:27,202 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() )  {executed in 17 ms}
+2021/07/13 23:56:27,202 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(INSERT INTO board values( 1, '제목1', '내용1', 'user1', CURRENT_TIMESTAMP() )) returned false
+2021/07/13 23:56:27,203 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.getUpdateCount() returned 1
+2021/07/13 23:56:27,204 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() )  {executed in 1 ms}
+2021/07/13 23:56:27,205 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.execute(INSERT INTO board values( 2, '제목2', '내용2', 'user2', CURRENT_TIMESTAMP() )) returned false
+2021/07/13 23:56:27,205 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.getUpdateCount() returned 1
+2021/07/13 23:56:27,206 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Statement.close() returned 
+2021/07/13 23:56:27,206 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.clearWarnings() returned 
+2021/07/13 23:56:27,269 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 2. Connection opened. {executed in 3ms} 
+2021/07/13 23:56:27,270 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 2. Connection.new Connection returned 
+2021/07/13 23:56:27,271 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 2. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,271 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 2. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,273 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 3. Connection opened. {executed in 1ms} 
+2021/07/13 23:56:27,274 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 3. Connection.new Connection returned 
+2021/07/13 23:56:27,275 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 3. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,275 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 3. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,277 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 4. Connection opened. {executed in 1ms} 
+2021/07/13 23:56:27,278 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 4. Connection.new Connection returned 
+2021/07/13 23:56:27,279 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 4. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,279 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 4. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,280 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 5. Connection opened. {executed in 0ms} 
+2021/07/13 23:56:27,281 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 5. Connection.new Connection returned 
+2021/07/13 23:56:27,282 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 5. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,282 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 5. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,283 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 6. Connection opened. {executed in 0ms} 
+2021/07/13 23:56:27,284 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 6. Connection.new Connection returned 
+2021/07/13 23:56:27,284 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 6. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,285 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 6. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,286 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 7. Connection opened. {executed in 0ms} 
+2021/07/13 23:56:27,286 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 7. Connection.new Connection returned 
+2021/07/13 23:56:27,286 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 7. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,287 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 7. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,288 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 8. Connection opened. {executed in 1ms} 
+2021/07/13 23:56:27,288 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 8. Connection.new Connection returned 
+2021/07/13 23:56:27,289 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 8. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,289 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 8. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,290 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 9. Connection opened. {executed in 1ms} 
+2021/07/13 23:56:27,291 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 9. Connection.new Connection returned 
+2021/07/13 23:56:27,292 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 9. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,292 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 9. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,294 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 10. Connection opened. {executed in 0ms} 
+2021/07/13 23:56:27,294 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 10. Connection.new Connection returned 
+2021/07/13 23:56:27,295 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 10. Connection.isReadOnly() returned false
+2021/07/13 23:56:27,295 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection adder]- 10. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,325 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started MybatisApplication in 2.479 seconds (JVM running for 3.968)
+2021/07/13 23:56:27,327 [INFO] [com.example.MybatisApplication] [main]- ---원본 args---
+2021/07/13 23:56:27,327 [INFO] [com.example.MybatisApplication] [main]- --spring.output.ansi.enabled=always
+2021/07/13 23:56:27,327 [INFO] [com.example.MybatisApplication] [main]- ---옵션아닌 args---
+2021/07/13 23:56:27,327 [INFO] [com.example.MybatisApplication] [main]- ---옵션 args---
+2021/07/13 23:56:27,328 [INFO] [com.example.MybatisApplication] [main]- spring.output.ansi.enabled : always
+2021/07/13 23:56:27,344 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.getAutoCommit() returned true
+2021/07/13 23:56:27,350 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. PreparedStatement.new PreparedStatement returned 
+2021/07/13 23:56:27,350 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.prepareStatement(SELECT * FROM board) returned net.sf.log4jdbc.sql.jdbcapi.PreparedStatementSpy@c3177d5
+2021/07/13 23:56:27,353 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. SELECT * FROM board  {executed in 0 ms}
+2021/07/13 23:56:27,353 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. PreparedStatement.execute() returned true
+2021/07/13 23:56:27,361 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.new ResultSet returned 
+2021/07/13 23:56:27,361 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. PreparedStatement.getResultSet() returned net.sf.log4jdbc.sql.jdbcapi.ResultSetSpy@53dad875
+2021/07/13 23:56:27,366 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getMetaData() returned rsMeta0: columns=5
+2021/07/13 23:56:27,368 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getType() returned 1003
+2021/07/13 23:56:27,368 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.isClosed() returned false
+2021/07/13 23:56:27,368 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.next() returned true
+2021/07/13 23:56:27,378 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getInt(ID) returned 1
+2021/07/13 23:56:27,379 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getString(TITLE) returned 제목1
+2021/07/13 23:56:27,379 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.isClosed() returned false
+2021/07/13 23:56:27,379 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.next() returned true
+2021/07/13 23:56:27,380 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getInt(ID) returned 2
+2021/07/13 23:56:27,380 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.getString(TITLE) returned 제목2
+2021/07/13 23:56:27,380 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.isClosed() returned false
+2021/07/13 23:56:27,382 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 
+|---|------|---------|---------|---------|
+|id |title |content  |userid   |regdate  |
+|---|------|---------|---------|---------|
+|1  |제목1   |[unread] |[unread] |[unread] |
+|2  |제목2   |[unread] |[unread] |[unread] |
+|---|------|---------|---------|---------|
+
+2021/07/13 23:56:27,382 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.next() returned false
+2021/07/13 23:56:27,383 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. ResultSet.close() returned void
+2021/07/13 23:56:27,387 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.getMetaData() returned dbMeta0: conn0: url=jdbc:h2:file:./test.db user=SA
+2021/07/13 23:56:27,392 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. PreparedStatement.close() returned 
+2021/07/13 23:56:27,394 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [main]- 1. Connection.clearWarnings() returned 
+2021/07/13 23:56:27,394 [INFO] [com.example.board.BoardController] [main]- id: 1 title: 제목1
+2021/07/13 23:56:27,395 [INFO] [com.example.board.BoardController] [main]- id: 2 title: 제목2
+2021/07/13 23:56:27,400 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown initiated...
+2021/07/13 23:56:27,402 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 1. Connection closed. {executed in 1ms} 
+2021/07/13 23:56:27,402 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 1. Connection.close() returned 
+2021/07/13 23:56:27,403 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 2. Connection closed. {executed in 0ms} 
+2021/07/13 23:56:27,403 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 2. Connection.close() returned 
+2021/07/13 23:56:27,403 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 3. Connection closed. {executed in 0ms} 
+2021/07/13 23:56:27,404 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 3. Connection.close() returned 
+2021/07/13 23:56:27,404 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 4. Connection closed. {executed in 0ms} 
+2021/07/13 23:56:27,404 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 4. Connection.close() returned 
+2021/07/13 23:56:27,404 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 5. Connection closed. {executed in 0ms} 
+2021/07/13 23:56:27,405 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 5. Connection.close() returned 
+2021/07/13 23:56:27,405 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 6. Connection closed. {executed in 0ms} 
+2021/07/13 23:56:27,405 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 6. Connection.close() returned 
+2021/07/13 23:56:27,405 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 7. Connection closed. {executed in 0ms} 
+2021/07/13 23:56:27,405 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 7. Connection.close() returned 
+2021/07/13 23:56:27,406 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 8. Connection closed. {executed in 0ms} 
+2021/07/13 23:56:27,406 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 8. Connection.close() returned 
+2021/07/13 23:56:27,406 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 9. Connection closed. {executed in 0ms} 
+2021/07/13 23:56:27,407 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 9. Connection.close() returned 
+2021/07/13 23:56:27,407 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 10. Connection closed. {executed in 0ms} 
+2021/07/13 23:56:27,408 [INFO] [net.sf.log4jdbc.log.log4j2.Log4j2SpyLogDelegator] [HikariPool-1 connection closer]- 10. Connection.close() returned 
+2021/07/13 23:56:27,408 [INFO] [com.zaxxer.hikari.HikariDataSource] [SpringApplicationShutdownHook]- HikariPool-1 - Shutdown completed.

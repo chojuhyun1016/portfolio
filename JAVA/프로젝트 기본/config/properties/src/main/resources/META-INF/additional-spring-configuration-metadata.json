@@ -1,0 +1,42 @@
+{"properties": [
+  {
+    "name": "default.port",
+    "type": "java.lang.String",
+    "description": "A description for 'default.port'"
+  },
+  {
+    "name": "default.ip",
+    "type": "java.lang.String",
+    "description": "A description for 'default.ip'"
+  },
+  {
+    "name": "server.info.port",
+    "type": "java.lang.String",
+    "description": "A description for 'server.info.port'"
+  },
+  {
+    "name": "server.info.ip",
+    "type": "java.lang.String",
+    "description": "A description for 'server.info.ip'"
+  },
+  {
+    "name": "server.num",
+    "type": "java.lang.String",
+    "description": "A description for 'server.num'"
+  },
+  {
+    "name": "server.name",
+    "type": "java.lang.String",
+    "description": "A description for 'server.name'"
+  },
+  {
+    "name": "append.ip",
+    "type": "java.lang.String",
+    "description": "A description for 'append.ip'"
+  },
+  {
+    "name": "append.port",
+    "type": "java.lang.String",
+    "description": "A description for 'append.port'"
+  }
+]}

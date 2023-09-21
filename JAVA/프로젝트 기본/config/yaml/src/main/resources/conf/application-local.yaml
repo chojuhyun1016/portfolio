@@ -1,0 +1,15 @@
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+    
+server:
+    name: Local Server
+    num: 0
+    
+    info:
+        ip : 172.20.245.0
+        port: 6000
+        

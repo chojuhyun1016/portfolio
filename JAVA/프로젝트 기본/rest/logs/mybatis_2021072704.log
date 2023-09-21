@@ -1,0 +1,81 @@
+2021/07/27 16:00:05,130 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 4000 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/07/27 16:00:05,149 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/27 16:00:06,181 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/07/27 16:00:06,201 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:00:06,202 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/07/27 16:00:06,202 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/07/27 16:00:06,301 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/07/27 16:00:06,301 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1093 ms
+2021/07/27 16:00:06,781 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:00:06,823 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/07/27 16:00:06,839 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 2.227 seconds (JVM running for 4.875)
+2021/07/27 16:00:06,904 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-1]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/07/27 16:00:06,904 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Initializing Servlet 'dispatcherServlet'
+2021/07/27 16:00:06,905 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Completed initialization in 1 ms
+2021/07/27 16:00:54,102 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-3]- Resolved [org.springframework.web.bind.MissingServletRequestParameterException: Required request parameter 'id' for method parameter type String is not present]
+2021/07/27 16:16:09,468 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(24)-127.0.0.1]- Application shutdown requested.
+2021/07/27 16:16:09,651 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(26)-127.0.0.1]- Application shutdown requested.
+2021/07/27 16:16:29,287 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 8996 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/07/27 16:16:29,302 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/27 16:16:30,386 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/07/27 16:16:30,405 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:16:30,405 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/07/27 16:16:30,406 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/07/27 16:16:30,493 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/07/27 16:16:30,493 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1140 ms
+2021/07/27 16:16:31,018 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:16:31,047 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/07/27 16:16:31,064 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 2.284 seconds (JVM running for 4.855)
+2021/07/27 16:16:45,593 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-1]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/07/27 16:16:45,593 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Initializing Servlet 'dispatcherServlet'
+2021/07/27 16:16:45,594 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Completed initialization in 1 ms
+2021/07/27 16:16:45,631 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-1]- Resolved [org.springframework.web.bind.MissingRequestHeaderException: Required request header 'header' for method parameter type String is not present]
+2021/07/27 16:16:58,142 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-2]- Resolved [org.springframework.web.bind.MissingRequestHeaderException: Required request header 'header' for method parameter type String is not present]
+2021/07/27 16:18:14,019 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(11)-127.0.0.1]- Application shutdown requested.
+2021/07/27 16:18:31,950 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 7696 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/07/27 16:18:31,959 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/27 16:18:33,069 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/07/27 16:18:33,094 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:18:33,095 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/07/27 16:18:33,096 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/07/27 16:18:33,209 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/07/27 16:18:33,210 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1197 ms
+2021/07/27 16:18:33,705 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:18:33,723 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/07/27 16:18:33,733 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 2.301 seconds (JVM running for 5.014)
+2021/07/27 16:18:48,816 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-1]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/07/27 16:18:48,816 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Initializing Servlet 'dispatcherServlet'
+2021/07/27 16:18:48,818 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Completed initialization in 0 ms
+2021/07/27 16:21:19,705 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(12)-127.0.0.1]- Application shutdown requested.
+2021/07/27 16:21:29,201 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 19292 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/07/27 16:21:29,212 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/27 16:21:30,274 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/07/27 16:21:30,293 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:21:30,293 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/07/27 16:21:30,294 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/07/27 16:21:30,396 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/07/27 16:21:30,396 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1116 ms
+2021/07/27 16:21:30,866 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:21:30,883 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/07/27 16:21:30,893 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 2.256 seconds (JVM running for 3.763)
+2021/07/27 16:21:37,235 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-1]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/07/27 16:21:37,236 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Initializing Servlet 'dispatcherServlet'
+2021/07/27 16:21:37,238 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Completed initialization in 1 ms
+2021/07/27 16:22:05,778 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-2]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.getParam(java.util.Map<java.lang.String, java.lang.Object>,java.util.Map<java.lang.String, java.lang.Object>)]
+2021/07/27 16:22:16,514 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-3]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.getParam(java.util.Map<java.lang.String, java.lang.Object>,java.util.Map<java.lang.String, java.lang.Object>)]
+2021/07/27 16:25:13,036 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(13)-127.0.0.1]- Application shutdown requested.
+2021/07/27 16:25:31,394 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 19708 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/07/27 16:25:31,411 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/27 16:25:32,476 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/07/27 16:25:32,495 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:25:32,496 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/07/27 16:25:32,496 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/07/27 16:25:32,601 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/07/27 16:25:32,601 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1120 ms
+2021/07/27 16:25:33,122 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/07/27 16:25:33,140 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/07/27 16:25:33,150 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 2.329 seconds (JVM running for 3.844)
+2021/07/27 16:26:03,869 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-2]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/07/27 16:26:03,869 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Initializing Servlet 'dispatcherServlet'
+2021/07/27 16:26:03,870 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Completed initialization in 1 ms
+2021/07/27 16:41:17,717 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(26)-127.0.0.1]- Application shutdown requested.

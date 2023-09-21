@@ -1,0 +1,78 @@
+2021/08/15 17:54:27,720 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 17292 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/15 17:54:27,739 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/15 17:54:28,880 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/15 17:54:28,896 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/15 17:54:28,897 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/15 17:54:28,904 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/15 17:54:29,041 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/15 17:54:29,041 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1241 ms
+2021/08/15 17:54:29,085 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/15 17:54:29,323 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/15 17:54:29,354 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 14 msec}
+2021/08/15 17:54:29,358 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/15 17:54:29,367 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/15 17:54:29,424 [WARN] [org.springframework.context.support.AbstractApplicationContext] [main]- Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'getController': Unsatisfied dependency expressed through field 'getService'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.example.service.GetService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+2021/08/15 17:54:29,425 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown initiated...
+2021/08/15 17:54:29,447 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown completed.
+2021/08/15 17:54:29,450 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Stopping service [Tomcat]
+2021/08/15 17:54:29,464 [INFO] [org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener] [main]- 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2021/08/15 17:54:29,483 [ERROR] [org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter] [main]- 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field getService in com.example.controller.GetController required a bean of type 'com.example.service.GetService' that could not be found.
+
+The injection point has the following annotations:
+	- @org.springframework.beans.factory.annotation.Autowired(required=true)
+
+
+Action:
+
+Consider defining a bean of type 'com.example.service.GetService' in your configuration.
+
+2021/08/15 17:58:25,838 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 14208 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/15 17:58:25,853 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/15 17:58:27,047 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/15 17:58:27,058 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/15 17:58:27,059 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/15 17:58:27,059 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/15 17:58:27,188 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/15 17:58:27,188 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1294 ms
+2021/08/15 17:58:27,235 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/15 17:58:27,462 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/15 17:58:27,493 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 14 msec}
+2021/08/15 17:58:27,496 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/15 17:58:27,504 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/15 17:58:27,561 [WARN] [org.springframework.context.support.AbstractApplicationContext] [main]- Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'getController': Unsatisfied dependency expressed through field 'getService'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.example.service.GetService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+2021/08/15 17:58:27,562 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown initiated...
+2021/08/15 17:58:27,588 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown completed.
+2021/08/15 17:58:27,592 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Stopping service [Tomcat]
+2021/08/15 17:58:27,605 [INFO] [org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener] [main]- 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2021/08/15 17:58:27,624 [ERROR] [org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter] [main]- 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field getService in com.example.controller.GetController required a bean of type 'com.example.service.GetService' that could not be found.
+
+The injection point has the following annotations:
+	- @org.springframework.beans.factory.annotation.Autowired(required=true)
+
+
+Action:
+
+Consider defining a bean of type 'com.example.service.GetService' in your configuration.
+

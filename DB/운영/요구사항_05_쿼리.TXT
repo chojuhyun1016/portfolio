@@ -1,0 +1,105 @@
+
+SELECT /*+ ORDERED USE_NL( TA TB TC TD TE TF TG )
+       INDEX( TB IX_TEMP_MARKETING_201908_01 )
+       INDEX( TC IX_TEMP_PRO_ACMP_201908_01 )
+       INDEX( TD IX_TEMP_PRO_B1_ACMP_201908_02 )
+       INDEX( TE IX_TEMP_PRO_JUN_STAT_01 )
+       INDEX( TF IX_TEMP_PRO_JUL_STAT_01 )
+       INDEX( TG IX_TEMP_PRO_AUG_STAT_01 )
+       */
+       TA.CTN                                                  AS "CTN"
+     , TB.SUB_NO                                               AS "가입번호"
+     , TB.SUB_CUST_NO                                          AS "고객번호"
+     , TC.GENDER                                               AS "성별"
+     , TC.AGE_GROUP                                            AS "나이"
+     , TC.USER_GRD                                             AS "고객등급"
+     , TO_CHAR( TB.INPUT_DTIME, 'YYYYMMDDhh24mi' )             AS "결제창 마케팅 동의일시"
+     , CASE WHEN TB.PG_CODE = '01' THEN '다날'
+            WHEN TB.PG_CODE = '02' THEN '갤럭시아컴즈'
+            WHEN TB.PG_CODE = '04' THEN '하이엔티비'
+            WHEN TB.PG_CODE = '05' THEN '모빌리언스'
+            WHEN TB.PG_CODE = '06' THEN '페이레터(주)'
+            WHEN TB.PG_CODE = '08' THEN '한국사이버결제'
+            WHEN TB.PG_CODE = '10' THEN '효성'
+            WHEN TB.PG_CODE = '12' THEN 'LG유플러스'
+            WHEN TB.PG_CODE = '31' THEN '다날'
+            WHEN TB.PG_CODE = '32' THEN '갤럭시아컴즈'
+            WHEN TB.PG_CODE = '33' THEN '에스피씨네트웍스'
+            WHEN TB.PG_CODE = '34' THEN '하이엔티비'
+            WHEN TB.PG_CODE = '35' THEN '모빌리언스'
+            WHEN TB.PG_CODE = '36' THEN '페이레터(주)'
+            WHEN TB.PG_CODE = '38' THEN '한국사이버결제'
+            ELSE ''
+            END                                                AS "결제창 마케팅 동의PG"
+     , TD.SP_SVC_NAME                                          AS "결제창 마케팅 동의서비스"
+     , NVL( TE.COUNT, 0 )                                      AS "6월 결제건수"
+     , NVL( TE.AMT  , 0 )                                      AS "6월 결제금액"
+     , NVL( TF.COUNT, 0 )                                      AS "7월 결제건수"
+     , NVL( TF.AMT  , 0 )                                      AS "7월 결제금액"
+     , NVL( TG.COUNT, 0 )                                      AS "8월 결제건수"
+     , NVL( TG.AMT  , 0 )                                      AS "8월 결제금액"
+  FROM (
+         SELECT TAA.CTN
+           FROM TEMP_MARKETING_201908 TAA
+          WHERE ( (
+                    SELECT /*+ INDEX( TAAA IX_TEMP_PRO_JUN_STAT_01 ) */
+                           TAAA.AMT
+                      FROM TEMP_PRO_JUN_STAT TAAA
+                     WHERE TAAA.CTN = TAA.CTN
+                  ) < 30000
+                  OR
+                  (
+                    SELECT /*+ INDEX( TAAB IX_TEMP_PRO_JUL_STAT_01 ) */
+                           TAAB.AMT
+                      FROM TEMP_PRO_JUL_STAT TAAB
+                     WHERE TAAB.CTN = TAA.CTN
+                  ) < 30000
+                  OR
+                  (
+                    SELECT /*+ INDEX( TAAC IX_TEMP_PRO_AUG_STAT_01 ) */
+                           TAAC.AMT
+                      FROM TEMP_PRO_AUG_STAT TAAC
+                     WHERE TAAC.CTN = TAA.CTN
+                  ) < 30000
+                )
+         GROUP BY TAA.CTN
+       )                          TA
+     , TEMP_MARKETING_201908      TB
+     , TEMP_PRO_ACMP_201908       TC
+     , TEMP_PRO_B1_ACMP_201908    TD
+     , TEMP_PRO_JUN_STAT          TE
+     , TEMP_PRO_JUL_STAT          TF
+     , TEMP_PRO_AUG_STAT          TG
+ WHERE TB.CTN = TA.CTN
+   AND ( TB.AGREE_MONTH, TB.SUB_CUST_NO, 1 ) IN ( SELECT /*+ INDEX( TBA IX_TEMP_MARKETING_201908_01 ) */
+                                                         TBA.AGREE_MONTH
+                                                       , TBA.SUB_CUST_NO
+                                                       , ROW_NUMBER() OVER( ORDER BY TBA.INPUT_DTIME DESC ) NUM
+                                                    FROM TEMP_MARKETING_201908 TBA
+                                                   WHERE TBA.CTN = TB.CTN
+                                                )
+   AND TC.CTN              = TA.CTN
+   AND ( TC.SP_TRD_NO, TC.SP_TRD_TYPE_CODE, 1 ) IN ( SELECT /*+ INDEX( TCA IX_TEMP_PRO_ACMP_201908_01 ) */
+                                                            TCA.SP_TRD_NO
+                                                          , SP_TRD_TYPE_CODE
+                                                          , ROW_NUMBER() OVER( ORDER BY TCA.SP_TRD_DTIME DESC ) NUM
+                                                       FROM TEMP_PRO_ACMP_201908 TCA
+                                                      WHERE TCA.CTN              = TC.CTN
+                                                        AND TCA.SP_TRD_TYPE_CODE = 'B1'
+                                                        AND TCA.SP_AMT > (
+                                                                           SELECT /*+ INDEX( TCAA IX_TEMP_PRO_ACMP_201908_02 ) */
+                                                                                  NVL( ABS( SUM( TCAA.SP_AMT ) ), 0 )    AS "SP_AMT"
+                                                                             FROM TEMP_PRO_ACMP_201908 TCAA
+                                                                            WHERE TCAA.CTN       = TCA.CTN
+                                                                              AND TCAA.SP_TRD_NO = TCA.SP_TRD_NO
+                                                                              AND TCAA.SP_TRD_TYPE_CODE <> 'B1'
+                                                                         )
+                                                   )
+   AND TD.CTN              = TA.CTN
+   AND TD.SP_TRD_NO        = TB.SP_TRD_NO
+   AND TD.SP_TRD_TYPE_CODE = 'B1'
+   AND TE.CTN(+)           = TA.CTN
+   AND TF.CTN(+)           = TA.CTN
+   AND TG.CTN(+)           = TA.CTN
+;
+

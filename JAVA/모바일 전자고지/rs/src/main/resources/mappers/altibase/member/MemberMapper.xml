@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uplus.mp.gw.member.mappers.altibase.MemberMapper">
+
+	<select id="findPersonMemberByCi" parameterType="string" resultType="member">
+		SELECT
+			   TC.MB_ID
+			 , TC.NAME
+			 , TC.PHONE
+			 , TC.CREATED_DTM
+			 , TB.CEA
+		  FROM
+			   MP_CI_CEA_MAPPING    TA
+			   JOIN MP_CEA          TB
+			   ON TA.CEA = TB.CEA
+			   JOIN MP_MB_PSN       TC
+			   ON TB.MB_ID = TC.MB_ID
+		 WHERE
+			   TA.CI = #{ci}
+         LIMIT 1
+	</select>
+
+	<select id="getWithdrawCeaByCi" parameterType="string" resultType="string">
+		SELECT
+			   TA.CEA
+		  FROM
+			   MP_WITHDRAW_MB_LOG TA
+		 WHERE 
+			   TA.CI = #{ci}
+		ORDER BY TA.LOG_DTM DESC
+		LIMIT 1
+	</select>
+
+	<select id="getCeaCountByCi" parameterType="string" resultType="integer">
+		SELECT
+			   COUNT(1)
+		  FROM
+			   MP_CI_CEA_MAPPING    TA
+	           JOIN MP_CEA          TB
+			   ON TA.CEA = TB.CEA
+		 WHERE
+			   TA.CI = #{ci}
+	</select>
+
+	<select id="getCorpMembersCountBySvcOrgCd" parameterType="list" resultType="integer">
+		SELECT
+			   COUNT(1)
+    	  FROM
+    		   MP_MB_CRP
+    	 WHERE
+    	       <if test="list == null or list.isEmpty()">
+    		   1=2	
+    	       </if>
+    	       <if test="list != null and !list.isEmpty()">
+    	       SVC_ORG_CD IN
+		                     <foreach collection="list" item="svcOrgCd" open="(" separator="," close=")">
+    		                 #{svcOrgCd}	
+    	                     </foreach>
+    	       </if>
+	</select>
+
+	<select id="existsSameCorpMemberBySvcOrgCd" parameterType="member" resultType="integer">
+		SELECT
+			   COUNT(1)
+		  FROM
+			   MP_MB_CRP      TA
+			   JOIN MP_CEA    TB
+			   ON TA.MB_ID = TB.MB_ID
+		 WHERE
+			   TA.SVC_ORG_CD = #{svcOrgCd}
+	</select>
+
+</mapper>

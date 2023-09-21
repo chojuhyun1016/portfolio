@@ -1,0 +1,195 @@
+
+-- 6월 통계
+SELECT TA.DIVISION    AS "구분"
+     , TA.CNT         AS "이용자수"
+     , TA.AMT         AS "거래금액"
+  FROM (
+         SELECT '50만원 이상'                  AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAA.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUN_STAT TAA
+          WHERE TAA.AMT >= 500000
+         UNION ALL
+         SELECT '40만원 이상 ~ 50만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAB.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUN_STAT TAB
+          WHERE TAB.AMT >= 400000
+            AND TAB.AMT <  500000
+         UNION ALL
+         SELECT '30만원 이상 ~ 40만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAC.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUN_STAT TAC
+          WHERE TAC.AMT >= 300000
+            AND TAC.AMT <  400000
+         UNION ALL
+         SELECT '20만원 이상 ~ 30만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAD.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUN_STAT TAD
+          WHERE TAD.AMT >= 200000
+            AND TAD.AMT <  300000
+         UNION ALL
+         SELECT '10만원 이상 ~ 20만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAE.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUN_STAT TAE
+          WHERE TAE.AMT >= 100000
+            AND TAE.AMT <  200000
+         UNION ALL
+         SELECT '10만원 미만'                  AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAF.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUN_STAT TAF
+          WHERE TAF.AMT >       0
+            AND TAF.AMT <  100000
+       ) TA
+;
+
+
+-- 7월 통계
+SELECT TA.DIVISION    AS "구분"
+     , TA.CNT         AS "이용자수"
+     , TA.AMT         AS "거래금액"
+  FROM (
+         SELECT '50만원 이상'                  AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAA.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUL_STAT TAA
+          WHERE TAA.AMT >= 500000
+         UNION ALL
+         SELECT '40만원 이상 ~ 50만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAB.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUL_STAT TAB
+          WHERE TAB.AMT >= 400000
+            AND TAB.AMT <  500000
+         UNION ALL
+         SELECT '30만원 이상 ~ 40만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAC.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUL_STAT TAC
+          WHERE TAC.AMT >= 300000
+            AND TAC.AMT <  400000
+         UNION ALL
+         SELECT '20만원 이상 ~ 30만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAD.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUL_STAT TAD
+          WHERE TAD.AMT >= 200000
+            AND TAD.AMT <  300000
+         UNION ALL
+         SELECT '10만원 이상 ~ 20만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAE.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUL_STAT TAE
+          WHERE TAE.AMT >= 100000
+            AND TAE.AMT <  200000
+         UNION ALL
+         SELECT '10만원 미만'                  AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAF.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_JUL_STAT TAF
+          WHERE TAF.AMT >       0
+            AND TAF.AMT <  100000
+       ) TA
+;
+
+
+-- 8월 통계
+SELECT TA.DIVISION    AS "구분"
+     , TA.CNT         AS "이용자수"
+     , TA.AMT         AS "거래금액"
+  FROM (
+         SELECT '50만원 이상'                  AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAA.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_AUG_STAT TAA
+          WHERE TAA.AMT >= 500000
+         UNION ALL
+         SELECT '40만원 이상 ~ 50만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAB.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_AUG_STAT TAB
+          WHERE TAB.AMT >= 400000
+            AND TAB.AMT <  500000
+         UNION ALL
+         SELECT '30만원 이상 ~ 40만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAC.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_AUG_STAT TAC
+          WHERE TAC.AMT >= 300000
+            AND TAC.AMT <  400000
+         UNION ALL
+         SELECT '20만원 이상 ~ 30만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAD.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_AUG_STAT TAD
+          WHERE TAD.AMT >= 200000
+            AND TAD.AMT <  300000
+         UNION ALL
+         SELECT '10만원 이상 ~ 20만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAE.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_AUG_STAT TAE
+          WHERE TAE.AMT >= 100000
+            AND TAE.AMT <  200000
+         UNION ALL
+         SELECT '10만원 미만'                  AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAF.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_AUG_STAT TAF
+          WHERE TAF.AMT >       0
+            AND TAF.AMT <  100000
+       ) TA
+;
+
+
+-- 9월 통계
+SELECT TA.DIVISION    AS "구분"
+     , TA.CNT         AS "이용자수"
+     , TA.AMT         AS "거래금액"
+  FROM (
+         SELECT '50만원 이상'                  AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAA.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_SEP_STAT TAA
+          WHERE TAA.AMT >= 500000
+         UNION ALL
+         SELECT '40만원 이상 ~ 50만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAB.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_SEP_STAT TAB
+          WHERE TAB.AMT >= 400000
+            AND TAB.AMT <  500000
+         UNION ALL
+         SELECT '30만원 이상 ~ 40만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAC.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_SEP_STAT TAC
+          WHERE TAC.AMT >= 300000
+            AND TAC.AMT <  400000
+         UNION ALL
+         SELECT '20만원 이상 ~ 30만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAD.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_SEP_STAT TAD
+          WHERE TAD.AMT >= 200000
+            AND TAD.AMT <  300000
+         UNION ALL
+         SELECT '10만원 이상 ~ 20만원 미만'    AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAE.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_SEP_STAT TAE
+          WHERE TAE.AMT >= 100000
+            AND TAE.AMT <  200000
+         UNION ALL
+         SELECT '10만원 미만'                  AS "DIVISION"
+              , COUNT(1)                       AS "CNT"
+              , SUM( NVL( TAF.AMT, 0 ) )       AS "AMT"
+           FROM TEMP_PRO_SEP_STAT TAF
+          WHERE TAF.AMT >       0
+            AND TAF.AMT <  100000
+       ) TA
+;

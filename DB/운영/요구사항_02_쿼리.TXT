@@ -1,0 +1,54 @@
+
+SELECT /*+ ORDERED USE_NL( TA TB TC )
+       INDEX( TB IX_TEMP_PRO_ACMP_20191001_01 )
+       INDEX( TC IX_TEMP_PRO_ACMP_20191001_02 )
+       */
+       TA.CTN                                         AS "CTN"
+     , TA.SUB_NO                                      AS "가입번호"
+     , TA.SUB_CUST_NO                                 AS "고객번호"
+     , TB.GENDER                                      AS "성별"
+     , TB.AGE_GROUP                                   AS "나이"
+     , TB.USER_GRD                                    AS "고객등급"
+     , TO_CHAR( TA.INPUT_DTIME, 'YYYYMMDDhh24mi' )    AS "결제창 마케팅 동의일시"
+     , CASE WHEN TA.PG_CODE = '01' THEN '다날'
+            WHEN TA.PG_CODE = '02' THEN '갤럭시아컴즈'
+            WHEN TA.PG_CODE = '04' THEN '하이엔티비'
+            WHEN TA.PG_CODE = '05' THEN '모빌리언스'
+            WHEN TA.PG_CODE = '06' THEN '페이레터(주)'
+            WHEN TA.PG_CODE = '08' THEN '한국사이버결제'
+            WHEN TA.PG_CODE = '10' THEN '효성'
+            WHEN TA.PG_CODE = '12' THEN 'LG유플러스'
+            WHEN TA.PG_CODE = '31' THEN '다날'
+            WHEN TA.PG_CODE = '32' THEN '갤럭시아컴즈'
+            WHEN TA.PG_CODE = '33' THEN '에스피씨네트웍스'
+            WHEN TA.PG_CODE = '34' THEN '하이엔티비'
+            WHEN TA.PG_CODE = '35' THEN '모빌리언스'
+            WHEN TA.PG_CODE = '36' THEN '페이레터(주)'
+            WHEN TA.PG_CODE = '38' THEN '한국사이버결제'
+            ELSE ''
+            END                                       AS "결제창 마케팅 동의PG"
+     , TC.SP_SVC_NAME                                 AS "결제창 마케팅 동의서비스"
+  FROM TEMP_MARKETING_SEP        TA
+     , TEMP_PRO_ACMP_20191001    TB
+     , TEMP_PRO_ACMP_20191001    TC
+ WHERE TB.CTN = TA.CTN
+   AND ( TB.SP_TRD_NO, TB.SP_TRD_TYPE_CODE, 1 ) IN ( SELECT /*+ INDEX( TBA IX_TEMP_PRO_ACMP_20191001_01 ) */
+                                       TBA.SP_TRD_NO
+                                     , TBA.SP_TRD_TYPE_CODE
+                                     , ROW_NUMBER() OVER( ORDER BY TBA.SP_TRD_DTIME DESC ) NUM
+                                  FROM TEMP_PRO_ACMP_20191001 TBA
+                                 WHERE TBA.CTN              = TB.CTN
+                                   AND TBA.SP_TRD_TYPE_CODE = 'B1'
+                                   AND TBA.SP_AMT > (
+                                                      SELECT /*+ INDEX( TBAA IX_TEMP_PRO_ACMP_20191001_02 ) */
+                                                             NVL( ABS( SUM( TBAA.SP_AMT ) ), 0 )    AS "SP_AMT"
+                                                        FROM TEMP_PRO_ACMP_20191001 TBAA
+                                                       WHERE TBAA.CTN       = TBA.CTN
+                                                         AND TBAA.SP_TRD_NO = TBA.SP_TRD_NO
+                                                         AND TBAA.SP_TRD_TYPE_CODE <> 'B1'
+                                                    )
+                           )
+   AND TC.CTN              = TA.CTN
+   AND TC.SP_TRD_NO        = TA.SP_TRD_NO
+   AND TC.SP_TRD_TYPE_CODE = 'B1'
+;

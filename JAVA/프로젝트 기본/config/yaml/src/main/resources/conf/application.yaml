@@ -1,0 +1,45 @@
+
+# 기동 시 로그 관련 데몬 인자값
+# --spring.profiles.active=prod  --spring.config.location=classpath:./conf/
+
+
+# 공통 정보 
+default:
+  ip: 192.168.0.1
+  port: 8080
+
+
+# 기본 설정파일(application.yaml, application_xxx.yaml) 파일 외에 파일을 환경 설정 파일(profile)로 등록
+spring:
+  config:
+    import: 
+      - classpath:/conf/optional-local.yaml
+      - classpath:/conf/optional-dev.yaml
+      - classpath:/conf/optional-test.yaml
+      - classpath:/conf/optional-prod.yaml
+
+
+# 실수를 방지하기 위해 default profile는 사용하지 않는다
+# 인자값(dev, local, test, prod)에 따른 호출 profile 설정
+  profiles:
+    group:
+#      default: 
+#        - local
+#        - append_local
+#        - optional_local    
+      local: 
+        - local
+        - append_local
+        - optional_local
+      dev:
+        - dev
+        - append_dev
+        - optional_dev
+      test:
+        - test
+        - append_test
+        - optional_test
+      prod:
+        - prod
+        - append_prod
+        - optional_prod

@@ -1,0 +1,44 @@
+2021/07/09 23:36:37,267 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting Log4j2Application using Java 1.8.0_282 on 조주현-LAPTOP with PID 18316 (D:\study\log4j2\workspace\log4j2\target\classes started by choju in D:\study\log4j2\workspace\log4j2)
+2021/07/09 23:36:37,276 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/09 23:36:37,905 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started Log4j2Application in 1.155 seconds (JVM running for 2.617)
+2021/07/09 23:36:37,914 [INFO] [com.example.Log4j2Application] [main]- Hi I'm INFO log
+2021/07/09 23:36:37,915 [ERROR] [com.example.Log4j2Application] [main]- Hi I'm ERROR log
+2021/07/09 23:37:09,106 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting Log4j2Application using Java 1.8.0_282 on 조주현-LAPTOP with PID 19452 (D:\study\log4j2\workspace\log4j2\target\classes started by choju in D:\study\log4j2\workspace\log4j2)
+2021/07/09 23:37:09,110 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/09 23:37:09,767 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started Log4j2Application in 1.187 seconds (JVM running for 2.579)
+2021/07/09 23:39:52,649 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting Log4j2Application using Java 1.8.0_282 on 조주현-LAPTOP with PID 11612 (D:\study\log4j2\workspace\log4j2\target\classes started by choju in D:\study\log4j2\workspace\log4j2)
+2021/07/09 23:39:52,658 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/09 23:39:53,366 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started Log4j2Application in 1.189 seconds (JVM running for 2.538)
+2021/07/09 23:39:53,369 [INFO] [com.example.Log4j2Application] [main]- ======================================================
+2021/07/09 23:39:53,374 [INFO] [com.example.Log4j2Application] [main]- Hi I'm INFO log
+2021/07/09 23:39:53,374 [INFO] [com.example.Log4j2Application] [main]- ApplicationRunner - ApplicationArguments 
+2021/07/09 23:39:53,375 [INFO] [com.example.Log4j2Application] [main]- NonOption Arguments : []
+2021/07/09 23:39:53,376 [INFO] [com.example.Log4j2Application] [main]- Option Arguments Names : [spring.output.ansi.enabled]
+2021/07/09 23:39:53,376 [INFO] [com.example.Log4j2Application] [main]- key1의 value : null
+2021/07/09 23:39:53,376 [INFO] [com.example.Log4j2Application] [main]- key1의 value : null
+2021/07/09 23:39:53,378 [INFO] [com.example.Log4j2Application] [main]- Hi I'm INFO log
+2021/07/09 23:39:53,379 [ERROR] [com.example.Log4j2Application] [main]- Hi I'm ERROR log
+2021/07/09 23:41:23,020 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting Log4j2Application using Java 1.8.0_282 on 조주현-LAPTOP with PID 17032 (D:\study\log4j2\workspace\log4j2\target\classes started by choju in D:\study\log4j2\workspace\log4j2)
+2021/07/09 23:41:23,027 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/09 23:41:23,698 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started Log4j2Application in 1.224 seconds (JVM running for 2.705)
+2021/07/09 23:41:23,701 [INFO] [com.example.Log4j2Application] [main]- ======================================================
+2021/07/09 23:41:23,701 [INFO] [com.example.Log4j2Application] [main]- ApplicationRunner - ApplicationArguments 
+2021/07/09 23:41:23,704 [INFO] [com.example.Log4j2Application] [main]- NonOption Arguments : []
+2021/07/09 23:41:23,704 [INFO] [com.example.Log4j2Application] [main]- Option Arguments Names : [spring.output.ansi.enabled]
+2021/07/09 23:41:23,704 [INFO] [com.example.Log4j2Application] [main]- key1의 value : null
+2021/07/09 23:41:23,705 [INFO] [com.example.Log4j2Application] [main]- key1의 value : null
+2021/07/09 23:41:23,705 [INFO] [com.example.Log4j2Application] [main]- ======================================================
+2021/07/09 23:41:23,706 [INFO] [com.example.Log4j2Application] [main]- Hi I'm INFO log
+2021/07/09 23:41:23,706 [ERROR] [com.example.Log4j2Application] [main]- Hi I'm ERROR log
+2021/07/09 23:58:43,686 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting Log4j2Application using Java 1.8.0_282 on 조주현-LAPTOP with PID 8592 (D:\study\log4j2\workspace\log4j2\target\classes started by choju in D:\study\log4j2\workspace\log4j2)
+2021/07/09 23:58:43,691 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/09 23:58:44,406 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started Log4j2Application in 1.24 seconds (JVM running for 2.653)
+2021/07/09 23:58:44,409 [INFO] [com.example.Log4j2Application] [main]- ======================================================
+2021/07/09 23:58:44,409 [INFO] [com.example.Log4j2Application] [main]- ApplicationRunner - ApplicationArguments 
+2021/07/09 23:58:44,412 [INFO] [com.example.Log4j2Application] [main]- NonOption Arguments : []
+2021/07/09 23:58:44,412 [INFO] [com.example.Log4j2Application] [main]- Option Arguments Names : [spring.output.ansi.enabled]
+2021/07/09 23:58:44,412 [INFO] [com.example.Log4j2Application] [main]- key1의 value : null
+2021/07/09 23:58:44,412 [INFO] [com.example.Log4j2Application] [main]- key1의 value : null
+2021/07/09 23:58:44,413 [INFO] [com.example.Log4j2Application] [main]- ======================================================
+2021/07/09 23:58:44,414 [INFO] [com.example.Log4j2Application] [main]- Hi I'm INFO log
+2021/07/09 23:58:44,414 [ERROR] [com.example.Log4j2Application] [main]- Hi I'm ERROR log

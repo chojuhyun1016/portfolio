@@ -1,0 +1,10 @@
+2021/07/06 00:03:17,913 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting Log4j2Application using Java 1.8.0_282 on 조주현-LAPTOP with PID 17972 (D:\study\log4j2\workspace\log4j2\target\classes started by choju in D:\study\log4j2\workspace\log4j2)
+2021/07/06 00:03:17,917 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/06 00:03:18,590 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started Log4j2Application in 1.178 seconds (JVM running for 2.751)
+2021/07/06 00:03:18,595 [INFO] [com.example.Log4j2Application] [main]- Hi I'm INFO log
+2021/07/06 00:03:18,595 [ERROR] [com.example.Log4j2Application] [main]- Hi I'm ERROR log
+2021/07/06 00:03:29,352 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting Log4j2Application using Java 1.8.0_282 on 조주현-LAPTOP with PID 17124 (D:\study\log4j2\workspace\log4j2\target\classes started by choju in D:\study\log4j2\workspace\log4j2)
+2021/07/06 00:03:29,356 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/06 00:03:30,063 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started Log4j2Application in 1.174 seconds (JVM running for 2.51)
+2021/07/06 00:03:30,074 [INFO] [com.example.Log4j2Application] [main]- Hi I'm INFO log
+2021/07/06 00:03:30,075 [ERROR] [com.example.Log4j2Application] [main]- Hi I'm ERROR log

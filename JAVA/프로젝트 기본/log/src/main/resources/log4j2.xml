@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+<Configuration status="WARN">
+
+    <Properties>
+        <Property name="logFileName">log4j2</Property>
+        <Property name="layoutPattern">%style{%d{yyyy/MM/dd HH:mm:ss,SSS}}{cyan} %highlight{[%p]}{FATAL=bg_red, ERROR=red, INFO=green, DEBUG=blue} [%C] %style{[%t]}{yellow}- %m%n</Property>        
+    </Properties>
+
+    <Appenders>
+        <Console name="Console_Appender" target="SYSTEM_OUT" follow="true">
+            <PatternLayout charset="UTF-8" pattern="${layoutPattern}"/>
+        </Console>
+        
+        <!-- <RollingFile name="File_Appender" fileName="./logs/${logFileName}.log" filePattern="./logs/${logFileName}_%d{yyyy-MM-dd}_%i.log.gz" append="true"> -->
+        <RollingFile name="File_Appender" fileName="./logs/${logFileName}.log" filePattern="./logs/${logFileName}_%d{yyyyMMddhh}.log" append="true">
+            <PatternLayout charset="UTF-8" pattern="${layoutPattern}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+            </Policies>
+            <DefaultRolloverStrategy fileIndex="max"/>
+        </RollingFile>
+        
+        <RollingFile name="File_Appender_Error" fileName="./logs/${logFileName}_error.log" filePattern="./logs/${logFileName}_error_%d{yyyyMMddhh}.log" append="true">
+            <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout charset="UTF-8" pattern="${layoutPattern}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+            </Policies>
+            <DefaultRolloverStrategy fileIndex="max"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="INFO" additivity="false">
+            <AppenderRef ref="Console_Appender"/>
+            <AppenderRef ref="File_Appender"/>
+            <AppenderRef ref="File_Appender_Error"/>
+        </Root>
+    </Loggers>
+    
+</Configuration>

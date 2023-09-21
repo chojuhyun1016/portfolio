@@ -1,0 +1,36 @@
+2021/08/15 17:54:29,483 [ERROR] [org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter] [main]- 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field getService in com.example.controller.GetController required a bean of type 'com.example.service.GetService' that could not be found.
+
+The injection point has the following annotations:
+	- @org.springframework.beans.factory.annotation.Autowired(required=true)
+
+
+Action:
+
+Consider defining a bean of type 'com.example.service.GetService' in your configuration.
+
+2021/08/15 17:58:27,624 [ERROR] [org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter] [main]- 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field getService in com.example.controller.GetController required a bean of type 'com.example.service.GetService' that could not be found.
+
+The injection point has the following annotations:
+	- @org.springframework.beans.factory.annotation.Autowired(required=true)
+
+
+Action:
+
+Consider defining a bean of type 'com.example.service.GetService' in your configuration.
+

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uplus.mp.gw.ms.mappers.altibase.MessageMapper">
+
+	<select id="getMessageByMessageId" parameterType="map" resultType="pmMsg">
+		SELECT
+			   TA.MSGKEY
+ 			 , TA.CI
+			 , TA.SVC_ORG_CD
+			 , TA.MESSAGE_ID
+			 , TA.PHONE
+			 , TA.SEND_STAT
+			 , TA.MSG_TYPE
+			 , TA.REG_DT
+			 , TA.BC_SND_RSLT_CD
+			 , TA.GW_SND_RSLT_DT
+			 , TA.BC_RPT_RSLT_CD
+			 , TA.GW_RPT_RSLT_DT			 
+			 , TA.PART_MM
+			 , TA.MULTI_MBL_PRC_TYPE
+			 , TA.CLICK_DT
+		  FROM
+		       PM_MSG TA
+		 WHERE 
+             <choose>
+	         <when test="partMm!=null and !partMm.equals('')" >
+		       TA.PART_MM = #{partMm}
+             </when>
+             <otherwise>
+               TA.PART_MM BETWEEN TO_CHAR(ADD_MONTHS(SYSDATE, -1), 'MM')
+                              AND TO_CHAR(SYSDATE, 'MM')
+             </otherwise>
+             </choose>
+		   AND
+               TA.MESSAGE_ID = #{messageId}
+		 LIMIT 1
+	</select>
+
+	<select id="getMessageRdngRpmtYnByMessageId" parameterType="document" resultType="string">
+		SELECT
+			   DECODE(TA.RDNG_RPMT_YN, 'Y', TA.RDNG_RPMT_YN, DECODE(TA.TKN_RPMT_YN, 'Y', TA.TKN_RPMT_YN, 'N')) AS 'TKN_RDNG_RPMT_YN'
+		  FROM
+		       PM_MSG TA
+		 WHERE 
+		       TA.PART_MM    = #{partMm}
+		   AND
+               TA.MESSAGE_ID = #{messageId}
+		 LIMIT 1
+	</select>
+
+	<select id="getMessageTknRdngRpmtYnByMessageId" parameterType="document" resultType="string">
+		SELECT
+			   DECODE(TA.RDNG_RPMT_YN, 'Y', TA.RDNG_RPMT_YN, 'N') || DECODE(TA.TKN_RPMT_YN, 'Y', TA.TKN_RPMT_YN, 'N') AS 'TKN_RDNG_RPMT_YN'
+		  FROM 
+		       PM_MSG TA
+		 WHERE 
+		       TA.PART_MM    = #{partMm}
+		   AND
+               TA.MESSAGE_ID = #{messageId}
+		LIMIT 1
+	</select>
+
+	<select id="getMessageClickDtByMessageId" parameterType="map" resultType="string">
+		SELECT
+			   TA.CLICK_DT
+		  FROM 
+		       PM_MSG TA
+		 WHERE 
+		       TA.PART_MM    = #{partMm}
+		   AND
+               TA.MESSAGE_ID = #{messageId}
+		 LIMIT 1
+	</select>
+
+</mapper>

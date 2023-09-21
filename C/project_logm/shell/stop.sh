@@ -1,0 +1,1 @@
+pkill LOG_MANAGER

@@ -1,0 +1,73 @@
+2021/07/26 19:21:57,491 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(39)-127.0.0.1]- Application shutdown requested.
+2021/07/26 19:22:11,023 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 3260 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/07/26 19:22:11,039 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/26 19:22:12,111 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/07/26 19:22:12,149 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/07/26 19:22:12,150 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/07/26 19:22:12,151 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/07/26 19:22:12,248 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/07/26 19:22:12,248 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1141 ms
+2021/07/26 19:22:12,716 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/07/26 19:22:12,741 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/07/26 19:22:12,751 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 2.264 seconds (JVM running for 3.789)
+2021/07/26 19:23:09,671 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(10)-127.0.0.1]- Application shutdown requested.
+2021/07/26 19:23:09,833 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(11)-127.0.0.1]- Application shutdown requested.
+2021/07/26 19:23:51,384 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 18576 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/07/26 19:23:51,393 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/26 19:23:52,435 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/07/26 19:23:52,454 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/07/26 19:23:52,454 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/07/26 19:23:52,455 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/07/26 19:23:52,525 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/07/26 19:23:52,526 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1091 ms
+2021/07/26 19:23:52,988 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/07/26 19:23:53,006 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/07/26 19:23:53,016 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 2.189 seconds (JVM running for 3.881)
+2021/07/26 19:32:55,713 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-1]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/07/26 19:32:55,713 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Initializing Servlet 'dispatcherServlet'
+2021/07/26 19:32:55,715 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Completed initialization in 1 ms
+2021/07/26 19:32:55,756 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-1]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.getParam(java.lang.String)]
+2021/07/26 19:35:47,004 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-4]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.getParam(java.lang.String)]
+2021/07/26 19:36:57,123 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(21)-127.0.0.1]- Application shutdown requested.
+2021/07/26 19:37:19,278 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 16404 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/07/26 19:37:19,287 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/26 19:37:20,407 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/07/26 19:37:20,426 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/07/26 19:37:20,427 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/07/26 19:37:20,427 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/07/26 19:37:20,514 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/07/26 19:37:20,515 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1174 ms
+2021/07/26 19:37:21,031 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/07/26 19:37:21,048 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/07/26 19:37:21,059 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 2.353 seconds (JVM running for 3.956)
+2021/07/26 19:37:40,558 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-2]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/07/26 19:37:40,558 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Initializing Servlet 'dispatcherServlet'
+2021/07/26 19:37:40,559 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Completed initialization in 1 ms
+2021/07/26 19:37:40,598 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-2]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.postParam(java.lang.String)]
+2021/07/26 19:38:22,783 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-4]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.postParam(java.lang.String)]
+2021/07/26 19:40:26,268 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-6]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.postParam(java.lang.String)]
+2021/07/26 19:41:27,576 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-8]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.postParam(java.lang.String)]
+2021/07/26 19:43:26,241 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(14)-127.0.0.1]- Application shutdown requested.
+2021/07/26 19:43:41,471 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 10196 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/07/26 19:43:41,481 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/07/26 19:43:42,446 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/07/26 19:43:42,465 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/07/26 19:43:42,466 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/07/26 19:43:42,466 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/07/26 19:43:42,552 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/07/26 19:43:42,552 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1022 ms
+2021/07/26 19:43:43,030 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/07/26 19:43:43,060 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/07/26 19:43:43,077 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 2.175 seconds (JVM running for 3.788)
+2021/07/26 19:43:47,631 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-1]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/07/26 19:43:47,631 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Initializing Servlet 'dispatcherServlet'
+2021/07/26 19:43:47,632 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Completed initialization in 1 ms
+2021/07/26 19:44:24,918 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-4]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.postParam(java.lang.String)]
+2021/07/26 19:45:13,429 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-6]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.postParam(java.lang.String)]
+2021/07/26 19:45:21,800 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-8]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public java.lang.String com.example.controller.Rest.postParam(java.lang.String)]
+2021/07/26 19:46:30,561 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-1]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Unexpected character ('i' (code 105)): was expecting double-quote to start field name; nested exception is com.fasterxml.jackson.core.JsonParseException: Unexpected character ('i' (code 105)): was expecting double-quote to start field name
+ at [Source: (PushbackInputStream); line: 2, column: 6]]
+2021/07/26 19:48:10,519 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-6]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Unexpected character ('n' (code 110)): was expecting double-quote to start field name; nested exception is com.fasterxml.jackson.core.JsonParseException: Unexpected character ('n' (code 110)): was expecting double-quote to start field name
+ at [Source: (PushbackInputStream); line: 2, column: 6]]
+2021/07/26 19:48:24,915 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-9]- Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Unexpected character ('n' (code 110)): was expecting double-quote to start field name; nested exception is com.fasterxml.jackson.core.JsonParseException: Unexpected character ('n' (code 110)): was expecting double-quote to start field name
+ at [Source: (PushbackInputStream); line: 2, column: 6]]

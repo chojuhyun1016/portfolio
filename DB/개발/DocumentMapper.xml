@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uplus.mp.gw.doc.mappers.altibase.DocumentMapper">
+
+	<insert id="insertDocumentIssueRcd" parameterType="documentIssueRcd">
+        <selectKey keyProperty="dcmntRcdSeq" order="BEFORE" resultType="int">
+            SELECT
+                   MP_DCMNT_RCD_SEQ.NEXTVAL
+              FROM
+                   DUAL
+        </selectKey>
+
+		INSERT INTO MP_DCMNT_RCD
+		                         (
+		                           DCMNT_RCD_SEQ 
+		                         , DCMNT_INFO_ID
+								 , ELCTRC_DCMNT_NO
+							     , ELCTRC_DCMNT_SBJCT
+							     , SND_CEA
+							     , SND_NAME
+							     , RSV_CEA
+							     , RSV_NAME
+		                         <if test="reqCea!=null and !reqCea.equals('')">
+							     , REQ_CEA
+                                 </if>
+		                         <if test="reqName!=null and !reqName.equals('')">
+							     , REQ_NAME
+                                 </if>
+		                         <if test="reqBusiMngNm!=null and !reqBusiMngNm.equals('')">
+							     , REQ_BUSI_MNG_NM
+                                 </if>
+							     , REQ_GUBUN
+							     , ISD_DTM
+							     , SND_DTM
+							     , RSV_DTM
+							     <if test="rdDtm!=null and !rdDtm.equals('')">
+							     , RD_DTM
+                                 </if>
+							     )
+						  VALUES 
+						         (
+						           #{dcmntRcdSeq}
+						   		 , #{dcmntInfoId}
+								 , #{elctrcDcmntNo}
+								 , #{elctrcDcmntSbjct}
+								 , #{sndCea}
+								 , #{sndName}
+								 , #{rsvCea}
+								 , #{rsvName}
+		                         <if test="reqCea!=null and !reqCea.equals('')">
+								 , #{reqCea}
+                                 </if>
+		                         <if test="reqName!=null and !reqName.equals('')">
+								 , #{reqName}
+                                 </if>
+		                         <if test="reqBusiMngNm!=null and !reqBusiMngNm.equals('')">
+								 , #{reqBusiMngNm}
+                                 </if>
+								 , #{reqGubun}
+								 , TO_CHAR(SYSDATE, 'YYYYMMDDhh24miss')
+								 , #{sndDtm}
+								 , #{rsvDtm}
+							     <if test="rdDtm!=null and !rdDtm.equals('')">
+								 , #{rdDtm}
+                                 </if>
+						         )
+	</insert>
+
+	<insert id="insertDocumentStatConfirmationIssueRcd" parameterType="documentIssueStatConfirmationRcd">
+        <selectKey keyProperty="rcdSeq" order="BEFORE" resultType="long">
+            SELECT
+                   MP_DCMNT_STS_CFM_RCD_SEQ.NEXTVAL
+              FROM
+                   DUAL
+        </selectKey>
+
+		INSERT INTO MP_DCMNT_STS_CFM_RCD 
+		                                 (
+		                                   RCD_SEQ
+		                                 , EADDR
+		                                 , PERIOD
+		                                 , ISS_SEQ
+							             , ISD_DTM
+							             , REG_DTM
+							             )
+						          VALUES 
+						                 (
+						                   #{rcdSeq}
+						   		         , #{eaddr}
+								         , #{period}
+								         , #{issSeq}
+								         , #{isdDtm}
+								         , TO_CHAR(SYSDATE, 'YYYYMMDDhh24miss')
+						                 )
+	</insert>
+
+	<insert id="insertAndUpdateDocument" parameterType="document">
+		MERGE INTO MP_DCMNT_INFO TA
+		USING DUAL
+		   ON TA.MESSAGE_ID = #{messageId}
+		  AND TA.PART_MM    = #{partMm}
+		 WHEN MATCHED THEN
+		                   UPDATE SET 
+		                              TA.SND_CEA   = #{sndCea}
+                                    , TA.SND_NAME  = #{sndName}
+		                            <if test="sndDtm!=null and !sndDtm.equals('')">
+		                            , TA.SND_DTM  = #{sndDtm}
+		                            </if>
+		                            <if test="rsvCea!=null and !rsvCea.equals('')">
+		                            , TA.RSV_CEA  = #{rsvCea}
+		                            </if>
+		                            <if test="rsvDtm!=null and !rsvDtm.equals('')">
+		                            , TA.RSV_DTM  = #{rsvDtm}
+		                            </if>
+		                            <if test="rsvName!=null and !rsvName.equals('')">
+		                            , TA.RSV_NAME  = #{rsvName}
+		                            </if>
+	     WHEN NOT MATCHED THEN
+		                       INSERT
+		                              (
+		                                TA.DCMNT_INFO_ID
+		                              , TA.MESSAGE_ID
+		                              , TA.ELCTRC_DCMNT_NO
+		                              , TA.ELCTRC_DCMNT_SBJCT
+	                                  , TA.SND_CEA
+		                              <if test="rsvCea!=null and !rsvCea.equals('')">
+		                              , TA.RSV_CEA
+		                              </if>
+		                              , TA.SND_DTM
+		                              , TA.RSV_DTM
+		                              , TA.RD_DTM
+		                              , TA.CNTNT_HASH
+		                              , TA.FILE_HASH
+	                                  , TA.SND_NAME
+		                              <if test="rsvName!=null and !rsvName.equals('')">
+		                              , TA.RSV_NAME
+		                              </if>
+		                              , TA.SND_PLFM_ID
+		                              , TA.RSV_PLFM_ID
+		                              , TA.DCMNT_STAT
+		                              , TA.REG_DTM
+		                              , TA.PART_MM
+		                              <if test="testSndnYn!=null and !testSndnYn.equals('')">
+		                              , TA.TEST_SNDN_YN
+		                              </if>
+		                              , TA.DOC_TYPE
+		                              )
+	                           VALUES
+		                              (
+		                                MP_DCMNT_INFO_SEQ.NEXTVAL
+		                              , #{messageId}
+		                              , #{elctrcDcmntNo}
+		                              , #{elctrcDcmntSbjct}
+	                                  , #{sndCea}
+		                              <if test="rsvCea!=null and !rsvCea.equals('')">
+		                              , #{rsvCea}
+		                              </if>
+		                              , #{sndDtm}
+		                              , #{rsvDtm}
+		                              , #{rdDtm}
+		                              , #{cntntHash}
+		                              , #{fileHash}
+	                                  , #{sndName}
+		                              <if test="rsvName!=null and !rsvName.equals('')">
+		                              , #{rsvName}
+		                              </if>
+		                              , #{sndPlfmId}
+		                              , #{rsvPlfmId}
+		                              , #{dcmntStat}
+                                      , TO_CHAR(SYSDATE, 'YYYYMMDDhh24miss')
+		                              , #{partMm}
+		                              <if test="testSndnYn!=null and !testSndnYn.equals('')">
+		                              , #{testSndnYn}
+		                              </if>
+		                              , #{docType}
+		                              )
+
+        <selectKey keyProperty="dcmntInfoId,regDtm" order="AFTER" resultType="document">
+            SELECT
+                   TA.DCMNT_INFO_ID
+                 , TA.REG_DTM
+              FROM
+                   MP_DCMNT_INFO TA
+             WHERE
+		           TA.MESSAGE_ID = #{messageId}
+		       AND TA.PART_MM    = #{partMm}
+		     LIMIT 1
+        </selectKey>
+	</insert>
+
+    <select id="selectDocumentByMessageId" parameterType="document" resultType="document">
+        SELECT
+               TA.DCMNT_INFO_ID
+             , TA.MESSAGE_ID
+             , TA.ELCTRC_DCMNT_NO
+             , TA.ELCTRC_DCMNT_SBJCT
+             , TA.SND_CEA
+             , TA.RSV_CEA
+             , TA.SND_DTM
+             , TA.RSV_DTM
+             , TA.RD_DTM
+             , TA.CNTNT_HASH
+             , TA.FILE_HASH
+             , TA.SND_NAME
+             , TA.RSV_NAME
+             , TA.SND_PLFM_ID
+             , TA.RSV_PLFM_ID
+             , TA.DCMNT_STAT
+             , TA.DCMNT_RSLT
+             , TA.DCMNT_RSLT_CD
+             , TA.DCMNT_RSLT_DTM
+             , TA.REG_DTM
+             , TA.PART_MM
+             , TA.TEST_SNDN_YN
+             , TA.DOC_TYPE
+          FROM
+               MP_DCMNT_INFO TA
+         WHERE
+               TA.MESSAGE_ID = #{messageId}
+           <if test="partMm!=null and !partMm.equals('')">
+           AND TA.PART_MM    = #{partMm}
+           </if>
+         LIMIT 1
+    </select>
+
+	<update id="updateDocumentStat" parameterType="document">
+        UPDATE
+               MP_DCMNT_INFO TA
+	 	   SET
+	 	       TA.DCMNT_STAT    = #{dcmntStat}
+	 	 WHERE
+	 	       TA.PART_MM       = #{partMm}
+	 	   AND TA.DCMNT_INFO_ID = #{dcmntInfoId}    
+    	   AND TA.MESSAGE_ID    = #{messageId}
+    	 LIMIT 1
+	</update>
+
+	<update id="updateDocumentRsvDtm" parameterType="document">
+        UPDATE
+               MP_DCMNT_INFO TA
+	 	   SET
+	 	       TA.RSV_DTM = #{rsvDtm}
+	 	 WHERE
+	 	       TA.PART_MM       = #{partMm}
+	 	   AND TA.DCMNT_INFO_ID = #{dcmntInfoId}    
+    	   AND TA.MESSAGE_ID    = #{messageId}
+    	 LIMIT 1
+	</update>
+
+	<update id="updateDocumentRdDtm" parameterType="document">
+        UPDATE
+               MP_DCMNT_INFO TA
+	 	   SET
+	 	       TA.RD_DTM        = #{rdDtm}
+	 	 WHERE
+	 	       TA.PART_MM       = #{partMm}
+	 	   AND TA.DCMNT_INFO_ID = #{dcmntInfoId}    
+    	   AND TA.MESSAGE_ID    = #{messageId}
+    	 LIMIT 1
+	</update>
+
+	<update id="updateDocumentRslt" parameterType="document">
+        UPDATE
+               MP_DCMNT_INFO TA
+	 	   SET
+	 	       TA.DCMNT_STAT     = #{dcmntStat}
+	         <if test="dcmntRslt!=null">
+	         , TA.DCMNT_RSLT     = #{dcmntRslt}
+	         </if>
+	         <if test="dcmntRsltCd!=null">
+	         , TA.DCMNT_RSLT_CD  = #{dcmntRsltCd}
+	         </if>
+	         <if test="dcmntRsltDtm!=null">
+	         , TA.DCMNT_RSLT_DTM = #{dcmntRsltDtm}
+	         </if>
+	 	 WHERE
+	 	       TA.PART_MM       = #{partMm}
+    	   AND TA.DCMNT_INFO_ID = #{dcmntInfoId}
+    	   AND TA.MESSAGE_ID    = #{messageId}
+    	 LIMIT 1
+	</update>
+
+	<update id="updateDocumentRsvInfo" parameterType="document">
+        UPDATE
+               MP_DCMNT_INFO TA
+	 	   SET
+	 	       TA.RSV_CEA  = #{rsvCea}
+	 	     , TA.RSV_NAME = #{rsvName}
+	 	     <if test="rsvDtm!=null and !rsvDtm.equals('')">
+	 	     , TA.RSV_DTM  = #{rsvDtm}
+	 	     </if>
+	 	     <if test="rdDtm!=null and !rdDtm.equals('')">
+	 	     , TA.RD_DTM   = #{rdDtm}
+             </if>
+	 	 WHERE
+	 	       TA.PART_MM    = #{partMm}
+    	   AND TA.MESSAGE_ID = #{messageId}
+    	 LIMIT 1
+	</update>
+
+	<insert id="insertDocumentReqFail" parameterType="documentFail">
+        INSERT INTO MP_DCMNT_REQ_FAIL
+                                      ( 
+                                        FAIL_SEQ
+                                      , DCMNT_INFO_ID
+                                      , MESSAGE_ID
+                                      , ELCTRC_DCMNT_NO
+		     	                      <if test="elctrcDcmntSbjct!=null and !elctrcDcmntSbjct.equals('')">
+                                      , ELCTRC_DCMNT_SBJCT
+		     	                      </if>
+                                      , SND_CEA
+		     	                      <if test="rsvCea!=null and !rsvCea.equals('')">
+                                      , RSV_CEA
+		     	                      </if>
+		     	                      <if test="sndDtm!=null and !sndDtm.equals('')">
+                                      , SND_DTM
+		     	                      </if>
+		     	                      <if test="rsvDtm!=null and !rsvDtm.equals('')">
+                                      , RSV_DTM
+		     	                      </if>
+		     	                      <if test="rdDtm!=null and !rdDtm.equals('')">
+                                      , RD_DTM
+		     	                      </if>
+		     	                      <if test="cntntHash!=null and !cntntHash.equals('')">
+                                      , CNTNT_HASH
+		     	                      </if>
+		     	                      <if test="fileHash!=null and !fileHash.equals('')">
+                                      , FILE_HASH
+		     	                      </if>
+                                      , SND_NAME
+		     	                      <if test="rsvName!=null and !rsvName.equals('')">
+                                      , RSV_NAME
+		     	                      </if>
+		     	                      <if test="sndPlfmId!=null and !sndPlfmId.equals('')">
+                                      , SND_PLFM_ID
+		     	                      </if>
+		     	                      <if test="rsvPlfmId!=null and !rsvPlfmId.equals('')">
+                                      , RSV_PLFM_ID
+		     	                      </if>
+                                      , DCMNT_STAT
+		     	                      <if test="dcmntRslt!=null and !dcmntRslt.equals('')">
+                                      , DCMNT_RSLT
+		     	                      </if>
+		     	                      <if test="dcmntRsltCd!=null and !dcmntRsltCd.equals('')">
+                                      , DCMNT_RSLT_CD
+		     	                      </if>
+		     	                      <if test="dcmntRsltDtm!=null and !dcmntRsltDtm.equals('')">
+                                      , DCMNT_RSLT_DTM
+		     	                      </if>
+                                      , REG_DTM
+                                      , PART_MM
+                                      , FAIL_STRUCTURE_NAME
+                                      , FAIL_SND_CNT
+		     	                      <if test="failSndDtm!=null and !failSndDtm.equals('')">
+                                      , FAIL_SND_DTM
+		     	                      </if>
+                                      , FAIL_REG_DTM
+		     	                      <if test="testSndnYn!=null and !testSndnYn.equals('')">
+                                      , TEST_SNDN_YN
+		     	                      </if>
+		     	                      <if test="docType!=null">
+		     	                      , DOC_TYPE
+		     	                      </if>
+                                      )
+                               SELECT
+                                      MP_DCMNT_REQ_FAIL_SEQ.NEXTVAL
+                                    , CAST(#{dcmntInfoId}       AS INTEGER)
+                                    , CAST(#{messageId}         AS VARCHAR(20))
+                                    , CAST(#{elctrcDcmntNo}     AS VARCHAR(100))
+		     	                    <if test="elctrcDcmntSbjct!=null and !elctrcDcmntSbjct.equals('')">
+                                    , CAST(#{elctrcDcmntSbjct}  AS VARCHAR(100))
+		     	                    </if>
+                                    , CAST(#{sndCea}            AS VARCHAR(100))
+		     	                    <if test="rsvCea!=null and !rsvCea.equals('')">
+                                    , CAST(#{rsvCea}            AS VARCHAR(100))
+		     	                    </if>
+		     	                    <if test="sndDtm!=null and !sndDtm.equals('')">
+                                    , CAST(#{sndDtm}            AS VARCHAR(14))
+		     	                    </if>
+		     	                    <if test="rsvDtm!=null and !rsvDtm.equals('')">
+                                    , CAST(#{rsvDtm}            AS VARCHAR(14))
+		     	                    </if>
+		     	                    <if test="rdDtm!=null and !rdDtm.equals('')">
+                                    , CAST(#{rdDtm}             AS VARCHAR(14))
+		     	                    </if>
+		     	                    <if test="cntntHash!=null and !cntntHash.equals('')">
+                                    , CAST(#{cntntHash}         AS VARCHAR(500))
+		     	                    </if>
+		     	                    <if test="fileHash!=null and !fileHash.equals('')">
+                                    , CAST(#{fileHash}          AS VARCHAR(500))
+		     	                    </if>
+                                    , CAST(#{sndName}           AS VARCHAR(100))
+		     	                    <if test="rsvName!=null and !rsvName.equals('')">
+                                    , CAST(#{rsvName}           AS VARCHAR(100))
+		     	                    </if>
+		     	                    <if test="sndPlfmId!=null and !sndPlfmId.equals('')">
+                                    , CAST(#{sndPlfmId}         AS VARCHAR(25))
+		     	                    </if>
+		     	                    <if test="rsvPlfmId!=null and !rsvPlfmId.equals('')">
+                                    , CAST(#{rsvPlfmId}         AS VARCHAR(25))
+		     	                    </if>
+                                    , CAST(#{dcmntStat}         AS VARCHAR(1))
+		     	                    <if test="dcmntRslt!=null and !dcmntRslt.equals('')">
+                                    , CAST(#{dcmntRslt}         AS VARCHAR(1))
+		     	                    </if>
+		     	                    <if test="dcmntRsltCd!=null and !dcmntRsltCd.equals('')">
+                                    , CAST(#{dcmntRsltCd}       AS VARCHAR(2))
+		     	                    </if>
+		     	                    <if test="dcmntRsltDtm!=null and !dcmntRsltDtm.equals('')">
+                                    , CAST(#{dcmntRsltDtm}      AS VARCHAR(14))
+		     	                    </if>
+                                    , CAST(#{regDtm}            AS VARCHAR(14))
+                                    , CAST(#{partMm}            AS VARCHAR(2))
+                                    , CAST(#{failStructureName} AS VARCHAR(50))
+                                    , CAST(#{failSndCnt}        AS INTEGER)
+		     	                    <if test="failSndDtm!=null and !failSndDtm.equals('')">
+                                    , CAST(#{failSndDtm}        AS VARCHAR(14))
+		     	                    </if>
+                                    , CAST(#{failRegDtm}        AS VARCHAR(14))
+		     	                    <if test="testSndnYn!=null and !testSndnYn.equals('')">
+                                    , CAST(#{testSndnYn}        AS VARCHAR(1))
+		     	                    </if>
+		     	                    <if test="docType!=null">
+		     	                    , CAST(#{docType}           AS INTEGER)
+		     	                    </if>
+                               FROM
+                                    DUAL
+                              WHERE
+                                    NOT EXISTS (
+                                                 SELECT
+                                                        1
+                                                   FROM 
+                                                        MP_DCMNT_REQ_FAIL TA
+                                                  WHERE
+                                                        TA.MESSAGE_ID = #{messageId}
+                                                    AND TA.DCMNT_STAT = #{dcmntStat}
+                                                  LIMIT 1
+                                               )
+
+        <selectKey keyProperty="failSeq" order="AFTER" resultType="long">
+            SELECT
+                   TA.FAIL_SEQ
+              FROM 
+                   MP_DCMNT_REQ_FAIL TA
+             WHERE
+                   TA.MESSAGE_ID = #{messageId}
+               AND TA.DCMNT_STAT = #{dcmntStat}
+             LIMIT 1
+        </selectKey>
+	</insert>
+
+	<select id="selectDocumentReqFailForFixRsvDtmFromDtm" parameterType="map" resultType="documentFail">
+        SELECT TA.FAIL_SEQ
+             , TA.DCMNT_INFO_ID
+             , TA.MESSAGE_ID
+             , TA.SND_DTM
+             , TA.RSV_DTM
+             , TA.RD_DTM
+             , TA.PART_MM
+          FROM (
+                 SELECT
+                        DECODE(TAA.DCMNT_RSLT_CD, '05', TAA.FAIL_SEQ, TAB.FAIL_SEQ)    AS FAIL_SEQ
+                      , TAA.DCMNT_INFO_ID                                              AS DCMNT_INFO_ID
+                      , TAA.MESSAGE_ID                                                 AS MESSAGE_ID
+                      , DECODE(TAA.DCMNT_RSLT_CD, '05', TAA.SND_DTM, TAB.SND_DTM)      AS SND_DTM
+                      , DECODE(TAA.DCMNT_RSLT_CD, '05', TAA.RSV_DTM, TAB.RSV_DTM)      AS RSV_DTM
+                      , DECODE(TAA.DCMNT_RSLT_CD, '05', TAB.RD_DTM, TAA.RD_DTM)        AS RD_DTM
+                      , DECODE(TAA.DCMNT_RSLT_CD, '05', TAA.PART_MM, TAB.PART_MM)      AS PART_MM
+                   FROM
+                        MP_DCMNT_REQ_FAIL TAA
+                      , MP_DCMNT_REQ_FAIL TAB
+                  WHERE
+                        TAA.MESSAGE_ID = TAB.MESSAGE_ID
+                    AND TAA.DCMNT_STAT != TAB.DCMNT_STAT
+                    AND TAA.FAIL_REG_DTM BETWEEN #{start} AND #{end}
+                    AND (TAA.DCMNT_RSLT_CD = '05' OR TAB.DCMNT_RSLT_CD = '05')
+                    AND NVL(TAA.RSV_DTM, TAB.RSV_DTM) != NVL(TAA.RD_DTM, TAB.RD_DTM) 
+                 UNION
+                 SELECT
+                        TAA.FAIL_SEQ         AS FAIL_SEQ
+                      , TAA.DCMNT_INFO_ID    AS DCMNT_INFO_ID
+                      , TAA.MESSAGE_ID       AS MESSAGE_ID
+                      , TAA.SND_DTM          AS SND_DTM
+                      , TAA.RSV_DTM          AS RSV_DTM
+                      , TAA.RD_DTM           AS RD_DTM
+                      , TAA.PART_MM          AS PART_MM
+                   FROM
+                        MP_DCMNT_REQ_FAIL TAA
+                  WHERE
+                        TAA.FAIL_REG_DTM BETWEEN #{start} AND #{end}
+                    AND TAA.DCMNT_STAT = 'H'
+                    AND TAA.DCMNT_RSLT_CD = '05'
+                    AND TAA.RSV_DTM != TAA.RD_DTM
+               ) TA
+        ORDER BY TA.FAIL_SEQ ASC
+        LIMIT #{limit} 
+	</select>
+
+	<select id="selectDocumentReqFailForFixRsvDtmFromSeq" parameterType="map" resultType="documentFail">
+        SELECT TA.FAIL_SEQ
+             , TA.DCMNT_INFO_ID
+             , TA.MESSAGE_ID
+             , TA.SND_DTM
+             , TA.RSV_DTM
+             , TA.RD_DTM
+             , TA.PART_MM
+          FROM (
+                 SELECT
+                        DECODE(TAA.DCMNT_RSLT_CD, '05', TAA.FAIL_SEQ, TAB.FAIL_SEQ)    AS FAIL_SEQ
+                      , TAA.DCMNT_INFO_ID                                              AS DCMNT_INFO_ID
+                      , TAA.MESSAGE_ID                                                 AS MESSAGE_ID
+                      , DECODE(TAA.DCMNT_RSLT_CD, '05', TAA.SND_DTM, TAB.SND_DTM)      AS SND_DTM
+                      , DECODE(TAA.DCMNT_RSLT_CD, '05', TAA.RSV_DTM, TAB.RSV_DTM)      AS RSV_DTM
+                      , DECODE(TAA.DCMNT_RSLT_CD, '05', TAB.RD_DTM, TAA.RD_DTM)        AS RD_DTM
+                      , DECODE(TAA.DCMNT_RSLT_CD, '05', TAA.PART_MM, TAB.PART_MM)      AS PART_MM
+                   FROM
+                        MP_DCMNT_REQ_FAIL TAA
+                      , MP_DCMNT_REQ_FAIL TAB
+                  WHERE
+                        TAA.MESSAGE_ID  = TAB.MESSAGE_ID
+                    AND TAA.DCMNT_STAT != TAB.DCMNT_STAT
+                    AND TAA.FAIL_SEQ IN
+                                        <foreach collection="failSeq" item="value" index="idx" open="(" close=")" separator=", ">
+                                        #{value}
+                                        </foreach>
+                    AND (TAA.DCMNT_RSLT_CD = '05' OR TAB.DCMNT_RSLT_CD = '05')
+                    AND NVL(TAA.RSV_DTM, TAB.RSV_DTM) != NVL(TAA.RD_DTM, TAB.RD_DTM)
+                 UNION
+                 SELECT
+                        TAA.FAIL_SEQ         AS FAIL_SEQ
+                      , TAA.DCMNT_INFO_ID    AS DCMNT_INFO_ID
+                      , TAA.MESSAGE_ID       AS MESSAGE_ID
+                      , TAA.SND_DTM          AS SND_DTM
+                      , TAA.RSV_DTM          AS RSV_DTM
+                      , TAA.RD_DTM           AS RD_DTM
+                      , TAA.PART_MM          AS PART_MM
+                   FROM
+                        MP_DCMNT_REQ_FAIL TAA
+                  WHERE
+                        TAA.FAIL_SEQ IN
+                                        <foreach collection="failSeq" item="value" index="idx" open="(" close=")" separator=", ">
+                                        #{value}
+                                        </foreach>
+                    AND TAA.DCMNT_STAT = 'H'
+                    AND TAA.DCMNT_RSLT_CD = '05'
+                    AND TAA.RSV_DTM != TAA.RD_DTM
+               ) TA
+        ORDER BY TA.FAIL_SEQ ASC
+        LIMIT #{limit} 
+	</select>
+
+	<select id="selectDocumentReqFailFromDtm" parameterType="map" resultType="documentFail">
+        SELECT
+               TA.FAIL_SEQ
+             , TA.DCMNT_INFO_ID
+             , TA.MESSAGE_ID
+             , TA.ELCTRC_DCMNT_NO
+             , TA.ELCTRC_DCMNT_SBJCT
+             , TA.SND_CEA
+             , TA.RSV_CEA
+             , TA.SND_DTM
+             , TA.RSV_DTM
+             , TA.RD_DTM
+             , TA.CNTNT_HASH
+             , TA.FILE_HASH
+             , TA.SND_NAME
+             , TA.RSV_NAME
+             , TA.SND_PLFM_ID
+             , TA.RSV_PLFM_ID
+             , TA.DCMNT_STAT
+             , TA.DCMNT_RSLT
+             , TA.DCMNT_RSLT_CD
+             , TA.DCMNT_RSLT_DTM
+             , TA.REG_DTM
+             , TA.PART_MM
+             , TA.FAIL_STRUCTURE_NAME
+             , TA.FAIL_SND_CNT
+             , TA.FAIL_SND_DTM
+             , TA.FAIL_REG_DTM
+             , TA.TEST_SNDN_YN
+             , TA.DOC_TYPE
+          FROM
+               MP_DCMNT_REQ_FAIL TA
+         WHERE
+               TA.FAIL_REG_DTM BETWEEN #{start} AND #{end}
+           AND NVL(TA.FAIL_SND_DTM, '*') != #{failSndDtm}
+        <if test="stat!=null and !stat.equals('')">
+           AND TA.DCMNT_STAT IN
+                                <foreach collection="stat" item="value" index="idx" open="(" close=")" separator=", ">
+                                #{value}
+                                </foreach>
+        </if>
+        <choose>
+        <when test="dcmntRsltCd!=null and dcmntRsltCd.equals('99')">
+           AND NVL(TA.DCMNT_RSLT_CD, '*')  = '99'
+        </when>
+        <otherwise>
+           AND NVL(TA.DCMNT_RSLT_CD, '*') NOT IN('01', '99')
+        </otherwise>
+        </choose>
+         ORDER BY TA.FAIL_SEQ ASC
+         LIMIT #{limit} 
+	</select>
+
+	<select id="selectDocumentReqFailFromSeq" parameterType="map" resultType="documentFail">
+        SELECT
+               TA.FAIL_SEQ
+             , TA.DCMNT_INFO_ID
+             , TA.MESSAGE_ID
+             , TA.ELCTRC_DCMNT_NO
+             , TA.ELCTRC_DCMNT_SBJCT
+             , TA.SND_CEA
+             , TA.RSV_CEA
+             , TA.SND_DTM
+             , TA.RSV_DTM
+             , TA.RD_DTM
+             , TA.CNTNT_HASH
+             , TA.FILE_HASH
+             , TA.SND_NAME
+             , TA.RSV_NAME
+             , TA.SND_PLFM_ID
+             , TA.RSV_PLFM_ID
+             , TA.DCMNT_STAT
+             , TA.DCMNT_RSLT
+             , TA.DCMNT_RSLT_CD
+             , TA.DCMNT_RSLT_DTM
+             , TA.REG_DTM
+             , TA.PART_MM
+             , TA.FAIL_STRUCTURE_NAME
+             , TA.FAIL_SND_CNT
+             , TA.FAIL_SND_DTM
+             , TA.FAIL_REG_DTM
+             , TA.TEST_SNDN_YN
+             , TA.DOC_TYPE
+          FROM
+               MP_DCMNT_REQ_FAIL TA
+         WHERE TA.FAIL_SEQ IN
+                             <foreach collection="failSeq" item="value" index="idx" open="(" close=")" separator=", ">
+                              #{value}
+                             </foreach>
+           AND NVL(TA.DCMNT_RSLT_CD, '*') != '01'
+         ORDER BY TA.FAIL_SEQ ASC
+         LIMIT #{limit}
+	</select>
+
+	<update id="updateDocumentReqFail" parameterType="documentFail">
+        UPDATE
+               MP_DCMNT_REQ_FAIL TA
+	 	   SET
+	 	       TA.FAIL_SND_CNT = #{failSndCnt}
+	 	     , TA.FAIL_SND_DTM = #{failSndDtm}
+	 	 WHERE
+	 	       TA.FAIL_SEQ = #{failSeq}
+    	 LIMIT 1
+	</update>
+
+	<update id="updateDocumentReqfailRsvDtm" parameterType="documentFail">
+        UPDATE
+               MP_DCMNT_REQ_FAIL TA
+	 	   SET
+	 	       TA.RSV_DTM = #{rsvDtm}
+	 	 WHERE
+	 	       TA.FAIL_SEQ = #{failSeq}
+    	 LIMIT 1
+	</update>
+
+	<delete id="deleteDocumentReqFail" parameterType="document">
+		DELETE
+               MP_DCMNT_REQ_FAIL 
+		 WHERE
+               MESSAGE_ID = #{messageId}
+           AND DCMNT_STAT = #{dcmntStat}
+         LIMIT 1
+	</delete>
+
+</mapper>

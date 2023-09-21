@@ -1,0 +1,38 @@
+package com.example.mp.gw.bc.exception;
+
+
+/**
+ * @Class Name : NotExistAccessTokenException.java
+ * @Description : BizCenter 토큰 오류
+ * 
+ * @author 조주현
+ * @since 2021.12.18
+ * @version 1.0
+ * @see
+ *
+ * <pre>
+ * << 개정이력(Modification Information) >>
+ * 
+ *   수정일			수정자          수정내용
+ *  -----------  -------------    ---------------------------
+ *  2021.12.18	    조주현          최초 생성
+ * 
+ *  </pre>
+ * 
+ */
+
+
+public class NotExistAccessTokenToBcException extends RuntimeException
+{
+	private static final long serialVersionUID = 6275434587447680047L;
+
+	public NotExistAccessTokenToBcException()
+	{
+		super("Biz-center Access Token 값이 없습니다");
+	}
+
+	public NotExistAccessTokenToBcException(Throwable cause)
+	{
+		super(cause);
+	}
+}

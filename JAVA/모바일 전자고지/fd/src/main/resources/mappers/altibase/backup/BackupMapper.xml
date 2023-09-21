@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uplus.mp.gw.backup.mappers.altibase.BackupMapper">
+
+    <insert id="insertBackupPmMsg" parameterType="map">
+        INSERT INTO ${insertTable}
+                    (
+                      MSGKEY
+                    , CI
+                    , SVC_ORG_CD
+                    , SVC_ORG_NM
+                    , MESSAGE_ID
+                    , TRANS_DT
+                    , PHONE
+                    , CALLBACK
+                    , SEND_STAT
+                    , MSG_TYPE
+                    , MSG
+                    , MMS_IMG_SIZE
+                    , SMRTP_YN
+                    , REG_DT
+                    , NCAS_DT
+                    , GW_SND_RSLT_CD
+                    , GW_SND_RSLT_DESC
+                    , GW_SND_RSLT_DT
+                    , GW_RPT_RSLT_CD
+                    , GW_RPT_RSLT_DESC
+                    , GW_RPT_RSLT_DT
+                    , BC_SND_RSLT_CD
+                    , BC_RPT_RSLT_CD
+                    , END_DT
+                    , CN_FORM
+                    , MSG_TITLE
+                    , OPT_TYPE
+                    , RCS_BR_ID
+                    , RCS_FALLBACK_TYPE
+                    , RCS_FALLBACK_SND_YN
+                    , RCS_FALLBACK_RSLT
+                    , RCS_FALLBACK_SND_DT
+                    , RCS_FALLBACK_RPT_DT
+                    , CN_KEY
+                    , REDIRECT_URL
+                    , TKN_RPMT_YN
+                    , RDNG_RPMT_YN
+                    , DCMNT_INFO_ID
+                    , EXPIRE_DT
+                    , RCS_AGENCY_ID
+                    , RCS_TYPE
+                    , SND_PLFM_ID
+                    , SND_NPOST
+                    , SND_DATE
+                    , RCS_ATTACH_ID
+                    , PART_MM
+                    , DOC_HASH
+                    , TEST_SNDN_YN
+                    , MULTI_MBL_PRC_TYPE
+                    , RCS_MSG
+                    , CLICK_DT
+                    , DIST_INFO_CRT_YN
+                    , INFO_CFRM_STR
+                    , RCVE_RF_STR
+                    , REOPEN_DAY
+                    , KISA_DOC_TYPE
+                    , BC_RPT_SUCC_CD
+                    , MDN
+                    )
+        SELECT
+               TA.MSGKEY
+             , TA.CI
+             , TA.SVC_ORG_CD
+             , TA.SVC_ORG_NM
+             , TA.MESSAGE_ID
+             , TA.TRANS_DT
+             , TA.PHONE
+             , TA.CALLBACK
+             , TA.SEND_STAT
+             , TA.MSG_TYPE
+             , TA.MSG
+             , TA.MMS_IMG_SIZE
+             , TA.SMRTP_YN
+             , TA.REG_DT
+             , TA.NCAS_DT
+             , TA.GW_SND_RSLT_CD
+             , TA.GW_SND_RSLT_DESC
+             , TA.GW_SND_RSLT_DT
+             , TA.GW_RPT_RSLT_CD
+             , TA.GW_RPT_RSLT_DESC
+             , TA.GW_RPT_RSLT_DT
+             , TA.BC_SND_RSLT_CD
+             , TA.BC_RPT_RSLT_CD
+             , TA.END_DT
+             , TA.CN_FORM
+             , TA.MSG_TITLE
+             , TA.OPT_TYPE
+             , TA.RCS_BR_ID
+             , TA.RCS_FALLBACK_TYPE
+             , TA.RCS_FALLBACK_SND_YN
+             , TA.RCS_FALLBACK_RSLT
+             , TA.RCS_FALLBACK_SND_DT
+             , TA.RCS_FALLBACK_RPT_DT
+             , TA.CN_KEY
+             , TA.REDIRECT_URL
+             , TA.TKN_RPMT_YN
+             , TA.RDNG_RPMT_YN
+             , TA.DCMNT_INFO_ID
+             , TA.EXPIRE_DT
+             , TA.RCS_AGENCY_ID
+             , TA.RCS_TYPE
+             , TA.SND_PLFM_ID
+             , TA.SND_NPOST
+             , TA.SND_DATE
+             , TA.RCS_ATTACH_ID
+             , TA.PART_MM
+             , TA.DOC_HASH
+             , TA.TEST_SNDN_YN
+             , TA.MULTI_MBL_PRC_TYPE
+             , TA.RCS_MSG
+             , TA.CLICK_DT
+             , TA.DIST_INFO_CRT_YN
+             , TA.INFO_CFRM_STR
+             , TA.RCVE_RF_STR
+             , TA.REOPEN_DAY
+             , TA.KISA_DOC_TYPE
+             , TA.BC_RPT_SUCC_CD
+             , TA.MDN
+        FROM MPS.PM_MSG TA
+       WHERE TA.PART_MM = #{partMm}
+         AND SUBSTR(TA.REG_DT, 1, 8) = #{regDt}
+    </insert>
+
+	<delete id="deletePmMsg" parameterType="map">
+		DELETE
+          FROM ${deleteTable} TA
+         WHERE TA.PART_MM = #{partMm}
+           AND SUBSTR(TA.REG_DT, 1, 8) = #{regDt}
+	</delete>
+
+    <insert id="insertBackupMpDcmntInfo" parameterType="map">
+        INSERT INTO ${insertTable}
+                    (
+                      DCMNT_INFO_ID
+                    , MESSAGE_ID
+                    , ELCTRC_DCMNT_NO
+                    , ELCTRC_DCMNT_SBJCT
+                    , SND_CEA
+                    , RSV_CEA
+                    , SND_DTM
+                    , RSV_DTM
+                    , RD_DTM
+                    , CNTNT_HASH
+                    , FILE_HASH
+                    , SND_NAME
+                    , RSV_NAME
+                    , SND_PLFM_ID
+                    , RSV_PLFM_ID
+                    , DCMNT_STAT
+                    , DCMNT_RSLT
+                    , DCMNT_RSLT_CD
+                    , DCMNT_RSLT_DTM
+                    , REG_DTM
+                    , PART_MM
+                    , TEST_SNDN_YN
+                    , DOC_TYPE
+                    )
+        SELECT
+               TA.DCMNT_INFO_ID
+             , TA.MESSAGE_ID
+             , TA.ELCTRC_DCMNT_NO
+             , TA.ELCTRC_DCMNT_SBJCT
+             , TA.SND_CEA
+             , TA.RSV_CEA
+             , TA.SND_DTM
+             , TA.RSV_DTM
+             , TA.RD_DTM
+             , TA.CNTNT_HASH
+             , TA.FILE_HASH
+             , TA.SND_NAME
+             , TA.RSV_NAME
+             , TA.SND_PLFM_ID
+             , TA.RSV_PLFM_ID
+             , TA.DCMNT_STAT
+             , TA.DCMNT_RSLT
+             , TA.DCMNT_RSLT_CD
+             , TA.DCMNT_RSLT_DTM
+             , TA.REG_DTM
+             , TA.PART_MM
+             , TA.TEST_SNDN_YN
+             , TA.DOC_TYPE
+          FROM MPS.MP_DCMNT_INFO TA
+             , MPS.PM_MSG        TB
+         WHERE TA.PART_MM    = #{partMm}
+           AND TB.PART_MM    = #{partMm}
+           AND TA.PART_MM    = TB.PART_MM
+           AND TA.MESSAGE_ID = TB.MESSAGE_ID
+           AND SUBSTR(TB.REG_DT, 1, 8) = #{regDt}
+    </insert>
+
+	<delete id="deleteMpDcmntInfo" parameterType="map">
+		DELETE
+          FROM ${deleteTable} TA
+         WHERE TA.PART_MM = #{partMm}
+           AND EXISTS (SELECT 1
+                         FROM PM_MSG TB
+                        WHERE TB.PART_MM    = #{partMm}
+                          AND TA.PART_MM    = TB.PART_MM
+                          AND TA.MESSAGE_ID = TB.MESSAGE_ID
+                          AND SUBSTR(TB.REG_DT, 1, 8) = #{regDt}
+                      )
+	</delete>
+
+	<delete id="deletePmRemindMsg" parameterType="map">
+		DELETE
+          FROM ${deleteTable} TA
+         WHERE TA.PART_MM = #{partMm}
+           AND SUBSTR(TA.REG_DT, 1, 8) = #{regDt}
+	</delete>
+
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.domain.UserMapper">
+
+	<resultMap id="userMap" type="java.util.Map">
+		<result column="num" property="num"/>
+		<result column="id"  property="id" />
+		<result column="pwd" property="pwd"/>
+	</resultMap>
+
+    <select id="selectUser" parameterType="Integer" resultMap="com.example.domain.UserMapper.userMap">
+        SELECT num
+             , id
+             , pwd
+          FROM user
+         <if test = "num != null">
+         WHERE num = #{num}
+         </if>
+    </select>
+
+    <insert id="insertUser" parameterType="com.example.domain.UserDto">
+        INSERT
+          INTO user
+               ( id
+               , pwd
+               )
+        VALUES ( #{id}
+               , #{pwd}
+               )
+    </insert>
+    
+    <update id="updateUser" parameterType="java.util.Map">
+        UPDATE user
+           SET num = #{num}
+           <if test = "id != null">
+             , id  = #{id}
+           </if>
+           <if test = "pwd != null">
+             , pwd = #{pwd}
+           </if>
+         WHERE num = #{num}
+    </update>
+
+    <delete id="deleteUser" parameterType="Integer">
+        DELETE 
+          FROM user
+         WHERE num = #{num}
+    </delete>
+    
+</mapper>

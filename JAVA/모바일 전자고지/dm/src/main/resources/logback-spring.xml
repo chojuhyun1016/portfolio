@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+
+	<include resource="org/springframework/boot/logging/logback/base.xml" />
+
+	<springProfile name="dev">
+	 	<property name="DEFAULT_LOG_FILE" value="/data1/mplus/mps/was/dm/logs/dm.log"/>
+	 	<property name="ERROR_LOG_FILE" value="/data1/mplus/mps/was/dm/logs/error_dm.log"/>
+
+		<property name="MAINTAIN_LOG_FILE" value="/data1/mplus/mps/was/dm/logs/mt.log"/>
+	 	<property name="MEMBER_LOG_FILE" value="/data1/mplus/mps/was/dm/logs/member.log"/>
+		<property name="MESSAGE_LOG_FILE" value="/data1/mplus/mps/was/dm/logs/message.log"/>
+		<property name="BIZCENTER_LOG_FILE" value="/data1/mplus/mps/was/dm/logs/bc.log"/>
+	 	<property name="KISA_LOG_FILE" value="/data1/mplus/mps/was/dm/logs/kisa.log"/>
+	 	<property name="DOCUMENT_LOG_FILE" value="/data1/mplus/mps/was/dm/logs/document.log"/>
+	</springProfile>
+
+	<springProfile name="!dev">
+	 	<property name="DEFAULT_LOG_FILE" value="/data2/mps/logs/dm/dm.log"/>
+	 	<property name="ERROR_LOG_FILE" value="/data2/mps/logs/dm/error_dm.log"/>
+
+		<property name="MAINTAIN_LOG_FILE" value="/data2/mps/logs/dm/mt.log"/>	
+	 	<property name="MEMBER_LOG_FILE" value="/data2/mps/logs/dm/member.log"/>
+		<property name="MESSAGE_LOG_FILE" value="/data2/mps/logs/dm/message.log"/>
+		<property name="BIZCENTER_LOG_FILE" value="/data2/mps/logs/dm/bc.log"/>
+	 	<property name="KISA_LOG_FILE" value="/data2/mps/logs/dm/kisa.log"/>
+	 	<property name="DOCUMENT_LOG_FILE" value="/data2/mps/logs/dm/document.log"/>
+	</springProfile>
+
+	<property name="STDOUT_LOG_PATTERN" value="%d{HH:mm:ss.SSS} %clr(%-5level) %clr(${PID:- }){magenta} %clr([%t]){faint} %clr([%X{traceId}]){faint} %clr(%-30logger{30}){cyan} %clr(:){faint} %m%n%wEx" />
+	<property name="FILE_LOG_PATTERN" value="%d{HH:mm:ss.SSS} %clr(%-5level) %clr(${PID:- }){magenta} %clr([%t]){faint} %clr([%X{traceId}]){faint} %clr(%-30logger{30}){cyan} %clr(:){faint} %m%n%wEx" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${STDOUT_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="DEFAULT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <file>${DEFAULT_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+	                <maxFileSize>100MB</maxFileSize>
+	            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+	</appender>
+
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${ERROR_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${ERROR_LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+	                <maxFileSize>100MB</maxFileSize>
+	            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+	</appender>
+
+    <appender name="MAINTAIN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <file>${MAINTAIN_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${MAINTAIN_LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+	                <maxFileSize>100MB</maxFileSize>
+	            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+	</appender>
+
+    <appender name="MEMBER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <file>${MEMBER_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${MEMBER_LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+	                <maxFileSize>100MB</maxFileSize>
+	            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+	</appender>
+
+    <appender name="MESSAGE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <file>${MESSAGE_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${MESSAGE_LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+	                <maxFileSize>100MB</maxFileSize>
+	            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+	</appender>
+
+    <appender name="BIZCENTER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <file>${BIZCENTER_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${BIZCENTER_LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+	                <maxFileSize>100MB</maxFileSize>
+	            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+	</appender>
+
+    <appender name="KISA" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <file>${KISA_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${KISA_LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+	                <maxFileSize>100MB</maxFileSize>
+	            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+	</appender>
+
+    <appender name="DOCUMENT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <file>${DOCUMENT_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DOCUMENT_LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+	                <maxFileSize>100MB</maxFileSize>
+	            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+        </rollingPolicy>
+	</appender>
+
+	<logger name="com.uplus.mp.gw.maintain" level="INFO" additivity="false">
+		<springProfile name="dev">
+			<appender-ref ref="DEFAULT" />
+		</springProfile>
+
+		<springProfile name="!dev">
+			<appender-ref ref="MAINTAIN" />
+		</springProfile>
+
+		<appender-ref ref="ERROR"/>
+	</logger>
+
+	<logger name="com.uplus.mp.gw.member" level="INFO" additivity="false">
+		<springProfile name="dev">
+			<appender-ref ref="DEFAULT" />
+		</springProfile>
+
+		<springProfile name="!dev">
+			<appender-ref ref="MEMBER" />
+		</springProfile>
+
+		<appender-ref ref="ERROR"/>
+	</logger>
+
+	<logger name="com.uplus.mp.gw.ms" level="INFO" additivity="false">
+		<springProfile name="dev">
+			<appender-ref ref="DEFAULT" />
+		</springProfile>
+
+		<springProfile name="!dev">
+			<appender-ref ref="MESSAGE" />
+		</springProfile>		
+
+		<appender-ref ref="ERROR"/>
+	</logger>
+
+	<logger name="com.uplus.mp.gw.bc" level="INFO" additivity="false">
+		<springProfile name="dev">
+			<appender-ref ref="DEFAULT" />
+		</springProfile>
+
+		<springProfile name="!dev">
+			<appender-ref ref="BIZCENTER" />
+		</springProfile>
+
+		<appender-ref ref="ERROR"/>
+	</logger>
+
+	<logger name="com.uplus.mp.gw.kisa" level="INFO" additivity="false">
+		<springProfile name="dev">
+			<appender-ref ref="DEFAULT" />
+		</springProfile>
+
+		<springProfile name="!dev">
+			<appender-ref ref="KISA" />
+		</springProfile>
+
+		<appender-ref ref="ERROR"/>
+	</logger>
+
+	<logger name="com.uplus.mp.gw.doc" level="INFO" additivity="false">
+		<springProfile name="dev">
+			<appender-ref ref="DEFAULT" />
+		</springProfile>
+
+		<springProfile name="!dev">
+			<appender-ref ref="DOCUMENT" />
+		</springProfile>
+
+		<appender-ref ref="ERROR"/>
+	</logger>
+
+    <root>
+        <appender-ref ref="DEFAULT"/>
+        <appender-ref ref="ERROR"/>
+    </root>
+
+</configuration>

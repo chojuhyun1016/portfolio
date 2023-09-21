@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uplus.mp.gw.statistics.mappers.altibase.StatMapper">
+
+    <select id="getdata" parameterType="string" resultType="string">
+        SELECT
+        SUCC_CNT
+        FROM MP_STAT_INFO
+        WHERE
+        YMD = #{ymd}
+        AND MSG_TYPE = #{msgType}
+        AND GUBUN = #{gubun}
+    </select>
+
+    <insert id="insert_stat" parameterType="MpStatInfo">
+        INSERT INTO MP_STAT_INFO
+        (
+        YMD
+        , MSG_TYPE
+        , GUBUN
+        , SUCC_CNT
+        , TOT_CNT
+        ) VALUES
+        (
+        #{ymd}
+        , #{msgType}
+        , #{gubun}
+        , #{succCnt}
+        , #{totCnt}
+        )
+    </insert>
+
+    <update id="update_stat" parameterType="MpStatInfo">
+        UPDATE MP_STAT_INFO
+        SET
+        SUCC_CNT = #{succCnt} + 1
+        , TOT_CNT = #{totCnt} + 1
+        WHERE
+        YMD = #{ymd}
+        AND MSG_TYPE = #{msgType}
+        AND GUBUN = #{gubun}
+    </update>
+
+    <update id="update_fail_stat" parameterType="MpStatInfo">
+        UPDATE MP_STAT_INFO
+        SET
+        SUCC_CNT = #{succCnt}
+        , TOT_CNT = #{totCnt} + 1
+        WHERE
+        YMD = #{ymd}
+        AND MSG_TYPE = #{msgType}
+        AND GUBUN = #{gubun}
+    </update>
+
+
+
+    <insert id="merge_into_succ_stat" parameterType="MpStatInfo">
+        MERGE INTO MP_STAT_INFO TA
+        USING DUAL
+        ON TA.YMD = #{ymd}
+        AND TA.MSG_TYPE = #{msgType}
+        AND TA.GUBUN = #{gubun}
+        WHEN MATCHED THEN
+        UPDATE SET
+        TA.SUCC_CNT   = TA.SUCC_CNT + 1
+        , TA.TOT_CNT  = TA.TOT_CNT + 1
+        WHEN NOT MATCHED THEN
+        INSERT
+        (
+        TA.YMD
+        , TA.MSG_TYPE
+        , TA.GUBUN
+        , TA.SUCC_CNT
+        , TA.TOT_CNT
+        )
+        VALUES
+        (
+        #{ymd}
+        , #{msgType}
+        , #{gubun}
+        , 1
+        , 1
+        )
+    </insert>
+
+    <insert id="merge_into_fail_stat" parameterType="MpStatInfo">
+        MERGE INTO MP_STAT_INFO TA
+        USING DUAL
+        ON TA.YMD = #{ymd}
+        AND TA.MSG_TYPE = #{msgType}
+        AND TA.GUBUN = #{gubun}
+        WHEN MATCHED THEN
+        UPDATE SET
+        TA.FAIL_CNT  = TA.FAIL_CNT + 1
+        ,TA.TOT_CNT  = TA.TOT_CNT + 1
+        WHEN NOT MATCHED THEN
+        INSERT
+        (
+        TA.YMD
+        , TA.MSG_TYPE
+        , TA.GUBUN
+        , TA.FAIL_CNT
+        , TA.SUCC_CNT
+        , TA.TOT_CNT
+        )
+        VALUES
+        (
+        #{ymd}
+        , #{msgType}
+        , #{gubun}
+        , 1
+        , 0
+        , 1
+        )
+    </insert>
+
+
+
+</mapper>

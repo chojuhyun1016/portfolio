@@ -1,0 +1,10 @@
+
+spring:
+  config:
+    activate:
+      on-profile: append_test
+    
+    
+append:
+  ip: 127.0.0.2
+  port : 7003

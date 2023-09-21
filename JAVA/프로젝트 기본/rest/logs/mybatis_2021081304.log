@@ -1,0 +1,209 @@
+2021/08/13 16:29:31,183 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 14456 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/13 16:29:31,196 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/13 16:29:32,532 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/13 16:29:32,543 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/13 16:29:32,544 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/13 16:29:32,551 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/13 16:29:32,738 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/13 16:29:32,739 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1481 ms
+2021/08/13 16:29:32,802 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/13 16:29:33,035 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/13 16:29:33,080 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 17 msec}
+2021/08/13 16:29:33,083 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/13 16:29:33,092 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/13 16:29:33,866 [WARN] [org.springframework.context.support.AbstractApplicationContext] [main]- Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceScriptDatabaseInitializer' defined in class path resource [org/springframework/boot/autoconfigure/sql/init/DataSourceInitializationConfiguration.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: No schema scripts found at location 'classpath:/src/main/resources/schema.sql'
+2021/08/13 16:29:33,868 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown initiated...
+2021/08/13 16:29:33,882 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown completed.
+2021/08/13 16:29:33,886 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Stopping service [Tomcat]
+2021/08/13 16:29:33,906 [INFO] [org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener] [main]- 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2021/08/13 16:29:33,930 [ERROR] [org.springframework.boot.SpringApplication] [main]- Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceScriptDatabaseInitializer' defined in class path resource [org/springframework/boot/autoconfigure/sql/init/DataSourceInitializationConfiguration.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: No schema scripts found at location 'classpath:/src/main/resources/schema.sql'
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1786) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:602) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:524) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:322) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:944) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:918) ~[spring-context-5.3.9.jar:5.3.9]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:583) ~[spring-context-5.3.9.jar:5.3.9]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:338) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1343) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1332) [spring-boot-2.5.3.jar:2.5.3]
+	at com.example.RestApplication.main(RestApplication.java:23) [classes/:?]
+Caused by: java.lang.IllegalStateException: No schema scripts found at location 'classpath:/src/main/resources/schema.sql'
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.getScripts(AbstractScriptDatabaseInitializer.java:128) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.applyScripts(AbstractScriptDatabaseInitializer.java:105) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.applySchemaScripts(AbstractScriptDatabaseInitializer.java:97) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.initializeDatabase(AbstractScriptDatabaseInitializer.java:75) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.afterPropertiesSet(AbstractScriptDatabaseInitializer.java:65) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1845) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1782) ~[spring-beans-5.3.9.jar:5.3.9]
+	... 18 more
+2021/08/13 16:30:11,444 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 20504 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/13 16:30:11,458 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/13 16:30:12,736 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/13 16:30:12,756 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/13 16:30:12,757 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/13 16:30:12,757 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/13 16:30:12,920 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/13 16:30:12,920 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1421 ms
+2021/08/13 16:30:12,968 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/13 16:30:13,174 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/13 16:30:13,206 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 14 msec}
+2021/08/13 16:30:13,209 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/13 16:30:13,218 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/13 16:30:13,956 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/13 16:30:13,987 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/13 16:30:14,006 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.151 seconds (JVM running for 4.724)
+2021/08/13 16:30:14,008 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/13 16:30:14,008 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/13 16:30:14,009 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/13 16:30:14,009 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/13 16:30:14,009 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/13 16:30:18,854 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(7)-127.0.0.1]- Application shutdown requested.
+2021/08/13 16:30:19,093 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(7)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/13 16:30:19,096 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(7)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/13 16:42:41,969 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 23724 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/13 16:42:41,977 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/13 16:42:43,193 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/13 16:42:43,204 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/13 16:42:43,205 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/13 16:42:43,205 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/13 16:42:43,373 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/13 16:42:43,373 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1343 ms
+2021/08/13 16:42:43,426 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/13 16:42:43,685 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/13 16:42:43,720 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 16 msec}
+2021/08/13 16:42:43,723 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/13 16:42:43,731 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/13 16:42:44,395 [WARN] [org.springframework.context.support.AbstractApplicationContext] [main]- Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceScriptDatabaseInitializer' defined in class path resource [org/springframework/boot/autoconfigure/sql/init/DataSourceInitializationConfiguration.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: No schema scripts found at location './src/main/resources/schema.sql'
+2021/08/13 16:42:44,398 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown initiated...
+2021/08/13 16:42:44,412 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown completed.
+2021/08/13 16:42:44,415 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Stopping service [Tomcat]
+2021/08/13 16:42:44,436 [INFO] [org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener] [main]- 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2021/08/13 16:42:44,454 [ERROR] [org.springframework.boot.SpringApplication] [main]- Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceScriptDatabaseInitializer' defined in class path resource [org/springframework/boot/autoconfigure/sql/init/DataSourceInitializationConfiguration.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: No schema scripts found at location './src/main/resources/schema.sql'
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1786) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:602) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:524) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:322) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:944) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:918) ~[spring-context-5.3.9.jar:5.3.9]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:583) ~[spring-context-5.3.9.jar:5.3.9]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:338) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1343) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1332) [spring-boot-2.5.3.jar:2.5.3]
+	at com.example.RestApplication.main(RestApplication.java:26) [classes/:?]
+Caused by: java.lang.IllegalStateException: No schema scripts found at location './src/main/resources/schema.sql'
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.getScripts(AbstractScriptDatabaseInitializer.java:128) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.applyScripts(AbstractScriptDatabaseInitializer.java:105) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.applySchemaScripts(AbstractScriptDatabaseInitializer.java:97) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.initializeDatabase(AbstractScriptDatabaseInitializer.java:75) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.afterPropertiesSet(AbstractScriptDatabaseInitializer.java:65) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1845) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1782) ~[spring-beans-5.3.9.jar:5.3.9]
+	... 18 more
+2021/08/13 16:43:09,726 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 10140 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/13 16:43:09,741 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/13 16:43:11,053 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/13 16:43:11,064 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/13 16:43:11,065 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/13 16:43:11,065 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/13 16:43:11,217 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/13 16:43:11,217 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1406 ms
+2021/08/13 16:43:11,259 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/13 16:43:11,475 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/13 16:43:11,508 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 15 msec}
+2021/08/13 16:43:11,513 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/13 16:43:11,528 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/13 16:43:12,217 [WARN] [org.springframework.context.support.AbstractApplicationContext] [main]- Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceScriptDatabaseInitializer' defined in class path resource [org/springframework/boot/autoconfigure/sql/init/DataSourceInitializationConfiguration.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: No schema scripts found at location './src/main/resources/schema.sql'
+2021/08/13 16:43:12,219 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown initiated...
+2021/08/13 16:43:12,246 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown completed.
+2021/08/13 16:43:12,251 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Stopping service [Tomcat]
+2021/08/13 16:43:12,271 [INFO] [org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener] [main]- 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2021/08/13 16:43:12,292 [ERROR] [org.springframework.boot.SpringApplication] [main]- Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceScriptDatabaseInitializer' defined in class path resource [org/springframework/boot/autoconfigure/sql/init/DataSourceInitializationConfiguration.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: No schema scripts found at location './src/main/resources/schema.sql'
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1786) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:602) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:524) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:322) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:944) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:918) ~[spring-context-5.3.9.jar:5.3.9]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:583) ~[spring-context-5.3.9.jar:5.3.9]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:338) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1343) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1332) [spring-boot-2.5.3.jar:2.5.3]
+	at com.example.RestApplication.main(RestApplication.java:26) [classes/:?]
+Caused by: java.lang.IllegalStateException: No schema scripts found at location './src/main/resources/schema.sql'
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.getScripts(AbstractScriptDatabaseInitializer.java:128) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.applyScripts(AbstractScriptDatabaseInitializer.java:105) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.applySchemaScripts(AbstractScriptDatabaseInitializer.java:97) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.initializeDatabase(AbstractScriptDatabaseInitializer.java:75) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.afterPropertiesSet(AbstractScriptDatabaseInitializer.java:65) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1845) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1782) ~[spring-beans-5.3.9.jar:5.3.9]
+	... 18 more
+2021/08/13 16:44:04,932 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 12000 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/13 16:44:04,941 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/13 16:44:06,278 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/13 16:44:06,291 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/13 16:44:06,292 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/13 16:44:06,292 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/13 16:44:06,446 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/13 16:44:06,446 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1446 ms
+2021/08/13 16:44:06,493 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/13 16:44:06,719 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/13 16:44:06,751 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 14 msec}
+2021/08/13 16:44:06,754 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/13 16:44:06,763 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/13 16:44:07,489 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 15 msec}
+2021/08/13 16:44:07,495 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS board
+ {executed in 2 msec}
+2021/08/13 16:44:07,506 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS board ( id integer NOT NULL , title varchar( 255 ) NOT null , content varchar( 4000 ) , userId varchar( 255 ) , regDate timestamp , primary key( id ) )
+ {executed in 11 msec}
+2021/08/13 16:44:07,568 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/13 16:44:07,597 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/13 16:44:07,610 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.249 seconds (JVM running for 4.748)
+2021/08/13 16:44:07,612 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/13 16:44:07,612 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/13 16:44:07,612 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/13 16:44:07,612 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/13 16:44:07,612 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/13 16:44:12,287 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(8)-127.0.0.1]- Application shutdown requested.
+2021/08/13 16:44:12,536 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(8)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/13 16:44:12,540 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(8)-127.0.0.1]- HikariPool-1 - Shutdown completed.

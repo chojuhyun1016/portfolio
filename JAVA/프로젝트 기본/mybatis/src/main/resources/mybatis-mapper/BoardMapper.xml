@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.board.BoardMapper">
+
+    <select id="selectBoard" resultType="Board">
+        SELECT *
+          FROM board
+    </select>
+
+    <select id="selectBoardFromObject" parameterType="Board" resultType="Board">
+        SELECT *
+          FROM board
+         WHERE id = #{id}
+    </select>
+
+    <select id="selectBoardFromMap" parameterType="map" resultType="Board">
+        SELECT *
+          FROM board
+         WHERE id = #{id}
+           AND title = #{title}
+    </select>
+</mapper>

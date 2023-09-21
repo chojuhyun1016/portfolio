@@ -1,0 +1,19 @@
+echo "LOG_QUEUE_DELETER"
+echo "START"
+ipcrm -Q 0x9001
+ipcrm -Q 0x9002
+ipcrm -Q 0x9003
+ipcrm -Q 0x9004
+ipcrm -Q 0x9005
+ipcrm -Q 0x9006
+ipcrm -Q 0x9007
+ipcrm -Q 0x9008
+ipcrm -Q 0x9009
+ipcrm -Q 0x900a
+ipcrm -Q 0x900b
+ipcrm -Q 0x900c
+ipcrm -Q 0x900d
+ipcrm -Q 0x900e
+ipcrm -Q 0x900f
+ipcrm -Q 0x9010
+echo "END"

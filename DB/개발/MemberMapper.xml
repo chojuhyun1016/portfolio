@@ -1,0 +1,1023 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uplus.mp.gw.member.mappers.altibase.MemberMapper">
+
+	<insert id="registerPersonMember" parameterType="member">
+		<selectKey keyProperty="mbId" order="BEFORE" resultType="int">
+			SELECT
+				   MB_ID_SEQ.NEXTVAL
+			  FROM
+				   DUAL
+		</selectKey>
+
+		INSERT INTO MP_MB_PSN
+		                      (
+			                    MB_ID
+			                  , NAME
+			                  , PHONE
+			                  , CREATED_DTM
+		                      )
+		               VALUES
+		                      (
+			                    #{mbId}
+			                  , #{name}
+			                  , #{encPhone}
+			                  , #{createdDtm}
+		                      )
+	</insert>
+
+	<insert id="registerCorpMember" parameterType="member">
+		<selectKey keyProperty="mbId" order="BEFORE" resultType="int">
+			SELECT 
+				   MB_ID_SEQ.NEXTVAL
+			  FROM
+				   DUAL
+		</selectKey>
+
+		INSERT INTO MP_MB_CRP
+		                      (
+			                    MB_ID
+			                  , SVC_ORG_CD
+			                  , SVC_ORG_NAME
+                              , SVC_ORG_TYPE
+			                  , BUSI_NUM
+			                  , BUSI_NAME
+			                  , CREATED_DTM
+			                  , AGREE_YN
+		                      )
+		              VALUES
+		                     (
+			                   #{mbId}
+			                 , #{svcOrgCd}
+			                 , #{svcOrgName} 
+			                 , #{svcOrgType}
+			                 , #{busiNum}
+			                 , #{name}
+			                 , #{createdDtm}
+			                 , #{agreeYn}
+		                     )
+	</insert>
+
+	<insert id="registerCea" parameterType="member">
+		INSERT INTO MP_CEA
+		                   (
+			                 CEA
+		                   , MB_ID
+		                   , GUBUN
+		                   )
+		            VALUES
+		                   (
+			                 #{cea}
+			               , #{mbId}
+			               , #{type}
+		                   )
+	</insert>
+
+	<insert id="registerCiCeaMapping" parameterType="member">
+		INSERT INTO MP_CI_CEA_MAPPING
+		                              (
+			                            CI
+			                          , CEA
+		                              )
+		                       VALUES
+		                              (
+			                            #{ci}
+			                          , #{cea}
+		                              )
+	</insert>
+
+	<insert id="initMemberLog" parameterType="memberLog">
+		<selectKey keyProperty="mbLogSeq" order="BEFORE" resultType="int">
+			SELECT 
+				   MP_MB_LOG_SEQ.NEXTVAL
+			  FROM
+				   DUAL
+		</selectKey>
+
+		INSERT INTO MP_MB_LOG
+					          (
+				 	            MB_LOG_SEQ
+					          , CEA
+					          , GUBUN
+					          , REQ_TYPE
+					          , REQ_ROUTE
+					          , REQ_DTM
+					          , LOG_DTM	
+					          )
+					   VALUES
+					          (
+					            #{mbLogSeq}
+					          , #{cea}
+					          , #{gubun}
+					          , #{reqType}
+					          , #{reqRoute}
+					          , #{reqDtm}
+					          , #{logDtm}
+					          )
+	</insert>
+
+	<insert id="initWithdrawMemberLog" parameterType="memberLog">
+		<selectKey keyProperty="mbLogSeq" order="BEFORE" resultType="int">
+			SELECT 
+				   MP_WITHDRAW_MB_LOG_SEQ.NEXTVAL
+			  FROM
+				   DUAL
+		</selectKey>
+
+		INSERT INTO MP_WITHDRAW_MB_LOG
+					                   (
+					                     SEQ
+					                   , CI
+					                   , CEA
+					                   , GUBUN
+					                   , REQ_ROUTE
+					                   , REQ_DTM
+					                   , LOG_DTM	
+					                   )
+					            VALUES
+					                   (
+					                     #{mbLogSeq}
+					                   , #{ci}
+					                   , #{cea}
+					                   , #{gubun}
+					                   , #{reqRoute}
+					                   , #{reqDtm}
+					                   , #{logDtm}
+					                   )
+	</insert>
+
+	<select id="findPersonMemberByCi" parameterType="string" resultType="member">
+		SELECT
+			   TC.MB_ID
+		     , TC.NAME
+		     , TC.PHONE
+		     , TC.CREATED_DTM
+		     , TB.CEA
+		  FROM
+			   MP_CI_CEA_MAPPING    TA
+			   JOIN MP_CEA          TB
+			   ON TA.CEA = TB.CEA
+			   JOIN MP_MB_PSN       TC
+			   ON TB.MB_ID = TC.MB_ID
+		 WHERE
+			   TA.CI = #{ci}
+	     LIMIT 1
+	</select>
+
+	<select id="findPersonMemberByCea" parameterType="string" resultType="member">
+		SELECT
+			   C.MB_ID
+			 , M.NAME
+			 , M.PHONE
+			 , M.CREATED_DTM
+			 , C.CEA			
+		FROM
+		     (
+			   SELECT
+				      I.CEA
+				    , I.MB_ID
+				    , I.GUBUN
+			     FROM
+				      MP_CEA I
+			    WHERE
+				      I.CEA = #{cea}
+		     ) C
+		     JOIN MP_MB_PSN M
+		     ON C.MB_ID = M.MB_ID
+	   LIMIT 1
+	</select>
+
+	<select id="findPersonMemberByMessageId" parameterType="document" resultType="member">
+        SELECT TC.CEA
+             , TD.NAME
+             , TD.CREATED_DTM
+          FROM
+               PM_MSG                    TA
+               JOIN MP_CI_CEA_MAPPING    TB
+               ON TA.CI = TB.CI
+               JOIN MP_CEA               TC
+               ON TB.CEA =  TC.CEA
+               JOIN MP_MB_PSN            TD
+               ON TC.MB_ID = TD.MB_ID
+         WHERE
+               TA.PART_MM    = #{partMm}
+           AND
+               TA.MESSAGE_ID = #{messageId}
+        LIMIT 1
+	</select>
+
+	<select id="findCorpMemberBySvcOrgCd" parameterType="string" resultType="member">
+		SELECT
+			   M.MB_ID
+			 , M.SVC_ORG_CD
+			 , M.SVC_ORG_NAME
+			 , M.SVC_ORG_TYPE
+			 , M.BUSI_NUM
+			 , M.BUSI_NAME		NAME
+			 , M.CREATED_DTM
+			 , C.CEA
+		  FROM
+		       (
+		         SELECT
+			            I.MB_ID
+			          , I.SVC_ORG_CD
+			          , I.SVC_ORG_NAME
+			          , I.SVC_ORG_TYPE
+			          , I.BUSI_NUM
+			          , I.BUSI_NAME
+			          , I.CREATED_DTM
+    	           FROM
+    		            MP_MB_CRP I
+    	          WHERE
+    	                I.SVC_ORG_CD = #{svcOrgCd}
+		       ) M
+		       JOIN MP_CEA C
+		       ON M.MB_ID = C.MB_ID
+		 LIMIT 1
+	</select>
+
+	<select id="getAgreeYnBySvcOrgCd" parameterType="string" resultType="string">
+        SELECT
+               NVL(MAX(TA.AGREE_YN), 'N') AS AGREE_YN
+          FROM
+               MP_MB_CRP TA
+         WHERE
+               TA.SVC_ORG_CD = #{svcOrgCd}
+         LIMIT 1
+	</select>
+
+	<select id="getWithdrawCeaByCi" parameterType="string" resultType="string">
+		SELECT
+			   CEA
+		  FROM
+			   MP_WITHDRAW_MB_LOG
+		 WHERE 
+			   CI = #{ci}
+		ORDER BY LOG_DTM DESC
+		 LIMIT 1
+	</select>
+
+	<select id="getCeaCountByCi" parameterType="String" resultType="int">
+		SELECT
+			   COUNT(1)
+		  FROM
+			   MP_CI_CEA_MAPPING    TA
+	           JOIN MP_CEA          TB
+			   ON TA.CEA = TB.CEA
+		 WHERE
+			   TA.CI = #{ci}
+	</select>
+
+	<select id="existsMemberByCea" parameterType="member" resultType="int">
+		SELECT
+			   COUNT(1)
+		  FROM
+			   MP_CEA
+		 WHERE
+			   CEA = #{cea}
+	</select>
+
+	<select id="existsSameCorpMemberBySvcOrgCd" parameterType="member" resultType="int">
+		SELECT
+			   COUNT(1)
+		  FROM
+			   MP_MB_CRP      TA
+		       JOIN MP_CEA    TB
+			   ON TA.MB_ID = TB.MB_ID
+		 WHERE
+			   TA.SVC_ORG_CD = #{svcOrgCd}
+	</select>
+
+	<select id="existsSameCorpMemberByCeaBusiNum" parameterType="member" resultType="int">
+		SELECT
+			   COUNT(1)
+		  FROM
+			   MP_CEA            TA
+			   JOIN MP_MB_CRP    TB
+			   ON TA.MB_ID = TB.MB_ID
+		 WHERE
+			   TA.CEA      = #{cea}
+		   AND
+		       TB.BUSI_NUM = #{busiNum}
+	</select>
+
+	<update id="updatePersonMemberName" parameterType="member">
+        UPDATE
+               MP_MB_PSN TA
+	 	   SET
+	 	       TA.NAME       = #{name}
+	 	 WHERE
+	 	       TA.MB_ID      = #{mbId}
+	 	 LIMIT 1    
+	</update>
+
+	<update id="updateCorpMemberName" parameterType="member">
+        UPDATE
+               MP_MB_CRP TA
+	 	   SET
+               TA.MB_ID          = #{mbId}
+               <if test="name!=null and !name.equals('')">
+	           , TA.BUSI_NAME    = #{name}
+               </if>
+               <if test="svcOrgType!=null and !svcOrgType.equals('')">
+	 	       , TA.SVC_ORG_TYPE = #{svcOrgType}
+               </if>
+	 	 WHERE
+	 	       TA.MB_ID      = #{mbId}
+	 	   AND 
+	 	       TA.SVC_ORG_CD = #{svcOrgCd}
+	 	 LIMIT 1    
+	</update>
+
+ 	<delete id="withdrawPersonMember" parameterType="member">
+		DELETE	
+			   MP_MB_PSN
+		WHERE
+			   MB_ID = (SELECT MB_ID FROM MP_CEA WHERE CEA = #{cea})	
+	</delete>
+
+	<delete id="withdrawCorpMember" parameterType="member">
+		DELETE
+			   MP_MB_CRP
+ 		 WHERE
+			   MB_ID = (SELECT MB_ID FROM MP_CEA WHERE CEA = #{cea})	
+	</delete>
+
+	<delete id="removeCea" parameterType="member">
+		DELETE
+			   MP_CEA
+		 WHERE
+			   CEA = #{cea}
+	</delete>
+
+	<delete id="removeCiCeaMapping" parameterType="string">
+		DELETE
+			   MP_CI_CEA_MAPPING
+		 WHERE
+			   CI = #{ci}
+	</delete>
+
+	<insert id="addAgree" parameterType="agree">
+		INSERT INTO MP_AGREE_INFO
+		                          (
+			                        CI
+			                      , SVC_ORG_CD
+			                      , PHONE
+     	                          <if test="messageId!=null and !messageId.equals('')">
+	                              , MESSAGE_ID
+			                      </if>
+			                      , AGREE_DTM
+                                  , REG_DTM
+		                          )
+		                   VALUES
+		                          (
+			                        #{ci}
+			                      , #{svcOrgCd}
+			                      , #{phone}
+	     	                      <if test="messageId!=null and !messageId.equals('')">
+			                      , #{messageId}
+			                      </if>
+			                      , #{agreeDtm}
+			                      , #{regDtm}
+		                          )
+	</insert>
+
+	<select id="findAgreeByCi" parameterType="string" resultType="agree">
+		SELECT
+               TA.CI
+			 , TA.SVC_ORG_CD
+			 , TA.PHONE
+			 , TA.MESSAGE_ID
+			 , TA.AGREE_DTM
+			 , TA.REG_DTM
+		  FROM
+		       MP_AGREE_INFO TA
+    	 WHERE
+    	       TA.CI = #{ci}
+	</select>
+
+	<select id="getAgreeDtm" parameterType="map" resultType="string">
+		SELECT
+			   TA.AGREE_DTM
+		  FROM
+		       MP_AGREE_INFO TA
+    	 WHERE
+    	       TA.CI         = #{ci}
+    	   AND 
+    	       TA.SVC_ORG_CD = #{svcOrgCd}
+		 LIMIT 1
+	</select>
+
+	<delete id="removeAgree" parameterType="agree">
+		DELETE
+			   MP_AGREE_INFO
+		 WHERE
+			   CI         = #{ci}
+		   AND
+		       SVC_ORG_CD = #{svcOrgCd}
+	</delete>
+
+	<delete id="removeAgreeByCi" parameterType="string">
+		DELETE
+			   MP_AGREE_INFO
+		 WHERE
+			   CI = #{ci}
+	</delete>
+
+	<insert id="addRejection" parameterType="rejectionInfo">
+		INSERT INTO MP_REFUSE_INFO
+		                           (
+		                             CI
+		                           , SVC_ORG_CD
+		                           , PHONE
+		                           <if test="messageId!=null and !messageId.equals('')">
+		                           , MESSAGE_ID
+		                           </if>
+		                           , REG_DTM
+		                           , APCT_DTM
+		                           )
+		                    VALUES
+		                           (
+		                             #{ci}
+		                           , #{svcOrgCd}
+		                           , #{phone}
+	     	                       <if test="messageId!=null and !messageId.equals('')">
+	     	                       , #{messageId}
+	     	                       </if>
+		                           , #{regDtm}
+		                           , #{apctDtm}
+		                           )
+	</insert>
+
+	<select id="getRejectionCount" parameterType="rejectionInfo" resultType="int">
+		SELECT
+			   COUNT(1)
+		  FROM
+			   MP_REFUSE_INFO
+		 WHERE
+               CI         = #{ci}
+           AND
+               SVC_ORG_CD = #{svcOrgCd}
+	</select>
+
+	<select id="getRejectionCountByMessageId" parameterType="beforeMember" resultType="int">
+		SELECT
+			   COUNT(1)
+		  FROM
+			   MP_REFUSE_INFO
+		 WHERE
+			   MESSAGE_ID = #{messageId}
+	</select>
+
+	<delete id="removeRejections" parameterType="list">
+		DELETE MP_REFUSE_INFO 
+		 WHERE <if test="list != null and !list.isEmpty()">
+		           <foreach collection="list" item="rejectionInfo" separator=" OR ">
+    		       (CI = #{rejectionInfo.ci} AND SVC_ORG_CD = #{rejectionInfo.svcOrgCd})
+    	           </foreach>
+    	       </if>
+	</delete>
+
+	<insert id="addWhitelist" parameterType="whitelistInfo">
+		INSERT INTO MP_WHITELIST_INFO
+		                              (
+		                                CI
+		                              , SVC_ORG_CD
+		                              , MBL_BZOWR_DVCD
+		                              <if test="phone and !phone.equals('')">
+		                              , PHONE
+		                              </if>
+		                              <if test="inCls and !inCls.equals('')">
+		                              , IN_CLS
+		                              </if>
+		                              <if test="messageId!=null and !messageId.equals('')">
+		                              , MESSAGE_ID
+		                              </if>
+		                              , REG_DTM
+		                              )
+		                       VALUES
+		                              (
+		                                #{ci}
+		                              , #{svcOrgCd}
+		                              , #{mblBzowrDvcd}
+	     	                          <if test="phone and !phone.equals('')">
+	     	                          , #{phone}
+	     	                          </if>
+	     	                          <if test="inCls and !inCls.equals('')">
+	     	                          , #{inCls}
+	     	                          </if>
+	     	                          <if test="messageId!=null and !messageId.equals('')">
+	     	                          , #{messageId}
+	     	                          </if>
+		                              , #{regDtm}
+		                              )
+	</insert>
+
+	<select id="getWhitelistCount" parameterType="whitelistInfo" resultType="int">
+		SELECT
+			   COUNT(1)
+		  FROM
+			   MP_WHITELIST_INFO A
+		 WHERE
+               A.CI         = #{ci}
+           AND
+               A.SVC_ORG_CD = #{svcOrgCd}
+	</select>
+
+	<delete id="removeWhitelist" parameterType="whitelistInfo">
+		DELETE 
+		  FROM
+		       MP_WHITELIST_INFO 
+		 WHERE 
+		       CI         = #{ci}
+		   AND 
+		       SVC_ORG_CD = #{svcOrgCd}
+           <if test="phone!=null and !phone.equals('')">
+           AND
+               PHONE      = #{phone}
+           </if>
+         LIMIT 1
+	</delete>
+
+	<insert id="registerBefMsgMember" parameterType="beforeMember">
+        INSERT INTO MP_MB_BFH
+                              (
+                                CREATED_DTM
+                              , MESSAGE_ID                              
+                              , SVC_ORG_CD
+                              , CI
+                              , PHONE
+                              , REG_DTM
+                              )
+                       VALUES
+                              (
+	                            #{createdDtm}
+                              , #{messageId}
+                              , #{svcOrgCd}
+	                          , #{ci}
+	                          , #{phone}
+                              , #{regDtm}
+                              )
+	</insert>
+
+	<select id="findBefMsgMember" parameterType="map" resultType="beforeMember">
+        SELECT
+               TA.CREATED_DTM
+             , TA.MESSAGE_ID
+             , TA.SVC_ORG_CD
+             , TA.CI
+             , TA.PHONE
+             , TA.REG_DTM
+          FROM
+               MP_MB_BFH TA
+         WHERE 
+               TA.CREATED_DTM <![CDATA[ <= ]]> #{createdDtm}
+         LIMIT #{limit}
+
+	</select>
+
+ 	<delete id="removeBefMsgMemberByBefMember" parameterType="beforeMember">
+        DELETE
+          FROM 
+               MP_MB_BFH TA
+         WHERE 
+               TA.CREATED_DTM = #{createdDtm}
+           AND TA.MESSAGE_ID  = #{messageId}
+         LIMIT 1
+	</delete>
+
+ 	<delete id="removeBefMsgMemberByMessageId" parameterType="string">
+        DELETE
+          FROM 
+               MP_MB_BFH TA
+         WHERE
+               TA.MESSAGE_ID = #{messageId}
+         LIMIT 1
+	</delete>
+
+	<insert id="addMemberEaddrReq" parameterType="memberEaddr">
+		<selectKey keyProperty="eaddrSeq" order="BEFORE" resultType="long">
+			SELECT
+				   MP_MB_EADDR_REQ_SEQ.NEXTVAL
+			  FROM
+				   DUAL
+		</selectKey>
+
+        INSERT INTO MP_MB_EADDR_REQ
+                                    (
+                                      EADDR_SEQ
+                                    , MB_ID
+                                    , CEA
+		     	                    <if test="ci!=null and !ci.equals('')">
+		     	                    , CI
+		     	                    </if>
+		     	                    <if test="phone!=null and !phone.equals('')">
+		     	                    , PHONE
+		     	                    </if>
+		     	                    <if test="birthday!=null and !birthday.equals('')">
+		     	                    , BIRTHDAY
+		     	                    </if>
+		     	                    <if test="name!=null and !name.equals('')">
+                                    , NAME
+		     	                    </if>
+		     	                    <if test="gender!=null and !gender.equals('')">
+		     	                    , GENDER
+		     	                    </if>
+                                    , CREATED_DTM
+                                    , TYPE
+		     	                    <if test="busiNum!=null and !busiNum.equals('')">
+		     	                    , BUSI_NUM
+		     	                    </if>
+		     	                    <if test="svcOrgCd!=null and !svcOrgCd.equals('')">
+		     	                    , SVC_ORG_CD
+		     	                    </if>
+		     	                    <if test="svcOrgName!=null and !svcOrgName.equals('')">
+		     	                    , SVC_ORG_NAME
+		     	                    </if>
+		     	                    <if test="svcOrgType!=null and !svcOrgType.equals('')">
+		     	                    , SVC_ORG_TYPE
+		     	                    </if>
+                                    , REQ_TYPE
+                                    , REQ_ROUTE
+		     	                    <if test="messageId!=null and !messageId.equals('')">
+		     	                    , MESSAGE_ID
+		     	                    </if>
+		     	                    <if test="file1!=null and file1.fileName!=null and !file1.fileName.equals('')">
+		     	                    , FILE1_NAME
+		     	                    </if>
+		     	                    <if test="file1!=null and file1.fileSize!=null and !file1.fileSize.equals('')">
+		     	                    , FILE1_SIZE
+		     	                    </if>
+		     	                    <if test="file1!=null and file1.fileExt!=null and !file1.fileExt.equals('')">
+		     	                    , FILE1_EXT
+		     	                    </if>
+		     	                    <if test="file1!=null and file1.fileData!=null and !file1.fileData.equals('')">
+		     	                    , FILE1_DATA
+		     	                    </if>
+		     	                    <if test="file2!=null and file2.fileName!=null and !file2.fileName.equals('')">
+		     	                    , FILE2_NAME
+		     	                    </if>
+		     	                    <if test="file2!=null and file2.fileSize!=null and !file2.fileSize.equals('')">
+		     	                    , FILE2_SIZE
+		     	                    </if>
+		     	                    <if test="file2!=null and file2.fileExt!=null and !file2.fileExt.equals('')">
+		     	                    , FILE2_EXT
+		     	                    </if>
+		     	                    <if test="file2!=null and file2.fileData!=null and !file2.fileData.equals('')">
+		     	                    , FILE2_DATA
+		     	                    </if>
+                                    , REG_DTM
+                                    )
+                             VALUES
+                                    (
+                             		  #{eaddrSeq}
+									, #{mbId}
+									, #{cea}
+		     	                    <if test="ci!=null and !ci.equals('')">
+		     	                    , #{encCi}
+		     	                    </if>
+		     	                    <if test="phone!=null and !phone.equals('')">
+		     	                    , #{encPhone}
+		     	                    </if>
+		     	                    <if test="birthday!=null and !birthday.equals('')">
+		     	                    , #{birthday}
+		     	                    </if>
+		     	                    <if test="name!=null and !name.equals('')">
+ 									, #{name}
+		     	                    </if>
+		     	                    <if test="gender!=null and !gender.equals('')">
+		     	                    , #{gender}
+		     	                    </if>
+ 									, #{createdDtm}
+ 									, #{type}
+		     	                    <if test="busiNum!=null and !busiNum.equals('')">
+		     	                    , #{busiNum}
+		     	                    </if>
+		     	                    <if test="svcOrgCd!=null and !svcOrgCd.equals('')">
+		     	                    , #{svcOrgCd}
+		     	                    </if>
+		     	                    <if test="svcOrgName!=null and !svcOrgName.equals('')">
+		     	                    , #{svcOrgName}
+		     	                    </if>
+		     	                    <if test="svcOrgType!=null and !svcOrgType.equals('')">
+		     	                    , #{svcOrgType}
+		     	                    </if>
+									, #{reqType}
+									, #{reqRoute}
+		     	                    <if test="messageId!=null and !messageId.equals('')">
+		     	                    , #{messageId}
+		     	                    </if>
+		     	                    <if test="file1!=null and file1.fileName!=null and !file1.fileName.equals('')">
+		     	                    , #{file1.fileName}
+		     	                    </if>
+		     	                    <if test="file1!=null and file1.fileSize!=null and !file1.fileSize.equals('')">
+		     	                    , #{file1.fileSize}
+		     	                    </if>
+		     	                    <if test="file1!=null and file1.fileExt!=null and !file1.fileExt.equals('')">
+		     	                    , #{file1.fileExt}
+		     	                    </if>
+		     	                    <if test="file1!=null and file1.fileData!=null and !file1.fileData.equals('')">
+		     	                    , #{file1.fileData}
+		     	                    </if>
+		     	                    <if test="file2!=null and file2.fileName!=null and !file2.fileName.equals('')">
+		     	                    , #{file2.fileName}
+		     	                    </if>
+		     	                    <if test="file2!=null and file2.fileSize!=null and !file2.fileSize.equals('')">
+		     	                    , #{file2.fileSize}
+		     	                    </if>
+		     	                    <if test="file2!=null and file2.fileExt!=null and !file2.fileExt.equals('')">
+		     	                    , #{file2.fileExt}
+		     	                    </if>
+		     	                    <if test="file2!=null and file2.fileData!=null and !file2.fileData.equals('')">
+		     	                    , #{file2.fileData}
+		     	                    </if>
+ 									, #{regDtm}
+                                    )
+	</insert>
+
+	<select id="findMemberEaddrReq" parameterType="memberEaddr" resultMap="memberEaddrReqToMemberEaddr" resultType="memberEaddr">
+		SELECT
+               TA.EADDR_SEQ    AS EADDR_SEQ 
+             , TA.MB_ID        AS MB_ID
+             , TA.CEA          AS CEA
+             , TA.CI           AS CI
+             , TA.PHONE        AS PHONE
+             , TA.BIRTHDAY     AS BIRTHDAY
+             , TA.NAME         AS NAME
+             , TA.GENDER       AS GENDER
+             , TA.CREATED_DTM  AS CREATED_DTM
+             , TA.TYPE         AS TYPE
+             , TA.BUSI_NUM     AS BUSI_NUM
+             , TA.SVC_ORG_CD   AS SVC_ORG_CD
+             , TA.SVC_ORG_NAME AS SVC_ORG_NAME 
+             , TA.SVC_ORG_TYPE AS SVC_ORG_TYPE
+             , TA.REQ_TYPE     AS REQ_TYPE
+             , TA.REQ_ROUTE    AS REQ_ROUTE
+             , TA.FILE1_NAME   AS FILE1_NAME
+             , TA.FILE1_SIZE   AS FILE1_SIZE
+             , TA.FILE1_EXT    AS FILE1_EXT
+             , TA.FILE1_DATA   AS FILE1_DATA
+             , TA.FILE2_NAME   AS FILE2_NAME
+             , TA.FILE2_SIZE   AS FILE2_SIZE
+             , TA.FILE2_EXT    AS FILE2_EXT
+             , TA.FILE2_DATA   AS FILE2_DATA
+             , TA.MESSAGE_ID   AS MESSAGE_ID
+             , TA.REG_DTM      AS REG_DTM
+          FROM
+               MP_MB_EADDR_REQ TA
+         WHERE
+               TA.CEA = #{cea}
+           AND
+               TA.CREATED_DTM <![CDATA[<=]]> #{createdDtm}
+        ORDER BY TA.CREATED_DTM ASC, TA.EADDR_SEQ ASC
+	</select>
+
+    <resultMap type="memberEaddr" id="memberEaddrReqToMemberEaddr">
+        <id     column="EADDR_SEQ"      property="eaddrSeq"/>
+        <result column="MB_ID"          property="mbId"/>
+        <result column="CEA"            property="cea"/>
+        <result column="CI"             property="ci"/>
+        <result column="PHONE"          property="phone"/>
+        <result column="BIRTHDAY"       property="birthday"/>
+        <result column="NAME"           property="name"/>
+        <result column="GENDER"         property="gender"/>
+        <result column="CREATED_DTM"    property="createdDtm"/>
+        <result column="TYPE"           property="type"/>
+        <result column="BUSI_NUM"       property="busiNum"/>
+        <result column="SVC_ORG_CD"     property="svcOrgCd"/>
+        <result column="SVC_ORG_NAME"   property="svcOrgName"/>
+        <result column="SVC_ORG_TYPE"   property="svcOrgType"/>
+        <result column="REQ_TYPE"       property="reqType"/>
+        <result column="REQ_ROUTE"      property="reqRoute"/>
+        <result column="FILE1_NAME"     property="file1.fileName"/>
+        <result column="FILE1_SIZE"     property="file1.fileSize"/>
+        <result column="FILE1_EXT"      property="file1.fileExt"/>
+        <result column="FILE1_DATA"     property="file1.fileData"/>
+        <result column="FILE2_NAME"     property="file2.fileName"/>
+        <result column="FILE2_SIZE"     property="file2.fileSize"/>
+        <result column="FILE2_EXT"      property="file2.fileExt"/>
+        <result column="FILE2_DATA"     property="file2.fileData"/>
+        <result column="MESSAGE_ID"     property="messageId"/>
+        <result column="REG_DTM"        property="regDtm"/>
+    </resultMap>
+
+ 	<delete id="removeMemberEaddrReq" parameterType="memberEaddr">
+        DELETE
+          FROM
+               MP_MB_EADDR_REQ TA
+         WHERE 
+               TA.EADDR_SEQ = #{eaddrSeq}
+         LIMIT 1
+	</delete>
+
+	<insert id="addMemberEaddrReqFail" parameterType="memberEaddrFail">
+        INSERT INTO MP_MB_EADDR_REQ_FAIL
+                                         (
+                                           FAIL_SEQ
+                                         , EADDR_SEQ
+		     	                         <if test="phone!=null and !phone.equals('')">
+		     	                         , PHONE
+		     	                         </if>
+		     	                         , CREATED_DTM
+		     	                         <if test="svcOrgCd!=null and !svcOrgCd.equals('')">
+		     	                         , SVC_ORG_CD
+		     	                         </if>
+		     	                         <if test="messageId!=null and !messageId.equals('')">
+		     	                         , MESSAGE_ID
+		     	                         </if>
+                                         , FAIL_STRUCTURE_NAME
+                                         , FAIL_SND_CNT
+		     	                         <if test="failSndDtm!=null and !failSndDtm.equals('')">
+                                         , FAIL_SND_DTM
+		     	                         </if>
+                                         , FAIL_REG_DTM
+		                                 )
+		                          SELECT
+                                         MP_MB_EADDR_REQ_FAIL_SEQ.NEXTVAL
+                                       , CAST(#{eaddrSeq}          AS BIGINT)
+		     	                       <if test="phone!=null and !phone.equals('')">
+		     	                       , CAST(#{phone}             AS VARCHAR(50))
+		     	                       </if>
+		     	                       , CAST(#{createdDtm}        AS VARCHAR(14))
+		     	                       <if test="svcOrgCd!=null and !svcOrgCd.equals('')">
+		     	                       , CAST(#{svcOrgCd}          AS VARCHAR(20))
+		     	                       </if>
+		     	                       <if test="messageId!=null and !messageId.equals('')">
+		     	                       , CAST(#{messageId}         AS VARCHAR(20))
+		     	                       </if>
+                                       , CAST(#{failStructureName} AS VARCHAR(50))
+                                       , CAST(#{failSndCnt}        AS INTEGER)
+		     	                       <if test="failSndDtm!=null and !failSndDtm.equals('')">
+                                       , CAST(#{failSndDtm}        AS VARCHAR(14))
+		     	                       </if>
+                                       , CAST(#{failRegDtm}        AS VARCHAR(14))
+                                    FROM
+                                         DUAL
+                                   WHERE
+                                         NOT EXISTS (
+                                                      SELECT
+                                                             1
+                                                        FROM
+                                                             MP_MB_EADDR_REQ_FAIL TA
+                                                       WHERE
+                                                             TA.EADDR_SEQ = #{eaddrSeq}
+                                                       LIMIT 1
+                                                    )
+ 
+		<selectKey keyProperty="failSeq" order="AFTER" resultType="long">
+			SELECT
+				   TA.FAIL_SEQ
+			  FROM
+				   MP_MB_EADDR_REQ_FAIL TA
+             WHERE
+                   TA.EADDR_SEQ = #{eaddrSeq}
+             LIMIT 1
+		</selectKey>
+	</insert>
+
+	<select id="findMemberEaddrReqFailFromDtm" parameterType="map" resultMap="memberEaddrReqFailToMemberEaddrFail" resultType="memberEaddrFail">
+        SELECT
+               TA.FAIL_SEQ               AS FAIL_SEQ
+             , TB.EADDR_SEQ              AS EADDR_SEQ
+             , TB.MB_ID                  AS MB_ID
+             , TB.CEA                    AS CEA
+             , TB.CI                     AS CI
+             , TB.PHONE                  AS PHONE
+             , TB.BIRTHDAY               AS BIRTHDAY
+             , TB.NAME                   AS NAME
+             , TB.GENDER                 AS GENDER
+             , TB.CREATED_DTM            AS CREATED_DTM
+             , TB.TYPE                   AS TYPE
+             , TB.BUSI_NUM               AS BUSI_NUM
+             , TB.SVC_ORG_CD             AS SVC_ORG_CD
+             , TB.SVC_ORG_NAME           AS SVC_ORG_NAME
+             , TB.SVC_ORG_TYPE           AS SVC_ORG_TYPE
+             , TB.REQ_TYPE               AS REQ_TYPE
+             , TB.REQ_ROUTE              AS REQ_ROUTE
+             , TB.FILE1_NAME             AS FILE1_NAME
+             , TB.FILE1_SIZE             AS FILE1_SIZE
+             , TB.FILE1_EXT              AS FILE1_EXT
+             , TB.FILE1_DATA             AS FILE1_DATA
+             , TB.FILE2_NAME             AS FILE2_NAME
+             , TB.FILE2_SIZE             AS FILE2_SIZE
+             , TB.FILE2_EXT              AS FILE2_EXT
+             , TB.FILE2_DATA             AS FILE2_DATA
+             , TB.MESSAGE_ID             AS MESSAGE_ID 
+             , TB.REG_DTM                AS REG_DTM
+             , TA.FAIL_STRUCTURE_NAME    AS FAIL_STRUCTURE_NAME
+             , TA.FAIL_SND_CNT           AS FAIL_SND_CNT
+             , TA.FAIL_SND_DTM           AS FAIL_SND_DTM
+             , TA.FAIL_REG_DTM           AS FAIL_REG_DTM
+          FROM
+               MP_MB_EADDR_REQ_FAIL    TA
+               JOIN MP_MB_EADDR_REQ    TB
+               ON TA.EADDR_SEQ = TB.EADDR_SEQ
+		 WHERE
+               TA.CREATED_DTM BETWEEN #{start} AND #{end}
+           AND NVL(TA.FAIL_SND_DTM, '*') != #{failSndDtm}
+         ORDER BY TA.CREATED_DTM ASC, TA.EADDR_SEQ ASC
+         LIMIT #{limit}
+	</select>
+
+	<select id="findMemberEaddrReqFailFromSeq" parameterType="map" resultMap="memberEaddrReqFailToMemberEaddrFail" resultType="memberEaddrFail">
+        SELECT
+               TA.FAIL_SEQ               AS FAIL_SEQ
+             , TB.EADDR_SEQ              AS EADDR_SEQ
+             , TB.MB_ID                  AS MB_ID
+             , TB.CEA                    AS CEA
+             , TB.CI                     AS CI
+             , TB.PHONE                  AS PHONE
+             , TB.BIRTHDAY               AS BIRTHDAY
+             , TB.NAME                   AS NAME
+             , TB.GENDER                 AS GENDER
+             , TB.CREATED_DTM            AS CREATED_DTM
+             , TB.TYPE                   AS TYPE
+             , TB.BUSI_NUM               AS BUSI_NUM
+             , TB.SVC_ORG_CD             AS SVC_ORG_CD
+             , TB.SVC_ORG_NAME           AS SVC_ORG_NAME
+             , TB.SVC_ORG_TYPE           AS SVC_ORG_TYPE
+             , TB.REQ_TYPE               AS REQ_TYPE
+             , TB.REQ_ROUTE              AS REQ_ROUTE
+             , TB.FILE1_NAME             AS FILE1_NAME
+             , TB.FILE1_SIZE             AS FILE1_SIZE
+             , TB.FILE1_EXT              AS FILE1_EXT
+             , TB.FILE1_DATA             AS FILE1_DATA
+             , TB.FILE2_NAME             AS FILE2_NAME
+             , TB.FILE2_SIZE             AS FILE2_SIZE
+             , TB.FILE2_EXT              AS FILE2_EXT
+             , TB.FILE2_DATA             AS FILE2_DATA
+             , TB.MESSAGE_ID             AS MESSAGE_ID 
+             , TB.REG_DTM                AS REG_DTM
+             , TA.FAIL_STRUCTURE_NAME    AS FAIL_STRUCTURE_NAME
+             , TA.FAIL_SND_CNT           AS FAIL_SND_CNT
+             , TA.FAIL_SND_DTM           AS FAIL_SND_DTM
+             , TA.FAIL_REG_DTM           AS FAIL_REG_DTM
+          FROM
+               MP_MB_EADDR_REQ_FAIL    TA
+               JOIN MP_MB_EADDR_REQ    TB
+               ON TA.EADDR_SEQ = TB.EADDR_SEQ
+         WHERE TA.FAIL_SEQ IN
+                             <foreach collection="failSeq" item="value" index="idx" open="(" close=")" separator=", ">
+                              #{value}
+                             </foreach>
+         ORDER BY TA.FAIL_SEQ ASC
+         LIMIT #{limit}
+	</select>
+
+    <resultMap type="memberEaddrFail" id="memberEaddrReqFailToMemberEaddrFail">
+        <id     column="FAIL_SEQ"            property="failSeq"/>
+        <result column="EADDR_SEQ"           property="eaddrSeq"/>
+        <result column="MB_ID"               property="mbId"/>
+        <result column="CEA"                 property="cea"/>
+        <result column="CI"                  property="ci"/>
+        <result column="PHONE"               property="phone"/>
+        <result column="BIRTHDAY"            property="birthday"/>
+        <result column="NAME"                property="name"/>
+        <result column="GENDER"              property="gender"/>
+        <result column="CREATED_DTM"         property="createdDtm"/>
+        <result column="TYPE"                property="type"/>
+        <result column="BUSI_NUM"            property="busiNum"/>
+        <result column="SVC_ORG_CD"          property="svcOrgCd"/>
+        <result column="SVC_ORG_NAME"        property="svcOrgName"/>
+        <result column="SVC_ORG_TYPE"        property="svcOrgType"/>
+        <result column="REQ_TYPE"            property="reqType"/>
+        <result column="REQ_ROUTE"           property="reqRoute"/>
+        <result column="FILE1_NAME"          property="file1.fileName"/>
+        <result column="FILE1_SIZE"          property="file1.fileSize"/>
+        <result column="FILE1_EXT"           property="file1.fileExt"/>
+        <result column="FILE1_DATA"          property="file1.fileData"/>
+        <result column="FILE2_NAME"          property="file2.fileName"/>
+        <result column="FILE2_SIZE"          property="file2.fileSize"/>
+        <result column="FILE2_EXT"           property="file2.fileExt"/>
+        <result column="FILE2_DATA"          property="file2.fileData"/>
+        <result column="MESSAGE_ID"          property="messageId"/>
+        <result column="REG_DTM"             property="regDtm"/>
+        <result column="FAIL_STRUCTURE_NAME" property="failStructureName"/>
+        <result column="FAIL_SND_CNT"        property="failSndCnt"/>
+        <result column="FAIL_SND_DTM"        property="failSndDtm"/>
+        <result column="FAIL_REG_DTM"        property="failRegDtm"/>
+    </resultMap>
+
+	<update id="updateMemberEaddrReqFail" parameterType="memberEaddrFail">
+        UPDATE
+               MP_MB_EADDR_REQ_FAIL TA
+	 	   SET
+	 	       TA.FAIL_SND_CNT   = #{failSndCnt}
+               <if test="failSndDtm!=null and !failSndDtm.equals('')">
+	 	     , TA.FAIL_SND_DTM   = #{failSndDtm}
+               </if>
+	 	 WHERE
+	 	       TA.EADDR_SEQ = #{eaddrSeq}
+    	 LIMIT 1
+	</update>
+
+ 	<delete id="removeMemberEaddrReqFail" parameterType="memberEaddr">
+        DELETE
+          FROM 
+               MP_MB_EADDR_REQ_FAIL TA
+         WHERE
+               TA.EADDR_SEQ = #{eaddrSeq}
+         LIMIT 1
+	</delete>
+
+</mapper>

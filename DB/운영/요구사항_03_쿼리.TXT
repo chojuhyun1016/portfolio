@@ -1,0 +1,42 @@
+
+SELECT /*+ ORDERED USE_NL( TA TB TC TD TE )
+       INDEX( TB IX_TEMP_TCA_SP_ACMP_AUG_SEP_01 )
+       INDEX( TC IX_TEMP_MARKETING_SEP_01 )
+       INDEX( TD IX_TEMP_PRO_AUG_STAT_01 )
+       INDEX( TE IX_TEMP_PRO_SEP_STAT_01 )
+       */
+       TA.CTN              AS "CTN"
+     , TC.SUB_CUST_NO      AS "가입번호"
+     , TC.SUB_NO           AS "고객번호"
+     , TB.USER_GRD         AS "고객등급"
+     , NVL( TD.CNT, 0 )    AS "8월 결제건수"
+     , NVL( TD.AMT, 0 )    AS "8월 결제금액"
+     , NVL( TE.CNT, 0 )    AS "9월 결제건수"
+     , NVL( TE.AMT, 0 )    AS "9월 결제금액"
+  FROM TEMP_INC_LIMIT_CTN       TA
+     , TEMP_TCA_SP_ACMP_AUG_SEP TB
+     , TEMP_MARKETING_SEP       TC
+     , TEMP_PRO_AUG_STAT        TD
+     , TEMP_PRO_SEP_STAT        TE
+ WHERE TA.CTN = TB.CTN
+   AND ( TB.SP_TRD_NO, TB.SP_TRD_TYPE_CODE, 1 ) IN ( SELECT /*+ INDEX( TBA IX_TEMP_TCA_SP_ACMP_AUG_SEP_01 ) */
+                                                            TBA.SP_TRD_NO
+                                                          , TBA.SP_TRD_TYPE_CODE
+                                                          , ROW_NUMBER() OVER( ORDER BY TBA.SP_TRD_DTIME DESC ) NUM
+                                                       FROM TEMP_TCA_SP_ACMP_AUG_SEP TBA
+                                                      WHERE TBA.CTN = TB.CTN
+                                                        AND TBA.SP_TRD_TYPE_CODE = 'B1'
+                                                        AND TBA.SP_AMT > (
+                                                                           SELECT /*+ INDEX( TBAA IX_TEMP_TCA_SP_ACMP_AUG_SEP_02 ) */
+                                                                                  NVL( ABS( SUM( TBAA.SP_AMT ) ), 0 )    AS "SP_AMT"
+                                                                             FROM TEMP_TCA_SP_ACMP_AUG_SEP TBAA
+                                                                            WHERE TBAA.CTN       = TBA.CTN
+                                                                              AND TBAA.SP_TRD_NO = TBA.SP_TRD_NO
+                                                                              AND TBAA.SP_TRD_TYPE_CODE <> 'B1'
+                                                                         )
+                                                   )
+   AND TA.CTN = TC.CTN(+)
+   AND TA.CTN = TD.CTN(+)
+   AND TA.CTN = TE.CTN(+)
+;
+

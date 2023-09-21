@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uplus.mp.gw.remind_ms.mappers.altibase.MessageMapper">
+
+    <select id="getdata" parameterType="string" resultType="string">
+        SELECT
+        SVC_ORG_CD
+        FROM PM_MSG
+        WHERE
+        MESSAGE_ID = #{messageId}
+    </select>
+
+    <insert id="insert_remind_msg" parameterType="PmMsg">
+        INSERT INTO PM_REMIND_MSG
+        (
+        MSGKEY
+        , CI
+        , MESSAGE_ID
+        , TRANS_DT
+        , SEND_STAT
+        , SVC_ORG_CD, SVC_ORG_NM
+        , PHONE, CALLBACK
+        , OPT_TYPE, MSG_TYPE
+        , MSG
+        , MULTI_MBL_PRC_TYPE
+        ) VALUES
+        (
+        #{msgKey}
+        , #{ci}
+        , #{messageId}
+        , #{transDt}
+        , #{sendStat}
+        , #{svcOrgCd}, #{svcOrgNm}
+        , #{phone}, #{callback}
+        , #{optType}, #{msgType}
+        , #{msg}
+        , #{multiMblPrcType}
+        )
+    </insert>
+
+    <update id="update_remind_msg_dlv" parameterType="PmMsg">
+        UPDATE PM_REMIND_MSG
+        SET
+        SEND_STAT = #{sendStat}
+            , GW_SND_RSLT_CD = #{gwSndRsltCd}
+            , GW_SND_RSLT_DESC = #{gwSndRsltDesc}
+            , GW_SND_RSLT_DT = #{gwSndRsltDt}
+        WHERE
+        MSGKEY = #{msgKey}
+    </update>
+
+    <update id="update_remind_msg_rpt" parameterType="PmMsg" >
+        UPDATE PM_REMIND_MSG
+        SET
+        SEND_STAT = #{sendStat}
+            , GW_RPT_RSLT_CD = #{gwRptRsltCd}
+            , GW_RPT_RSLT_DESC = #{gwRptRsltDesc}
+            , GW_RPT_RSLT_DT = #{gwRptRsltDt}
+        WHERE
+        MSGKEY = #{msgKey}
+    </update>
+
+    <update id="update_remind_msg_sendstat" parameterType="PmMsg" >
+        UPDATE PM_REMIND_MSG
+        SET
+        SEND_STAT = #{sendStat}
+        , END_DT = #{endDt}
+        WHERE
+        MSGKEY = #{msgKey}
+    </update>
+
+    <select id="findMsgByMessageId" parameterType="String" resultType="PmMsg">
+		SELECT
+		    MSGKEY
+			, MESSAGE_ID
+			, CI
+			, SVC_ORG_CD
+            , SVC_ORG_NM
+			, PHONE
+			, CALLBACK
+			, OPT_TYPE
+			, MSG_TYPE
+            , MULTI_MBL_PRC_TYPE
+		FROM PM_MSG
+		WHERE
+		    SEND_STAT = 30
+			AND MESSAGE_ID = #{messageId}
+    </select>
+
+    <select id="select_unread_msg" resultType="MpDcmntInfo">
+        SELECT
+        TA.MESSAGE_ID          AS MESSAGE_ID
+        , TA.SND_NAME          AS SND_NAME
+        , TA.SND_DTM           AS SND_DTM
+        , TA.RSV_DTM           AS RSV_DTM
+        , TA.RD_DTM            AS RD_DTM
+        , NVL(TB.RESND_CNT, 0) AS RESND_CNT
+        FROM MP_DCMNT_INFO TA
+        LEFT OUTER JOIN PM_REMIND_MSG TB
+        ON TA.MESSAGE_ID = TB.MESSAGE_ID
+        WHERE
+        TA.SND_DTM is not Null
+        AND TA.RSV_DTM is not Null
+        AND TA.RD_DTM is NULL
+        AND TA.RSV_DTM <![CDATA[ >= ]]> TO_CHAR(SYSDATE-72/24,'YYYYMMDDHH24MISS')
+        AND NVL(TB.RESND_CNT, 0) = 0
+    </select>
+
+    <select id="select_remind_msg" parameterType="String" resultType="PmMsg">
+		SELECT
+		    MSGKEY
+			, MESSAGE_ID
+			, CI
+			, SVC_ORG_CD, SVC_ORG_NM
+			, PHONE
+			, CALLBACK
+			, OPT_TYPE
+			, MSG_TYPE
+			, MSG
+            , SEND_STAT
+            , GW_SND_RSLT_DT
+            , GW_SND_RSLT_CD
+            , GW_SND_RSLT_DESC
+            , GW_RPT_RSLT_DT
+            , GW_RPT_RSLT_CD
+            , GW_RPT_RSLT_DESC
+            , TRANS_DT
+            , END_DT
+		FROM PM_REMIND_MSG
+		WHERE
+		    MSGKEY = #{msgKey}
+    </select>
+
+    <update id="update_remind_msg_resndcnt" parameterType="int">
+        UPDATE PM_REMIND_MSG SET
+        RESND_CNT = #{cnt}
+    </update>
+
+<!--    <select id="getCount_unread_msg" resultType="int">-->
+<!--        <![CDATA[-->
+<!--		SELECT-->
+<!--			 COUNT(1)-->
+<!--		FROM MP_DCMNT_INFO-->
+<!--		WHERE-->
+<!--			PART_MM IN (#{FROM_YMD}, #{TO_YMD})-->
+<!--			AND RD_DTM is Null-->
+<!--			AND RESND_CNT is Null-->
+<!--		]]>-->
+<!--    </select>-->
+</mapper>

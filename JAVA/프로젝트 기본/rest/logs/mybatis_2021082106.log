@@ -1,0 +1,1421 @@
+2021/08/21 18:36:46,954 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 940 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/21 18:36:46,975 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/21 18:36:48,428 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/21 18:36:48,441 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:36:48,442 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/21 18:36:48,443 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/21 18:36:48,630 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/21 18:36:48,631 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1594 ms
+2021/08/21 18:36:48,697 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/21 18:36:49,051 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/21 18:36:49,089 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 15 msec}
+2021/08/21 18:36:49,092 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/21 18:36:49,102 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/21 18:36:49,831 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 11 msec}
+2021/08/21 18:36:49,837 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS user
+ {executed in 3 msec}
+2021/08/21 18:36:49,844 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS user ( num bigint auto_increment , id varchar( 24 ) NOT NULL , pwd varchar( 24 ) NOT NULL , primary key( num ) )
+ {executed in 6 msec}
+2021/08/21 18:36:49,847 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test001', '001!@#$' )
+ {executed in 2 msec}
+2021/08/21 18:36:49,847 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test002', '002!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:36:49,848 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test003', '003!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:36:49,849 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test004', '004!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:36:49,851 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test005', '005!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:36:49,852 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test006', '006!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:36:49,854 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test007', '007!@#$' )
+ {executed in 2 msec}
+2021/08/21 18:36:49,854 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test008', '008!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:36:49,854 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test009', '009!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:36:49,856 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test010', '010!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:36:49,913 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:36:49,970 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/21 18:36:49,985 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.628 seconds (JVM running for 5.276)
+2021/08/21 18:36:49,987 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/21 18:36:49,988 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/21 18:36:49,988 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/21 18:36:49,988 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/21 18:36:49,988 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/21 18:36:58,454 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-3]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/08/21 18:36:58,455 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-3]- Initializing Servlet 'dispatcherServlet'
+2021/08/21 18:36:58,457 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-3]- Completed initialization in 2 ms
+2021/08/21 18:36:58,583 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=29df7b57-d106-4790-bd7b-92a54163280a, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=61}
+2021/08/21 18:36:58,584 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- body : {num=1, id=test001, pwd=001!@#$}
+2021/08/21 18:36:58,584 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- num : 1, id : test001, pwd : 001!@#$
+2021/08/21 18:37:07,642 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=de5ed60a-7834-48f6-9fe5-9d5839da9222, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=61}
+2021/08/21 18:37:07,642 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- body : {num=1, id=test001, pwd=001!@#$}
+2021/08/21 18:37:07,643 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- num : 1, id : test001, pwd : 001!@#$
+2021/08/21 18:37:20,396 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=8c68a945-e369-4b38-bc68-f8bf0faacfe6, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=61}
+2021/08/21 18:37:20,396 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- body : {
+    "num": 2
+  , "id": "test002"
+  , "pwd": "002!@#$"
+}
+2021/08/21 18:37:27,567 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-5]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=dc2adc90-6c99-4d62-ab2d-7e981fb279b5, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=25}
+2021/08/21 18:37:27,568 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-5]- body : {id=test001}
+2021/08/21 18:37:27,668 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:37:27,691 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- SELECT num
+             , id
+             , pwd
+          FROM user
+
+         WHERE id = 'test001'
+ {executed in 1 msec}
+2021/08/21 18:37:27,721 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test001 |001!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:37:27,724 [INFO] [com.example.service.PostService] [http-nio-8080-exec-5]- num: 1, id: test001, pwd: 001!@#$
+2021/08/21 18:37:27,725 [INFO] [com.example.service.PostService] [http-nio-8080-exec-5]- result : [{num : 1, id : test001, pwd : 001!@#$}]
+2021/08/21 18:37:34,582 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-6]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=c3a7d577-232d-481b-97dc-f0b2944b6cb0, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=46}
+2021/08/21 18:37:34,582 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-6]- body : {id=test006, pwd=006!@#$}
+2021/08/21 18:37:34,584 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-6]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:37:34,587 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-6]- INSERT
+          INTO user
+               ( id
+               , pwd
+               )
+        VALUES ( 'test006'
+               , '006!@#$'
+               )
+ {executed in 1 msec}
+2021/08/21 18:37:34,588 [INFO] [com.example.service.PostService] [http-nio-8080-exec-6]- result : 1
+2021/08/21 18:37:44,901 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-7]- header : {user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=2782f9a7-1f59-41d1-8995-9bf93f8ce607, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive}
+2021/08/21 18:37:57,866 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-8]- header : {user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=ead7cb8e-d8c1-4427-8dfe-05443aa8814f, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive}
+2021/08/21 18:37:57,868 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-8]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:37:57,870 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-8]- SELECT num
+             , id
+             , pwd
+          FROM user
+ {executed in 0 msec}
+2021/08/21 18:37:57,874 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-8]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test001 |001!@#$ |
+|2   |test002 |002!@#$ |
+|3   |test003 |003!@#$ |
+|4   |test004 |004!@#$ |
+|5   |test005 |005!@#$ |
+|6   |test006 |006!@#$ |
+|7   |test007 |007!@#$ |
+|8   |test008 |008!@#$ |
+|9   |test009 |009!@#$ |
+|10  |test010 |010!@#$ |
+|11  |test006 |006!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:37:57,876 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 1, id : test001, pwd : 001!@#$
+2021/08/21 18:37:57,876 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 2, id : test002, pwd : 002!@#$
+2021/08/21 18:37:57,876 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 3, id : test003, pwd : 003!@#$
+2021/08/21 18:37:57,877 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 4, id : test004, pwd : 004!@#$
+2021/08/21 18:37:57,878 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 5, id : test005, pwd : 005!@#$
+2021/08/21 18:37:57,878 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 6, id : test006, pwd : 006!@#$
+2021/08/21 18:37:57,879 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 7, id : test007, pwd : 007!@#$
+2021/08/21 18:37:57,879 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 8, id : test008, pwd : 008!@#$
+2021/08/21 18:37:57,879 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 9, id : test009, pwd : 009!@#$
+2021/08/21 18:37:57,879 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 10, id : test010, pwd : 010!@#$
+2021/08/21 18:37:57,880 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- num : 11, id : test006, pwd : 006!@#$
+2021/08/21 18:37:57,880 [INFO] [com.example.service.GetService] [http-nio-8080-exec-8]- result : [{num : 1, id : test001, pwd : 001!@#$},{num : 2, id : test002, pwd : 002!@#$},{num : 3, id : test003, pwd : 003!@#$},{num : 4, id : test004, pwd : 004!@#$},{num : 5, id : test005, pwd : 005!@#$},{num : 6, id : test006, pwd : 006!@#$},{num : 7, id : test007, pwd : 007!@#$},{num : 8, id : test008, pwd : 008!@#$},{num : 9, id : test009, pwd : 009!@#$},{num : 10, id : test010, pwd : 010!@#$},{num : 11, id : test006, pwd : 006!@#$}]
+2021/08/21 18:38:52,127 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-9]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=f6c136a6-5aab-4485-8840-61d79ec1c0c9, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=46}
+2021/08/21 18:38:52,127 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-9]- body : {id=test011, pwd=011!@#$}
+2021/08/21 18:38:52,128 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-9]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:38:52,129 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-9]- INSERT
+          INTO user
+               ( id
+               , pwd
+               )
+        VALUES ( 'test011'
+               , '011!@#$'
+               )
+ {executed in 0 msec}
+2021/08/21 18:38:52,130 [INFO] [com.example.service.PostService] [http-nio-8080-exec-9]- result : 1
+2021/08/21 18:39:01,702 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-10]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=dfd664ab-4659-4bf0-a813-477ed42ecf5c, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=61}
+2021/08/21 18:39:01,703 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-10]- body : {num=1, id=test007, pwd=007!@#$}
+2021/08/21 18:39:01,705 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-10]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:39:01,711 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-10]- UPDATE user
+           SET id  = 'test007'
+             , pwd = '007!@#$'
+         WHERE num = '1'
+ {executed in 3 msec}
+2021/08/21 18:39:06,631 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=88682fa3-9155-4d9a-8b3f-5be1475c81d4, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=61}
+2021/08/21 18:39:06,632 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- body : {num=1, id=test001, pwd=001!@#$}
+2021/08/21 18:39:06,633 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- num : 1, id : test001, pwd : 001!@#$
+2021/08/21 18:39:19,935 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=f0b9cd14-e375-4350-881d-1f282e102636, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=61}
+2021/08/21 18:39:19,935 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- body : {num=1, id=test007, pwd=007!@#$}
+2021/08/21 18:39:19,937 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:39:19,939 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- UPDATE user
+           SET id  = 'test007'
+             , pwd = '007!@#$'
+         WHERE num = '1'
+ {executed in 1 msec}
+2021/08/21 18:39:35,253 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=5bcfe06f-88cb-43b8-8e22-91338912de45, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=25}
+2021/08/21 18:39:35,253 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- body : {id=test001}
+2021/08/21 18:39:35,254 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:39:35,256 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- SELECT num
+             , id
+             , pwd
+          FROM user
+
+         WHERE id = 'test001'
+ {executed in 0 msec}
+2021/08/21 18:39:35,257 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- 
+|----|---|----|
+|num |id |pwd |
+|----|---|----|
+|----|---|----|
+
+2021/08/21 18:39:35,258 [INFO] [com.example.service.PostService] [http-nio-8080-exec-1]- result : []
+2021/08/21 18:39:37,746 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=35770d38-891b-413a-b9a0-e24ae69f2b22, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=25}
+2021/08/21 18:39:37,747 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- body : {id=test001}
+2021/08/21 18:39:37,750 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:39:37,752 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- SELECT num
+             , id
+             , pwd
+          FROM user
+
+         WHERE id = 'test001'
+ {executed in 0 msec}
+2021/08/21 18:39:37,754 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- 
+|----|---|----|
+|num |id |pwd |
+|----|---|----|
+|----|---|----|
+
+2021/08/21 18:39:37,755 [INFO] [com.example.service.PostService] [http-nio-8080-exec-4]- result : []
+2021/08/21 18:39:45,526 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-5]- header : {user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=4d119696-08ad-403d-b4e8-052b7fe146b2, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive}
+2021/08/21 18:39:45,528 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:39:45,529 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- SELECT num
+             , id
+             , pwd
+          FROM user
+ {executed in 0 msec}
+2021/08/21 18:39:45,534 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test007 |007!@#$ |
+|2   |test002 |002!@#$ |
+|3   |test003 |003!@#$ |
+|4   |test004 |004!@#$ |
+|5   |test005 |005!@#$ |
+|6   |test006 |006!@#$ |
+|7   |test007 |007!@#$ |
+|8   |test008 |008!@#$ |
+|9   |test009 |009!@#$ |
+|10  |test010 |010!@#$ |
+|11  |test006 |006!@#$ |
+|12  |test011 |011!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:39:45,535 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 1, id : test007, pwd : 007!@#$
+2021/08/21 18:39:45,535 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 2, id : test002, pwd : 002!@#$
+2021/08/21 18:39:45,535 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 3, id : test003, pwd : 003!@#$
+2021/08/21 18:39:45,535 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 4, id : test004, pwd : 004!@#$
+2021/08/21 18:39:45,535 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 5, id : test005, pwd : 005!@#$
+2021/08/21 18:39:45,535 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 6, id : test006, pwd : 006!@#$
+2021/08/21 18:39:45,536 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 7, id : test007, pwd : 007!@#$
+2021/08/21 18:39:45,536 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 8, id : test008, pwd : 008!@#$
+2021/08/21 18:39:45,536 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 9, id : test009, pwd : 009!@#$
+2021/08/21 18:39:45,536 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 10, id : test010, pwd : 010!@#$
+2021/08/21 18:39:45,536 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 11, id : test006, pwd : 006!@#$
+2021/08/21 18:39:45,536 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- num : 12, id : test011, pwd : 011!@#$
+2021/08/21 18:39:45,537 [INFO] [com.example.service.GetService] [http-nio-8080-exec-5]- result : [{num : 1, id : test007, pwd : 007!@#$},{num : 2, id : test002, pwd : 002!@#$},{num : 3, id : test003, pwd : 003!@#$},{num : 4, id : test004, pwd : 004!@#$},{num : 5, id : test005, pwd : 005!@#$},{num : 6, id : test006, pwd : 006!@#$},{num : 7, id : test007, pwd : 007!@#$},{num : 8, id : test008, pwd : 008!@#$},{num : 9, id : test009, pwd : 009!@#$},{num : 10, id : test010, pwd : 010!@#$},{num : 11, id : test006, pwd : 006!@#$},{num : 12, id : test011, pwd : 011!@#$}]
+2021/08/21 18:39:51,970 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-6]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=0a8b6d43-c930-4003-a6bf-7e0de64a3dd1, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=18}
+2021/08/21 18:39:51,970 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-6]- body : {num=1}
+2021/08/21 18:39:51,971 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-6]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:39:51,973 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-6]- DELETE 
+          FROM user
+         WHERE num = 1
+ {executed in 1 msec}
+2021/08/21 18:39:55,750 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-7]- header : {user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=41e431ab-1369-4c94-be64-34b455d5522b, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive}
+2021/08/21 18:39:55,752 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-7]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:39:55,753 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-7]- SELECT num
+             , id
+             , pwd
+          FROM user
+ {executed in 1 msec}
+2021/08/21 18:39:55,759 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-7]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|2   |test002 |002!@#$ |
+|3   |test003 |003!@#$ |
+|4   |test004 |004!@#$ |
+|5   |test005 |005!@#$ |
+|6   |test006 |006!@#$ |
+|7   |test007 |007!@#$ |
+|8   |test008 |008!@#$ |
+|9   |test009 |009!@#$ |
+|10  |test010 |010!@#$ |
+|11  |test006 |006!@#$ |
+|12  |test011 |011!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:39:55,760 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 2, id : test002, pwd : 002!@#$
+2021/08/21 18:39:55,761 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 3, id : test003, pwd : 003!@#$
+2021/08/21 18:39:55,762 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 4, id : test004, pwd : 004!@#$
+2021/08/21 18:39:55,764 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 5, id : test005, pwd : 005!@#$
+2021/08/21 18:39:55,765 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 6, id : test006, pwd : 006!@#$
+2021/08/21 18:39:55,765 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 7, id : test007, pwd : 007!@#$
+2021/08/21 18:39:55,766 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 8, id : test008, pwd : 008!@#$
+2021/08/21 18:39:55,767 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 9, id : test009, pwd : 009!@#$
+2021/08/21 18:39:55,767 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 10, id : test010, pwd : 010!@#$
+2021/08/21 18:39:55,767 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 11, id : test006, pwd : 006!@#$
+2021/08/21 18:39:55,768 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 12, id : test011, pwd : 011!@#$
+2021/08/21 18:39:55,768 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- result : [{num : 2, id : test002, pwd : 002!@#$},{num : 3, id : test003, pwd : 003!@#$},{num : 4, id : test004, pwd : 004!@#$},{num : 5, id : test005, pwd : 005!@#$},{num : 6, id : test006, pwd : 006!@#$},{num : 7, id : test007, pwd : 007!@#$},{num : 8, id : test008, pwd : 008!@#$},{num : 9, id : test009, pwd : 009!@#$},{num : 10, id : test010, pwd : 010!@#$},{num : 11, id : test006, pwd : 006!@#$},{num : 12, id : test011, pwd : 011!@#$}]
+2021/08/21 18:44:28,348 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(18)-127.0.0.1]- Application shutdown requested.
+2021/08/21 18:44:28,545 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(18)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/21 18:44:28,548 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(18)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/21 18:44:45,954 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 3416 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/21 18:44:45,963 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/21 18:44:47,184 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/21 18:44:47,196 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:44:47,196 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/21 18:44:47,197 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/21 18:44:47,331 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/21 18:44:47,331 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1326 ms
+2021/08/21 18:44:47,374 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/21 18:44:47,606 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/21 18:44:47,644 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 18 msec}
+2021/08/21 18:44:47,649 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/21 18:44:47,666 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/21 18:44:48,405 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 9 msec}
+2021/08/21 18:44:48,415 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS user
+ {executed in 5 msec}
+2021/08/21 18:44:48,422 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS user ( num bigint auto_increment , id varchar( 24 ) NOT NULL , pwd varchar( 24 ) NOT NULL , primary key( num ) )
+ {executed in 6 msec}
+2021/08/21 18:44:48,428 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test001', '001!@#$' )
+ {executed in 4 msec}
+2021/08/21 18:44:48,429 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test002', '002!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:44:48,431 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test003', '003!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:44:48,432 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test004', '004!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:44:48,433 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test005', '005!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:44:48,434 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test006', '006!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:44:48,435 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test007', '007!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:44:48,437 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test008', '008!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:44:48,438 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test009', '009!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:44:48,439 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test010', '010!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:44:48,531 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:44:48,573 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/21 18:44:48,606 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.289 seconds (JVM running for 4.665)
+2021/08/21 18:44:48,609 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/21 18:44:48,609 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/21 18:44:48,609 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/21 18:44:48,610 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/21 18:44:48,610 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/21 18:45:02,581 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-2]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/08/21 18:45:02,581 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Initializing Servlet 'dispatcherServlet'
+2021/08/21 18:45:02,583 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Completed initialization in 2 ms
+2021/08/21 18:45:02,691 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=dee08b95-f336-43ce-a81f-337a196bba11, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=25}
+2021/08/21 18:45:02,692 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- body : {id=test001}
+2021/08/21 18:45:02,745 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:45:02,760 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- SELECT num
+             , id
+             , pwd
+          FROM user
+
+         WHERE id = 'test001'
+ {executed in 1 msec}
+2021/08/21 18:45:02,779 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test001 |001!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:45:02,780 [INFO] [com.example.service.PostService] [http-nio-8080-exec-2]- num: 1, id: test001, pwd: 001!@#$
+2021/08/21 18:45:02,781 [INFO] [com.example.service.PostService] [http-nio-8080-exec-2]- result : [{num : 1, id : test001, pwd : 001!@#$}]
+2021/08/21 18:45:07,995 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=d2306844-53b7-4881-b595-023a14f68642, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=46}
+2021/08/21 18:45:07,996 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- body : {id=test011, pwd=011!@#$}
+2021/08/21 18:45:07,998 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:45:08,000 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- INSERT
+          INTO user
+               ( id
+               , pwd
+               )
+        VALUES ( 'test011'
+               , '011!@#$'
+               )
+ {executed in 1 msec}
+2021/08/21 18:45:08,001 [INFO] [com.example.service.PostService] [http-nio-8080-exec-3]- result : 1
+2021/08/21 18:45:29,252 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=e104ba92-05f1-48b0-ba81-69d5f97e1da6, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=39}
+2021/08/21 18:45:29,253 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- body : {num=1, id=test007}
+2021/08/21 18:45:29,258 [ERROR] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-4]- Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is java.lang.NullPointerException] with root cause
+java.lang.NullPointerException: null
+	at com.example.service.PostService.updateUser(PostService.java:97) ~[classes/:?]
+	at com.example.controller.PostController.updateUser(PostController.java:139) ~[classes/:?]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_282]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_282]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_282]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_282]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:197) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:141) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:106) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1064) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:963) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:880) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:764) ~[tomcat-embed-core-9.0.50.jar:4.0.FR]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:228) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53) ~[tomcat-embed-websocket-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:202) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:97) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:542) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:143) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:92) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:78) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:357) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:382) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:893) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1723) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [?:1.8.0_282]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [?:1.8.0_282]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.lang.Thread.run(Thread.java:748) [?:1.8.0_282]
+2021/08/21 18:47:05,517 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(12)-127.0.0.1]- Application shutdown requested.
+2021/08/21 18:47:05,688 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(12)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/21 18:47:05,691 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(12)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/21 18:47:19,287 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 7776 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/21 18:47:19,296 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/21 18:47:20,611 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/21 18:47:20,632 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:47:20,633 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/21 18:47:20,634 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/21 18:47:20,836 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/21 18:47:20,837 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1482 ms
+2021/08/21 18:47:20,881 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/21 18:47:21,130 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/21 18:47:21,160 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 11 msec}
+2021/08/21 18:47:21,162 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/21 18:47:21,171 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/21 18:47:21,798 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 10 msec}
+2021/08/21 18:47:21,804 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS user
+ {executed in 3 msec}
+2021/08/21 18:47:21,808 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS user ( num bigint auto_increment , id varchar( 24 ) NOT NULL , pwd varchar( 24 ) NOT NULL , primary key( num ) )
+ {executed in 4 msec}
+2021/08/21 18:47:21,812 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test001', '001!@#$' )
+ {executed in 2 msec}
+2021/08/21 18:47:21,813 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test002', '002!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:47:21,813 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test003', '003!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:47:21,814 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test004', '004!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:47:21,814 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test005', '005!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:47:21,815 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test006', '006!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:47:21,816 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test007', '007!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:47:21,816 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test008', '008!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:47:21,817 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test009', '009!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:47:21,818 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test010', '010!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:47:21,870 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:47:21,891 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/21 18:47:21,904 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.302 seconds (JVM running for 4.982)
+2021/08/21 18:47:21,906 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/21 18:47:21,906 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/21 18:47:21,906 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/21 18:47:21,907 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/21 18:47:21,907 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/21 18:47:28,590 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-2]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/08/21 18:47:28,591 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Initializing Servlet 'dispatcherServlet'
+2021/08/21 18:47:28,593 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Completed initialization in 1 ms
+2021/08/21 18:47:28,741 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=aebc4c07-6103-4949-bd3a-155fb92cf8b3, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=25}
+2021/08/21 18:47:28,741 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- body : {id=test001}
+2021/08/21 18:47:28,820 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:47:28,834 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- SELECT num
+             , id
+             , pwd
+          FROM user
+
+         WHERE id = 'test001'
+ {executed in 1 msec}
+2021/08/21 18:47:28,855 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test001 |001!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:47:28,859 [INFO] [com.example.service.PostService] [http-nio-8080-exec-2]- num: 1, id: test001, pwd: 001!@#$
+2021/08/21 18:47:28,860 [INFO] [com.example.service.PostService] [http-nio-8080-exec-2]- result : [{num : 1, id : test001, pwd : 001!@#$}]
+2021/08/21 18:47:31,444 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=b53ccf79-f645-4581-a55d-af7c1ac24a46, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=46}
+2021/08/21 18:47:31,444 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- body : {id=test011, pwd=011!@#$}
+2021/08/21 18:47:31,446 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:47:31,447 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- INSERT
+          INTO user
+               ( id
+               , pwd
+               )
+        VALUES ( 'test011'
+               , '011!@#$'
+               )
+ {executed in 1 msec}
+2021/08/21 18:47:31,448 [INFO] [com.example.service.PostService] [http-nio-8080-exec-3]- result : 1
+2021/08/21 18:47:35,007 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=244d6eec-6e02-420a-af76-4b7ee831f9eb, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=25}
+2021/08/21 18:47:35,009 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- body : {id=test001}
+2021/08/21 18:47:35,011 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:47:35,013 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- SELECT num
+             , id
+             , pwd
+          FROM user
+
+         WHERE id = 'test001'
+ {executed in 0 msec}
+2021/08/21 18:47:35,015 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test001 |001!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:47:35,016 [INFO] [com.example.service.PostService] [http-nio-8080-exec-4]- num: 1, id: test001, pwd: 001!@#$
+2021/08/21 18:47:35,018 [INFO] [com.example.service.PostService] [http-nio-8080-exec-4]- result : [{num : 1, id : test001, pwd : 001!@#$}]
+2021/08/21 18:47:40,595 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-5]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=cea84e4b-12cd-4253-8dca-46b0a63ea390, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=39}
+2021/08/21 18:47:40,596 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-5]- body : {num=1, id=test007}
+2021/08/21 18:47:40,598 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:47:40,608 [ERROR] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- 1. Connection.prepareStatement(UPDATE user
+           SET num = ?
+            
+               id  = ?
+            
+            
+         WHERE num = ?) UPDATE user
+           SET num = ?
+
+               id  = ?
+
+         WHERE num = ?
+
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "UPDATE USER
+           SET NUM = ?
+            
+               ID[*]  = ?
+            
+            
+         WHERE NUM = ?"; SQL statement:
+UPDATE user
+           SET num = ?
+            
+               id  = ?
+            
+            
+         WHERE num = ? [42000-200]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:453) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:429) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.get(DbException.java:205) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.get(DbException.java:181) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.getSyntaxError(DbException.java:229) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.command.Parser.getSyntaxError(Parser.java:1051) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.command.Parser.prepareCommand(Parser.java:741) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.engine.Session.prepareLocal(Session.java:657) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.engine.Session.prepareCommand(Session.java:595) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1235) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.jdbc.JdbcPreparedStatement.<init>(JdbcPreparedStatement.java:76) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.jdbc.JdbcConnection.prepareStatement(JdbcConnection.java:352) ~[h2-1.4.200.jar:1.4.200]
+	at net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.prepareStatement(ConnectionSpy.java:469) [log4jdbc-log4j2-jdbc4-1.16.jar:?]
+	at com.zaxxer.hikari.pool.ProxyConnection.prepareStatement(ProxyConnection.java:337) [HikariCP-4.0.3.jar:?]
+	at com.zaxxer.hikari.pool.HikariProxyConnection.prepareStatement(HikariProxyConnection.java) [HikariCP-4.0.3.jar:?]
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.instantiateStatement(PreparedStatementHandler.java:86) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.statement.BaseStatementHandler.prepare(BaseStatementHandler.java:88) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.prepare(RoutingStatementHandler.java:59) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.SimpleExecutor.prepareStatement(SimpleExecutor.java:87) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.SimpleExecutor.doUpdate(SimpleExecutor.java:49) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.BaseExecutor.update(BaseExecutor.java:117) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.CachingExecutor.update(CachingExecutor.java:76) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.update(DefaultSqlSession.java:194) [mybatis-3.5.7.jar:3.5.7]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_282]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_282]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_282]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_282]
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:427) [mybatis-spring-2.0.6.jar:2.0.6]
+	at com.sun.proxy.$Proxy72.update(Unknown Source) [?:?]
+	at org.mybatis.spring.SqlSessionTemplate.update(SqlSessionTemplate.java:288) [mybatis-spring-2.0.6.jar:2.0.6]
+	at org.apache.ibatis.binding.MapperMethod.execute(MapperMethod.java:67) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke(MapperProxy.java:145) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86) [mybatis-3.5.7.jar:3.5.7]
+	at com.sun.proxy.$Proxy73.updateUser(Unknown Source) [?:?]
+	at com.example.service.PostService.updateUser(PostService.java:100) [classes/:?]
+	at com.example.controller.PostController.updateUser(PostController.java:139) [classes/:?]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_282]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_282]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_282]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_282]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:197) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:141) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:106) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1064) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:963) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:880) [spring-webmvc-5.3.9.jar:5.3.9]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:764) [tomcat-embed-core-9.0.50.jar:4.0.FR]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:228) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53) [tomcat-embed-websocket-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) [spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) [spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) [spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:202) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:97) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:542) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:143) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:92) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:78) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:357) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:382) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:893) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1723) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [?:1.8.0_282]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [?:1.8.0_282]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.lang.Thread.run(Thread.java:748) [?:1.8.0_282]
+2021/08/21 18:47:40,619 [ERROR] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- 1. Connection.prepareStatement(UPDATE user
+           SET num = ?
+            
+               id  = ?
+            
+            
+         WHERE num = ?) FAILED! UPDATE user
+           SET num = ?
+
+               id  = ?
+
+         WHERE num = ?
+ {FAILED after -1 msec}
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "UPDATE USER
+           SET NUM = ?
+            
+               ID[*]  = ?
+            
+            
+         WHERE NUM = ?"; SQL statement:
+UPDATE user
+           SET num = ?
+            
+               id  = ?
+            
+            
+         WHERE num = ? [42000-200]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:453) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:429) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.get(DbException.java:205) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.get(DbException.java:181) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.getSyntaxError(DbException.java:229) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.command.Parser.getSyntaxError(Parser.java:1051) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.command.Parser.prepareCommand(Parser.java:741) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.engine.Session.prepareLocal(Session.java:657) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.engine.Session.prepareCommand(Session.java:595) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1235) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.jdbc.JdbcPreparedStatement.<init>(JdbcPreparedStatement.java:76) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.jdbc.JdbcConnection.prepareStatement(JdbcConnection.java:352) ~[h2-1.4.200.jar:1.4.200]
+	at net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.prepareStatement(ConnectionSpy.java:469) [log4jdbc-log4j2-jdbc4-1.16.jar:?]
+	at com.zaxxer.hikari.pool.ProxyConnection.prepareStatement(ProxyConnection.java:337) [HikariCP-4.0.3.jar:?]
+	at com.zaxxer.hikari.pool.HikariProxyConnection.prepareStatement(HikariProxyConnection.java) [HikariCP-4.0.3.jar:?]
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.instantiateStatement(PreparedStatementHandler.java:86) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.statement.BaseStatementHandler.prepare(BaseStatementHandler.java:88) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.prepare(RoutingStatementHandler.java:59) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.SimpleExecutor.prepareStatement(SimpleExecutor.java:87) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.SimpleExecutor.doUpdate(SimpleExecutor.java:49) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.BaseExecutor.update(BaseExecutor.java:117) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.CachingExecutor.update(CachingExecutor.java:76) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.update(DefaultSqlSession.java:194) [mybatis-3.5.7.jar:3.5.7]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_282]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_282]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_282]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_282]
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:427) [mybatis-spring-2.0.6.jar:2.0.6]
+	at com.sun.proxy.$Proxy72.update(Unknown Source) [?:?]
+	at org.mybatis.spring.SqlSessionTemplate.update(SqlSessionTemplate.java:288) [mybatis-spring-2.0.6.jar:2.0.6]
+	at org.apache.ibatis.binding.MapperMethod.execute(MapperMethod.java:67) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke(MapperProxy.java:145) [mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86) [mybatis-3.5.7.jar:3.5.7]
+	at com.sun.proxy.$Proxy73.updateUser(Unknown Source) [?:?]
+	at com.example.service.PostService.updateUser(PostService.java:100) [classes/:?]
+	at com.example.controller.PostController.updateUser(PostController.java:139) [classes/:?]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_282]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_282]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_282]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_282]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:197) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:141) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:106) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1064) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:963) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) [spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:880) [spring-webmvc-5.3.9.jar:5.3.9]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:764) [tomcat-embed-core-9.0.50.jar:4.0.FR]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:228) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53) [tomcat-embed-websocket-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) [spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) [spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) [spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) [spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:202) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:97) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:542) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:143) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:92) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:78) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:357) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:382) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:893) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1723) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [?:1.8.0_282]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [?:1.8.0_282]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.lang.Thread.run(Thread.java:748) [?:1.8.0_282]
+2021/08/21 18:47:40,712 [ERROR] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-5]- Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is org.springframework.jdbc.BadSqlGrammarException: 
+### Error updating database.  Cause: org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "UPDATE USER
+           SET NUM = ?
+            
+               ID[*]  = ?
+            
+            
+         WHERE NUM = ?"; SQL statement:
+UPDATE user
+           SET num = ?
+            
+               id  = ?
+            
+            
+         WHERE num = ? [42000-200]
+### The error may exist in file [D:\study\srv_rest\workspace\rest\target\classes\mybatis-mapper\UserMapper.xml]
+### The error may involve com.example.domain.UserMapper.updateUser
+### The error occurred while executing an update
+### SQL: UPDATE user            SET num = ?                             id  = ?                                    WHERE num = ?
+### Cause: org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "UPDATE USER
+           SET NUM = ?
+            
+               ID[*]  = ?
+            
+            
+         WHERE NUM = ?"; SQL statement:
+UPDATE user
+           SET num = ?
+            
+               id  = ?
+            
+            
+         WHERE num = ? [42000-200]
+; bad SQL grammar []; nested exception is org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "UPDATE USER
+           SET NUM = ?
+            
+               ID[*]  = ?
+            
+            
+         WHERE NUM = ?"; SQL statement:
+UPDATE user
+           SET num = ?
+            
+               id  = ?
+            
+            
+         WHERE num = ? [42000-200]] with root cause
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "UPDATE USER
+           SET NUM = ?
+            
+               ID[*]  = ?
+            
+            
+         WHERE NUM = ?"; SQL statement:
+UPDATE user
+           SET num = ?
+            
+               id  = ?
+            
+            
+         WHERE num = ? [42000-200]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:453) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:429) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.get(DbException.java:205) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.get(DbException.java:181) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.message.DbException.getSyntaxError(DbException.java:229) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.command.Parser.getSyntaxError(Parser.java:1051) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.command.Parser.prepareCommand(Parser.java:741) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.engine.Session.prepareLocal(Session.java:657) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.engine.Session.prepareCommand(Session.java:595) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1235) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.jdbc.JdbcPreparedStatement.<init>(JdbcPreparedStatement.java:76) ~[h2-1.4.200.jar:1.4.200]
+	at org.h2.jdbc.JdbcConnection.prepareStatement(JdbcConnection.java:352) ~[h2-1.4.200.jar:1.4.200]
+	at net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.prepareStatement(ConnectionSpy.java:469) ~[log4jdbc-log4j2-jdbc4-1.16.jar:?]
+	at com.zaxxer.hikari.pool.ProxyConnection.prepareStatement(ProxyConnection.java:337) ~[HikariCP-4.0.3.jar:?]
+	at com.zaxxer.hikari.pool.HikariProxyConnection.prepareStatement(HikariProxyConnection.java) ~[HikariCP-4.0.3.jar:?]
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.instantiateStatement(PreparedStatementHandler.java:86) ~[mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.statement.BaseStatementHandler.prepare(BaseStatementHandler.java:88) ~[mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.prepare(RoutingStatementHandler.java:59) ~[mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.SimpleExecutor.prepareStatement(SimpleExecutor.java:87) ~[mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.SimpleExecutor.doUpdate(SimpleExecutor.java:49) ~[mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.BaseExecutor.update(BaseExecutor.java:117) ~[mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.executor.CachingExecutor.update(CachingExecutor.java:76) ~[mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.update(DefaultSqlSession.java:194) ~[mybatis-3.5.7.jar:3.5.7]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_282]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_282]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_282]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_282]
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:427) ~[mybatis-spring-2.0.6.jar:2.0.6]
+	at com.sun.proxy.$Proxy72.update(Unknown Source) ~[?:?]
+	at org.mybatis.spring.SqlSessionTemplate.update(SqlSessionTemplate.java:288) ~[mybatis-spring-2.0.6.jar:2.0.6]
+	at org.apache.ibatis.binding.MapperMethod.execute(MapperMethod.java:67) ~[mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke(MapperProxy.java:145) ~[mybatis-3.5.7.jar:3.5.7]
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86) ~[mybatis-3.5.7.jar:3.5.7]
+	at com.sun.proxy.$Proxy73.updateUser(Unknown Source) ~[?:?]
+	at com.example.service.PostService.updateUser(PostService.java:100) ~[classes/:?]
+	at com.example.controller.PostController.updateUser(PostController.java:139) ~[classes/:?]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_282]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_282]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_282]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_282]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:197) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:141) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:106) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1064) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:963) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:880) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:764) ~[tomcat-embed-core-9.0.50.jar:4.0.FR]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:228) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53) ~[tomcat-embed-websocket-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:202) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:97) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:542) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:143) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:92) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:78) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:357) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:382) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:893) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1723) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [?:1.8.0_282]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [?:1.8.0_282]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.lang.Thread.run(Thread.java:748) [?:1.8.0_282]
+2021/08/21 18:48:53,431 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(8)-127.0.0.1]- Application shutdown requested.
+2021/08/21 18:48:53,618 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(8)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/21 18:48:53,621 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(8)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/21 18:49:04,772 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 12392 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/21 18:49:04,781 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/21 18:49:05,924 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/21 18:49:05,936 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:49:05,936 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/21 18:49:05,937 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/21 18:49:06,109 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/21 18:49:06,109 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1286 ms
+2021/08/21 18:49:06,157 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/21 18:49:06,402 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/21 18:49:06,445 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 14 msec}
+2021/08/21 18:49:06,448 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/21 18:49:06,457 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/21 18:49:07,153 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 10 msec}
+2021/08/21 18:49:07,163 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS user
+ {executed in 5 msec}
+2021/08/21 18:49:07,170 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS user ( num bigint auto_increment , id varchar( 24 ) NOT NULL , pwd varchar( 24 ) NOT NULL , primary key( num ) )
+ {executed in 6 msec}
+2021/08/21 18:49:07,175 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test001', '001!@#$' )
+ {executed in 3 msec}
+2021/08/21 18:49:07,176 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test002', '002!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:49:07,178 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test003', '003!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:49:07,179 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test004', '004!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:49:07,180 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test005', '005!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:49:07,181 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test006', '006!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:49:07,182 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test007', '007!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:49:07,183 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test008', '008!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:49:07,185 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test009', '009!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:49:07,185 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test010', '010!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:49:07,236 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:49:07,256 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/21 18:49:07,267 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.125 seconds (JVM running for 4.53)
+2021/08/21 18:49:07,269 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/21 18:49:07,269 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/21 18:49:07,269 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/21 18:49:07,269 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/21 18:49:07,269 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/21 18:49:16,292 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-1]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/08/21 18:49:16,292 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Initializing Servlet 'dispatcherServlet'
+2021/08/21 18:49:16,294 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Completed initialization in 1 ms
+2021/08/21 18:49:16,404 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=82d45bb1-ab6f-4d41-a8af-f2bb59da11f0, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=25}
+2021/08/21 18:49:16,404 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- body : {id=test001}
+2021/08/21 18:49:16,497 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:49:16,525 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- SELECT num
+             , id
+             , pwd
+          FROM user
+
+         WHERE id = 'test001'
+ {executed in 0 msec}
+2021/08/21 18:49:16,554 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test001 |001!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:49:16,557 [INFO] [com.example.service.PostService] [http-nio-8080-exec-1]- num: 1, id: test001, pwd: 001!@#$
+2021/08/21 18:49:16,558 [INFO] [com.example.service.PostService] [http-nio-8080-exec-1]- result : [{num : 1, id : test001, pwd : 001!@#$}]
+2021/08/21 18:49:18,795 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=2c6a0e7e-c8ce-4f4d-9a95-2b14f900754f, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=46}
+2021/08/21 18:49:18,797 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- body : {id=test011, pwd=011!@#$}
+2021/08/21 18:49:18,799 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:49:18,801 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- INSERT
+          INTO user
+               ( id
+               , pwd
+               )
+        VALUES ( 'test011'
+               , '011!@#$'
+               )
+ {executed in 0 msec}
+2021/08/21 18:49:18,802 [INFO] [com.example.service.PostService] [http-nio-8080-exec-3]- result : 1
+2021/08/21 18:49:22,723 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=106a1f09-0f29-4e2b-8d37-f99166ce6817, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=39}
+2021/08/21 18:49:22,724 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- body : {num=1, id=test007}
+2021/08/21 18:49:22,726 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:49:22,731 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- UPDATE user
+           SET num = '1'
+
+             , id  = 'test007'
+
+         WHERE num = '1'
+ {executed in 2 msec}
+2021/08/21 18:49:36,587 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-7]- header : {user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=f9bc3d27-ce85-496f-8b44-deb754a3f0a3, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive}
+2021/08/21 18:49:36,589 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-7]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:49:36,590 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-7]- SELECT num
+             , id
+             , pwd
+          FROM user
+ {executed in 1 msec}
+2021/08/21 18:49:36,596 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-7]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test007 |001!@#$ |
+|2   |test002 |002!@#$ |
+|3   |test003 |003!@#$ |
+|4   |test004 |004!@#$ |
+|5   |test005 |005!@#$ |
+|6   |test006 |006!@#$ |
+|7   |test007 |007!@#$ |
+|8   |test008 |008!@#$ |
+|9   |test009 |009!@#$ |
+|10  |test010 |010!@#$ |
+|11  |test011 |011!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:49:36,597 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 1, id : test007, pwd : 001!@#$
+2021/08/21 18:49:36,598 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 2, id : test002, pwd : 002!@#$
+2021/08/21 18:49:36,599 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 3, id : test003, pwd : 003!@#$
+2021/08/21 18:49:36,599 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 4, id : test004, pwd : 004!@#$
+2021/08/21 18:49:36,599 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 5, id : test005, pwd : 005!@#$
+2021/08/21 18:49:36,600 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 6, id : test006, pwd : 006!@#$
+2021/08/21 18:49:36,600 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 7, id : test007, pwd : 007!@#$
+2021/08/21 18:49:36,601 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 8, id : test008, pwd : 008!@#$
+2021/08/21 18:49:36,601 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 9, id : test009, pwd : 009!@#$
+2021/08/21 18:49:36,602 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 10, id : test010, pwd : 010!@#$
+2021/08/21 18:49:36,602 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 11, id : test011, pwd : 011!@#$
+2021/08/21 18:49:36,603 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- result : [{num : 1, id : test007, pwd : 001!@#$},{num : 2, id : test002, pwd : 002!@#$},{num : 3, id : test003, pwd : 003!@#$},{num : 4, id : test004, pwd : 004!@#$},{num : 5, id : test005, pwd : 005!@#$},{num : 6, id : test006, pwd : 006!@#$},{num : 7, id : test007, pwd : 007!@#$},{num : 8, id : test008, pwd : 008!@#$},{num : 9, id : test009, pwd : 009!@#$},{num : 10, id : test010, pwd : 010!@#$},{num : 11, id : test011, pwd : 011!@#$}]
+2021/08/21 18:50:55,917 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(10)-127.0.0.1]- Application shutdown requested.
+2021/08/21 18:50:56,093 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(10)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/21 18:50:56,097 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(10)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/21 18:51:29,726 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 9832 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/21 18:51:29,738 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/21 18:51:31,049 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/21 18:51:31,061 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:51:31,061 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/21 18:51:31,062 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/21 18:51:31,212 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/21 18:51:31,213 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1405 ms
+2021/08/21 18:51:31,273 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/21 18:51:31,544 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/21 18:51:31,573 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 12 msec}
+2021/08/21 18:51:31,576 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/21 18:51:31,584 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/21 18:51:32,319 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 12 msec}
+2021/08/21 18:51:32,325 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS user
+ {executed in 3 msec}
+2021/08/21 18:51:32,330 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS user ( num bigint auto_increment , id varchar( 24 ) NOT NULL , pwd varchar( 24 ) NOT NULL , primary key( num ) )
+ {executed in 5 msec}
+2021/08/21 18:51:32,333 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test001', '001!@#$' )
+ {executed in 2 msec}
+2021/08/21 18:51:32,334 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test002', '002!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:51:32,334 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test003', '003!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:51:32,335 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test004', '004!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:51:32,335 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test005', '005!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:51:32,336 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test006', '006!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:51:32,337 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test007', '007!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:51:32,337 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test008', '008!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:51:32,338 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test009', '009!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:51:32,338 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test010', '010!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:51:32,392 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:51:32,425 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/21 18:51:32,440 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.357 seconds (JVM running for 4.767)
+2021/08/21 18:51:32,442 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/21 18:51:32,442 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/21 18:51:32,442 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/21 18:51:32,443 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/21 18:51:32,443 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/21 18:51:36,756 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-2]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/08/21 18:51:36,756 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Initializing Servlet 'dispatcherServlet'
+2021/08/21 18:51:36,758 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Completed initialization in 1 ms
+2021/08/21 18:51:36,927 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=7b464b6d-97ec-4e04-8836-2d25c3c5b0f3, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=61}
+2021/08/21 18:51:36,928 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- body : {num=1, id=test001, pwd=001!@#$}
+2021/08/21 18:51:36,929 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- num : 1, id : test001, pwd : 001!@#$
+2021/08/21 18:51:42,114 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=77ee7e23-5b67-43dc-ad2f-4a7c2e80c66b, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=46}
+2021/08/21 18:51:42,115 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-3]- body : {id=test011, pwd=011!@#$}
+2021/08/21 18:51:42,139 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:51:42,152 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-3]- INSERT
+          INTO user
+               ( id
+               , pwd
+               )
+        VALUES ( 'test011'
+               , '011!@#$'
+               )
+ {executed in 0 msec}
+2021/08/21 18:51:42,154 [INFO] [com.example.service.PostService] [http-nio-8080-exec-3]- result : 1
+2021/08/21 18:51:45,275 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=038a5dd5-a400-4ec7-90b9-939be0acdf12, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=39}
+2021/08/21 18:51:45,276 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- body : {num=1, id=test007}
+2021/08/21 18:51:45,284 [ERROR] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-4]- Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is java.lang.NullPointerException] with root cause
+java.lang.NullPointerException: null
+	at com.example.service.PostService.updateUser(PostService.java:98) ~[classes/:?]
+	at com.example.controller.PostController.updateUser(PostController.java:139) ~[classes/:?]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_282]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_282]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_282]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_282]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:197) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:141) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:106) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1064) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:963) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:880) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:764) ~[tomcat-embed-core-9.0.50.jar:4.0.FR]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:228) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53) ~[tomcat-embed-websocket-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:202) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:97) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:542) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:143) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:92) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:78) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:357) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:382) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:893) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1723) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [?:1.8.0_282]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [?:1.8.0_282]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.lang.Thread.run(Thread.java:748) [?:1.8.0_282]
+2021/08/21 18:53:38,119 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(10)-127.0.0.1]- Application shutdown requested.
+2021/08/21 18:53:38,303 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(10)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/21 18:53:38,306 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(10)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/21 18:53:50,239 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 12532 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/21 18:53:50,251 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/21 18:53:51,520 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/21 18:53:51,532 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:53:51,533 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/21 18:53:51,534 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/21 18:53:51,679 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/21 18:53:51,680 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1384 ms
+2021/08/21 18:53:51,725 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/21 18:53:51,941 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/21 18:53:51,970 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 12 msec}
+2021/08/21 18:53:51,973 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/21 18:53:51,981 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/21 18:53:52,661 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 9 msec}
+2021/08/21 18:53:52,667 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS user
+ {executed in 3 msec}
+2021/08/21 18:53:52,672 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS user ( num bigint auto_increment , id varchar( 24 ) NOT NULL , pwd varchar( 24 ) NOT NULL , primary key( num ) )
+ {executed in 5 msec}
+2021/08/21 18:53:52,675 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test001', '001!@#$' )
+ {executed in 2 msec}
+2021/08/21 18:53:52,676 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test002', '002!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:53:52,676 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test003', '003!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:53:52,677 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test004', '004!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:53:52,677 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test005', '005!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:53:52,678 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test006', '006!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:53:52,679 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test007', '007!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:53:52,679 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test008', '008!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:53:52,680 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test009', '009!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:53:52,680 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test010', '010!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:53:52,732 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:53:52,751 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/21 18:53:52,762 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.183 seconds (JVM running for 4.655)
+2021/08/21 18:53:52,764 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/21 18:53:52,765 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/21 18:53:52,765 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/21 18:53:52,765 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/21 18:53:52,765 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/21 18:54:01,228 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-2]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/08/21 18:54:01,228 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Initializing Servlet 'dispatcherServlet'
+2021/08/21 18:54:01,230 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Completed initialization in 2 ms
+2021/08/21 18:54:01,343 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=1ffeaca4-dd9b-4f44-9277-3bb04e43c6c1, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=25}
+2021/08/21 18:54:01,343 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- body : {id=test001}
+2021/08/21 18:54:01,398 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:54:01,413 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- SELECT num
+             , id
+             , pwd
+          FROM user
+
+         WHERE id = 'test001'
+ {executed in 0 msec}
+2021/08/21 18:54:01,431 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test001 |001!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:54:01,433 [INFO] [com.example.service.PostService] [http-nio-8080-exec-2]- num: 1, id: test001, pwd: 001!@#$
+2021/08/21 18:54:01,433 [INFO] [com.example.service.PostService] [http-nio-8080-exec-2]- result : [{num : 1, id : test001, pwd : 001!@#$}]
+2021/08/21 18:54:03,140 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=bac59a65-f56f-4c82-951c-dd1704a2c174, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=46}
+2021/08/21 18:54:03,142 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- body : {id=test011, pwd=011!@#$}
+2021/08/21 18:54:03,144 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:54:03,146 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- INSERT
+          INTO user
+               ( id
+               , pwd
+               )
+        VALUES ( 'test011'
+               , '011!@#$'
+               )
+ {executed in 1 msec}
+2021/08/21 18:54:03,147 [INFO] [com.example.service.PostService] [http-nio-8080-exec-1]- result : 1
+2021/08/21 18:54:05,996 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=e63a49ec-71c3-4f45-bf5c-14126b909d2c, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=39}
+2021/08/21 18:54:05,997 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- body : {num=1, id=test007}
+2021/08/21 18:54:05,999 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:54:06,004 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- UPDATE user
+           SET num = '1'
+
+             , id  = 'test007'
+
+         WHERE num = '1'
+ {executed in 2 msec}
+2021/08/21 18:54:52,567 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(9)-127.0.0.1]- Application shutdown requested.
+2021/08/21 18:54:52,752 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(9)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/21 18:54:52,756 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(9)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/21 18:56:30,217 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 8880 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/21 18:56:30,226 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/21 18:56:31,356 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/21 18:56:31,376 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:56:31,377 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/21 18:56:31,378 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/21 18:56:31,538 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/21 18:56:31,539 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1272 ms
+2021/08/21 18:56:31,582 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/21 18:56:31,800 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/21 18:56:31,830 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 12 msec}
+2021/08/21 18:56:31,833 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/21 18:56:31,842 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/21 18:56:32,575 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 9 msec}
+2021/08/21 18:56:32,581 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- DROP TABLE IF EXISTS user
+ {executed in 3 msec}
+2021/08/21 18:56:32,586 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- CREATE TABLE IF NOT EXISTS user ( num bigint auto_increment , id varchar( 24 ) NOT NULL , pwd varchar( 24 ) NOT NULL , primary key( num ) )
+ {executed in 5 msec}
+2021/08/21 18:56:32,590 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test001', '001!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:56:32,590 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test002', '002!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:56:32,591 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test003', '003!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:56:32,591 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test004', '004!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:56:32,592 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test005', '005!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:56:32,593 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test006', '006!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:56:32,594 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test007', '007!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:56:32,595 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test008', '008!@#$' )
+ {executed in 1 msec}
+2021/08/21 18:56:32,596 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test009', '009!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:56:32,597 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- INSERT INTO user( id, pwd ) VALUES( 'test010', '010!@#$' )
+ {executed in 0 msec}
+2021/08/21 18:56:32,660 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/21 18:56:32,692 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/21 18:56:32,703 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.09 seconds (JVM running for 4.545)
+2021/08/21 18:56:32,705 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/21 18:56:32,705 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/21 18:56:32,705 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/21 18:56:32,705 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/21 18:56:32,705 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/21 18:56:38,213 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-1]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/08/21 18:56:38,213 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Initializing Servlet 'dispatcherServlet'
+2021/08/21 18:56:38,215 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-1]- Completed initialization in 2 ms
+2021/08/21 18:56:38,346 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=651f9368-791a-4ce2-9af3-63baa01e1dc5, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=25}
+2021/08/21 18:56:38,347 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- body : {id=test001}
+2021/08/21 18:56:38,426 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:56:38,442 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- SELECT num
+             , id
+             , pwd
+          FROM user
+
+         WHERE id = 'test001'
+ {executed in 1 msec}
+2021/08/21 18:56:38,464 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-1]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test001 |001!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:56:38,466 [INFO] [com.example.service.PostService] [http-nio-8080-exec-1]- num: 1, id: test001, pwd: 001!@#$
+2021/08/21 18:56:38,467 [INFO] [com.example.service.PostService] [http-nio-8080-exec-1]- result : [{num : 1, id : test001, pwd : 001!@#$}]
+2021/08/21 18:56:40,448 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=3b9fa8db-7074-44b9-b39d-3b056dfe255d, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=46}
+2021/08/21 18:56:40,448 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-2]- body : {id=test011, pwd=011!@#$}
+2021/08/21 18:56:40,451 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:56:40,454 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-2]- INSERT
+          INTO user
+               ( id
+               , pwd
+               )
+        VALUES ( 'test011'
+               , '011!@#$'
+               )
+ {executed in 1 msec}
+2021/08/21 18:56:40,455 [INFO] [com.example.service.PostService] [http-nio-8080-exec-2]- result : 1
+2021/08/21 18:56:42,616 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-5]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=635e9287-3996-4ffc-860b-ebc970f24bd7, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=39}
+2021/08/21 18:56:42,617 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-5]- body : {num=1, id=test007}
+2021/08/21 18:56:42,620 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:56:42,626 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-5]- UPDATE user
+           SET num = '1'
+
+             , id  = 'test007'
+
+         WHERE num = '1'
+ {executed in 3 msec}
+2021/08/21 18:57:12,604 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=757d63fb-6f66-4983-a4dc-ff9a3553d5af, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=41}
+2021/08/21 18:57:12,605 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-4]- body : {num=1, pwd=099!@#$}
+2021/08/21 18:57:12,606 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- SELECT 1
+ {executed in 0 msec}
+2021/08/21 18:57:12,608 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-4]- UPDATE user
+           SET num = '1'
+
+             , pwd = '099!@#$'
+
+         WHERE num = '1'
+ {executed in 0 msec}
+2021/08/21 18:57:23,346 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-7]- header : {user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=51b7f901-7cfb-40a8-9af7-520706a03b15, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive}
+2021/08/21 18:57:23,348 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-7]- SELECT 1
+ {executed in 1 msec}
+2021/08/21 18:57:23,350 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-7]- SELECT num
+             , id
+             , pwd
+          FROM user
+ {executed in 0 msec}
+2021/08/21 18:57:23,354 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [http-nio-8080-exec-7]- 
+|----|--------|--------|
+|num |id      |pwd     |
+|----|--------|--------|
+|1   |test007 |099!@#$ |
+|2   |test002 |002!@#$ |
+|3   |test003 |003!@#$ |
+|4   |test004 |004!@#$ |
+|5   |test005 |005!@#$ |
+|6   |test006 |006!@#$ |
+|7   |test007 |007!@#$ |
+|8   |test008 |008!@#$ |
+|9   |test009 |009!@#$ |
+|10  |test010 |010!@#$ |
+|11  |test011 |011!@#$ |
+|----|--------|--------|
+
+2021/08/21 18:57:23,355 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 1, id : test007, pwd : 099!@#$
+2021/08/21 18:57:23,355 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 2, id : test002, pwd : 002!@#$
+2021/08/21 18:57:23,355 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 3, id : test003, pwd : 003!@#$
+2021/08/21 18:57:23,356 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 4, id : test004, pwd : 004!@#$
+2021/08/21 18:57:23,356 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 5, id : test005, pwd : 005!@#$
+2021/08/21 18:57:23,356 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 6, id : test006, pwd : 006!@#$
+2021/08/21 18:57:23,356 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 7, id : test007, pwd : 007!@#$
+2021/08/21 18:57:23,357 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 8, id : test008, pwd : 008!@#$
+2021/08/21 18:57:23,357 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 9, id : test009, pwd : 009!@#$
+2021/08/21 18:57:23,357 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 10, id : test010, pwd : 010!@#$
+2021/08/21 18:57:23,357 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- num : 11, id : test011, pwd : 011!@#$
+2021/08/21 18:57:23,357 [INFO] [com.example.service.GetService] [http-nio-8080-exec-7]- result : [{num : 1, id : test007, pwd : 099!@#$},{num : 2, id : test002, pwd : 002!@#$},{num : 3, id : test003, pwd : 003!@#$},{num : 4, id : test004, pwd : 004!@#$},{num : 5, id : test005, pwd : 005!@#$},{num : 6, id : test006, pwd : 006!@#$},{num : 7, id : test007, pwd : 007!@#$},{num : 8, id : test008, pwd : 008!@#$},{num : 9, id : test009, pwd : 009!@#$},{num : 10, id : test010, pwd : 010!@#$},{num : 11, id : test011, pwd : 011!@#$}]
+2021/08/21 18:57:50,989 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(11)-127.0.0.1]- Application shutdown requested.
+2021/08/21 18:57:51,177 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(11)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/21 18:57:51,180 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(11)-127.0.0.1]- HikariPool-1 - Shutdown completed.

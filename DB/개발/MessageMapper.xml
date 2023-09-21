@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uplus.mp.gw.ms.mappers.altibase.MessageMapper">
+
+	<select id="getMessageRdngRpmtYnByMessageId" parameterType="document" resultType="string">
+		SELECT
+			   DECODE(TA.RDNG_RPMT_YN, 'Y', TA.RDNG_RPMT_YN, DECODE(TA.TKN_RPMT_YN, 'Y', TA.TKN_RPMT_YN, 'N')) AS 'TKN_RDNG_RPMT_YN'
+		  FROM
+		       PM_MSG TA
+		 WHERE 
+		       TA.PART_MM    = #{partMm}
+		   AND
+               TA.MESSAGE_ID = #{messageId}
+		 LIMIT 1
+	</select>
+
+	<select id="getMessageTknRdngRpmtYnByMessageId" parameterType="document" resultType="string">
+		SELECT
+			   DECODE(TA.RDNG_RPMT_YN, 'Y', TA.RDNG_RPMT_YN, 'N') || DECODE(TA.TKN_RPMT_YN, 'Y', TA.TKN_RPMT_YN, 'N') AS 'TKN_RDNG_RPMT_YN'
+		  FROM 
+		       PM_MSG TA
+		 WHERE 
+		       TA.PART_MM    = #{partMm}
+		   AND
+               TA.MESSAGE_ID = #{messageId}
+		LIMIT 1
+	</select>
+
+	<select id="getMessageClickDtByMessageId" parameterType="map" resultType="string">
+		SELECT
+			   TA.CLICK_DT
+		  FROM 
+		       PM_MSG TA
+		 WHERE 
+		       TA.PART_MM    = #{partMm}
+		   AND
+               TA.MESSAGE_ID = #{messageId}
+		 LIMIT 1
+	</select>
+
+</mapper>

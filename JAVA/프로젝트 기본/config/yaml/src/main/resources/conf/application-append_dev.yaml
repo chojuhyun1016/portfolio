@@ -1,0 +1,10 @@
+
+spring:
+  config:
+    activate:
+      on-profile: append_dev
+
+    
+append:
+  ip: 127.0.0.1
+  port : 7001

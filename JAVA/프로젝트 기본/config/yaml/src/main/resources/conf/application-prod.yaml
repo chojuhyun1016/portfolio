@@ -1,0 +1,15 @@
+  
+spring:
+  config:
+    activate:
+      on-profile: prod
+    
+    
+server:
+    name: Prod Server
+    num: 3
+    
+    info:
+        ip : 172.20.245.3
+        port: 6003
+        

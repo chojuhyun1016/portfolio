@@ -1,0 +1,231 @@
+2021/08/16 14:31:51,153 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 3700 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/16 14:31:51,169 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/16 14:31:52,474 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/16 14:31:52,487 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/16 14:31:52,487 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/16 14:31:52,488 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/16 14:31:52,661 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/16 14:31:52,662 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1448 ms
+2021/08/16 14:31:52,711 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/16 14:31:52,998 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/16 14:31:53,030 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 14 msec}
+2021/08/16 14:31:53,033 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/16 14:31:53,042 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/16 14:31:53,778 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/16 14:31:53,804 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/16 14:31:53,815 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.245 seconds (JVM running for 4.65)
+2021/08/16 14:31:53,817 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/16 14:31:53,818 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/16 14:31:53,818 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/16 14:31:53,818 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/16 14:31:53,818 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/16 14:33:31,349 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-2]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/08/16 14:33:31,349 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Initializing Servlet 'dispatcherServlet'
+2021/08/16 14:33:31,351 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Completed initialization in 0 ms
+2021/08/16 14:33:58,884 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(10)-127.0.0.1]- Application shutdown requested.
+2021/08/16 14:33:59,074 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(10)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/16 14:33:59,077 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(10)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/16 14:34:11,294 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 10112 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/16 14:34:11,308 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/16 14:34:12,821 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/16 14:34:12,837 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/16 14:34:12,838 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/16 14:34:12,839 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/16 14:34:13,039 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/16 14:34:13,039 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1674 ms
+2021/08/16 14:34:13,097 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/16 14:34:13,464 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/16 14:34:13,519 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 24 msec}
+2021/08/16 14:34:13,524 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/16 14:34:13,541 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/16 14:34:14,345 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/16 14:34:14,370 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/16 14:34:14,383 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.698 seconds (JVM running for 5.327)
+2021/08/16 14:34:14,385 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/16 14:34:14,385 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/16 14:34:14,385 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/16 14:34:14,385 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/16 14:34:14,386 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/16 14:34:24,375 [INFO] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-2]- Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021/08/16 14:34:24,376 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Initializing Servlet 'dispatcherServlet'
+2021/08/16 14:34:24,377 [INFO] [org.springframework.web.servlet.FrameworkServlet] [http-nio-8080-exec-2]- Completed initialization in 1 ms
+2021/08/16 14:35:59,792 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-5]- header : {user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=fd7f4629-f5b2-4606-b6aa-2954afcfdaa0, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive}
+2021/08/16 14:38:13,611 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-9]- header : {user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=8169168e-3c1b-440e-a33c-18930e650b6f, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive}
+2021/08/16 14:38:13,612 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-9]- num : null, id : chojuhyun002, pwd : 002!@#$
+2021/08/16 14:38:13,618 [ERROR] [org.apache.juli.logging.DirectJDKLog] [http-nio-8080-exec-9]- Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is java.lang.NullPointerException] with root cause
+java.lang.NullPointerException: null
+	at com.example.controller.GetController.getParamHeader(GetController.java:57) ~[classes/:?]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_282]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_282]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_282]
+	at java.lang.reflect.Method.invoke(Method.java:498) ~[?:1.8.0_282]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:197) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:141) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:106) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:895) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:808) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1064) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:963) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:898) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:655) ~[tomcat-embed-core-9.0.50.jar:4.0.FR]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:883) ~[spring-webmvc-5.3.9.jar:5.3.9]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:764) ~[tomcat-embed-core-9.0.50.jar:4.0.FR]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:228) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53) ~[tomcat-embed-websocket-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119) ~[spring-web-5.3.9.jar:5.3.9]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:190) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:163) ~[tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:202) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:97) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:542) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:143) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:92) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:78) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:357) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:382) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:893) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1723) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [?:1.8.0_282]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [?:1.8.0_282]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-embed-core-9.0.50.jar:9.0.50]
+	at java.lang.Thread.run(Thread.java:748) [?:1.8.0_282]
+2021/08/16 14:38:51,939 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-1]- header : {user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=095a61ba-f14d-41a0-b3fb-1b5282a814ce, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive}
+2021/08/16 14:38:51,940 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-1]- num : 2, id : chojuhyun002, pwd : 002!!@
+2021/08/16 14:39:32,667 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-2]- header : num : 3, id : chojuhyun003, pwd : 003!@
+2021/08/16 14:39:32,667 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-2]- num : 3, id : chojuhyun003, pwd : 003!@
+2021/08/16 14:40:17,241 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-3]- header : num : 4, id : chojuhyun004, pwd : 004!@
+2021/08/16 14:40:17,241 [INFO] [com.example.controller.GetController] [http-nio-8080-exec-3]- num : 4, id : chojuhyun004, pwd : 004!@
+2021/08/16 14:40:39,291 [WARN] [org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver] [http-nio-8080-exec-4]- Resolved [org.springframework.web.HttpMediaTypeNotSupportedException: Content type 'text/plain;charset=UTF-8' not supported]
+2021/08/16 14:40:45,627 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-5]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=61f57395-8c4c-43ce-9287-a995ef969ec4, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=66}
+2021/08/16 14:40:45,628 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-5]- body : {num=1, id=chojuhyun001, pwd=001!@#$}
+2021/08/16 14:40:45,628 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-5]- num : 1, id : chojuhyun001, pwd : 001!@#$
+2021/08/16 14:40:56,731 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-6]- header : {content-type=application/json, user-agent=PostmanRuntime/7.28.3, accept=*/*, cache-control=no-cache, postman-token=cddfc40f-0cd4-4d15-b94f-fac4ca3e7ba6, host=localhost:8080, accept-encoding=gzip, deflate, br, connection=keep-alive, content-length=66}
+2021/08/16 14:40:56,732 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-6]- body : {
+    "num": 2
+  , "id": "chojuhyun002"
+  , "pwd": "002!@#$"
+}
+2021/08/16 14:42:43,150 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-10]- body : num : 3, id : chojuhyun003, pwd : 003!@#$
+2021/08/16 14:43:06,404 [INFO] [com.example.controller.PostController] [http-nio-8080-exec-1]- body : num : 4, id : chojuhyun004, pwd : 004!@#$
+2021/08/16 14:55:46,822 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(32)-127.0.0.1]- Application shutdown requested.
+2021/08/16 14:55:47,007 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(32)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/16 14:55:47,010 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(32)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/16 14:56:35,583 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 2504 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/16 14:56:35,591 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/16 14:56:36,925 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/16 14:56:36,937 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/16 14:56:36,938 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/16 14:56:36,938 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/16 14:56:37,109 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/16 14:56:37,110 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1465 ms
+2021/08/16 14:56:37,171 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/16 14:56:37,408 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/16 14:56:37,446 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 15 msec}
+2021/08/16 14:56:37,449 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/16 14:56:37,458 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/16 14:56:38,132 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/16 14:56:38,150 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/16 14:56:38,162 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.233 seconds (JVM running for 4.83)
+2021/08/16 14:56:38,164 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/16 14:56:38,164 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/16 14:56:38,164 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/16 14:56:38,165 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/16 14:56:38,165 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/16 14:56:58,966 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(6)-127.0.0.1]- Application shutdown requested.
+2021/08/16 14:56:59,218 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(6)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/16 14:56:59,221 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(6)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/16 14:57:27,208 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 9336 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/16 14:57:27,217 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/16 14:57:28,457 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/16 14:57:28,469 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/16 14:57:28,469 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/16 14:57:28,469 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/16 14:57:28,609 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/16 14:57:28,610 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1352 ms
+2021/08/16 14:57:28,666 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/16 14:57:28,871 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/16 14:57:28,905 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 15 msec}
+2021/08/16 14:57:28,907 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/16 14:57:28,916 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/16 14:57:29,663 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting ProtocolHandler ["http-nio-8080"]
+2021/08/16 14:57:29,693 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat started on port(s): 8080 (http) with context path ''
+2021/08/16 14:57:29,712 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Started RestApplication in 3.172 seconds (JVM running for 4.769)
+2021/08/16 14:57:29,715 [INFO] [com.example.RestApplication] [main]- ---원본 args---
+2021/08/16 14:57:29,715 [INFO] [com.example.RestApplication] [main]- --spring.output.ansi.enabled=always
+2021/08/16 14:57:29,716 [INFO] [com.example.RestApplication] [main]- ---옵션아닌 args---
+2021/08/16 14:57:29,716 [INFO] [com.example.RestApplication] [main]- ---옵션 args---
+2021/08/16 14:57:29,716 [INFO] [com.example.RestApplication] [main]- spring.output.ansi.enabled : always
+2021/08/16 14:58:58,764 [INFO] [org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin] [RMI TCP Connection(12)-127.0.0.1]- Application shutdown requested.
+2021/08/16 14:58:58,963 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(12)-127.0.0.1]- HikariPool-1 - Shutdown initiated...
+2021/08/16 14:58:58,966 [INFO] [com.zaxxer.hikari.HikariDataSource] [RMI TCP Connection(12)-127.0.0.1]- HikariPool-1 - Shutdown completed.
+2021/08/16 14:59:08,042 [INFO] [org.springframework.boot.StartupInfoLogger] [main]- Starting RestApplication using Java 1.8.0_282 on 조주현-LAPTOP with PID 3844 (D:\study\srv_rest\workspace\rest\target\classes started by choju in D:\study\srv_rest\workspace\rest)
+2021/08/16 14:59:08,051 [INFO] [org.springframework.boot.SpringApplication] [main]- No active profile set, falling back to default profiles: default
+2021/08/16 14:59:09,297 [INFO] [org.springframework.boot.web.embedded.tomcat.TomcatWebServer] [main]- Tomcat initialized with port(s): 8080 (http)
+2021/08/16 14:59:09,308 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing ProtocolHandler ["http-nio-8080"]
+2021/08/16 14:59:09,309 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting service [Tomcat]
+2021/08/16 14:59:09,310 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Starting Servlet engine: [Apache Tomcat/9.0.50]
+2021/08/16 14:59:09,473 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Initializing Spring embedded WebApplicationContext
+2021/08/16 14:59:09,474 [INFO] [org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext] [main]- Root WebApplicationContext: initialization completed in 1378 ms
+2021/08/16 14:59:09,529 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Starting...
+2021/08/16 14:59:09,772 [INFO] [com.zaxxer.hikari.pool.PoolBase] [main]- HikariPool-1 - Driver does not support get/set network timeout for connections. (net.sf.log4jdbc.sql.jdbcapi.ConnectionSpy.getNetworkTimeout()I)
+2021/08/16 14:59:09,804 [INFO] [net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator] [main]- SELECT 1
+ {executed in 15 msec}
+2021/08/16 14:59:09,809 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Start completed.
+2021/08/16 14:59:09,824 [INFO] [org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration] [main]- H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./rest.db'
+2021/08/16 14:59:10,496 [WARN] [org.springframework.context.support.AbstractApplicationContext] [main]- Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceScriptDatabaseInitializer' defined in class path resource [org/springframework/boot/autoconfigure/sql/init/DataSourceInitializationConfiguration.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: No schema scripts found at location './src/main/resources/schema.sql'
+2021/08/16 14:59:10,497 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown initiated...
+2021/08/16 14:59:10,508 [INFO] [com.zaxxer.hikari.HikariDataSource] [main]- HikariPool-1 - Shutdown completed.
+2021/08/16 14:59:10,513 [INFO] [org.apache.juli.logging.DirectJDKLog] [main]- Stopping service [Tomcat]
+2021/08/16 14:59:10,527 [INFO] [org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener] [main]- 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+2021/08/16 14:59:10,542 [ERROR] [org.springframework.boot.SpringApplication] [main]- Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceScriptDatabaseInitializer' defined in class path resource [org/springframework/boot/autoconfigure/sql/init/DataSourceInitializationConfiguration.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: No schema scripts found at location './src/main/resources/schema.sql'
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1786) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:602) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:524) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:322) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:944) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:918) ~[spring-context-5.3.9.jar:5.3.9]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:583) ~[spring-context-5.3.9.jar:5.3.9]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:338) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1343) [spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1332) [spring-boot-2.5.3.jar:2.5.3]
+	at com.example.RestApplication.main(RestApplication.java:23) [classes/:?]
+Caused by: java.lang.IllegalStateException: No schema scripts found at location './src/main/resources/schema.sql'
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.getScripts(AbstractScriptDatabaseInitializer.java:128) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.applyScripts(AbstractScriptDatabaseInitializer.java:105) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.applySchemaScripts(AbstractScriptDatabaseInitializer.java:97) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.initializeDatabase(AbstractScriptDatabaseInitializer.java:75) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.boot.sql.init.AbstractScriptDatabaseInitializer.afterPropertiesSet(AbstractScriptDatabaseInitializer.java:65) ~[spring-boot-2.5.3.jar:2.5.3]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1845) ~[spring-beans-5.3.9.jar:5.3.9]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1782) ~[spring-beans-5.3.9.jar:5.3.9]
+	... 18 more
