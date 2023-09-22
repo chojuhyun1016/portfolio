@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.named.lock.rsv.lecture.mappers.LectureMapper">
+
+    <insert id="regLect" parameterType="Map">
+        INSERT INTO lect
+        (
+          lecturer
+        , location
+        , max_appl
+        , time
+        , content
+        , reg_dt
+        )
+        VALUES
+        (
+          #{lecturer}
+        , #{location}
+        , #{max_appl}
+        , STR_TO_DATE(#{time}, '%Y-%m-%d %H:%i:%s')
+        , #{content}
+        , NOW()
+        )
+    </insert> 
+
+    <select id="getLect" parameterType="Map" resultType="Lect">
+        SELECT A.no
+             , A.lecturer
+             , A.location
+             , A.max_appl
+             , date_format(A.time  , '%Y-%m-%d %h:%i:%s') AS time
+             , A.content
+             , date_format(A.reg_dt, '%Y-%m-%d %h:%i:%s') AS reg_dt 
+          FROM lect A
+          <if test='appl_no!=null and !"".equals(appl_no)'>
+             , appl B
+          </if>
+         WHERE 1=1
+           <if test='no!=null and no!=0'>
+           AND A.no = #{no}
+           </if>
+           <if test='enable_flag!=null and "Y".equals(enable_flag)'>
+           AND DATE_FORMAT(NOW(), '%Y%m%d') BETWEEN DATE_FORMAT(DATE_SUB(A.time, INTERVAL 7 DAY), '%Y%m%d')
+                                                AND DATE_FORMAT(DATE_ADD(A.time, INTERVAL 1 DAY), '%Y%m%d') 
+           </if>
+           <if test='appl_no!=null and !"".equals(appl_no)'>
+           AND A.no = B.let_no
+           AND B.appl_no = #{appl_no}
+           </if>
+        ORDER BY reg_dt DESC, time DESC, no ASC
+        ;
+    </select>
+
+    <select id="getLectPop" resultType="Lect">
+        SELECT TB.no
+             , TB.lecturer
+             , TB.location
+             , TB.max_appl
+             , date_format(TB.time  , '%Y-%m-%d %h:%i:%s') AS time
+             , TB.content
+             , date_format(TB.reg_dt, '%Y-%m-%d %h:%i:%s') AS reg_dt 
+          FROM (
+                 SELECT TAA.let_no
+                      , COUNT(1) AS cnt
+                   FROM appl TAA
+                  WHERE 1=1
+                    AND DATE_FORMAT(TAA.reg_dt, '%Y%m%d') BETWEEN DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 3 DAY), '%Y%m%d')
+                                                              AND DATE_FORMAT(NOW(), '%Y%m%d')
+                 GROUP BY let_no
+                 ORDER BY cnt DESC, let_no DESC
+              ) TA    
+              , lect TB
+         WHERE 1=1
+           AND TA.let_no = TB.no
+        ;
+    </select>
+
+    <delete id="delLect" parameterType="Map">
+        DELETE
+          FROM lect
+         WHERE 1=1
+           AND no = #{no}
+         LIMIT 1
+    </delete>
+
+    <insert id="regAppl" parameterType="Map">
+        INSERT INTO appl
+        (
+          let_no
+        , appl_no
+        , reg_dt
+        )
+        VALUES
+        (
+          #{let_no}
+        , #{appl_no}
+        , NOW()
+        )
+    </insert>
+
+    <select id="getAppl" parameterType="Map" resultType="Appl">
+        SELECT A.no
+             , A.let_no
+             , A.appl_no
+          FROM appl A
+         WHERE 1=1
+           <if test='let_no!=null and let_no!=0'>
+           AND A.let_no = #{let_no}
+           </if>
+           <if test='appl_no!=null and !"".equals(appl_no)'>
+           AND A.appl_no = #{appl_no}
+           </if>
+        ORDER By no ASC, let_no ASC, appl_no ASC
+        ;
+    </select>
+
+    <select id="getApplCnt" parameterType="Map" resultType="int">
+        SELECT COUNT(1)
+          FROM appl A
+         WHERE 1=1
+           <if test="let_no!=null and let_no!=0">
+           AND A.let_no = #{let_no}
+           </if>
+           <if test='appl_no!=null and !"".equals(appl_no)'>
+           AND A.appl_no = #{appl_no}
+           </if>
+        ;
+    </select>
+
+    <delete id="delAppl" parameterType="Map">
+        DELETE
+          FROM appl
+         WHERE 1=1
+           AND let_no  = #{let_no}
+         <if test='appl_no!=null and !"".equals(appl_no)'>
+           AND appl_no = #{appl_no}
+         LIMIT 1
+         </if>
+    </delete>
+
+</mapper>

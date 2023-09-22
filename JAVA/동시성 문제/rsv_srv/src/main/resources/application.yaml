@@ -1,0 +1,37 @@
+spring:
+  sql:
+    init:
+      mode: always
+
+  datasource:
+    hikari:
+      maximum-pool-size: 64
+      max-lifetime: 60000
+      jdbc-url: jdbc:mariadb://localhost:3306/kstd
+      username: kstd
+      password: kstd123!@#
+      driver-class-name: org.mariadb.jdbc.Driver
+      connection-timeout: 5000
+      pool-name: Spring-HikariPool  
+
+userlock:
+  datasource:
+    hikari:
+      maximum-pool-size: 64
+      max-lifetime: 60000
+      jdbc-url: jdbc:mariadb://localhost:3306/kstd
+      username: kstd
+      password: kstd123!@#
+      driver-class-name: org.mariadb.jdbc.Driver
+      connection-timeout: 5000
+      pool-name: UserLock-HikariPool
+
+#    driver-class-name: org.mariadb.jdbc.Driver
+#    url: jdbc:mariadb://localhost:3306/kstd
+#    username: kstd
+#    password: kstd123!@#
+
+mybatis:
+  mapper-locations: mappers/**/*.xml
+  configuration.map-underscore-to-camel-case: false
+  type-aliases-package: com.example.named.lock.rsv.**.domain
