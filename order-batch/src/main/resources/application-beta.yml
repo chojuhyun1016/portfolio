@@ -1,0 +1,24 @@
+spring:
+  config:
+    activate:
+      on-profile: beta
+    import:
+      - application-core-beta.yml
+      - application-kafka-beta.yml
+
+  batch:
+    job:
+      name: ${JOB_NAME:NONE}
+      enabled: true
+    jdbc:
+      initialize-schema: always
+
+aws:
+  credential:
+    enabled: false
+    accessKey: ${AWS_ACCESS_KEY}
+    secretKey: ${AWS_SECRET_KEY}
+  region: ${AWS_REGION}
+  s3:
+    bucket: ${BUCKET}
+    default-folder: ${DEFAULT_FOLDER}

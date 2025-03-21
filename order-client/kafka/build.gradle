@@ -1,0 +1,9 @@
+bootJar.enabled = false
+jar.enabled = true
+
+dependencies {
+    implementation project(':order-common')
+
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+}

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <property name="POD_ID" value="${HOSTNAME:-unknown}"/>
+    <springProperty name="DEFAULT_LOG_DIR" source="logging.file.path" defaultValue="logs"/>
+    <property name="DEFAULT_LOG_FILE" value="default"/>
+    <property name="ERROR_LOG_FILE" value="error"/>
+    <property name="LOCAL_LOG_FILE" value="local"/>
+    <property name="API_LOG_FILE" value="api"/>
+    <property name="CRUD_LOG_FILE" value="crud"/>
+    <property name="SYNCHRONIZE_LOG_FILE" value="synchronize"/>
+    <property name="MAX_SIZE" value="100MB"/>
+    <property name="MAX_HISTORY" value="7"/>
+    <property name="LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative] %green([%thread]) %highlight(%-5level) [line:%L] %logger %M : %msg%n"/>
+    <property name="DATA_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}] %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="DEFAULT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${DEFAULT_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${ERROR_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <pattern>
+                    <pattern>
+                        {
+                        "message": "#asJson{%message}"
+                        }
+                    </pattern>
+                </pattern>
+                <mdc>
+                    <keys>
+                        <key>category</key>
+                    </keys>
+                </mdc>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${LOCAL_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="API" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${DATA_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${API_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="CRUD" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${DATA_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${CRUD_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="SYNCHRONIZE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${SYNCHRONIZE_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <springProfile name="dev, beta, prod">
+        <logger name="org.example.order.worker.listener.order.impl.OrderLocalMessageListenerImpl" level="INFO" additivity="false">
+            <appender-ref ref="LOCAL" />
+            <appender-ref ref="ERROR"/>
+        </logger>
+
+        <logger name="org.example.order.worker.service.common.impl.OrderWebClientServiceImpl" level="INFO" additivity="false">
+            <appender-ref ref="API" />
+            <appender-ref ref="ERROR"/>
+        </logger>
+
+        <logger name="org.example.order.worker.service.order" level="INFO" additivity="false">
+            <appender-ref ref="CRUD" />
+            <appender-ref ref="ERROR"/>
+        </logger>
+
+        <logger name="org.example.order.worker.listener.synchronize" level="INFO" additivity="false">
+            <appender-ref ref="SYNCHRONIZE" />
+            <appender-ref ref="ERROR"/>
+        </logger>
+
+        <logger name="org.example.order.worker.service.synchronize" level="INFO" additivity="false">
+            <appender-ref ref="SYNCHRONIZE" />
+            <appender-ref ref="ERROR"/>
+        </logger>
+    </springProfile>
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <springProfile name="dev, beta, prod">
+        <root level="info">
+            <appender-ref ref="DEFAULT"/>
+            <appender-ref ref="ERROR" />
+        </root>
+    </springProfile>
+
+</configuration>

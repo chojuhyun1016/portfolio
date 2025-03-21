@@ -1,0 +1,79 @@
+plugins {
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+}
+
+ext {
+    springCloudVersion = '2023.0.1' // https://spring.io/projects/spring-cloud
+    springAwsVersion = '3.1.1'      // https://github.com/awspring/spring-cloud-aws
+    awsMysqlJdbcVer = '1.1.14'      // https://github.com/awslabs/aws-mysql-jdbc
+}
+
+def javaProjects = subprojects.findAll {
+    it.name != 'port-client' && it.name != 'port-api'
+}
+configure(javaProjects) {
+    group 'org.example'
+    version '1.0.0'
+
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    def javaVer = '17'
+    targetCompatibility = javaVer
+    sourceCompatibility = javaVer
+    compileJava.options.encoding = "UTF-8"
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation 'org.projectlombok:lombok'
+        implementation 'org.springframework.boot:spring-boot-starter'
+        implementation 'com.google.code.findbugs:jsr305:3.0.2'
+        annotationProcessor 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
+            mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:$springAwsVersion"
+        }
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}
+
+def restDocProjects = [project(':order-api:order-api-master')]
+configure(restDocProjects) {
+    apply plugin: "org.asciidoctor.jvm.convert"
+
+    configurations {
+        asciidoctorExt
+    }
+
+    asciidoctor {
+        configurations 'asciidoctorExt'
+        dependsOn test
+        baseDirFollowsSourceFile()
+    }
+
+    bootJar {
+        dependsOn asciidoctor
+        from("${asciidoctor.outputDir}/") {
+            into 'static/docs'
+        }
+    }
+
+    dependencies {
+        asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+        testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    }
+}

@@ -1,0 +1,39 @@
+server:
+  shutdown: graceful
+
+spring:
+  config:
+    activate:
+      on-profile: local
+    import:
+      - application-core-local.yml
+      - application-kafka-local.yml
+  task:
+    scheduling:
+      pool:
+        size: 5
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+
+aws:
+  credential:
+    enabled: false
+    accessKey: ${AWS_ACCESS_KEY}
+    secretKey: ${AWS_SECRET_KEY}
+  region: ${AWS_REGION}
+  s3:
+    bucket: ${BUCKET}
+    default-folder: ${DEFAULT_FOLDER}
+
+web-client:
+  client-id: "test"
+  url:
+    order: "http://localhost:8080/orders"
+
+logging:
+  file:
+    path: /app/logs
+  level:
+    org.example: debug
+    org.hibernate.orm.jdbc.bind: debug

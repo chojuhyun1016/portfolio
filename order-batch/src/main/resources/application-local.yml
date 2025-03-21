@@ -1,0 +1,29 @@
+server:
+  port: 7700
+
+spring:
+  config:
+    activate:
+      on-profile: local
+    import:
+      - application-core-local.yml
+      - application-kafka-local.yml
+
+  batch:
+    job:
+      name: ${JOB_NAME:NONE}
+      enabled: true
+    jdbc:
+      initialize-schema: always
+
+aws:
+  credential:
+    accessKey: ${AWS_ACCESS_KEY}
+    secretKey: ${AWS_SECRET_KEY}
+  region: ${AWS_REGION}
+  s3:
+    bucket: ${BUCKET}
+    default-folder: ${DEFAULT_FOLDER}
+
+
+

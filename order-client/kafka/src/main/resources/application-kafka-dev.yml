@@ -1,0 +1,33 @@
+kafka:
+  ssl:
+    enabled: true
+    security-protocol: SASL_SSL
+    sasl-mechanism: AWS_MSK_IAM
+    sasl-jaas-config: software.amazon.msk.auth.iam.IAMLoginModule required;
+    sasl-client-callback-handler-class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+
+  producer:
+    bootstrap-servers: "${BOOTSTRAP_SERVERS}"
+
+  topic:
+    - category: order-local
+      name: "dev-order-local"
+    - category: order-api
+      name: "dev-order-api"
+    - category: order-crud
+      name: "dev-order-crud"
+    - category: order-remote
+      name: "dev-order-remote"
+
+  consumer:
+    bootstrap-servers: "${BOOTSTRAP_SERVERS}"
+
+    option:
+      max-fail-count: 1
+      max-poll-records: 1000
+      fetch-max-wait-ms: 500
+      fetch-max-bytes: 52428800
+      max-poll-interval-ms: 300000
+      idle-between-polls: 0
+      auto-offset-reset: "earliest"
+      enable-auto-commit: false

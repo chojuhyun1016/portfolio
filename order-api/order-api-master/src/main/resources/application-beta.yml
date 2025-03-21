@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: beta
+    import:
+      - application-core-beta.yml
+      - application-kafka-beta.yml
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+api:
+  key: ${API_KEY}

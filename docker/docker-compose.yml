@@ -1,0 +1,14 @@
+version: '3.1'
+services:
+  portfolio-db:
+    image: mysql/mysql-server:8.0
+    restart: always
+    ports:
+      - "3312:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+    command:
+      - --skip-character-set-client-handshake
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
