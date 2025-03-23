@@ -25,3 +25,12 @@ $ mysql -h 127.0.0.1 -P 3312 -u root -proot
 // mysql 에서 db 디렉토리의 db 스키마 생성 파일 로드
 MySQL> source order-db.sql
 ```
+
+3. 설계도
+```
+// image
+$ open ./architecture.png
+
+// drawio
+$ open "https://drive.google.com/file/d/1fnxGaEZTAE4CPuqw7d7hvfKOf0gRH-I9/view?usp=sharing"
+```
