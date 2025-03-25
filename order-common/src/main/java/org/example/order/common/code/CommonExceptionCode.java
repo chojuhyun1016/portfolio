@@ -13,7 +13,7 @@ public enum CommonExceptionCode implements ExceptionCodeEnum {
     UPLOAD_FILE_TO_S3_ERROR(1005, "Error while uploading file to Aws S3", HttpStatus.INTERNAL_SERVER_ERROR),
     DATA_READ_ERROR(1006, "Data read error", HttpStatus.INTERNAL_SERVER_ERROR),
     DATA_WRITE_ERROR(1007, "Data writing error", HttpStatus.INTERNAL_SERVER_ERROR),
-    DATABASE_EXECUTE_ERROR(1008, "Database execute error", HttpStatus.INTERNAL_SERVER_ERROR),
+    DATABASE_LOCK_ERROR(1008, "Database lock error", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_API_KEY(1009, "Invalid api key", HttpStatus.BAD_REQUEST),
     MISSING_API_KEY(1010, "Api key is required", HttpStatus.BAD_REQUEST);
 

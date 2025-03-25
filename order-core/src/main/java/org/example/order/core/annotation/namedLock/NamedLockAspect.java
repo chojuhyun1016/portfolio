@@ -1,5 +1,6 @@
 package org.example.order.core.annotation.namedLock;
 
+import org.example.order.common.code.CommonExceptionCode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.example.order.common.exception.CommonException;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -38,17 +40,15 @@ public class NamedLockAspect {
         catch (Exception e) {
             log.error("namedLockAspect fail : e.getMessage = {} ", e.getMessage());
 
-//            throw new AlarmServerException(CommonExceptionCode.DATABASE_GET_LOCK_ERROR);
+            throw new CommonException(CommonExceptionCode.DATABASE_LOCK_ERROR);
         }
         finally {
             log.info("release lock : {} ", lockName);
 
-            em.createNativeQuery("SELECT RELEASE_LOCK(:lockName)")
-                    .setParameter("lockName", lockName)
+            em.createNativeQuery("SELECT RELEASE_LOCK(?1)")
+                    .setParameter(1, lockName)
                     .getSingleResult();
         }
-
-        return null;
     }
 
     // REQUIRED
@@ -65,17 +65,15 @@ public class NamedLockAspect {
         catch (Exception e) {
             log.error("namedLockAspect fail : e.getMessage = {} ", e.getMessage());
 
-//            throw new AlarmServerException(CommonExceptionCode.DATABASE_GET_LOCK_ERROR);
+            throw new CommonException(CommonExceptionCode.DATABASE_LOCK_ERROR);
         }
         finally {
             log.info("release lock : {} ", lockName);
 
-            em.createNativeQuery("SELECT RELEASE_LOCK(:lockName)")
-                    .setParameter("lockName", lockName)
+            em.createNativeQuery("SELECT RELEASE_LOCK(?1)")
+                    .setParameter(1, lockName)
                     .getSingleResult();
         }
-
-        return null;
     }
 
     private String getLock(ProceedingJoinPoint joinPoint, String namedLockName) {
@@ -99,8 +97,8 @@ public class NamedLockAspect {
 
         log.info("NamedLockAspect LockName : {} ", lockName);
 
-        lock = (Long) em.createNativeQuery("SELECT GET_LOCK(:lockName, 50)")
-                .setParameter("lockName", lockName)
+        lock = (Long) em.createNativeQuery("SELECT GET_LOCK(?1, 50)")
+                .setParameter(1, lockName)
                 .getSingleResult();
 
         // exception
