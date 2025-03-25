@@ -1,7 +1,5 @@
 package org.example.order.core.annotation.namedLock;
 
-import biz.riman.global.alarm.common.code.CommonExceptionCode;
-import biz.riman.global.alarm.common.exception.AlarmServerException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +13,6 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
-
 
 @Aspect
 @Component
@@ -41,7 +38,7 @@ public class NamedLockAspect {
         catch (Exception e) {
             log.error("namedLockAspect fail : e.getMessage = {} ", e.getMessage());
 
-            throw new AlarmServerException(CommonExceptionCode.DATABASE_GET_LOCK_ERROR);
+//            throw new AlarmServerException(CommonExceptionCode.DATABASE_GET_LOCK_ERROR);
         }
         finally {
             log.info("release lock : {} ", lockName);
@@ -50,6 +47,8 @@ public class NamedLockAspect {
                     .setParameter("lockName", lockName)
                     .getSingleResult();
         }
+
+        return null;
     }
 
     // REQUIRED
@@ -66,7 +65,7 @@ public class NamedLockAspect {
         catch (Exception e) {
             log.error("namedLockAspect fail : e.getMessage = {} ", e.getMessage());
 
-            throw new AlarmServerException(CommonExceptionCode.DATABASE_GET_LOCK_ERROR);
+//            throw new AlarmServerException(CommonExceptionCode.DATABASE_GET_LOCK_ERROR);
         }
         finally {
             log.info("release lock : {} ", lockName);
@@ -75,6 +74,8 @@ public class NamedLockAspect {
                     .setParameter("lockName", lockName)
                     .getSingleResult();
         }
+
+        return null;
     }
 
     private String getLock(ProceedingJoinPoint joinPoint, String namedLockName) {

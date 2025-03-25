@@ -37,3 +37,15 @@ spring:
         characterEncoding: utf-8
         serverTimezone: UTC
         rewriteBatchedStatements: true
+
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD}
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 64       # 동시에 사용할 수 있는 최대 커넥션 수
+        max-idle: 32         # idle 상태로 유지할 수 있는 커넥션 수
+        min-idle: 8          # 최소 idle 커넥션 수 확보 (예열 용도)
+        max-wait: 2000ms     # 커넥션 풀에서 커넥션을 기다릴 수 있는 최대 시간
