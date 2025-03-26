@@ -61,4 +61,4 @@ encrypt:
     key: "rWh1ZzX4u1h9uKzA8aI5Cg=="  # Base64 인코딩된 16바이트 키 (AES-128)
 
   aes256:
-    key: "bWVnYXNvbGtlbmNyeXB0aW9ua2V5IQ=="
+    key: "zWh9bXZ1zE/0VYQbgP1JfKexEoGEnI1b27j6oLmlBJU=" # Base64 인코딩된 32바이트 키 (256비트)
