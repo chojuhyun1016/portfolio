@@ -55,7 +55,6 @@ spring:
 encrypt:
   aesgcm:
     key: YmFzZTY0ZW5jb2RlZC1rZXktdGhhdC1pcy0zMmJ5dGVsbG9uZw== # Base64 인코딩된 32byte 키
-    iv: bXktMTJieXRlLWdjbS12ZWN0 # Base64 인코딩된 12byte IV
 
   aes128:
     key: "rWh1ZzX4u1h9uKzA8aI5Cg=="  # Base64 인코딩된 16바이트 키 (AES-128)

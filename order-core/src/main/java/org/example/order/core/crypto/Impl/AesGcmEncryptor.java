@@ -1,149 +1,78 @@
 package org.example.order.core.crypto.Impl;
 
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.order.common.utils.Base64Utils;
 import org.example.order.core.crypto.Encryptor;
+import org.example.order.core.crypto.engine.AesGcmEngine;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Base64;
+import java.util.Arrays;
 
 @Slf4j
-@Component
-@RequiredArgsConstructor
+@Component("aesGcmEncryptor")
 public class AesGcmEncryptor implements Encryptor {
 
-    private static final String AES_ALGORITHM = "AES/GCM/NoPadding";
-    private static final int GCM_IV_LENGTH = 12; // 96 bits
-    private static final int GCM_TAG_LENGTH = 128; // bits
-    private static final int AES_256_KEY_LENGTH = 32;
+    private static final int KEY_LENGTH = 32;
+    private static final int IV_LENGTH = 12; // GCM 권장 IV
+    private byte[] key;
 
-    @Value("${encrypt.aesgcm.key:}")
-    private String base64EncodedKey;
+    private final SecureRandom random = new SecureRandom();
 
-    private SecretKey secretKey;
-    private final SecureRandom secureRandom = new SecureRandom();
+    @Value("${encrypt.aesgcm.key}")
+    private String base64Key;
 
     @PostConstruct
     public void init() {
-        if (base64EncodedKey == null || base64EncodedKey.isBlank()) {
-            throw new IllegalStateException("Encryption key is not configured.");
-        }
-
-        setKeyFromBase64(base64EncodedKey);
+        setKeyFromBase64(base64Key);
     }
 
     @Override
     public void setKeyFromBase64(String base64Key) {
-        try {
-            byte[] decodedKey = Base64.getDecoder().decode(base64Key);
+        byte[] decoded = Base64Utils.decode(base64Key);
 
-            if (decodedKey.length != AES_256_KEY_LENGTH) {
-                throw new IllegalArgumentException("AES-256 key must be 32 bytes.");
-            }
-
-            this.secretKey = new SecretKeySpec(decodedKey, "AES");
-
-            log.info("AesGcmEncryptor initialized with AES-256 key.");
-        } catch (Exception e) {
-            log.error("Failed to set encryption key from Base64", e);
-
-            throw new RuntimeException("Invalid key provided", e);
+        if (decoded.length != KEY_LENGTH) {
+            throw new IllegalArgumentException("AES-GCM key must be 32 bytes.");
         }
+
+        this.key = decoded;
     }
 
     @Override
     public String encrypt(String plainText) {
         try {
-            byte[] iv = new byte[GCM_IV_LENGTH];
-            secureRandom.nextBytes(iv);
+            byte[] iv = new byte[IV_LENGTH];
+            random.nextBytes(iv);
+            byte[] cipher = AesGcmEngine.encrypt(plainText.getBytes(StandardCharsets.UTF_8), key, iv);
+            byte[] combined = new byte[iv.length + cipher.length];
+            System.arraycopy(iv, 0, combined, 0, iv.length);
+            System.arraycopy(cipher, 0, combined, iv.length, cipher.length);
 
-            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
-            GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
-
-            byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
-
-            ByteBuffer buffer = ByteBuffer.allocate(iv.length + encrypted.length);
-            buffer.put(iv);
-            buffer.put(encrypted);
-
-            return Base64.getEncoder().encodeToString(buffer.array());
+            return Base64Utils.encode(combined);
         } catch (Exception e) {
-            log.error("Encryption failed", e);
-
-            throw new RuntimeException("Encryption failed", e);
+            throw new RuntimeException("Encrypt failed", e);
         }
     }
 
     @Override
-    public String decrypt(String base64Text) {
+    public String decrypt(String base64CipherText) {
         try {
-            byte[] decoded = Base64.getDecoder().decode(base64Text);
-            ByteBuffer buffer = ByteBuffer.wrap(decoded);
+            byte[] decoded = Base64Utils.decode(base64CipherText);
+            byte[] iv = Arrays.copyOfRange(decoded, 0, IV_LENGTH);
+            byte[] cipher = Arrays.copyOfRange(decoded, IV_LENGTH, decoded.length);
+            byte[] plain = AesGcmEngine.decrypt(cipher, key, iv);
 
-            byte[] iv = new byte[GCM_IV_LENGTH];
-            buffer.get(iv);
-
-            byte[] cipherText = new byte[buffer.remaining()];
-            buffer.get(cipherText);
-
-            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
-            GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
-
-            byte[] decrypted = cipher.doFinal(cipherText);
-
-            return new String(decrypted, StandardCharsets.UTF_8);
+            return new String(plain, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.error("Decryption failed", e);
-
-            throw new RuntimeException("Decryption failed", e);
+            throw new RuntimeException("Decrypt failed", e);
         }
     }
 
     @Override
-    public String hash(String input, String algorithm) {
-        if (input == null || input.isBlank()) return input;
-
-        try {
-            MessageDigest digest = MessageDigest.getInstance(algorithm);
-            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-
-            StringBuilder sb = new StringBuilder(hash.length * 2);
-
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b));
-            }
-
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            log.error("Hashing failed with algorithm {}", algorithm, e);
-
-            throw new RuntimeException("Hashing failed", e);
-        }
-    }
-
-    @Override
-    public boolean isEncryptorReady() {
-        return secretKey != null;
-    }
-
-    /** 🔐 랜덤 AES-256 키 생성 (Base64 인코딩 반환) */
-    public String generateRandomKeyBase64() {
-        byte[] key = new byte[AES_256_KEY_LENGTH];
-        new SecureRandom().nextBytes(key);
-
-        return Base64.getEncoder().encodeToString(key);
+    public boolean isReady() {
+        return key != null;
     }
 }
