@@ -1,7 +1,7 @@
 package org.example.order.worker.service.order;
 
-import org.example.order.core.application.dto.order.OrderLocalDto;
-import org.example.order.core.domain.order.OrderEntity;
+import org.example.order.core.application.dto.OrderLocalDto;
+import org.example.order.core.domain.OrderEntity;
 
 import java.util.List;
 

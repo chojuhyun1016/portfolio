@@ -3,10 +3,10 @@ package org.example.order.api.master.service.order.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.order.api.master.service.common.KafkaProducerService;
 import org.example.order.api.master.service.order.OrderService;
-import org.example.order.core.application.dto.order.OrderRemoteMessageDto;
-import org.example.order.core.application.message.order.OrderRemoteMessage;
-import org.example.order.core.application.vo.order.OrderVo;
-import org.example.order.core.repository.order.OrderRepository;
+import org.example.order.core.application.dto.OrderRemoteMessageDto;
+import org.example.order.core.application.message.OrderRemoteMessage;
+import org.example.order.core.application.vo.OrderVo;
+import org.example.order.core.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
 @Service

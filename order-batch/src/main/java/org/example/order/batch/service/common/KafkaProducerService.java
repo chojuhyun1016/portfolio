@@ -1,9 +1,9 @@
 package org.example.order.batch.service.common;
 
 import org.example.order.common.application.message.DlqMessage;
-import org.example.order.core.application.message.order.OrderApiMessage;
-import org.example.order.core.application.message.order.OrderCrudMessage;
-import org.example.order.core.application.message.order.OrderLocalMessage;
+import org.example.order.core.application.message.OrderApiMessage;
+import org.example.order.core.application.message.OrderCrudMessage;
+import org.example.order.core.application.message.OrderLocalMessage;
 
 import java.util.List;
 

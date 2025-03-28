@@ -1,10 +1,10 @@
-package org.example.order.core.application.dto.order;
+package org.example.order.core.application.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.example.order.core.application.vo.order.OrderVo;
+import org.example.order.core.application.vo.OrderVo;
 
 /**
  * local order data

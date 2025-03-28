@@ -1,4 +1,4 @@
-package org.example.order.core.application.message.order;
+package org.example.order.core.application.message;
 
 import lombok.AccessLevel;
 import lombok.Getter;

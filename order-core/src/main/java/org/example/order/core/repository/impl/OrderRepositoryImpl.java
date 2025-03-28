@@ -1,13 +1,13 @@
-package org.example.order.core.repository.order.impl;
+package org.example.order.core.repository.impl;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.example.order.core.annotation.CustomTsid;
-import org.example.order.core.application.dto.order.OrderLocalDto;
-import org.example.order.core.application.vo.order.OrderVo;
-import org.example.order.core.domain.order.OrderEntity;
-import org.example.order.core.domain.order.QOrderEntity;
-import org.example.order.core.repository.order.CustomOrderRepository;
+import org.example.order.core.application.dto.OrderLocalDto;
+import org.example.order.core.application.vo.OrderVo;
+import org.example.order.core.domain.OrderEntity;
+import org.example.order.core.domain.QOrderEntity;
+import org.example.order.core.repository.CustomOrderRepository;
 import org.example.order.core.utils.CustomQuerydslUtils;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.jdbc.core.JdbcTemplate;

@@ -6,7 +6,7 @@ import org.example.order.api.master.service.common.KafkaProducerService;
 import org.example.order.client.kafka.config.property.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.common.code.MessageCategory;
-import org.example.order.core.application.message.order.OrderRemoteMessage;
+import org.example.order.core.application.message.OrderRemoteMessage;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 

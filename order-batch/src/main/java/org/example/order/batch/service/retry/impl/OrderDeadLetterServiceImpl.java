@@ -10,9 +10,9 @@ import org.example.order.common.application.message.DlqMessage;
 import org.example.order.common.code.CommonExceptionCode;
 import org.example.order.common.code.DlqType;
 import org.example.order.common.utils.ObjectMapperUtils;
-import org.example.order.core.application.message.order.OrderApiMessage;
-import org.example.order.core.application.message.order.OrderCrudMessage;
-import org.example.order.core.application.message.order.OrderLocalMessage;
+import org.example.order.core.application.message.OrderApiMessage;
+import org.example.order.core.application.message.OrderCrudMessage;
+import org.example.order.core.application.message.OrderLocalMessage;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 

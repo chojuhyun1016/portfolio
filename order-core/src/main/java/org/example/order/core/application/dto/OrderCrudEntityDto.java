@@ -1,6 +1,6 @@
-package org.example.order.core.application.dto.order;
+package org.example.order.core.application.dto;
 
-import org.example.order.core.domain.order.OrderEntity;
+import org.example.order.core.domain.OrderEntity;
 
 import java.time.LocalDateTime;
 

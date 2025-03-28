@@ -1,4 +1,4 @@
-package org.example.order.core.application.dto.order;
+package org.example.order.core.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.example.order.common.utils.DateTimeUtils;
-import org.example.order.core.domain.order.OrderEntity;
+import org.example.order.core.domain.OrderEntity;
 
 import java.time.LocalDateTime;
 

@@ -8,7 +8,7 @@ import org.example.order.common.constant.HttpConstant;
 import org.example.order.common.exception.CommonException;
 import org.example.order.common.response.CommonResponse;
 import org.example.order.common.utils.ObjectMapperUtils;
-import org.example.order.core.application.dto.order.OrderDto;
+import org.example.order.core.application.dto.OrderDto;
 import org.example.order.worker.exception.WorkerExceptionCode;
 import org.example.order.worker.service.common.OrderWebClientService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

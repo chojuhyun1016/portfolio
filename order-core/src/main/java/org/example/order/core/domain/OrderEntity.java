@@ -1,4 +1,4 @@
-package org.example.order.core.domain.order;
+package org.example.order.core.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.order.common.utils.DateTimeUtils;
 import org.example.order.core.annotation.CustomTsid;
-import org.example.order.core.application.dto.order.OrderLocalDto;
+import org.example.order.core.application.dto.OrderLocalDto;
 
 import java.time.LocalDateTime;
 

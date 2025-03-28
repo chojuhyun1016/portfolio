@@ -1,4 +1,4 @@
-package org.example.order.core.application.message.order;
+package org.example.order.core.application.message;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.ToString;
 import org.example.order.common.application.message.DlqMessage;
 import org.example.order.common.code.DlqType;
 import org.example.order.common.code.MessageMethodType;
-import org.example.order.core.application.dto.order.OrderDto;
+import org.example.order.core.application.dto.OrderDto;
 
 @Getter
 @NoArgsConstructor

@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.api.master.facade.order.OrderFacade;
 import org.example.order.common.response.CommonResponse;
-import org.example.order.core.application.dto.order.OrderCrudDto;
-import org.example.order.core.application.dto.order.OrderRemoteMessageDto;
+import org.example.order.core.application.dto.OrderCrudDto;
+import org.example.order.core.application.dto.OrderRemoteMessageDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

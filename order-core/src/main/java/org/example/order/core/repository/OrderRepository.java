@@ -1,6 +1,6 @@
-package org.example.order.core.repository.order;
+package org.example.order.core.repository;
 
-import org.example.order.core.domain.order.OrderEntity;
+import org.example.order.core.domain.OrderEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
