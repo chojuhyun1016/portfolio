@@ -19,7 +19,7 @@ spring:
         order_inserts: true
         jdbc.batch_versioned_data: true
 
-  config.activate.on-profile: beta
+  config.activate.on-profile: dev
   datasource:
     url: jdbc:mysql://${DB_ENDPOINT}/order
     username: ${DB_USERNAME}
@@ -50,13 +50,10 @@ spring:
         min-idle: 4          # 최소 idle 커넥션 수 확보 (예열 용도)
         max-wait: 2000ms     # 커넥션 풀에서 커넥션을 기다릴 수 있는 최대 시간
 
-# openssl rand -base64 32 또는 12로 key/iv 생성 추천
 encrypt:
-  aesgcm:
-    key: YmFzZTY0ZW5jb2RlZC1rZXktdGhhdC1pcy0zMmJ5dGVsbG9uZw== # Base64 인코딩된 32byte 키
-
   aes128:
-    key: "rWh1ZzX4u1h9uKzA8aI5Cg=="  # Base64 인코딩된 16바이트 키 (AES-128)
-
+    key: dGhpc2lzMTZieXRla2V5IQ==  # "thisis16bytekey!" (16 bytes)
   aes256:
-    key: "zWh9bXZ1zE/0VYQbgP1JfKexEoGEnI1b27j6oLmlBJU=" # Base64 인코딩된 32바이트 키 (256비트)
+    key: bXlTZWNyZXRLZXlTMjU2MjU2MjU2MjU2MjU2MjU2MjU=  # 32 bytes
+  aesgcm:
+    key: bXlTMzJiYnl0ZXNnY21rZXlzdXBlcnNlY3JldGtleTE=  # 32 bytes

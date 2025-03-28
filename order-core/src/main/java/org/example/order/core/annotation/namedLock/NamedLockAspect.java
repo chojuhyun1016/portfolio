@@ -1,6 +1,5 @@
 package org.example.order.core.annotation.namedLock;
 
-import org.example.order.common.code.CommonExceptionCode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +8,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.example.order.common.code.CommonExceptionCode;
 import org.example.order.common.exception.CommonException;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
@@ -45,8 +45,8 @@ public class NamedLockAspect {
         finally {
             log.info("release lock : {} ", lockName);
 
-            em.createNativeQuery("SELECT RELEASE_LOCK(?1)")
-                    .setParameter(1, lockName)
+            em.createNativeQuery("SELECT RELEASE_LOCK(:lockName)")
+                    .setParameter("lockName", lockName)
                     .getSingleResult();
         }
     }
@@ -70,8 +70,8 @@ public class NamedLockAspect {
         finally {
             log.info("release lock : {} ", lockName);
 
-            em.createNativeQuery("SELECT RELEASE_LOCK(?1)")
-                    .setParameter(1, lockName)
+            em.createNativeQuery("SELECT RELEASE_LOCK(:lockName)")
+                    .setParameter("lockName", lockName)
                     .getSingleResult();
         }
     }
@@ -97,8 +97,8 @@ public class NamedLockAspect {
 
         log.info("NamedLockAspect LockName : {} ", lockName);
 
-        lock = (Long) em.createNativeQuery("SELECT GET_LOCK(?1, 50)")
-                .setParameter(1, lockName)
+        lock = (Long) em.createNativeQuery("SELECT GET_LOCK(:lockName, 50)")
+                .setParameter("lockName", lockName)
                 .getSingleResult();
 
         // exception
