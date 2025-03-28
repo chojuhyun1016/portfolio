@@ -8,7 +8,6 @@ import org.example.order.core.crypto.code.EncryptorType;
 import org.example.order.core.crypto.engine.Aes256Engine;
 import org.example.order.core.crypto.exception.DecryptException;
 import org.example.order.core.crypto.exception.EncryptException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ import java.util.Map;
 
 @Slf4j
 @Component("aes256Encryptor")
-public class Aes256Encryptor implements Encryptor, InitializingBean {
+public class Aes256Encryptor implements Encryptor {
 
     private static final int KEY_LENGTH = 32;
     private static final int IV_LENGTH = 16;
@@ -27,19 +26,18 @@ public class Aes256Encryptor implements Encryptor, InitializingBean {
 
     private byte[] key;
     private final SecureRandom random = new SecureRandom();
-
-    @Value("${encrypt.aes256.key}")
-    private String base64Key;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Override
-    public void afterPropertiesSet() {
-        if (base64Key == null || base64Key.isBlank()) {
-            throw new IllegalStateException("AES-256 key is not set. Please check configuration.");
+    public Aes256Encryptor(@Value("${encrypt.aes256.key:}") String base64Key) {
+        if (base64Key != null && !base64Key.isBlank()) {
+            try {
+                setKey(base64Key);
+            } catch (IllegalArgumentException e) {
+                log.warn("AES-256 key is invalid: {}", e.getMessage());
+            }
+        } else {
+            log.info("AES-256 key is not set. This encryptor will not be ready.");
         }
-
-        setKey(base64Key);
     }
 
     @Override
@@ -56,7 +54,7 @@ public class Aes256Encryptor implements Encryptor, InitializingBean {
     @Override
     public String encrypt(String plainText) {
         if (!isReady()) {
-            throw new EncryptException("Encryptor not initialized properly. Missing key.");
+            throw new EncryptException("AES-256 encryptor not initialized. Key missing.");
         }
 
         try {
@@ -73,32 +71,33 @@ public class Aes256Encryptor implements Encryptor, InitializingBean {
 
             return objectMapper.writeValueAsString(payload);
         } catch (Exception e) {
-            log.error("Encryption failed: {}", e.getMessage(), e);
-            throw new EncryptException("Encryption failed", e);
+            log.error("AES-256 encryption failed: {}", e.getMessage(), e);
+            throw new EncryptException("AES-256 encryption failed", e);
         }
     }
 
     @Override
     public String decrypt(String json) {
         if (!isReady()) {
-            throw new DecryptException("Encryptor not initialized properly. Missing key.");
+            throw new DecryptException("AES-256 decryptor not initialized. Key missing.");
         }
 
         try {
             Map<String, String> payload = objectMapper.readValue(json, Map.class);
 
             byte version = Byte.parseByte(String.valueOf(payload.get("ver")));
-            if (version != VERSION) throw new DecryptException("Unsupported encryption version: " + version);
+            if (version != VERSION) {
+                throw new DecryptException("Unsupported AES-256 encryption version: " + version);
+            }
 
             byte[] iv = Base64Utils.decodeUrlSafe(payload.get("iv"));
             byte[] cipher = Base64Utils.decodeUrlSafe(payload.get("cipher"));
-
             byte[] plain = Aes256Engine.decrypt(cipher, key, iv);
 
             return new String(plain, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.error("Decryption failed: {}", e.getMessage(), e);
-            throw new DecryptException("Decryption failed", e);
+            log.error("AES-256 decryption failed: {}", e.getMessage(), e);
+            throw new DecryptException("AES-256 decryption failed", e);
         }
     }
 

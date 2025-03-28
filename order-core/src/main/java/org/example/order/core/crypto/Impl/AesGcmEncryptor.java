@@ -8,7 +8,6 @@ import org.example.order.core.crypto.code.EncryptorType;
 import org.example.order.core.crypto.engine.AesGcmEngine;
 import org.example.order.core.crypto.exception.DecryptException;
 import org.example.order.core.crypto.exception.EncryptException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ import java.util.Map;
 
 @Slf4j
 @Component("aesGcmEncryptor")
-public class AesGcmEncryptor implements Encryptor, InitializingBean {
+public class AesGcmEncryptor implements Encryptor {
 
     private static final int KEY_LENGTH = 32;
     private static final int IV_LENGTH = 12;
@@ -28,18 +27,19 @@ public class AesGcmEncryptor implements Encryptor, InitializingBean {
     private byte[] key;
     private final SecureRandom random = new SecureRandom();
 
-    @Value("${encrypt.aesgcm.key}")
-    private String base64Key;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Override
-    public void afterPropertiesSet() {
-        if (base64Key == null || base64Key.isBlank()) {
-            throw new IllegalStateException("AES-GCM key is not set. Please check configuration.");
+    public AesGcmEncryptor(@Value("${encrypt.aesgcm.key:}") String base64Key) {
+        if (base64Key != null && !base64Key.isBlank()) {
+            try {
+                setKey(base64Key);
+            } catch (IllegalArgumentException e) {
+                log.warn("AES-GCM key is invalid: {}", e.getMessage());
+                // key는 null로 유지 (isReady false)
+            }
+        } else {
+            log.info("AES-GCM key not configured. This encryptor will be inactive.");
         }
-
-        setKey(base64Key);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class AesGcmEncryptor implements Encryptor, InitializingBean {
     @Override
     public String encrypt(String plainText) {
         if (!isReady()) {
-            throw new EncryptException("Encryptor not initialized properly. Missing key.");
+            throw new EncryptException("AES-GCM key not initialized. Cannot encrypt.");
         }
 
         try {
@@ -81,7 +81,7 @@ public class AesGcmEncryptor implements Encryptor, InitializingBean {
     @Override
     public String decrypt(String json) {
         if (!isReady()) {
-            throw new DecryptException("Encryptor not initialized properly. Missing key.");
+            throw new DecryptException("AES-GCM key not initialized. Cannot decrypt.");
         }
 
         try {
