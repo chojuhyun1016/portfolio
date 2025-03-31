@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -25,14 +24,32 @@ public class EncryptorFactory {
     }
 
     public Encryptor getEncryptor(CryptoAlgorithmType type) {
-        return Objects.requireNonNull(encryptors.get(type), () -> "Unsupported encryptor: " + type);
+        Encryptor encryptor = encryptors.get(type);
+
+        if (encryptor == null) {
+            throw new IllegalArgumentException("Unsupported encryptor: " + type);
+        }
+
+        return encryptor;
     }
 
     public Hasher getHasher(CryptoAlgorithmType type) {
-        return Objects.requireNonNull(hashers.get(type), () -> "Unsupported hasher: " + type);
+        Hasher hasher = hashers.get(type);
+
+        if (hasher == null) {
+            throw new IllegalArgumentException("Unsupported hasher: " + type);
+        }
+
+        return hasher;
     }
 
     public Signer getSigner(CryptoAlgorithmType type) {
-        return Objects.requireNonNull(signers.get(type), () -> "Unsupported signer: " + type);
+        Signer signer = signers.get(type);
+
+        if (signer == null) {
+            throw new IllegalArgumentException("Unsupported signer: " + type);
+        }
+
+        return signer;
     }
 }
