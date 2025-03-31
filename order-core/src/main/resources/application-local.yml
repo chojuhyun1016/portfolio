@@ -58,3 +58,5 @@ encrypt:
     key: bXlTZWNyZXRLZXlTMjU2MjU2MjU2MjU2MjU2MjU2MjU=  # 32 bytes
   aesgcm:
     key: bXlTMzJiYnl0ZXNnY21rZXlzdXBlcnNlY3JldGtleTE=  # 32 bytes
+  hmac:
+    key: test-hmac-secret

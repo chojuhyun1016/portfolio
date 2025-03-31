@@ -1,82 +1,67 @@
 package org.example.order.core.crypto;
 
-import org.example.order.core.crypto.code.EncryptorType;
-import org.example.order.core.crypto.factory.EncryptorFactory;
-import org.junit.jupiter.api.DisplayName;
+import org.example.order.core.crypto.impl.Aes128Encryptor;
+import org.example.order.core.crypto.impl.Aes256Encryptor;
+import org.example.order.core.crypto.impl.AesGcmEncryptor;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ActiveProfiles;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.security.SecureRandom;
+import java.util.Base64;
 
-@SpringBootTest(classes = EncryptorTest.TestConfig.class)
-@ActiveProfiles("local")
+import static org.junit.jupiter.api.Assertions.*;
+
 class EncryptorTest {
 
-    @Autowired
-    private EncryptorFactory encryptorFactory;
+    private static final SecureRandom random = new SecureRandom();
 
-    @Test
-    @DisplayName("AES128 암복호화 테스트 - 팩토리 사용")
-    void aes128Test() {
-        Encryptor encryptor = encryptorFactory.getEncryptor(EncryptorType.AES128);
-        assertEncryptorWorks(encryptor, EncryptorType.AES128);
+    private String generateRandomBase64Key(int size) {
+        byte[] keyBytes = new byte[size];
+        random.nextBytes(keyBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(keyBytes);
     }
 
     @Test
-    @DisplayName("AES256 암복호화 테스트 - 팩토리 사용")
-    void aes256Test() {
-        Encryptor encryptor = encryptorFactory.getEncryptor(EncryptorType.AES256);
-        assertEncryptorWorks(encryptor, EncryptorType.AES256);
-    }
+    void testAesGcmEncryptAndDecrypt() {
+        String base64Key = generateRandomBase64Key(32); // AES-GCM uses 256-bit key
+        Encryptor encryptor = new AesGcmEncryptor(base64Key);
 
-    @Test
-    @DisplayName("AES-GCM 암복호화 테스트 - 팩토리 사용")
-    void aesGcmTest() {
-        Encryptor encryptor = encryptorFactory.getEncryptor(EncryptorType.AESGCM);
-        assertEncryptorWorks(encryptor, EncryptorType.AESGCM);
-    }
+        assertTrue(encryptor.isReady());
+        String plainText = "Sensitive data for GCM";
 
-    private void assertEncryptorWorks(Encryptor encryptor, EncryptorType type) {
-        assertThat(encryptor.isReady()).isTrue();
-
-        String plainText = "Hello Encryptor";
         String encrypted = encryptor.encrypt(plainText);
+        assertNotNull(encrypted);
+
         String decrypted = encryptor.decrypt(encrypted);
-
-        // 콘솔 출력
-        System.out.println("[" + type + "] 암복호화 테스트 결과");
-        System.out.println("원문(Plain)    : " + plainText);
-        System.out.println("암호문(Encrypted): " + encrypted);
-        System.out.println("복호문(Decrypted): " + decrypted);
-        System.out.println();
-
-        assertThat(decrypted).isEqualTo(plainText);
+        assertEquals(plainText, decrypted);
     }
 
-    /**
-     * 테스트용 Configuration 클래스
-     * Redis / JPA / DataSource 자동설정 제외
-     */
-    @Configuration
-    @EnableAutoConfiguration(exclude = {
-            RedisAutoConfiguration.class,
-            RedisRepositoriesAutoConfiguration.class,
-            DataSourceAutoConfiguration.class,
-            HibernateJpaAutoConfiguration.class
-    })
-    @ComponentScan(basePackages = {
-            "org.example.order.core.crypto",
-            "org.example.order.core.crypto.factory"
-    })
-    public static class TestConfig {
+    @Test
+    void testAes128EncryptAndDecrypt() {
+        String base64Key = generateRandomBase64Key(16); // AES-128 uses 128-bit key
+        Encryptor encryptor = new Aes128Encryptor(base64Key);
+
+        assertTrue(encryptor.isReady());
+        String plainText = "Sensitive data for AES128";
+
+        String encrypted = encryptor.encrypt(plainText);
+        assertNotNull(encrypted);
+
+        String decrypted = encryptor.decrypt(encrypted);
+        assertEquals(plainText, decrypted);
+    }
+
+    @Test
+    void testAes256EncryptAndDecrypt() {
+        String base64Key = generateRandomBase64Key(32); // AES-256 uses 256-bit key
+        Encryptor encryptor = new Aes256Encryptor(base64Key);
+
+        assertTrue(encryptor.isReady());
+        String plainText = "Sensitive data for AES256";
+
+        String encrypted = encryptor.encrypt(plainText);
+        assertNotNull(encrypted);
+
+        String decrypted = encryptor.decrypt(encrypted);
+        assertEquals(plainText, decrypted);
     }
 }

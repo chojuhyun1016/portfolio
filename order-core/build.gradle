@@ -11,6 +11,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     implementation 'com.google.guava:guava:32.1.2-jre'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'de.mkammerer:argon2-jvm:2.11'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     if (System.getenv("SPRING_PROFILES_ACTIVE") == "local") {
         implementation 'mysql:mysql-connector-java:8.0.30'

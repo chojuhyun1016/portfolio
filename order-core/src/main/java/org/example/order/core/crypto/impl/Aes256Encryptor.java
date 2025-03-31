@@ -1,10 +1,10 @@
-package org.example.order.core.crypto.Impl;
+package org.example.order.core.crypto.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.utils.Base64Utils;
 import org.example.order.core.crypto.Encryptor;
-import org.example.order.core.crypto.code.EncryptorType;
+import org.example.order.core.crypto.code.CryptoAlgorithmType;
 import org.example.order.core.crypto.engine.Aes256Engine;
 import org.example.order.core.crypto.exception.DecryptException;
 import org.example.order.core.crypto.exception.EncryptException;
@@ -107,7 +107,7 @@ public class Aes256Encryptor implements Encryptor {
     }
 
     @Override
-    public EncryptorType getType() {
-        return EncryptorType.AES256;
+    public CryptoAlgorithmType getType() {
+        return CryptoAlgorithmType.AES256;
     }
 }

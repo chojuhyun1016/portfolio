@@ -1,8 +1,9 @@
 package org.example.order.core.crypto.factory;
 
-import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.crypto.Encryptor;
-import org.example.order.core.crypto.code.EncryptorType;
+import org.example.order.core.crypto.Hasher;
+import org.example.order.core.crypto.Signer;
+import org.example.order.core.crypto.code.CryptoAlgorithmType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -10,26 +11,28 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 public class EncryptorFactory {
 
-    private final Map<EncryptorType, Encryptor> encryptorMap;
+    private final Map<CryptoAlgorithmType, Encryptor> encryptors;
+    private final Map<CryptoAlgorithmType, Hasher> hashers;
+    private final Map<CryptoAlgorithmType, Signer> signers;
 
-    public EncryptorFactory(List<Encryptor> encryptors) {
-        this.encryptorMap = Map.copyOf(
-                encryptors.stream()
-                        .collect(Collectors.toMap(
-                                Encryptor::getType,
-                                e -> e
-                        ))
-        );
-
-        log.info("EncryptorFactory initialized with: {}", encryptorMap.keySet());
+    public EncryptorFactory(List<Encryptor> encryptors, List<Hasher> hashes, List<Signer> signers) {
+        this.encryptors = encryptors.stream().collect(Collectors.toMap(Encryptor::getType, e -> e));
+        this.hashers = hashes.stream().collect(Collectors.toMap(Hasher::getType, h -> h));
+        this.signers = signers.stream().collect(Collectors.toMap(Signer::getType, s -> s));
     }
 
-    public Encryptor getEncryptor(EncryptorType type) {
-        return Objects.requireNonNull(encryptorMap.get(type),
-                () -> "Unsupported EncryptorType: " + type);
+    public Encryptor getEncryptor(CryptoAlgorithmType type) {
+        return Objects.requireNonNull(encryptors.get(type), () -> "Unsupported encryptor: " + type);
+    }
+
+    public Hasher getHasher(CryptoAlgorithmType type) {
+        return Objects.requireNonNull(hashers.get(type), () -> "Unsupported hasher: " + type);
+    }
+
+    public Signer getSigner(CryptoAlgorithmType type) {
+        return Objects.requireNonNull(signers.get(type), () -> "Unsupported signer: " + type);
     }
 }
