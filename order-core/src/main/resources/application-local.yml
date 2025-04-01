@@ -44,6 +44,7 @@ spring:
     port: ${REDIS_PORT:6379}
     password: ${REDIS_PASSWORD}
     timeout: 3000ms
+    trusted-package: org.example.order
     lettuce:
       pool:
         max-active: 32       # 동시에 사용할 수 있는 최대 커넥션 수
