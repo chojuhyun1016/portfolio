@@ -1,17 +1,17 @@
 package org.example.order.core.crypto;
 
-import org.example.order.core.crypto.impl.HmacSha256Signer;
 import org.example.order.core.crypto.code.CryptoAlgorithmType;
+import org.example.order.core.crypto.impl.HmacSha256Signer;
+import org.example.order.core.crypto.util.EncryptionKeyGenerator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SignerTest {
 
-    private final String secretKey = "test-secret-key";
-
     @Test
     void testHmacSha256SignAndVerify() {
+        String secretKey = EncryptionKeyGenerator.generateKey(CryptoAlgorithmType.HMAC_SHA256);
         Signer signer = new HmacSha256Signer(secretKey);
 
         assertTrue(signer.isReady());

@@ -52,10 +52,11 @@ spring:
 
 encrypt:
   aes128:
-    key: dGhpc2lzMTZieXRla2V5IQ==  # "thisis16bytekey!" (16 bytes)
+    key: ${AES128_KEY} #(16 bytes)
   aes256:
-    key: bXlTZWNyZXRLZXlTMjU2MjU2MjU2MjU2MjU2MjU2MjU=  # 32 bytes
+    key: ${AES256_KEY} # 32 bytes
   aesgcm:
-    key: bXlTMzJiYnl0ZXNnY21rZXlzdXBlcnNlY3JldGtleTE=  # 32 bytes
+    key: ${AESGCM_KEY} # 32 bytes
   hmac:
-    key: test-hmac-secret
+    key: ${HMAC_KEY}   # 32 bytes
+

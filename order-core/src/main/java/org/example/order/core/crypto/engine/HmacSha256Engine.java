@@ -3,15 +3,16 @@ package org.example.order.core.crypto.engine;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 
 public class HmacSha256Engine {
 
-    private static final String ALGORITHM = "HmacSHA256";
+    private static final String HMAC_ALGORITHM = "HmacSHA256";
 
-    public static byte[] sign(String message, String key) throws Exception {
-        Mac mac = Mac.getInstance(ALGORITHM);
-        mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), ALGORITHM));
-
-        return mac.doFinal(message.getBytes(StandardCharsets.UTF_8));
+    public static byte[] sign(byte[] message, byte[] key) throws GeneralSecurityException {
+        Mac mac = Mac.getInstance(HMAC_ALGORITHM);
+        SecretKeySpec secretKeySpec = new SecretKeySpec(key, HMAC_ALGORITHM);
+        mac.init(secretKeySpec);
+        return mac.doFinal(message);
     }
 }
