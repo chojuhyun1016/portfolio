@@ -3,7 +3,7 @@ package org.example.order.worker.facade.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.example.order.common.utils.ObjectMapperUtils;
+import org.example.order.common.utils.jackson.ObjectMapperUtils;
 import org.example.order.core.application.message.OrderApiMessage;
 import org.example.order.core.application.message.OrderLocalMessage;
 import org.example.order.worker.facade.order.OrderLocalMessageFacade;

@@ -7,7 +7,7 @@ import org.example.order.client.web.service.WebClientService;
 import org.example.order.common.constant.HttpConstant;
 import org.example.order.common.exception.CommonException;
 import org.example.order.common.response.CommonResponse;
-import org.example.order.common.utils.ObjectMapperUtils;
+import org.example.order.common.utils.jackson.ObjectMapperUtils;
 import org.example.order.core.application.dto.OrderDto;
 import org.example.order.worker.exception.WorkerExceptionCode;
 import org.example.order.worker.service.common.OrderWebClientService;

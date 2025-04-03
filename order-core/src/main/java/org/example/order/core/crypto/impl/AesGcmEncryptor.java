@@ -2,13 +2,13 @@ package org.example.order.core.crypto.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.utils.Base64Utils;
+import org.example.order.common.utils.encode.Base64Utils;
 import org.example.order.core.crypto.Encryptor;
 import org.example.order.core.crypto.code.CryptoAlgorithmType;
+import org.example.order.core.crypto.config.EncryptProperties;
 import org.example.order.core.crypto.engine.AesGcmEngine;
 import org.example.order.core.crypto.exception.DecryptException;
 import org.example.order.core.crypto.exception.EncryptException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -28,13 +28,13 @@ public class AesGcmEncryptor implements Encryptor {
     private final SecureRandom random = new SecureRandom();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AesGcmEncryptor(@Value("${encrypt.aesgcm.key:}") String base64Key) {
+    public AesGcmEncryptor(EncryptProperties encryptProperties) {
+        String base64Key = encryptProperties.getAesgcm().getKey();
         if (base64Key != null && !base64Key.isBlank()) {
             try {
                 setKey(base64Key);
             } catch (IllegalArgumentException e) {
                 log.warn("AES-GCM key is invalid: {}", e.getMessage());
-                // key는 null로 유지 (isReady false)
             }
         } else {
             log.info("AES-GCM key not configured. This encryptor will be inactive.");

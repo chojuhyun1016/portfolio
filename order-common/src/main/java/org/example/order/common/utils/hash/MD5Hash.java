@@ -1,4 +1,4 @@
-package org.example.order.common.utils;
+package org.example.order.common.utils.hash;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

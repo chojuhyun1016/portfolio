@@ -2,7 +2,7 @@ package org.example.order.api.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.order.api.common.config.module.*;
-import org.example.order.common.config.module.CommonObjectMapperFactory;
+import org.example.order.common.jackson.config.CommonObjectMapperFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;

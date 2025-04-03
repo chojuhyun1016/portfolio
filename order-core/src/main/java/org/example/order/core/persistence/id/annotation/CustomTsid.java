@@ -1,8 +1,8 @@
-package org.example.order.core.annotation;
+package org.example.order.core.persistence.id.annotation;
 
 import com.google.common.hash.Hashing;
 import io.hypersistence.tsid.TSID;
-import org.example.order.core.utils.CustomTsidGenerator;
+import org.example.order.core.persistence.id.generator.CustomTsidGenerator;
 import org.hibernate.annotations.IdGeneratorType;
 
 import java.lang.annotation.ElementType;

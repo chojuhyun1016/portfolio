@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.batch.service.common.FileService;
 import org.example.order.batch.service.common.S3Service;
-import org.example.order.common.utils.ObjectMapperUtils;
+import org.example.order.common.utils.jackson.ObjectMapperUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;

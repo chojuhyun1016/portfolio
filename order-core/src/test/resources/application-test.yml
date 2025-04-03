@@ -1,0 +1,24 @@
+
+spring:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+logging:
+  level:
+    org.springframework.data.redis: DEBUG
+
+encrypt:
+  aes128:
+    key: base64EncodedTestKey==
+  aes256:
+    key: base64EncodedTestKey==
+  aesgcm:
+    key: base64EncodedTestKey==

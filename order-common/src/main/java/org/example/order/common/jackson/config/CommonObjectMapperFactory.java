@@ -1,4 +1,4 @@
-package org.example.order.common.config.module;
+package org.example.order.common.jackson.config;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +14,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.YearMonthSerializer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.example.order.common.code.CodeEnum;
+import org.example.order.common.jackson.converter.CodeEnumJsonConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.time.LocalDate;

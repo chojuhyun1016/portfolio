@@ -1,6 +1,6 @@
 package org.example.order.core.crypto.impl;
 
-import org.example.order.common.utils.Base64Utils;
+import org.example.order.common.utils.encode.Base64Utils;
 import org.example.order.core.crypto.Hasher;
 import org.example.order.core.crypto.code.CryptoAlgorithmType;
 import org.example.order.core.crypto.engine.Sha256Engine;

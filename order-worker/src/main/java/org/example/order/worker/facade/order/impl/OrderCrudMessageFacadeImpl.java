@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.example.order.common.code.MessageMethodType;
 import org.example.order.common.exception.CommonException;
-import org.example.order.common.utils.ObjectMapperUtils;
+import org.example.order.common.utils.jackson.ObjectMapperUtils;
 import org.example.order.core.application.dto.OrderLocalDto;
 import org.example.order.core.application.message.OrderCrudMessage;
 import org.example.order.core.application.message.OrderRemoteMessage;

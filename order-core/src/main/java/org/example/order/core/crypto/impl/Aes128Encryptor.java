@@ -2,13 +2,13 @@ package org.example.order.core.crypto.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.utils.Base64Utils;
+import org.example.order.common.utils.encode.Base64Utils;
 import org.example.order.core.crypto.Encryptor;
 import org.example.order.core.crypto.code.CryptoAlgorithmType;
+import org.example.order.core.crypto.config.EncryptProperties;
 import org.example.order.core.crypto.engine.Aes128Engine;
 import org.example.order.core.crypto.exception.DecryptException;
 import org.example.order.core.crypto.exception.EncryptException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -28,15 +28,11 @@ public class Aes128Encryptor implements Encryptor {
     private final SecureRandom random = new SecureRandom();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Aes128Encryptor(@Value("${encrypt.aes128.key:}") String base64Key) {
-        if (base64Key != null && !base64Key.isBlank()) {
-            try {
-                setKey(base64Key);
-            } catch (IllegalArgumentException e) {
-                log.warn("AES-128 key is invalid: {}", e.getMessage());
-            }
-        } else {
-            log.info("AES-128 key is not set. This encryptor will not be ready.");
+    public Aes128Encryptor(EncryptProperties encryptProperties) {
+        String base64Key = encryptProperties.getAes128().getKey();
+        this.key = Base64Utils.decodeUrlSafe(base64Key);
+        if (key.length != KEY_LENGTH) {
+            throw new IllegalArgumentException("AES-128 key must be 16 bytes.");
         }
     }
 

@@ -1,6 +1,6 @@
-package org.example.order.core.utils;
+package org.example.order.core.persistence.id.generator;
 
-import org.example.order.core.annotation.CustomTsid;
+import org.example.order.core.persistence.id.annotation.CustomTsid;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 

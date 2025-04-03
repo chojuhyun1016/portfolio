@@ -1,4 +1,4 @@
-package org.example.order.common.utils;
+package org.example.order.common.utils.encode;
 
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;

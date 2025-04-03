@@ -1,4 +1,4 @@
-package org.example.order.common.config.module;
+package org.example.order.common.jackson.converter;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;

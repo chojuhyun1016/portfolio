@@ -1,7 +1,7 @@
 package org.example.order.core.crypto.util;
 
 import org.example.order.core.crypto.code.CryptoAlgorithmType;
-import org.example.order.common.utils.Base64Utils;
+import org.example.order.common.utils.encode.Base64Utils;
 
 import java.security.SecureRandom;
 

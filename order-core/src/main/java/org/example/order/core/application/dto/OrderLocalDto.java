@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.example.order.common.utils.DateTimeUtils;
+import org.example.order.common.utils.datetime.DateTimeUtils;
 import org.example.order.core.domain.OrderEntity;
 
 import java.time.LocalDateTime;

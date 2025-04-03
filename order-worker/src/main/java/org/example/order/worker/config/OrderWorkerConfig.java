@@ -3,7 +3,7 @@ package org.example.order.worker.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.order.client.kafka.config.KafkaConfig;
-import org.example.order.common.config.module.CommonObjectMapperFactory;
+import org.example.order.common.jackson.config.CommonObjectMapperFactory;
 import org.example.order.core.config.OrderCoreConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

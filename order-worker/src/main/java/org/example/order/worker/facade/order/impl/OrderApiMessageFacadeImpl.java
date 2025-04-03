@@ -2,7 +2,7 @@ package org.example.order.worker.facade.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.utils.ObjectMapperUtils;
+import org.example.order.common.utils.jackson.ObjectMapperUtils;
 import org.example.order.core.application.dto.OrderDto;
 import org.example.order.core.application.message.OrderApiMessage;
 import org.example.order.core.application.message.OrderCrudMessage;

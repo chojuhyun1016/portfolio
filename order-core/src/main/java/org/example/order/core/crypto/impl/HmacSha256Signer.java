@@ -1,13 +1,13 @@
 package org.example.order.core.crypto.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.utils.Base64Utils;
+import org.example.order.common.utils.encode.Base64Utils;
 import org.example.order.core.crypto.Signer;
 import org.example.order.core.crypto.code.CryptoAlgorithmType;
+import org.example.order.core.crypto.config.EncryptProperties;
 import org.example.order.core.crypto.engine.HmacSha256Engine;
 import org.example.order.core.crypto.exception.InvalidKeyException;
 import org.example.order.core.crypto.exception.SignException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -20,13 +20,13 @@ public class HmacSha256Signer implements Signer {
 
     private byte[] secretKey;
 
-    public HmacSha256Signer(@Value("${crypto.hmac.key:}") String configuredKey) {
+    public HmacSha256Signer(EncryptProperties encryptProperties) {
+        String configuredKey = encryptProperties.getHmac().getKey();
         if (configuredKey != null && !configuredKey.isBlank()) {
             try {
                 setKey(configuredKey);
             } catch (IllegalArgumentException e) {
                 log.warn("HMAC-SHA256 key is invalid: {}", e.getMessage());
-                // secretKey remains null (isReady false)
             }
         } else {
             log.info("HMAC-SHA256 key is not configured. This signer will be inactive.");

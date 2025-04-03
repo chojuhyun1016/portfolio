@@ -1,4 +1,4 @@
-package org.example.order.core.utils;
+package org.example.order.core.repository.support;
 
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;

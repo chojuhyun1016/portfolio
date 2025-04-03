@@ -9,7 +9,7 @@ import org.example.order.client.kafka.config.property.KafkaConsumerProperties;
 import org.example.order.common.application.message.DlqMessage;
 import org.example.order.common.code.CommonExceptionCode;
 import org.example.order.common.code.DlqType;
-import org.example.order.common.utils.ObjectMapperUtils;
+import org.example.order.common.utils.jackson.ObjectMapperUtils;
 import org.example.order.core.application.message.OrderApiMessage;
 import org.example.order.core.application.message.OrderCrudMessage;
 import org.example.order.core.application.message.OrderLocalMessage;

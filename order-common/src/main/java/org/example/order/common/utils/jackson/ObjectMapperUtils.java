@@ -1,4 +1,4 @@
-package org.example.order.common.utils;
+package org.example.order.common.utils.jackson;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,7 +7,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.code.CommonExceptionCode;
 import org.example.order.common.exception.CommonException;
-import org.example.order.common.config.module.CommonObjectMapperFactory;
+import org.example.order.common.jackson.config.CommonObjectMapperFactory;
 
 import java.io.FileOutputStream;
 import java.util.ArrayList;

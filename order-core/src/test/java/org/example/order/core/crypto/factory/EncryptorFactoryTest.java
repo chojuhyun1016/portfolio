@@ -2,24 +2,47 @@ package org.example.order.core.crypto.factory;
 
 import org.example.order.core.crypto.Encryptor;
 import org.example.order.core.crypto.code.CryptoAlgorithmType;
+import org.example.order.core.crypto.config.EncryptProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = EncryptorFactoryTest.TestConfig.class)
 class EncryptorFactoryTest {
 
-    @Configuration
+    @TestConfiguration
     @ComponentScan(basePackages = "org.example.order.core.crypto")
     static class TestConfig {
-        // 필요한 경우 Bean 직접 등록 가능
+
+        // 테스트용 암호화 키 생성 (Base64 URL-safe 형식)
+        private static String generateKey(int length) {
+            byte[] keyBytes = new byte[length];
+            for (int i = 0; i < length; i++) keyBytes[i] = (byte) (i + 1);
+
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(keyBytes);
+        }
+
+        @Bean
+        public EncryptProperties encryptProperties() {
+            EncryptProperties properties = new EncryptProperties();
+            properties.getAes128().setKey(generateKey(16));
+            properties.getAes256().setKey(generateKey(32));
+            properties.getAesgcm().setKey(generateKey(32));
+
+            return properties;
+        }
     }
 
     @Autowired
