@@ -11,7 +11,7 @@ ext {
 }
 
 def javaProjects = subprojects.findAll {
-    it.name != 'port-client' && it.name != 'port-api'
+    it.name != 'order-client' && it.name != 'order-api'
 }
 configure(javaProjects) {
     group 'org.example'
