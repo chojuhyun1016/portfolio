@@ -28,7 +28,6 @@ class RedisRepositoryImplTest {
 
     static {
         redisContainer.start();
-        // Testcontainers가 port 준비 완료 후 환경 변수로 설정
         System.setProperty("test.redis.host", redisContainer.getHost());
         System.setProperty("test.redis.port", String.valueOf(redisContainer.getMappedPort(6379)));
     }

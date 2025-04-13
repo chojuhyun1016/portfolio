@@ -1,19 +1,32 @@
 
 spring:
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: none
-    show-sql: false
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://localhost:3312/order?enabledTLSProtocols=TLSv1.2&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
-logging:
-  level:
-    org.springframework.data.redis: DEBUG
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    hibernate.ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+lock:
+  redisson:
+    address: redis://127.0.0.1:6379
+    password: # 선택
+    database: 0
+    wait-time: 3000
+    lease-time: 10000
+
+  named:
+    wait-time: 5000       # milliseconds
+    retry-interval: 100   # 재시도 간격 (ex: 100ms)
 
 encrypt:
   aes128:
@@ -22,3 +35,7 @@ encrypt:
     key: base64EncodedTestKey==
   aesgcm:
     key: base64EncodedTestKey==
+
+logging:
+  level:
+    org.springframework.data.redis: DEBUG

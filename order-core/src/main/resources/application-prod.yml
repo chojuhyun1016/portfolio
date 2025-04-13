@@ -51,6 +51,18 @@ spring:
         min-idle: 8          # 최소 idle 커넥션 수 확보 (예열 용도)
         max-wait: 2000ms     # 커넥션 풀에서 커넥션을 기다릴 수 있는 최대 시간
 
+lock:
+  redisson:
+    address: redis://localhost:6379
+    password: # 선택
+    database: 0
+    wait-time: 3000
+    lease-time: 10000
+
+  named:
+    wait-time: 5000       # milliseconds
+    retry-interval: 100   # 재시도 간격 (ex: 100ms)
+
 encrypt:
   aes128:
     key: ${AES128_KEY} #(16 bytes)
