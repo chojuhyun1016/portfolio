@@ -1,4 +1,4 @@
-package org.example.order.core.annotation.namedLock;
+package org.example.order.core.annotation;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

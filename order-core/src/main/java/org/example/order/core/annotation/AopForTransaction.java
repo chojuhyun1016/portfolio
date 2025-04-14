@@ -1,4 +1,4 @@
-package org.example.order.core.annotation.namedLock;
+package org.example.order.core.annotation;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.stereotype.Component;

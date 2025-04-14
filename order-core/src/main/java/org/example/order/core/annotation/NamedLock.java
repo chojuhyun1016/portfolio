@@ -1,4 +1,4 @@
-package org.example.order.core.annotation.namedLock;
+package org.example.order.core.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

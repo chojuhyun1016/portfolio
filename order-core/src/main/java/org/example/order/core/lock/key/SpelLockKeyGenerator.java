@@ -21,9 +21,6 @@ public class SpelLockKeyGenerator implements LockKeyGenerator {
 
     @Override
     public String generate(String keyExpression, Method method, Object[] args) {
-        System.out.println("==== SpelLockKeyGenerator.generate() called ====");
-        log.info("before:{}", keyExpression);
-
         String[] paramNames = discoverer.getParameterNames(method);
         EvaluationContext context = new StandardEvaluationContext();
 
@@ -32,8 +29,6 @@ public class SpelLockKeyGenerator implements LockKeyGenerator {
                 context.setVariable(paramNames[i], args[i]);
             }
         }
-
-        log.info("after key:{}", parser.parseExpression(keyExpression).getValue(context, String.class));
 
         return parser.parseExpression(keyExpression).getValue(context, String.class);
     }
