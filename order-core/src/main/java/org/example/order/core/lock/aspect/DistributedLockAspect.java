@@ -11,6 +11,7 @@ import org.example.order.core.lock.key.LockKeyGenerator;
 import org.example.order.core.lock.lock.LockCallback;
 import org.example.order.core.lock.lock.LockExecutor;
 import org.example.order.core.lock.support.LockExecutorFactory;
+import org.example.order.core.lock.support.LockKeyGeneratorFactory;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -21,16 +22,15 @@ import java.lang.reflect.Method;
 @RequiredArgsConstructor
 public class DistributedLockAspect {
 
-    private final LockKeyGenerator lockKeyGenerator;
+    private final LockKeyGeneratorFactory keyGeneratorFactory; // ✅ 변경
     private final LockExecutorFactory lockExecutorFactory;
 
     @Around("@annotation(distributedLock)")
     public Object handle(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
-
-        log.info("[AOP] >>> DistributedLockAspect invoked for {}", joinPoint.getSignature().toShortString());
-
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
-        String key = lockKeyGenerator.generate(distributedLock.key(), method, joinPoint.getArgs());
+
+        LockKeyGenerator keyGenerator = keyGeneratorFactory.getGenerator(distributedLock.keyStrategy()); // ✅ 전략 선택
+        String key = keyGenerator.generate(distributedLock.key(), method, joinPoint.getArgs());
 
         LockExecutor executor = lockExecutorFactory.getExecutor(distributedLock.type());
 

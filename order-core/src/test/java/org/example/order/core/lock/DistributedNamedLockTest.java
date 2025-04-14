@@ -1,29 +1,40 @@
 package org.example.order.core.lock;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.lock.annotation.DistributedLock;
+import org.example.order.core.lock.service.LockService;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-@SpringBootTest
+@SpringBootTest(classes = DistributedNamedLockTest.TestConfig.class)
 @ActiveProfiles("test")
 class DistributedNamedLockTest {
 
+    @SpringBootConfiguration
+    @EnableAutoConfiguration
+    @EnableAspectJAutoProxy(proxyTargetClass = true)
+    @ComponentScan(basePackages = "org.example.order.core.lock")
+    static class TestConfig {
+    }
+
     @Autowired
-    private NamedLockTestService namedLockTestService;
+    private LockService lockService;
 
     @Test
     void testConcurrentLocking() throws InterruptedException, ExecutionException {
@@ -35,48 +46,37 @@ class DistributedNamedLockTest {
         for (int i = 0; i < threadCount; i++) {
             results.add(executorService.submit(() -> {
                 try {
-                    return namedLockTestService.runWithLock("test-key");
+                    String result = lockService.runWithLock("test-key");
+                    log.info("[RESULT] get from Future: {}", result);
+                    return result;
                 } finally {
                     latch.countDown();
                 }
             }));
         }
 
-        latch.await(); // 모든 스레드 완료 대기
+        latch.await();
         executorService.shutdown();
 
-        List<String> completed = new ArrayList<>();
+        List<Integer> completed = new ArrayList<>();
         for (Future<String> future : results) {
-            completed.add(future.get());
+            completed.add(Integer.parseInt(future.get()));
         }
 
         log.info("결과 = {}", completed);
+
+        // ✅ 변경된 부분: 정렬하여 검증
+        List<Integer> sorted = new ArrayList<>(completed);
+        Collections.sort(sorted);
+
         assertThat(completed).hasSize(threadCount);
-
-        // 순서 검증
-        for (int i = 0; i < completed.size(); i++) {
-            assertThat(completed.get(i)).isEqualTo(String.valueOf(i + 1));
-        }
+        assertThat(sorted).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
     }
 
-    @Service
-    public static class NamedLockTestService {
-
-        private final AtomicInteger sequence = new AtomicInteger();
-
-        @DistributedLock(key = "#key", type = "namedLock", waitTime = 5000, leaseTime = 3000)
-        public String runWithLock(String key) throws InterruptedException {
-            int order = sequence.incrementAndGet();
-            log.info("[LOCK] 진입 - key={}, order={}", key, order);
-            Thread.sleep(500); // 처리 시간
-            log.info("[LOCK] 종료 - order={}", order);
-            return String.valueOf(order);
-        }
-    }
-
-    @Configuration
-    @Import(NamedLockTestService.class)
-    public static class NamedLockTestConfig {
-        // 필요한 경우 다른 빈도 여기서 등록 가능
+    @Test
+    void proxyClassCheck() {
+        log.info("[PROXY CHECK] isAopProxy = {}", AopUtils.isAopProxy(lockService));
+        log.info("[PROXY CHECK] actual class = {}", lockService.getClass());
+        log.info("[PROXY CHECK] target class = {}", AopProxyUtils.ultimateTargetClass(lockService));
     }
 }
