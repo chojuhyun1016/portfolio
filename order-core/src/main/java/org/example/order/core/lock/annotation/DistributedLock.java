@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 public @interface DistributedLock {
     String key();
     String type(); // namedLock, redissonLock
-    String keyStrategy() default "spel"; // ✅ 추가: 키 전략
+    String keyStrategy() default "spell"; // ✅ 추가: 키 전략
     long waitTime() default 5000;
     long leaseTime() default 10000;
 }
