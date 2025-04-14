@@ -13,7 +13,7 @@ public class NamedLockTestService implements LockService {
 
     private final AtomicInteger sequence = new AtomicInteger();
 
-    @DistributedLock(key = "#key", type = "namedLock", keyStrategy = "simple")
+    @DistributedLock(key = "#key", type = "namedLock", keyStrategy = "spell")
     public String runWithLock(String key) throws InterruptedException {
         int order = sequence.incrementAndGet();
         log.info("[LOCK] 진입 - key={}, order={}", key, order);
