@@ -1,10 +1,12 @@
-package org.example.order.core.lock.lock;
+package org.example.order.core.lock.lock.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.utils.exception.ExceptionUtils;
 import org.example.order.core.lock.config.NamedLockProperties;
 import org.example.order.core.lock.exception.LockAcquisitionException;
+import org.example.order.core.lock.lock.LockCallback;
+import org.example.order.core.lock.lock.LockExecutor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,8 @@
-package org.example.order.core.lock.key;
+package org.example.order.core.lock.key.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.utils.hash.HashUtil;
+import org.example.order.core.lock.key.LockKeyGenerator;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;

@@ -3,6 +3,7 @@ package org.example.order.core.lock;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.lock.annotation.DistributedLock;
 import org.example.order.core.lock.config.TestRedisConfig;
+import org.example.order.core.lock.key.impl.SpelLockKeyGenerator;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -81,7 +82,7 @@ public class DistributedRedissonLockTest {
     static class MockLockExecutorConfig {
         @Bean
         public org.example.order.core.lock.key.LockKeyGenerator lockKeyGenerator() {
-            return new org.example.order.core.lock.key.SpelLockKeyGenerator();
+            return new SpelLockKeyGenerator();
         }
     }
 }
