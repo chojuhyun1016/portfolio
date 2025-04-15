@@ -1,4 +1,4 @@
-package org.example.order.core.lock.support;
+package org.example.order.core.lock.factory;
 
 import lombok.RequiredArgsConstructor;
 import org.example.order.core.lock.lock.LockExecutor;

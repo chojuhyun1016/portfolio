@@ -20,10 +20,10 @@ public class RedissonLockExecutor implements LockExecutor {
 
     @Override
     public Object execute(String key, long waitTime, long leaseTime, LockCallback callback) throws Throwable {
-        long wait = waitTime > 0 ? waitTime : redissonProperties.getWaitTime();         // 전체 최대 대기 시간
-        long lease = leaseTime > 0 ? leaseTime : redissonProperties.getLeaseTime();     // 락 유지 시간
-        long retryInterval = redissonProperties.getRetryInterval();                     // 재시도 간격
-        int maxRetries = (int) (wait / retryInterval);                                  // 최대 시도 횟수
+        long wait = waitTime > 0 ? waitTime : redissonProperties.getWaitTime();
+        long lease = leaseTime > 0 ? leaseTime : redissonProperties.getLeaseTime();
+        long retryInterval = redissonProperties.getRetryInterval();
+        int maxRetries = (int) (wait / retryInterval);
 
         RLock lock = redissonClient.getLock(key);
         long startTime = System.currentTimeMillis();
@@ -38,36 +38,40 @@ public class RedissonLockExecutor implements LockExecutor {
                     try {
                         return callback.call();
                     } finally {
-                        if (lock.isHeldByCurrentThread()) {
-                            lock.unlock();
-                            log.debug("Released redisson lock. key={}", key);
-                        } else {
-                            log.warn("Lock not held by current thread, cannot release. key={}", key);
-                        }
+                        releaseLock(lock, key);
                     }
-                } else {
-                    log.debug("Redisson lock attempt failed. key={}, attempt={}, retrying...", key, attempt);
                 }
 
+                log.debug("Redisson lock attempt failed. key={}, attempt={}, retrying...", key, attempt);
                 TimeUnit.MILLISECONDS.sleep(retryInterval);
-
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new LockAcquisitionException("Thread interrupted during redisson lock wait. key: " + key, e);
+                throw new LockAcquisitionException("Redisson lock interrupted. key: " + key, e);
             } catch (Exception e) {
-                long elapsed = System.currentTimeMillis() - startTime;
                 log.error("""
-                    Redisson error during lock operation
-                    ├─ key        : {}
-                    ├─ attempt    : {}
-                    ├─ waited     : {}ms
-                    └─ RootCause  : {}
-                    """, key, attempt, elapsed, e.getMessage(), e);
+                    Redisson error during lock
+                    ├─ key     : {}
+                    ├─ attempt : {}
+                    └─ error   : {}
+                    """, key, attempt, e.getMessage(), e);
                 throw new LockAcquisitionException("Redisson lock execution failed for key: " + key, e);
             }
         }
 
-        long elapsed = System.currentTimeMillis() - startTime;
-        throw new LockAcquisitionException("Failed to acquire redisson lock for key: " + key + " after " + elapsed + "ms and " + maxRetries + " attempts.");
+        long totalElapsed = System.currentTimeMillis() - startTime;
+        throw new LockAcquisitionException("Redisson lock failed for key=" + key + " after " + totalElapsed + "ms");
+    }
+
+    private void releaseLock(RLock lock, String key) {
+        try {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+                log.debug("Released redisson lock. key={}", key);
+            } else {
+                log.warn("Redisson lock not held by current thread. key={}", key);
+            }
+        } catch (Exception e) {
+            log.error("Failed to release redisson lock. key={}, error={}", key, e.getMessage(), e);
+        }
     }
 }

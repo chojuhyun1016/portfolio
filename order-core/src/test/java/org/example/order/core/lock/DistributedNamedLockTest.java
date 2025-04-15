@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -65,7 +64,44 @@ class DistributedNamedLockTest {
 
         log.info("결과 = {}", completed);
 
-        // ✅ 변경된 부분: 정렬하여 검증
+        List<Integer> sorted = new ArrayList<>(completed);
+        Collections.sort(sorted);
+
+        assertThat(completed).hasSize(threadCount);
+        assertThat(sorted).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    }
+
+    @Test
+    void testConcurrentLockingT() throws InterruptedException, ExecutionException {
+        int threadCount = 10;
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        List<Future<String>> results = new ArrayList<>();
+
+        this.lockService.clear();
+
+        for (int i = 0; i < threadCount; i++) {
+            results.add(executorService.submit(() -> {
+                try {
+                    String result = lockService.runWithLockT("test-key-t");
+                    log.info("[RESULT T] get from Future: {}", result);
+                    return result;
+                } finally {
+                    latch.countDown();
+                }
+            }));
+        }
+
+        latch.await();
+        executorService.shutdown();
+
+        List<Integer> completed = new ArrayList<>();
+        for (Future<String> future : results) {
+            completed.add(Integer.parseInt(future.get()));
+        }
+
+        log.info("결과 T = {}", completed);
+
         List<Integer> sorted = new ArrayList<>(completed);
         Collections.sort(sorted);
 

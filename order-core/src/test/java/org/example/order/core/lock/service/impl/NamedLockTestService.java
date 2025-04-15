@@ -13,12 +13,23 @@ public class NamedLockTestService implements LockService {
 
     private final AtomicInteger sequence = new AtomicInteger();
 
-    @DistributedLock(key = "#key", type = "namedLock", keyStrategy = "spell")
+    public void clear() {sequence.set(0);}
+
+    @DistributedLock(key = "#key", type = "namedLock", keyStrategy = "sha256")
     public String runWithLock(String key) throws InterruptedException {
         int order = sequence.incrementAndGet();
         log.info("[LOCK] 진입 - key={}, order={}", key, order);
         Thread.sleep(500);
         log.info("[LOCK] 종료 - order={}", order);
+        return String.valueOf(order);
+    }
+
+    @DistributedLock(key = "#key", type = "namedLock", keyStrategy = "sha256")
+    public String runWithLockT(String key) throws InterruptedException {
+        int order = sequence.incrementAndGet();
+        log.info("[LOCK T] 진입 - key={}, order={}", key, order);
+        Thread.sleep(500);
+        log.info("[LOCK T] 종료 - order={}", order);
         return String.valueOf(order);
     }
 }

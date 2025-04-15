@@ -23,68 +23,71 @@ public class NamedLockExecutor implements LockExecutor {
     @Override
     public Object execute(String key, long waitTime, long leaseTime, LockCallback callback) throws Throwable {
         int waitMillis = (int) (waitTime > 0 ? waitTime : namedLockProperties.getWaitTime());
-        int retryInterval = namedLockProperties.getRetryInterval(); // ex: 100ms
+        int retryInterval = namedLockProperties.getRetryInterval();
         int maxRetries = waitMillis / retryInterval;
 
         String getLockSql = "SELECT GET_LOCK(?, ?)";
         String releaseLockSql = "SELECT RELEASE_LOCK(?)";
 
-        long start = System.currentTimeMillis();
-        int attempt = 0;
+        long startTime = System.currentTimeMillis();
 
-        while (attempt < maxRetries) {
-            attempt++;
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 Boolean locked = jdbcTemplate.queryForObject(getLockSql, Boolean.class, key, retryInterval / 1000.0);
-                if (Boolean.TRUE.equals(locked)) {
-                    log.debug("Acquired named lock. key={}, attempt={}, waited={}ms", key, attempt, System.currentTimeMillis() - start);
 
+                if (Boolean.TRUE.equals(locked)) {
+                    log.debug("Acquired named lock. key={}, attempt={}, waited={}ms", key, attempt, System.currentTimeMillis() - startTime);
                     try {
                         return callback.call();
                     } finally {
-                        try {
-                            Boolean released = jdbcTemplate.queryForObject(releaseLockSql, Boolean.class, key);
-                            if (!Boolean.TRUE.equals(released)) {
-                                log.warn("Failed to release lock properly. key={}, result={}", key, released);
-                            }
-                            log.debug("Released named lock. key={}", key);
-                        } catch (Exception e) {
-                            log.error("Failed to release named lock. key={}, error={}", key, e.getMessage(), e);
-                        }
+                        releaseLock(key, releaseLockSql);
                     }
-                } else {
-                    log.debug("Lock attempt failed. key={}, attempt={}, retrying...", key, attempt);
                 }
 
+                log.debug("Named lock attempt failed. key={}, attempt={}, retrying...", key, attempt);
                 TimeUnit.MILLISECONDS.sleep(retryInterval);
             } catch (DataAccessException e) {
                 SQLException sqlEx = ExceptionUtils.findSQLException(e);
+
                 log.error("""
-                    SQL error during named lock
-                    ├─ key         : {}
-                    ├─ attempt     : {}
-                    ├─ SQLState    : {}
-                    ├─ ErrorCode   : {}
-                    └─ RootMessage : {}
-                    """,
-                        key,
-                        attempt,
+                    Named lock SQL error
+                    ├─ key       : {}
+                    ├─ attempt   : {}
+                    ├─ SQLState  : {}
+                    ├─ ErrorCode : {}
+                    └─ Message   : {}
+                    """, key, attempt,
                         sqlEx != null ? sqlEx.getSQLState() : "N/A",
                         sqlEx != null ? sqlEx.getErrorCode() : "N/A",
                         sqlEx != null ? sqlEx.getMessage() : e.getMessage(),
                         e
                 );
-                throw new LockAcquisitionException("SQL error during named lock for key: " + key, e);
+
+                throw new LockAcquisitionException("Named lock SQL error. key=" + key, e);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new LockAcquisitionException("Thread interrupted during named lock wait. key: " + key, e);
+                throw new LockAcquisitionException("Named lock interrupted. key=" + key, e);
             } catch (Exception e) {
-                log.error("Unexpected error during named lock execution. key={}, error={}", key, e.getMessage(), e);
-                throw new LockAcquisitionException("Unexpected error during named lock for key: " + key, e);
+                log.error("Unexpected error during named lock. key={}, error={}", key, e.getMessage(), e);
+                throw new LockAcquisitionException("Unexpected error during named lock. key=" + key, e);
             }
         }
 
-        long elapsed = System.currentTimeMillis() - start;
-        throw new LockAcquisitionException("Failed to acquire named lock for key: " + key + " after " + elapsed + "ms and " + attempt + " attempts.");
+        long totalElapsed = System.currentTimeMillis() - startTime;
+        throw new LockAcquisitionException("Named lock failed for key=" + key + " after " + totalElapsed + "ms");
+    }
+
+    private void releaseLock(String key, String releaseSql) {
+        try {
+            Boolean released = jdbcTemplate.queryForObject(releaseSql, Boolean.class, key);
+
+            if (!Boolean.TRUE.equals(released)) {
+                log.warn("Named lock not properly released. key={}, result={}", key, released);
+            } else {
+                log.debug("Released named lock. key={}", key);
+            }
+        } catch (Exception e) {
+            log.error("Failed to release named lock. key={}, error={}", key, e.getMessage(), e);
+        }
     }
 }
