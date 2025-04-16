@@ -14,6 +14,6 @@ public class RedissonProperties {
     private String password;
     private int database = 0;
     private long waitTime = 3000;       // ms
-    private long leaseTime = 1000;      // ms
-    private long retryInterval = 100;   // ms
+    private long leaseTime = 10000;     // ms
+    private long retryInterval = 150;   // ms
 }

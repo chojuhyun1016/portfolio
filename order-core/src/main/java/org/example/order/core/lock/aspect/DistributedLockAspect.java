@@ -56,7 +56,7 @@ public class DistributedLockAspect {
     public Object handle(ProceedingJoinPoint joinPoint, DistributedLockT distributedLockT) throws Throwable {
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
 
-        LockKeyGenerator keyGenerator = keyGeneratorFactory.getGenerator(distributedLockT.keyStrategy()); // ✅ 전략 선택
+        LockKeyGenerator keyGenerator = keyGeneratorFactory.getGenerator(distributedLockT.keyStrategy());
         String key = keyGenerator.generate(distributedLockT.key(), method, joinPoint.getArgs());
 
         LockExecutor executor = lockExecutorFactory.getExecutor(distributedLockT.type());

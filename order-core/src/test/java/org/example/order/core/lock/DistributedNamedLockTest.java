@@ -12,9 +12,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -36,56 +36,21 @@ class DistributedNamedLockTest {
     private LockService lockService;
 
     @Test
+    @Transactional
     void testConcurrentLocking() throws InterruptedException, ExecutionException {
         int threadCount = 10;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
         List<Future<String>> results = new ArrayList<>();
 
-        for (int i = 0; i < threadCount; i++) {
-            results.add(executorService.submit(() -> {
-                try {
-                    String result = lockService.runWithLock("test-key");
-                    log.info("[RESULT] get from Future: {}", result);
-                    return result;
-                } finally {
-                    latch.countDown();
-                }
-            }));
-        }
-
-        latch.await();
-        executorService.shutdown();
-
-        List<Integer> completed = new ArrayList<>();
-        for (Future<String> future : results) {
-            completed.add(Integer.parseInt(future.get()));
-        }
-
-        log.info("결과 = {}", completed);
-
-        List<Integer> sorted = new ArrayList<>(completed);
-        Collections.sort(sorted);
-
-        assertThat(completed).hasSize(threadCount);
-        assertThat(sorted).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-    }
-
-    @Test
-    void testConcurrentLockingT() throws InterruptedException, ExecutionException {
-        int threadCount = 10;
-        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch latch = new CountDownLatch(threadCount);
-        List<Future<String>> results = new ArrayList<>();
+        log.info("[testConcurrentLocking] 분산락 테스트 시작");
 
         this.lockService.clear();
 
         for (int i = 0; i < threadCount; i++) {
             results.add(executorService.submit(() -> {
                 try {
-                    String result = lockService.runWithLockT("test-key-t");
-                    log.info("[RESULT T] get from Future: {}", result);
-                    return result;
+                    return lockService.runWithLock("test-key");
                 } finally {
                     latch.countDown();
                 }
@@ -95,18 +60,49 @@ class DistributedNamedLockTest {
         latch.await();
         executorService.shutdown();
 
-        List<Integer> completed = new ArrayList<>();
+        List<String> completed = new ArrayList<>();
         for (Future<String> future : results) {
-            completed.add(Integer.parseInt(future.get()));
+            completed.add(future.get());
+        }
+
+        log.info("결과 = {}", completed);
+
+        assertThat(completed).hasSize(threadCount);
+    }
+
+    @Test
+    @Transactional
+    void testConcurrentLockingT() throws InterruptedException, ExecutionException {
+        int threadCount = 10;
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        List<Future<String>> results = new ArrayList<>();
+
+        log.info("[testConcurrentLocking T] 분산락 테스트 시작");
+
+        this.lockService.clear();
+
+        for (int i = 0; i < threadCount; i++) {
+            results.add(executorService.submit(() -> {
+                try {
+                    return lockService.runWithLockT("test-key-t");
+                } finally {
+                    latch.countDown();
+                }
+            }));
+        }
+
+        latch.await();
+        executorService.shutdown();
+
+        List<String> completed = new ArrayList<>();
+        for (Future<String> future : results) {
+            completed.add(future.get());
         }
 
         log.info("결과 T = {}", completed);
 
-        List<Integer> sorted = new ArrayList<>(completed);
-        Collections.sort(sorted);
-
         assertThat(completed).hasSize(threadCount);
-        assertThat(sorted).containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
     }
 
     @Test

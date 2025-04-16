@@ -9,6 +9,6 @@ public @interface DistributedLock {
     String key();
     String type(); // namedLock, redissonLock
     String keyStrategy() default "sha256"; // sha256, md5, spell, simple
-    long waitTime() default 5000;
+    long waitTime() default 3000;
     long leaseTime() default 10000;
 }
