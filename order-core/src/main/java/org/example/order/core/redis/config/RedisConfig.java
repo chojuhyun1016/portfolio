@@ -26,6 +26,7 @@ public class RedisConfig {
 
     private static final int REDIS_COMMAND_TIMEOUT_SECONDS = 3;
     private static final int REDIS_SHUTDOWN_TIMEOUT_SECONDS = 3;
+    private static final String DEFAULT_TRUSTED_PACKAGE = "org.example";
 
     private final RedisProperties redisProperties;
     private LettuceConnectionFactory lettuceConnectionFactory;
@@ -55,7 +56,7 @@ public class RedisConfig {
         var trustedPackage = redisProperties.getTrustedPackage();
 
         if (trustedPackage == null || trustedPackage.trim().isEmpty()) {
-            trustedPackage = "org.example";
+            trustedPackage = DEFAULT_TRUSTED_PACKAGE;
             log.warn("Redis trustedPackage is not configured. Using default: {}", trustedPackage);
         }
 
