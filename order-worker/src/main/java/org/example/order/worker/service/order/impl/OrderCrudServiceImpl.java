@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.application.dto.OrderLocalDto;
 import org.example.order.core.domain.OrderEntity;
-import org.example.order.core.repository.OrderRepository;
+import org.example.order.core.infra.jpa.repository.OrderRepository;
 import org.example.order.worker.service.order.OrderCrudService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;

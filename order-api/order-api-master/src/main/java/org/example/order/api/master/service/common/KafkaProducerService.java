@@ -1,7 +1,7 @@
 package org.example.order.api.master.service.common;
 
-import org.example.order.core.application.message.OrderRemoteMessage;
+import org.example.order.core.application.event.OrderRemoteEvent;
 
 public interface KafkaProducerService {
-    void sendToOrder(OrderRemoteMessage message);
+    void sendToOrder(OrderRemoteEvent message);
 }

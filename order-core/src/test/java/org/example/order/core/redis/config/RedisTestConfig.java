@@ -1,7 +1,7 @@
 package org.example.order.core.redis.config;
 
-import org.example.order.core.redis.repository.RedisRepository;
-import org.example.order.core.redis.repository.impl.RedisRepositoryImpl;
+import org.example.order.core.infra.redis.repository.RedisRepository;
+import org.example.order.core.infra.redis.repository.impl.RedisRepositoryImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;

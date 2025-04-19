@@ -6,7 +6,7 @@ import org.example.order.client.web.config.property.WebClientUrlProperties;
 import org.example.order.client.web.service.WebClientService;
 import org.example.order.common.constant.HttpConstant;
 import org.example.order.common.exception.CommonException;
-import org.example.order.common.response.CommonResponse;
+import org.example.order.common.web.ApiResponse;
 import org.example.order.common.utils.jackson.ObjectMapperUtils;
 import org.example.order.core.application.dto.OrderDto;
 import org.example.order.worker.exception.WorkerExceptionCode;
@@ -35,7 +35,7 @@ public class OrderWebClientServiceImpl implements OrderWebClientService {
 
             String orderUrl = client.getUrl().getWithPathVariable(client.getUrl().getOrder(), id);
             log.info("{}", orderUrl);
-            CommonResponse<?> response = (CommonResponse<?>) webClientService.get(orderUrl, headers, null, CommonResponse.class);
+            ApiResponse<?> response = (ApiResponse<?>) webClientService.get(orderUrl, headers, null, ApiResponse.class);
             Object data = response.getData();
             log.info("{}", response.getData());
 

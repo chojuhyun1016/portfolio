@@ -9,7 +9,7 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.example.order.api.common.config.module.CustomHttpServletRequestWrapper;
 import org.example.order.common.auth.AccessUserManager;
-import org.example.order.common.response.CommonResponse;
+import org.example.order.common.web.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -76,12 +76,12 @@ public class OrderLoggingAop {
 
     private void logHttpResponse(Object result) {
         if (result instanceof ResponseEntity<?> responseEntity) {
-            if (responseEntity.getBody() instanceof CommonResponse<?> commonResponse) {
+            if (responseEntity.getBody() instanceof ApiResponse<?> apiResponse) {
                 log.info("--------------------------------------------------------------------");
                 log.info("Http Response");
                 log.info("status : {}", responseEntity.getStatusCode());
-                log.info("body : {}", commonResponse.getData() != null ? commonResponse.getData().toString() : "null");
-                log.info("metadata : {}", commonResponse.getMetadata() != null ? commonResponse.getMetadata().toString() : "null");
+                log.info("body : {}", apiResponse.getData() != null ? apiResponse.getData().toString() : "null");
+                log.info("metadata : {}", apiResponse.getMetadata() != null ? apiResponse.getMetadata().toString() : "null");
                 log.info("--------------------------------------------------------------------");
             }
         }

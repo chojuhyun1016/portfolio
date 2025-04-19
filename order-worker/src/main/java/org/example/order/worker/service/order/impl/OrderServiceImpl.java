@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.code.MessageMethodType;
 import org.example.order.core.application.dto.OrderDto;
-import org.example.order.core.application.message.OrderCrudMessage;
+import org.example.order.core.application.event.OrderCrudEvent;
 import org.example.order.worker.service.order.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,8 +21,8 @@ public class OrderServiceImpl implements OrderService {
     // 상위 트랜잭션 실패에 상관없이 정상 일 때 커밋
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public void execute(MessageMethodType methodType, List<OrderCrudMessage> messages) {
-        List<OrderDto> dtoList = messages.stream().map(OrderCrudMessage::getDto).toList();
+    public void execute(MessageMethodType methodType, List<OrderCrudEvent> messages) {
+        List<OrderDto> dtoList = messages.stream().map(OrderCrudEvent::getDto).toList();
 
         log.info("{}", dtoList);
 

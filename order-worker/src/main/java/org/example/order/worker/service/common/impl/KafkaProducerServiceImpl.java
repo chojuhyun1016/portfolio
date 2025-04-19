@@ -5,13 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.client.kafka.config.property.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.common.application.message.CustomErrorMessage;
-import org.example.order.common.application.message.DlqMessage;
+import org.example.order.common.event.DlqMessage;
 import org.example.order.common.code.MessageCategory;
 import org.example.order.common.exception.CommonException;
-import org.example.order.core.application.message.OrderApiMessage;
-import org.example.order.core.application.message.OrderCrudMessage;
-import org.example.order.core.application.message.OrderLocalMessage;
-import org.example.order.core.application.message.OrderRemoteMessage;
+import org.example.order.core.application.event.OrderApiEvent;
+import org.example.order.core.application.event.OrderCrudEvent;
+import org.example.order.core.application.event.OrderLocalEvent;
+import org.example.order.core.application.event.OrderRemoteEvent;
 import org.example.order.worker.service.common.KafkaProducerService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -28,22 +28,22 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     private final KafkaTopicProperties kafkaTopicProperties;
 
     @Override
-    public void sendToLocal(OrderLocalMessage message) {
+    public void sendToLocal(OrderLocalEvent message) {
         send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_LOCAL));
     }
 
     @Override
-    public void sendToOrderApi(OrderApiMessage message) {
+    public void sendToOrderApi(OrderApiEvent message) {
         send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_API));
     }
 
     @Override
-    public void sendToOrderCrud(OrderCrudMessage message) {
+    public void sendToOrderCrud(OrderCrudEvent message) {
         send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_CRUD));
     }
 
     @Override
-    public void sendToOrderRemote(OrderRemoteMessage message) {
+    public void sendToOrderRemote(OrderRemoteEvent message) {
         send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_REMOTE));
     }
 

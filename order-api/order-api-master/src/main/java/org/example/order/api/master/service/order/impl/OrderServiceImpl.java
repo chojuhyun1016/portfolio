@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.order.api.master.service.common.KafkaProducerService;
 import org.example.order.api.master.service.order.OrderService;
 import org.example.order.core.application.dto.OrderRemoteMessageDto;
-import org.example.order.core.application.message.OrderRemoteMessage;
+import org.example.order.core.application.event.OrderRemoteEvent;
 import org.example.order.core.application.vo.OrderVo;
-import org.example.order.core.repository.OrderRepository;
+import org.example.order.core.infra.jpa.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,7 +22,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void sendMessage(OrderRemoteMessageDto dto){
-        OrderRemoteMessage message = dto.toMessage();
+        OrderRemoteEvent message = dto.toMessage();
         kafkaProducerService.sendToOrder(message);
     }
 }

@@ -1,8 +1,8 @@
 package org.example.order.core.lock.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.lock.annotation.DistributedLock;
-import org.example.order.core.lock.annotation.DistributedLockT;
+import org.example.order.core.infra.lock.annotation.DistributedLock;
+import org.example.order.core.infra.lock.annotation.DistributedLockT;
 import org.example.order.core.lock.service.LockService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationManager;

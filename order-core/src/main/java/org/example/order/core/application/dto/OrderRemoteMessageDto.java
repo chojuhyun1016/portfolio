@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.order.common.code.MessageMethodType;
-import org.example.order.core.application.message.OrderRemoteMessage;
+import org.example.order.core.application.event.OrderRemoteEvent;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +17,7 @@ public class OrderRemoteMessageDto {
     @NotNull
     private MessageMethodType methodType;
 
-    public OrderRemoteMessage toMessage() {
-        return OrderRemoteMessage.toMessage(this.orderId, this.methodType);
+    public OrderRemoteEvent toMessage() {
+        return OrderRemoteEvent.toMessage(this.orderId, this.methodType);
     }
 }

@@ -1,5 +1,6 @@
 package org.example.order.core.redis.repository;
 
+import org.example.order.core.infra.redis.repository.RedisRepository;
 import org.example.order.core.redis.config.RedisTestConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

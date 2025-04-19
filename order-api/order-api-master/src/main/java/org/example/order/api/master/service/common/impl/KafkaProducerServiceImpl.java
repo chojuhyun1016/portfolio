@@ -6,7 +6,7 @@ import org.example.order.api.master.service.common.KafkaProducerService;
 import org.example.order.client.kafka.config.property.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.common.code.MessageCategory;
-import org.example.order.core.application.message.OrderRemoteMessage;
+import org.example.order.core.application.event.OrderRemoteEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     private final KafkaTopicProperties kafkaTopicProperties;
 
     @Override
-    public void sendToOrder(OrderRemoteMessage message) {
+    public void sendToOrder(OrderRemoteEvent message) {
         send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_LOCAL));
     }
 
