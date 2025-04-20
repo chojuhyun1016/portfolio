@@ -2,8 +2,8 @@ package org.example.order.api.master;
 
 import org.example.order.api.master.controller.order.OrderController;
 import org.example.order.api.master.facade.order.impl.OrderFacadeImpl;
-import org.example.order.core.application.dto.OrderCrudDto;
-import org.example.order.core.application.dto.OrderCrudEntityDto;
+import org.example.order.core.application.order.query.OrderCrudDto;
+import org.example.order.core.application.order.query.OrderCrudEntityDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;

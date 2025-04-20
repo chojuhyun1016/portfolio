@@ -5,8 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.order.common.utils.datetime.DateTimeUtils;
-import org.example.order.core.application.dto.OrderLocalDto;
-import org.example.order.core.idgen.annotation.CustomTsid;
+import org.example.order.core.application.order.command.OrderSyncCommand;
+import org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid;
 
 import java.time.LocalDateTime;
 
@@ -67,17 +67,17 @@ public class OrderEntity {
         this.id = tsid;
     }
 
-    public void update(OrderLocalDto dto) {
+    public void update(OrderSyncCommand dto) {
         update(this, dto);
     }
 
-    public static OrderEntity toEntity(OrderLocalDto dto) {
+    public static OrderEntity toEntity(OrderSyncCommand dto) {
         OrderEntity entity = new OrderEntity();
         update(entity, dto);
         return entity;
     }
 
-    private static void update(OrderEntity entity, OrderLocalDto dto) {
+    private static void update(OrderEntity entity, OrderSyncCommand dto) {
         entity.userId = dto.getUserId();
         entity.userNumber = dto.getUserNumber();
         entity.orderId = dto.getOrderId();

@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.api.master.facade.order.OrderFacade;
 import org.example.order.api.master.service.order.OrderService;
-import org.example.order.core.application.dto.OrderCrudDto;
-import org.example.order.core.application.dto.OrderRemoteMessageDto;
-import org.example.order.core.application.vo.OrderVo;
+import org.example.order.core.application.order.query.OrderCrudDto;
+import org.example.order.core.application.order.event.OrderRemoteMessageDto;
+import org.example.order.core.application.order.vo.OrderVo;
 import org.springframework.stereotype.Component;
 
 @Slf4j

@@ -6,9 +6,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.example.order.common.code.MessageMethodType;
 import org.example.order.common.exception.CommonException;
 import org.example.order.common.utils.jackson.ObjectMapperUtils;
-import org.example.order.core.application.dto.OrderLocalDto;
-import org.example.order.core.application.event.OrderCrudEvent;
-import org.example.order.core.application.event.OrderRemoteEvent;
+import org.example.order.core.application.order.command.OrderSyncCommand;
+import org.example.order.core.application.order.event.message.OrderCrudEvent;
+import org.example.order.core.application.order.event.message.OrderRemoteEvent;
 import org.example.order.worker.exception.DatabaseExecuteException;
 import org.example.order.worker.exception.WorkerExceptionCode;
 import org.example.order.worker.facade.order.OrderCrudMessageFacade;
@@ -55,7 +55,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                     orderService.execute(methodType, value);
 
                     for (OrderCrudEvent message : value) {
-                        OrderLocalDto order = message.getDto().getOrder();
+                        OrderSyncCommand order = message.getDto().getOrder();
 
                         if (order.getFailure()) {
                             log.info("failed order : {}", order);

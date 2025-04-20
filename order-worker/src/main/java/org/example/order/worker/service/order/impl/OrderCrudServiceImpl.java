@@ -2,7 +2,7 @@ package org.example.order.worker.service.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.application.dto.OrderLocalDto;
+import org.example.order.core.application.order.command.OrderSyncCommand;
 import org.example.order.core.domain.OrderEntity;
 import org.example.order.core.infra.jpa.repository.OrderRepository;
 import org.example.order.worker.service.order.OrderCrudService;
@@ -20,7 +20,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     private final OrderRepository repository;
 
     @Override
-    public List<OrderEntity> bulkInsert(List<OrderLocalDto> dtoList) {
+    public List<OrderEntity> bulkInsert(List<OrderSyncCommand> dtoList) {
         try {
             List<OrderEntity> entities = dtoList.stream().map(OrderEntity::toEntity).toList();
             repository.bulkInsert(entities);
@@ -35,13 +35,13 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     @Override
-    public void bulkUpdate(List<OrderLocalDto> dtoList) {
+    public void bulkUpdate(List<OrderSyncCommand> dtoList) {
         repository.bulkUpdate(dtoList);
     }
 
     @Override
-    public void deleteAll(List<OrderLocalDto> dtoList) {
-        List<Long> ids = dtoList.stream().map(OrderLocalDto::getOrderId).toList();
+    public void deleteAll(List<OrderSyncCommand> dtoList) {
+        List<Long> ids = dtoList.stream().map(OrderSyncCommand::getOrderId).toList();
         repository.deleteByOrderIdIn(ids);
     }
 }

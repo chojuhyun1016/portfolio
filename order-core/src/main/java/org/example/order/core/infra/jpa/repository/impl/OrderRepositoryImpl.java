@@ -2,9 +2,9 @@ package org.example.order.core.infra.jpa.repository.impl;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.example.order.core.idgen.annotation.CustomTsid;
-import org.example.order.core.application.dto.OrderLocalDto;
-import org.example.order.core.application.vo.OrderVo;
+import org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid;
+import org.example.order.core.application.order.command.OrderSyncCommand;
+import org.example.order.core.application.order.vo.OrderVo;
 import org.example.order.core.domain.QOrderEntity;
 import org.example.order.core.infra.jpa.repository.CustomOrderRepository;
 import org.example.order.core.infra.querydsl.util.CustomQuerydslUtils;
@@ -98,7 +98,7 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
     }
 
     @Override
-    public void bulkUpdate(List<OrderLocalDto> dtoList) {
+    public void bulkUpdate(List<OrderSyncCommand> dtoList) {
         String sql = """
                 update order set user_id = ?,
                                  user_number = ?,
@@ -123,9 +123,9 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
 
         for (int i = 0; i < dtoList.size(); i += CustomQuerydslUtils.DEFAULT_BATCH_SIZE) {
             int end = Math.min(dtoList.size(), i + CustomQuerydslUtils.DEFAULT_BATCH_SIZE);
-            List<OrderLocalDto> batchList = dtoList.subList(i, end);
+            List<OrderSyncCommand> batchList = dtoList.subList(i, end);
 
-            for (OrderLocalDto dto : batchList) {
+            for (OrderSyncCommand dto : batchList) {
                 batchArgs.add(new Object[]{
                         dto.getUserId(),
                         dto.getUserNumber(),

@@ -2,7 +2,7 @@ package org.example.order.batch.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.client.kafka.config.KafkaConfig;
-import org.example.order.core.config.OrderCoreConfig;
+import org.example.order.core.infra.config.OrderCoreConfig;
 import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
