@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class EncryptorFactoryTest {
 
     @TestConfiguration
-    @ComponentScan(basePackages = "org.example.order.core.crypto")
+    @ComponentScan(basePackages = "org.example.order.core.infra.crypto")
     static class TestConfig {
 
         // 테스트용 암호화 키 생성 (Base64 URL-safe 형식)

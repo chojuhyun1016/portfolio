@@ -1,7 +1,7 @@
 package org.example.order.worker.service.order;
 
 import org.example.order.core.application.order.command.OrderSyncCommand;
-import org.example.order.core.domain.OrderEntity;
+import org.example.order.core.domain.order.entity.OrderEntity;
 
 import java.util.List;
 

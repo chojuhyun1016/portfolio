@@ -24,3 +24,11 @@ services:
       - DATA_DIR=/tmp/localstack/data
     volumes:
       - "./.localstack:/tmp/localstack"
+
+  redis:
+    image: redis:7.0.5
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]

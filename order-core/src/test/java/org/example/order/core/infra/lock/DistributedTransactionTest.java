@@ -27,7 +27,7 @@ class DistributedTransactionTest {
     @SpringBootConfiguration
     @EnableAutoConfiguration
     @EnableAspectJAutoProxy(proxyTargetClass = true)
-    @ComponentScan(basePackages = "org.example.order.core.lock")
+    @ComponentScan(basePackages = "org.example.order.core.infra.lock")
     static class TestConfig {
     }
 

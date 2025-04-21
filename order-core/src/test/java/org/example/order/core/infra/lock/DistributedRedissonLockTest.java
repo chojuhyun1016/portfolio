@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ContextConfiguration(classes = {DistributedRedissonLockTest.MockLockExecutorConfig.class, TestRedisConfig.class})
-@ComponentScan("org.example.order.core") // 실제 구성 스캔
+@ComponentScan("org.example.order.core")
 public class DistributedRedissonLockTest {
 
     private final AtomicInteger counter = new AtomicInteger();

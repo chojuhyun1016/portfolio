@@ -8,6 +8,7 @@ import org.example.order.core.application.order.vo.OrderVo;
 import org.example.order.core.infra.jpa.repository.CustomOrderRepository;
 import org.example.order.core.infra.jpa.querydsl.builder.QuerydslUtils;
 import org.example.order.core.domain.order.entity.OrderEntity;
+import org.example.order.core.domain.order.entity.QOrderEntity;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

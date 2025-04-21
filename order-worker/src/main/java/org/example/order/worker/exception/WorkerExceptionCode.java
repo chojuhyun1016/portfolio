@@ -26,5 +26,4 @@ public enum WorkerExceptionCode implements ExceptionCodeEnum {
         this.msg = msg;
         this.httpStatus = httpStatus;
     }
-
 }

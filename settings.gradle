@@ -9,4 +9,3 @@ include 'order-client:web'
 include 'order-client:kafka'
 include 'order-client:s3'
 include 'order-batch'
-

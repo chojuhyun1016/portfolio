@@ -36,5 +36,4 @@ public class WebClientConfig {
                     httpHeaders.add(HttpConstant.X_USER_TYPE, accessUser.userType());
                 }).build();
     }
-
 }

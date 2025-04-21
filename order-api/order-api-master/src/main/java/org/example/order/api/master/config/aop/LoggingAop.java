@@ -22,7 +22,7 @@ import java.util.Enumeration;
 @Aspect
 @Component
 @Slf4j
-public class OrderLoggingAop {
+public class LoggingAop {
 
     // Pointcut for all controller methods
     @Pointcut("within(@org.springframework.web.bind.annotation.RestController *)")
