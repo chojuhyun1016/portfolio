@@ -5,9 +5,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid;
 import org.example.order.core.application.order.command.OrderSyncCommand;
 import org.example.order.core.application.order.vo.OrderVo;
-import org.example.order.core.domain.QOrderEntity;
 import org.example.order.core.infra.jpa.repository.CustomOrderRepository;
-import org.example.order.core.infra.querydsl.util.CustomQuerydslUtils;
+import org.example.order.core.infra.jpa.querydsl.builder.QuerydslUtils;
 import org.example.order.core.domain.order.entity.OrderEntity;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -69,8 +68,8 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
         CustomTsid.FactorySupplier instance = CustomTsid.FactorySupplier.INSTANCE;
         entities.forEach(entity -> entity.updateTsid(instance.generate()));
 
-        for (int i = 0; i < entities.size(); i += CustomQuerydslUtils.DEFAULT_BATCH_SIZE) {
-            int end = Math.min(entities.size(), i + CustomQuerydslUtils.DEFAULT_BATCH_SIZE);
+        for (int i = 0; i < entities.size(); i += QuerydslUtils.DEFAULT_BATCH_SIZE) {
+            int end = Math.min(entities.size(), i + QuerydslUtils.DEFAULT_BATCH_SIZE);
             List<OrderEntity> batchList = entities.subList(i, end);
             for (OrderEntity entity : batchList) {
                 batchArgs.add(new Object[]{
@@ -121,8 +120,8 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
 
         List<Object[]> batchArgs = new ArrayList<>();
 
-        for (int i = 0; i < dtoList.size(); i += CustomQuerydslUtils.DEFAULT_BATCH_SIZE) {
-            int end = Math.min(dtoList.size(), i + CustomQuerydslUtils.DEFAULT_BATCH_SIZE);
+        for (int i = 0; i < dtoList.size(); i += QuerydslUtils.DEFAULT_BATCH_SIZE) {
+            int end = Math.min(dtoList.size(), i + QuerydslUtils.DEFAULT_BATCH_SIZE);
             List<OrderSyncCommand> batchList = dtoList.subList(i, end);
 
             for (OrderSyncCommand dto : batchList) {

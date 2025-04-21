@@ -3,7 +3,7 @@ package org.example.order.core.infra.redis.config;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.infra.common.cache.RedisSerializerFactory;
+import org.example.order.core.infra.redis.support.RedisSerializerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

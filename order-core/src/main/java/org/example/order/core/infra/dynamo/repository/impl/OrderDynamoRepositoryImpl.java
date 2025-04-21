@@ -2,9 +2,9 @@ package org.example.order.core.infra.dynamo.repository.impl;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.RequiredArgsConstructor;
-import org.example.order.core.infra.dynamo.entity.OrderDynamoEntity;
+import org.example.order.core.infra.dynamo.model.OrderDynamoEntity;
 import org.example.order.core.infra.dynamo.repository.OrderDynamoRepository;
-import org.example.order.core.infra.common.nosql.DynamoQuerySupport;
+import org.example.order.core.infra.dynamo.support.DynamoQuerySupport;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
