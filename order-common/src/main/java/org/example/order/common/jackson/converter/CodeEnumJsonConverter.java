@@ -6,8 +6,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import lombok.NoArgsConstructor;
-import org.example.order.common.application.dto.CodeEnumDto;
-import org.example.order.common.code.CodeEnum;
+import org.example.order.common.code.dto.CodeEnumDto;
+import org.example.order.common.code.enums.CodeEnum;
 import org.springframework.boot.jackson.JsonComponent;
 
 import java.io.IOException;

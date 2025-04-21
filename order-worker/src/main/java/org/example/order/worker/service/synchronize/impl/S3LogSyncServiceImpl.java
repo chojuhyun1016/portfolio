@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.client.s3.service.S3Client;
-import org.example.order.common.code.CommonExceptionCode;
+import org.example.order.common.exception.code.CommonExceptionCode;
 import org.example.order.common.exception.CommonException;
 import org.example.order.worker.service.synchronize.S3LogSyncService;
 import org.springframework.stereotype.Service;

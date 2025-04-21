@@ -1,4 +1,4 @@
-package org.example.order.common.code;
+package org.example.order.common.exception.code;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

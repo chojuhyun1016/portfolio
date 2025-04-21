@@ -3,7 +3,7 @@ package org.example.order.worker.facade.synchronize.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.client.s3.config.property.S3Properties;
-import org.example.order.common.code.CommonExceptionCode;
+import org.example.order.common.exception.code.CommonExceptionCode;
 import org.example.order.common.exception.CommonException;
 import org.example.order.worker.facade.synchronize.S3LogSyncFacade;
 import org.example.order.worker.service.synchronize.S3LogSyncService;

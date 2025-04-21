@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.batch.service.common.S3Service;
 import org.example.order.client.s3.config.property.S3Properties;
 import org.example.order.client.s3.service.S3Client;
-import org.example.order.common.code.CommonExceptionCode;
+import org.example.order.common.exception.code.CommonExceptionCode;
 import org.example.order.common.exception.CommonException;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;

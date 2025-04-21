@@ -1,6 +1,6 @@
-package org.example.order.common.application.dto;
+package org.example.order.common.code.dto;
 
-import org.example.order.common.code.CodeEnum;
+import org.example.order.common.code.enums.CodeEnum;
 
 public record CodeEnumDto(
         String text,

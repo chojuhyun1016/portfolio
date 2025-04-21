@@ -1,4 +1,4 @@
-package org.example.order.common.code;
+package org.example.order.common.code.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

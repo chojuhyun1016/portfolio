@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.code.CommonExceptionCode;
+import org.example.order.common.exception.code.CommonExceptionCode;
 import org.example.order.common.exception.CommonException;
 import org.example.order.common.jackson.config.CommonObjectMapperFactory;
 

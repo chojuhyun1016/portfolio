@@ -1,7 +1,7 @@
 package org.example.order.common.exception;
 
 import lombok.Getter;
-import org.example.order.common.code.ExceptionCodeEnum;
+import org.example.order.common.exception.code.ExceptionCodeEnum;
 import org.springframework.http.HttpStatus;
 
 @Getter

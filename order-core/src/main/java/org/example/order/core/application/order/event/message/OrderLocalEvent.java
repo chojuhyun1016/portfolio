@@ -3,9 +3,9 @@ package org.example.order.core.application.order.event.message;
 import lombok.Getter;
 import lombok.ToString;
 import org.example.order.common.event.DlqMessage;
-import org.example.order.common.code.CommonExceptionCode;
-import org.example.order.common.code.MessageMethodType;
-import org.example.order.common.code.DlqType;
+import org.example.order.common.exception.code.CommonExceptionCode;
+import org.example.order.common.code.enums.MessageMethodType;
+import org.example.order.common.code.enums.DlqType;
 import org.example.order.common.exception.CommonException;
 
 import java.util.Objects;

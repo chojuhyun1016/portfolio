@@ -2,7 +2,7 @@ package org.example.order.api.common.config.module;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.code.CommonExceptionCode;
+import org.example.order.common.exception.code.CommonExceptionCode;
 import org.example.order.common.exception.CommonException;
 import org.example.order.common.web.ApiResponse;
 import org.springframework.http.ResponseEntity;

@@ -11,7 +11,7 @@ import org.example.order.batch.exception.BatchExceptionCode;
 import org.example.order.batch.facade.retry.OrderDeadLetterFacade;
 import org.example.order.batch.service.retry.OrderDeadLetterService;
 import org.example.order.client.kafka.config.property.KafkaTopicProperties;
-import org.example.order.common.code.MessageCategory;
+import org.example.order.common.code.enums.MessageCategory;
 import org.example.order.common.exception.CommonException;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;

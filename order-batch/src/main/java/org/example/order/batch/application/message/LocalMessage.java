@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.example.order.common.code.MessageMethodType;
+import org.example.order.common.code.enums.MessageMethodType;
 
 @Getter
 @NoArgsConstructor
