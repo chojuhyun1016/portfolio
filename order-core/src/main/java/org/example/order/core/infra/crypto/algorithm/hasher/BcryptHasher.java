@@ -1,8 +1,7 @@
-package org.example.order.core.infra.crypto.hasher.impl;
+package org.example.order.core.infra.crypto.algorithm.hasher;
 
 import org.example.order.core.infra.crypto.contract.Hasher;
-import org.example.order.core.infra.crypto.code.CryptoAlgorithmType;
-import org.example.order.core.infra.crypto.hasher.engine.BcryptEngine;
+import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.springframework.stereotype.Component;
 
 @Component("bcryptHasher")

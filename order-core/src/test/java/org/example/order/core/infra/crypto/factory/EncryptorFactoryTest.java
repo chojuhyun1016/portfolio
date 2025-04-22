@@ -1,8 +1,9 @@
 package org.example.order.core.infra.crypto.factory;
 
-import org.example.order.core.infra.crypto.contract.Encryptor;
-import org.example.order.core.infra.crypto.code.CryptoAlgorithmType;
+import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.config.EncryptProperties;
+import org.example.order.core.infra.crypto.contract.Encryptor;
+import org.example.order.core.infra.crypto.factory.mock.MockKmsDecryptorConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,18 +19,18 @@ import java.util.Base64;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = EncryptorFactoryTest.TestConfig.class)
+@ContextConfiguration(classes = {
+        EncryptorFactoryTest.TestConfig.class,
+        MockKmsDecryptorConfiguration.class
+})
 class EncryptorFactoryTest {
 
     @TestConfiguration
     @ComponentScan(basePackages = "org.example.order.core.infra.crypto")
     static class TestConfig {
-
-        // 테스트용 암호화 키 생성 (Base64 URL-safe 형식)
         private static String generateKey(int length) {
             byte[] keyBytes = new byte[length];
             for (int i = 0; i < length; i++) keyBytes[i] = (byte) (i + 1);
-
             return Base64.getUrlEncoder().withoutPadding().encodeToString(keyBytes);
         }
 
@@ -39,7 +40,6 @@ class EncryptorFactoryTest {
             properties.getAes128().setKey(generateKey(16));
             properties.getAes256().setKey(generateKey(32));
             properties.getAesgcm().setKey(generateKey(32));
-
             return properties;
         }
     }
@@ -50,7 +50,7 @@ class EncryptorFactoryTest {
     @Test
     @DisplayName("EncryptorFactory 주입 확인")
     void testFactoryIsLoaded() {
-        assertNotNull(encryptorFactory, "EncryptorFactory should be injected by Spring");
+        assertNotNull(encryptorFactory);
     }
 
     @Test
@@ -80,12 +80,11 @@ class EncryptorFactoryTest {
     @Test
     @DisplayName("지원하지 않는 Encryptor 타입 예외 처리 확인")
     void testUnsupportedEncryptorThrowsException() {
-        CryptoAlgorithmType unsupportedType = CryptoAlgorithmType.HMAC_SHA256; // 예: Encryptor 아님
+        CryptoAlgorithmType unsupportedType = CryptoAlgorithmType.HMAC_SHA256;
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> encryptorFactory.getEncryptor(unsupportedType)
         );
-
         assertTrue(exception.getMessage().contains("Unsupported encryptor"));
     }
 }

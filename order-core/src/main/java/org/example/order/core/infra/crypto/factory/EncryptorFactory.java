@@ -3,7 +3,7 @@ package org.example.order.core.infra.crypto.factory;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.contract.Hasher;
 import org.example.order.core.infra.crypto.contract.Signer;
-import org.example.order.core.infra.crypto.code.CryptoAlgorithmType;
+import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.example.order.core.infra.crypto.code;
+package org.example.order.core.infra.crypto.constant;
 
 public enum CryptoAlgorithmType {
     AES128,

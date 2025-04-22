@@ -1,4 +1,4 @@
-package org.example.order.core.infra.crypto.hasher.engine;
+package org.example.order.core.infra.crypto.algorithm.hasher;
 
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;

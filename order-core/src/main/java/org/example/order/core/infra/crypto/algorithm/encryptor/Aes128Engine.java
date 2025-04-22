@@ -1,4 +1,4 @@
-package org.example.order.core.infra.crypto.encryptor.engine;
+package org.example.order.core.infra.crypto.algorithm.encryptor;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;

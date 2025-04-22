@@ -3,6 +3,8 @@ package org.example.order.core.infra.lock;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.lock.service.LockService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -26,6 +28,7 @@ class DistributedTransactionTest {
 
     @SpringBootConfiguration
     @EnableAutoConfiguration
+    @Execution(ExecutionMode.SAME_THREAD)
     @EnableAspectJAutoProxy(proxyTargetClass = true)
     @ComponentScan(basePackages = "org.example.order.core.infra.lock")
     static class TestConfig {

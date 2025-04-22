@@ -69,6 +69,7 @@ lock:
     retry-interval: 100   # 재시도 간격 (ex: 100ms)
 
 encrypt:
+  kms-region: ap-northeast-2
   aes128:
     key: dGhpc2lzMTZieXRla2V5IQ==  # "thisis16bytekey!" (16 bytes)
   aes256:

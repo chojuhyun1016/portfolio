@@ -1,9 +1,9 @@
 package org.example.order.core.infra.crypto;
 
 import org.example.order.core.infra.crypto.contract.Hasher;
-import org.example.order.core.infra.crypto.hasher.impl.Argon2Hasher;
-import org.example.order.core.infra.crypto.hasher.impl.BcryptHasher;
-import org.example.order.core.infra.crypto.hasher.impl.Sha256Hasher;
+import org.example.order.core.infra.crypto.algorithm.hasher.Argon2Hasher;
+import org.example.order.core.infra.crypto.algorithm.hasher.BcryptHasher;
+import org.example.order.core.infra.crypto.algorithm.hasher.Sha256Hasher;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

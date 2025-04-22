@@ -25,30 +25,27 @@ public class CodeEnumJsonConverter {
     }
 
     @NoArgsConstructor
-    public static class Deserializer extends JsonDeserializer<Enum> implements ContextualDeserializer {
-        private Class<Enum> target;
+    public static class Deserializer extends JsonDeserializer<Enum<?>> implements ContextualDeserializer {
 
-        public Deserializer(Class<Enum> target) {
+        private Class<? extends Enum<?>> target;
+
+        public Deserializer(Class<? extends Enum<?>> target) {
             this.target = target;
         }
 
         @Override
         public Enum<?> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
             if (jsonParser.currentToken() == JsonToken.VALUE_STRING) {
-                // 일반 enum
-                return Enum.valueOf(target, jsonParser.getValueAsString());
+                return Enum.valueOf(target.asSubclass(Enum.class), jsonParser.getValueAsString());
             } else {
-                // CodeEnum 상속 enum
                 final JsonNode node = jsonParser.getCodec().readTree(jsonParser);
                 final JsonNode valueNode = node.get("code");
 
-                if (valueNode == null) {
-                    return null;
-                }
+                if (valueNode == null) return null;
 
-                for (Enum<?> t : target.getEnumConstants()) {
-                    if (t.toString().equals(valueNode.textValue())) {
-                        return t;
+                for (Enum<?> constant : target.getEnumConstants()) {
+                    if (constant.toString().equals(valueNode.textValue())) {
+                        return constant;
                     }
                 }
             }
@@ -56,9 +53,16 @@ public class CodeEnumJsonConverter {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
-            return new Deserializer((Class<Enum>)ctxt.getContextualType().getRawClass());
+            JavaType contextualType = ctxt.getContextualType();
+            Class<?> rawClass = contextualType.getRawClass();
+            if (Enum.class.isAssignableFrom(rawClass)) {
+                @SuppressWarnings("unchecked")
+                Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) rawClass;
+                return new Deserializer(enumClass);
+            } else {
+                throw new IllegalStateException("Expected enum type but got: " + rawClass);
+            }
         }
     }
 }

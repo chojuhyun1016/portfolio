@@ -1,11 +1,13 @@
-package org.example.order.core.infra.crypto.signer.impl;
+package org.example.order.core.infra.crypto.algorithm.signer;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.utils.encode.Base64Utils;
-import org.example.order.core.infra.crypto.contract.Signer;
-import org.example.order.core.infra.crypto.code.CryptoAlgorithmType;
+import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.config.EncryptProperties;
-import org.example.order.core.infra.crypto.signer.engine.HmacSha256Engine;
+import org.example.order.core.infra.crypto.contract.Signer;
+import org.example.order.core.infra.crypto.decryptor.KmsDecryptor;
 import org.example.order.core.infra.crypto.exception.InvalidKeyException;
 import org.example.order.core.infra.crypto.exception.SignException;
 import org.springframework.stereotype.Component;
@@ -14,34 +16,37 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component("hmacSha256Signer")
+@RequiredArgsConstructor
 public class HmacSha256Signer implements Signer {
 
     private static final int MIN_KEY_LENGTH = 16;
 
+    private final EncryptProperties encryptProperties;
+    private final KmsDecryptor kmsDecryptor;
     private byte[] secretKey;
 
-    public HmacSha256Signer(EncryptProperties encryptProperties) {
-        String configuredKey = encryptProperties.getHmac().getKey();
-        if (configuredKey != null && !configuredKey.isBlank()) {
+    @PostConstruct
+    public void init() {
+        String base64Key = encryptProperties.getHmac().getKey();
+        if (base64Key != null && !base64Key.isBlank()) {
             try {
-                setKey(configuredKey);
-            } catch (IllegalArgumentException e) {
-                log.warn("HMAC-SHA256 key is invalid: {}", e.getMessage());
+                byte[] keyBytes = kmsDecryptor.decryptBase64EncodedKey(base64Key);
+                if (keyBytes.length < MIN_KEY_LENGTH) {
+                    throw new IllegalArgumentException("HMAC-SHA256 key must be at least 16 bytes.");
+                }
+                this.secretKey = keyBytes;
+                log.info("[Signer] HMAC-SHA256 key initialized.");
+            } catch (Exception e) {
+                log.warn("[Signer] Failed to initialize HMAC-SHA256 key: {}", e.getMessage(), e);
             }
         } else {
-            log.info("HMAC-SHA256 key is not configured. This signer will be inactive.");
+            log.info("[Signer] HMAC-SHA256 key not configured.");
         }
     }
 
     @Override
     public void setKey(String base64Key) {
-        byte[] decoded = Base64Utils.decodeUrlSafe(base64Key);
-
-        if (decoded.length < MIN_KEY_LENGTH) {
-            throw new IllegalArgumentException("HMAC-SHA256 key must be at least 16 bytes.");
-        }
-
-        this.secretKey = decoded;
+        throw new UnsupportedOperationException("setKey is not supported. Use KMS-based initialization.");
     }
 
     @Override

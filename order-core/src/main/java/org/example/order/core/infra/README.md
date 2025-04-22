@@ -21,11 +21,15 @@ JPA, Redis, DynamoDB, 분산 락, 암호화, ID 생성기 등 다양한 기술 �
     - OrderCoreConfig.java : Infra 전체 Bean 구성 및 설정
 
 - crypto
+    - algorithm : 암호화 엔진, 구현체
+                  hasher : SHA256, Bcrypt, Argon2 등 해시 엔진 구현
+                  signer : HMAC-SHA256 디지털 서명 엔진
+                  encryptor : AES128, AES256, AES-GCM 구현체
     - config : 암호화 관련 설정 (AES, HMAC 등)
     - contract : Encryptor, Hasher, Signer 등 인터페이스
-    - encryptor : AES128, AES256, AES-GCM 구현체
-    - hasher : SHA256, Bcrypt, Argon2 등 해시 엔진 구현
-    - signer : HMAC-SHA256 디지털 서명 엔진
+    - decryptor : AWS KMS 통하여 키값 복호화
+    - exception : 예외 정의
+    - factory : 복호화 구현체 생성
     - util : 키 생성기 (EncryptionKeyGenerator.java)
 
 - dynamo

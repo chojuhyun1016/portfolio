@@ -68,6 +68,7 @@ lock:
     retry-interval: 100   # 재시도 간격 (ex: 100ms)
 
 encrypt:
+  kms-region: ap-northeast-2
   aes128:
     key: ${AES128_KEY} #(16 bytes)
   aes256:
@@ -76,4 +77,3 @@ encrypt:
     key: ${AESGCM_KEY} # 32 bytes
   hmac:
     key: ${HMAC_KEY}   # 32 bytes
-

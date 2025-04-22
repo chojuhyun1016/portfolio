@@ -1,12 +1,14 @@
-package org.example.order.core.infra.crypto.encryptor.impl;
+package org.example.order.core.infra.crypto.algorithm.encryptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.utils.encode.Base64Utils;
-import org.example.order.core.infra.crypto.contract.Encryptor;
-import org.example.order.core.infra.crypto.code.CryptoAlgorithmType;
+import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.config.EncryptProperties;
-import org.example.order.core.infra.crypto.encryptor.engine.Aes128Engine;
+import org.example.order.core.infra.crypto.contract.Encryptor;
+import org.example.order.core.infra.crypto.decryptor.KmsDecryptor;
 import org.example.order.core.infra.crypto.exception.DecryptException;
 import org.example.order.core.infra.crypto.exception.EncryptException;
 import org.springframework.stereotype.Component;
@@ -18,19 +20,23 @@ import java.util.Map;
 
 @Slf4j
 @Component("aes128Encryptor")
+@RequiredArgsConstructor
 public class Aes128Encryptor implements Encryptor {
 
     private static final int KEY_LENGTH = 16;
     private static final int IV_LENGTH = 16;
     private static final byte VERSION = 0x01;
 
-    private byte[] key;
+    private final EncryptProperties encryptProperties;
+    private final KmsDecryptor kmsDecryptor;
     private final SecureRandom random = new SecureRandom();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private byte[] key;
 
-    public Aes128Encryptor(EncryptProperties encryptProperties) {
-        String base64Key = encryptProperties.getAes128().getKey();
-        this.key = Base64Utils.decodeUrlSafe(base64Key);
+    @PostConstruct
+    public void init() {
+        this.key = kmsDecryptor.decryptBase64EncodedKey(encryptProperties.getAes128().getKey());
+
         if (key.length != KEY_LENGTH) {
             throw new IllegalArgumentException("AES-128 key must be 16 bytes.");
         }
@@ -38,13 +44,7 @@ public class Aes128Encryptor implements Encryptor {
 
     @Override
     public void setKey(String base64Key) {
-        byte[] decoded = Base64Utils.decodeUrlSafe(base64Key);
-
-        if (decoded.length != KEY_LENGTH) {
-            throw new IllegalArgumentException("AES-128 key must be 16 bytes.");
-        }
-
-        this.key = decoded;
+        throw new UnsupportedOperationException("setKey is not supported. Use constructor initialization.");
     }
 
     @Override
@@ -79,16 +79,14 @@ public class Aes128Encryptor implements Encryptor {
         }
 
         try {
-            Map<String, String> payload = objectMapper.readValue(json, Map.class);
-
+            Map<String, Object> payload = objectMapper.readValue(json, Map.class);
             byte version = Byte.parseByte(String.valueOf(payload.get("ver")));
-
             if (version != VERSION) {
                 throw new DecryptException("Unsupported AES-128 encryption version: " + version);
             }
 
-            byte[] iv = Base64Utils.decodeUrlSafe(payload.get("iv"));
-            byte[] cipher = Base64Utils.decodeUrlSafe(payload.get("cipher"));
+            byte[] iv = Base64Utils.decodeUrlSafe(String.valueOf(payload.get("iv")));
+            byte[] cipher = Base64Utils.decodeUrlSafe(String.valueOf(payload.get("cipher")));
             byte[] plain = Aes128Engine.decrypt(cipher, key, iv);
 
             return new String(plain, StandardCharsets.UTF_8);

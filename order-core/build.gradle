@@ -19,6 +19,7 @@ dependencies {
     implementation 'org.redisson:redisson-spring-boot-starter:3.16.3'
     implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.695'
     implementation 'org.springframework:spring-context:6.1.6'
+    implementation 'software.amazon.awssdk:kms:2.25.26'
 
     if (System.getenv("SPRING_PROFILES_ACTIVE") == "local") {
         implementation 'mysql:mysql-connector-java:8.0.33'
