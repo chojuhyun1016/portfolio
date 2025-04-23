@@ -2,129 +2,116 @@ package org.example.order.core.infra.lock.lock.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.utils.exception.ExceptionUtils;
 import org.example.order.core.infra.lock.config.NamedLockProperties;
 import org.example.order.core.infra.lock.exception.LockAcquisitionException;
 import org.example.order.core.infra.lock.lock.LockCallback;
 import org.example.order.core.infra.lock.lock.LockExecutor;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 @Slf4j
 @Component("namedLock")
 @RequiredArgsConstructor
 public class NamedLockExecutor implements LockExecutor {
 
+    private static final String GET_LOCK_SQL = "SELECT GET_LOCK(?, ?)";
+    private static final String RELEASE_LOCK_SQL = "SELECT RELEASE_LOCK(?)";
+    private static final double GET_LOCK_TIMEOUT_SECONDS = 2.0; // 락 1회 시도 제한 시간 (초)
+
     private final NamedLockProperties namedLockProperties;
-    private final JdbcTemplate jdbcTemplate;
-    private final PlatformTransactionManager transactionManager;
+    private final DataSource dataSource;
 
     @Override
     public Object execute(String key, long waitTime, long leaseTime, LockCallback callback) throws Throwable {
-        int waitMillis = (int) (waitTime > 0 ? waitTime : namedLockProperties.getWaitTime());
         int retryInterval = namedLockProperties.getRetryInterval();
+        int waitMillis = (int) (waitTime > 0 ? waitTime : namedLockProperties.getWaitTime());
         int maxRetries = waitMillis / retryInterval;
 
-        final String getLockSql = "SELECT GET_LOCK(?, ?)";
-        final String releaseLockSql = "SELECT RELEASE_LOCK(?)";
-        final long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
+        Connection lockConnection = null;
+        boolean locked = false;
 
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                double timeoutSeconds = retryInterval / 1000.0;
+        try {
+            lockConnection = DataSourceUtils.getConnection(dataSource);
 
-                boolean locked = executeInNewTransaction(() -> jdbcTemplate.queryForObject(getLockSql, Boolean.class, key, timeoutSeconds));
+            for (int attempt = 1; attempt <= maxRetries; attempt++) {
+                try (PreparedStatement stmt = lockConnection.prepareStatement(GET_LOCK_SQL)) {
+                    stmt.setString(1, key);
+                    stmt.setDouble(2, GET_LOCK_TIMEOUT_SECONDS);
 
-                if (locked) {
-                    long acquiredAt = System.currentTimeMillis();
-                    log.info("[LOCK] 획득 성공 | key={} | attempt={} | elapsed={}ms", key, attempt, acquiredAt - startTime);
-                    try {
-                        return callback.call();
-                    } finally {
-                        executeInNewTransaction(() -> {
-                            releaseLock(key, releaseLockSql);
-                            return null;
-                        });
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            boolean success = rs.getBoolean(1);
+                            if (success) {
+                                long elapsed = System.currentTimeMillis() - startTime;
+                                log.debug("[LOCK] 획득 성공 | key={} | attempt={} | elapsed={}ms", key, attempt, elapsed);
+                                locked = true;
+                                break;
+                            }
+                        }
                     }
+                } catch (Exception e) {
+                    log.error("[LOCK] DB 예외 (획득) | key={} | attempt={} | error={}", key, attempt, e.getMessage(), e);
                 }
 
-                log.debug("[LOCK] 획득 실패 | key={} | attempt={} | 재시도 대기중...", key, attempt);
-                TimeUnit.MILLISECONDS.sleep(retryInterval);
-            } catch (DataAccessException e) {
-                SQLException sqlEx = ExceptionUtils.findSQLException(e);
-                log.error("""
-                    [LOCK] SQL 예외 발생
-                    ├─ key       : {}
-                    ├─ attempt   : {}
-                    ├─ SQLState  : {}
-                    ├─ ErrorCode : {}
-                    └─ Message   : {}
-                    """, key, attempt,
-                        sqlEx != null ? sqlEx.getSQLState() : "N/A",
-                        sqlEx != null ? sqlEx.getErrorCode() : "N/A",
-                        sqlEx != null ? sqlEx.getMessage() : e.getMessage(),
-                        e
-                );
-                throw new LockAcquisitionException("Named lock SQL error. key=" + key, e);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.warn("[LOCK] 쓰레드 인터럽트 발생 | key={} | attempt={}", key, attempt);
-                throw new LockAcquisitionException("Named lock interrupted. key=" + key, e);
-            } catch (Exception e) {
-                log.error("[LOCK] 예기치 못한 예외 발생 | key={} | attempt={} | message={}", key, attempt, e.getMessage(), e);
-                throw new LockAcquisitionException("Unexpected error during named lock. key=" + key, e);
+                Thread.sleep(retryInterval);
             }
-        }
 
-        long totalElapsed = System.currentTimeMillis() - startTime;
-        log.error("[LOCK] 최종 실패 | key={} | totalElapsed={}ms", key, totalElapsed);
-        throw new LockAcquisitionException("Named lock failed for key=" + key + " after " + totalElapsed + "ms");
-    }
-
-    private void releaseLock(String key, String releaseSql) {
-        try {
-            Boolean released = jdbcTemplate.queryForObject(releaseSql, Boolean.class, key);
-            if (!Boolean.TRUE.equals(released)) {
-                log.warn("[LOCK] 해제 실패 | key={} | result={}", key, released);
-            } else {
-                log.info("[LOCK] 해제 성공 | key={}", key);
+            if (!locked) {
+                long elapsed = System.currentTimeMillis() - startTime;
+                log.error("[LOCK] 최종 실패 | key={} | totalElapsed={}ms", key, elapsed);
+                throw new LockAcquisitionException("Named lock failed for key=" + key);
             }
-        } catch (Exception e) {
-            log.error("[LOCK] 해제 중 예외 발생 | key={} | error={}", key, e.getMessage(), e);
-        }
-    }
 
-    /**
-     * 별도의 트랜잭션 경계에서 실행
-     */
-    private <T> T executeInNewTransaction(TransactionCallback<T> action) {
-        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        TransactionStatus status = transactionManager.getTransaction(def);
+            Object result;
+            long callStart = System.currentTimeMillis();
+            try {
+                result = callback.call();
+                log.debug("[LOCK] 처리 완료 | key={} | taskElapsed={}ms", key, System.currentTimeMillis() - callStart);
+            } catch (Throwable t) {
+                log.error("[LOCK] callback 예외 | key={} | error={}", key, t.getMessage(), t);
+                throw t;
+            } finally {
+                try {
+                    releaseLock(key, lockConnection);
+                } catch (Exception e) {
+                    log.error("[LOCK] 해제 중 예외 | key={} | error={}", key, e.getMessage(), e);
+                }
+            }
 
-        try {
-            T result = action.execute();
-            transactionManager.commit(status);
             return result;
-        } catch (RuntimeException | Error e) {
-            transactionManager.rollback(status);
-            throw e;
+
         } catch (Throwable t) {
-            transactionManager.rollback(status);
-            throw new RuntimeException(t);
+            log.error("[LOCK] 실행 예외 | key={} | error={}", key, t.getMessage(), t);
+            throw t;
+        } finally {
+            if (lockConnection != null) {
+                try {
+                    DataSourceUtils.releaseConnection(lockConnection, dataSource);
+                } catch (Exception e) {
+                    log.warn("[LOCK] 커넥션 해제 실패 | key={} | error={}", key, e.getMessage(), e);
+                }
+            }
+            long totalElapsed = System.currentTimeMillis() - startTime;
+            log.debug("[LOCK] 전체 수행 종료 | key={} | totalElapsed={}ms", key, totalElapsed);
         }
     }
 
-    @FunctionalInterface
-    interface TransactionCallback<T> {
-        T execute() throws Throwable;
+    private void releaseLock(String key, Connection connection) throws Exception {
+        try (PreparedStatement stmt = connection.prepareStatement(RELEASE_LOCK_SQL)) {
+            stmt.setString(1, key);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next() && rs.getBoolean(1)) {
+                    log.debug("[LOCK] 해제 성공 | key={}", key);
+                } else {
+                    log.warn("[LOCK] 해제 실패 | key={} | result=false", key);
+                }
+            }
+        }
     }
 }

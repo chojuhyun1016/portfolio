@@ -26,7 +26,7 @@ public class NamedLockTestService implements LockService {
         log.info("[LOCK] 진입 - key={}, order={}", key, order);
         log.info("[DistributedLock] Transaction ID: {}", txName);
         try {
-            Thread.sleep(100);
+            Thread.sleep(200);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -41,7 +41,7 @@ public class NamedLockTestService implements LockService {
         log.info("[LOCK T] 진입 - key={}, order={}", key, order);
         log.info("[DistributedLock T] Transaction ID: {}", txName);
         try {
-            Thread.sleep(100);
+            Thread.sleep(200);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
