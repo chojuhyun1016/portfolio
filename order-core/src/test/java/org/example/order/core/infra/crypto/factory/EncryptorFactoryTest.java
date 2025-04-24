@@ -1,14 +1,16 @@
 package org.example.order.core.infra.crypto.factory;
 
-import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.config.EncryptProperties;
+import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.factory.mock.MockKmsDecryptorConfiguration;
+import org.example.order.core.infra.common.kms.config.KmsProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,7 +29,9 @@ class EncryptorFactoryTest {
 
     @TestConfiguration
     @ComponentScan(basePackages = "org.example.order.core.infra.crypto")
+    @EnableConfigurationProperties(KmsProperties.class)
     static class TestConfig {
+
         private static String generateKey(int length) {
             byte[] keyBytes = new byte[length];
             for (int i = 0; i < length; i++) keyBytes[i] = (byte) (i + 1);
@@ -41,6 +45,13 @@ class EncryptorFactoryTest {
             properties.getAes256().setKey(generateKey(32));
             properties.getAesgcm().setKey(generateKey(32));
             return properties;
+        }
+
+        @Bean
+        public KmsProperties kmsProperties() {
+            KmsProperties props = new KmsProperties();
+            props.setRegion("ap-northeast-2");
+            return props;
         }
     }
 

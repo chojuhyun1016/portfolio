@@ -23,6 +23,9 @@ aws:
     accessKey: test
     secretKey: test
 
+  kms:
+    region: ap-northeast-2
+
 lock:
   redisson:
     address: redis://127.0.0.1:6379
@@ -42,6 +45,38 @@ encrypt:
     key: base64EncodedTestKey==
   aesgcm:
     key: base64EncodedTestKey==
+
+security:
+  jwt:
+    secret: ZGVtb19iYXNlNjRfc2VjcmV0X3Rva2VuX2tleQ==
+    access-token-validity: 900000   # 15 minutes (in ms)
+    refresh-token-validity: 1209600000 # 14 days (in ms)
+    header: Authorization
+    prefix: Bearer
+
+  oauth2:
+    client:
+      registration:
+        google:
+          client-id: YOUR_GOOGLE_CLIENT_ID
+          client-secret: YOUR_GOOGLE_CLIENT_SECRET
+          scope: profile, email
+          redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          client-name: Google
+        kakao:
+          client-id: YOUR_KAKAO_REST_API_KEY
+          client-secret: YOUR_KAKAO_CLIENT_SECRET  # 카카오에서는 보통 생략 가능
+          client-authentication-method: client_secret_post
+          authorization-grant-type: authorization_code
+          redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          scope: profile_nickname, account_email
+          client-name: Kakao
+      provider:
+        kakao:
+          authorization-uri: https://kauth.kakao.com/oauth/authorize
+          token-uri: https://kauth.kakao.com/oauth/token
+          user-info-uri: https://kapi.kakao.com/v2/user/me
+          user-name-attribute: id
 
 logging:
   level:

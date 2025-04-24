@@ -45,16 +45,16 @@ spring:
     password: ${REDIS_PASSWORD:}
     timeout: 3000ms
     trusted-package: org.example.order
-    lettuce:
-      pool:
-        max-active: 32       # 동시에 사용할 수 있는 최대 커넥션 수
-        max-idle: 16         # idle 상태로 유지할 수 있는 커넥션 수
-        min-idle: 4          # 최소 idle 커넥션 수 확보 (예열 용도)
-        max-wait: 2000ms     # 커넥션 풀에서 커넥션을 기다릴 수 있는 최대 시간
 
-dynamodb:
-  endpoint: https://dynamodb.ap-northeast-2.amazonaws.com
-  region: ap-northeast-2
+aws:
+  dynamodb:
+    endpoint: https://dynamodb.ap-northeast-2.amazonaws.com
+    region: ap-northeast-2
+    accessKey: test
+    secretKey: test
+
+  kms:
+    region: ap-northeast-2
 
 lock:
   redisson:
@@ -67,6 +67,38 @@ lock:
   named:
     wait-time: 5000       # milliseconds
     retry-interval: 100   # 재시도 간격 (ex: 100ms)
+
+security:
+  jwt:
+    secret: ZGVtb19iYXNlNjRfc2VjcmV0X3Rva2VuX2tleQ==
+    access-token-validity: 900000   # 15 minutes (in ms)
+    refresh-token-validity: 1209600000 # 14 days (in ms)
+    header: Authorization
+    prefix: Bearer
+
+  oauth2:
+    client:
+      registration:
+        google:
+          client-id: YOUR_GOOGLE_CLIENT_ID
+          client-secret: YOUR_GOOGLE_CLIENT_SECRET
+          scope: profile, email
+          redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          client-name: Google
+        kakao:
+          client-id: YOUR_KAKAO_REST_API_KEY
+          client-secret: YOUR_KAKAO_CLIENT_SECRET  # 카카오에서는 보통 생략 가능
+          client-authentication-method: client_secret_post
+          authorization-grant-type: authorization_code
+          redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          scope: profile_nickname, account_email
+          client-name: Kakao
+      provider:
+        kakao:
+          authorization-uri: https://kauth.kakao.com/oauth/authorize
+          token-uri: https://kauth.kakao.com/oauth/token
+          user-info-uri: https://kapi.kakao.com/v2/user/me
+          user-name-attribute: id
 
 encrypt:
   kms-region: ap-northeast-2

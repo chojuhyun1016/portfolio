@@ -35,7 +35,6 @@ public class VersionEntity {
     @Column(columnDefinition = "bigint COMMENT 'Data Version'")
     private Long version;
 
-
     @PrePersist
     public void prePersist() {
         AccessUserInfo userInfo = AccessUserManager.getAccessUser();

@@ -1,14 +1,15 @@
+// ✅ File: org.example.order.core.infra.crypto.factory.mock.TestKmsDecryptor.java
 package org.example.order.core.infra.crypto.factory.mock;
 
-import org.example.order.core.infra.crypto.config.EncryptProperties;
-import org.example.order.core.infra.crypto.decryptor.KmsDecryptor;
+import org.example.order.core.infra.common.kms.config.KmsProperties;
+import org.example.order.core.infra.common.kms.decryptor.KmsDecryptor;
 
 import java.util.Base64;
 
 public class TestKmsDecryptor extends KmsDecryptor {
 
-    public TestKmsDecryptor(EncryptProperties encryptProperties) {
-        super(encryptProperties);
+    public TestKmsDecryptor(KmsProperties kmsProperties) {
+        super(kmsProperties);
     }
 
     @Override
