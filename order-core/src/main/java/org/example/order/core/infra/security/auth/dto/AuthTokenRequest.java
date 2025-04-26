@@ -1,9 +1,9 @@
-package org.example.order.core.infra.security.dto;
+package org.example.order.core.infra.security.auth.dto;
 
 import lombok.Getter;
 
 @Getter
-public class TokenRequestDto {
+public class AuthTokenRequest {
     private String refreshToken;
     private String accessToken;
 }

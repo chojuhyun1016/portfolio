@@ -110,3 +110,27 @@ encrypt:
     key: bXlTMzJiYnl0ZXNnY21rZXlzdXBlcnNlY3JldGtleTE=  # 32 bytes
   hmac:
     key: test-hmac-secret
+
+# Spring Gateway + AWS Clpud Map 용 설정
+#spring:
+#  application:
+#    name: gateway-service
+#
+#  cloud:
+#    discovery:
+#      enabled: true
+#
+#    aws:
+#      region:
+#        static: ap-northeast-2
+#      stack:
+#        auto: false
+#      cloud-map:
+#        discovery:
+#          enabled: true
+#          service-id: gateway-service
+#          namespace: msa.local
+#
+#server:
+#  port: 8080
+

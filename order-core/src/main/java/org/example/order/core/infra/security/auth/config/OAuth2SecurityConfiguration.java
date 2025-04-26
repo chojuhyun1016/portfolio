@@ -1,4 +1,4 @@
-package org.example.order.core.infra.security.config;
+package org.example.order.core.infra.security.auth.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +13,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @RequiredArgsConstructor
-public class OAuth2SecurityConfig {
+public class OAuth2SecurityConfiguration {
 
     private final ClientRegistrationRepository clientRegistrationRepository;
 

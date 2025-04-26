@@ -1,4 +1,4 @@
-package org.example.order.core.infra.security.filter;
+package org.example.order.core.infra.security.jwt.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -6,8 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.infra.security.service.TokenStoreService;
-import org.example.order.core.infra.security.token.SecureTokenProvider;
+import org.example.order.core.infra.security.auth.service.AuthTokenStoreService;
+import org.example.order.core.infra.security.jwt.provider.JwtTokenManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -17,10 +17,10 @@ import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtSecurityAuthenticationFilter extends OncePerRequestFilter {
 
-    private final SecureTokenProvider tokenProvider;
-    private final TokenStoreService tokenStoreService;
+    private final JwtTokenManager tokenProvider;
+    private final AuthTokenStoreService authTokenStoreService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -29,13 +29,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && tokenProvider.validateToken(token)) {
             String jti = tokenProvider.getJti(token);
 
-            if (!tokenStoreService.isJtiValid(jti)) {
+            if (!authTokenStoreService.isJtiValid(jti)) {
                 log.warn("[JWT] JTI invalid or reused");
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token (reused or expired)");
                 return;
             }
 
-            if (tokenStoreService.isBlacklisted(token)) {
+            if (authTokenStoreService.isBlacklisted(token)) {
                 log.warn("[JWT] Token is blacklisted");
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token blacklisted");
                 return;
@@ -46,6 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     null,
                     tokenProvider.getRoles(token)
             );
+
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
         }

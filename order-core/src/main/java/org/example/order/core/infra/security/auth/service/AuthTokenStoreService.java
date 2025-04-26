@@ -1,4 +1,4 @@
-package org.example.order.core.infra.security.service;
+package org.example.order.core.infra.security.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
-public class TokenStoreService {
+public class AuthTokenStoreService {
 
     private final StringRedisTemplate redisTemplate;
 

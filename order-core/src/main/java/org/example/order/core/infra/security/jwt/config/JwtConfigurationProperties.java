@@ -1,4 +1,4 @@
-package org.example.order.core.infra.security.jwt;
+package org.example.order.core.infra.security.jwt.config;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "jwt")
-public class JwtProperties {
+public class JwtConfigurationProperties {
     private String secret;
     private long accessTokenValidityInSeconds;
     private long refreshTokenValidityInSeconds;

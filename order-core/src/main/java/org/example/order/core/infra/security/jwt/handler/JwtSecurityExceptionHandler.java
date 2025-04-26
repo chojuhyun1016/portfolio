@@ -1,4 +1,4 @@
-package org.example.order.core.infra.security.jwt;
+package org.example.order.core.infra.security.jwt.handler;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,7 +11,7 @@ import java.io.IOException;
 
 @Slf4j
 @ControllerAdvice
-public class JwtExceptionHandler {
+public class JwtSecurityExceptionHandler {
 
     @ExceptionHandler(ExpiredJwtException.class)
     public void handleExpiredToken(ExpiredJwtException e, HttpServletResponse response) throws IOException {

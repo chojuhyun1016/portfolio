@@ -1,9 +1,9 @@
-package org.example.order.core.infra.security.config;
+package org.example.order.core.infra.security.auth.config;
 
 import lombok.RequiredArgsConstructor;
-import org.example.order.core.infra.security.filter.JwtAuthenticationFilter;
-import org.example.order.core.infra.security.service.TokenStoreService;
-import org.example.order.core.infra.security.token.SecureTokenProvider;
+import org.example.order.core.infra.security.jwt.filter.JwtSecurityAuthenticationFilter;
+import org.example.order.core.infra.security.jwt.provider.JwtTokenManager;
+import org.example.order.core.infra.security.auth.service.AuthTokenStoreService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,17 +18,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @RequiredArgsConstructor
 @EnableMethodSecurity(prePostEnabled = true)
-public class WebSecurityConfig {
+public class AuthWebSecurityConfiguration {
 
-    private final SecureTokenProvider tokenProvider;
-    private final TokenStoreService tokenStoreService;
+    private final JwtTokenManager tokenProvider;
+    private final AuthTokenStoreService authTokenStoreService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(tokenProvider, tokenStoreService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtSecurityAuthenticationFilter(tokenProvider, authTokenStoreService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

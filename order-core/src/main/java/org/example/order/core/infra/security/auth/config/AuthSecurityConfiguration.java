@@ -1,8 +1,9 @@
-package org.example.order.core.infra.security.config;
+package org.example.order.core.infra.security.auth.config;
 
 import lombok.RequiredArgsConstructor;
-import org.example.order.core.infra.security.jwt.JwtAuthenticationFilter;
-import org.example.order.core.infra.security.jwt.JwtTokenProvider;
+import org.example.order.core.infra.security.auth.service.AuthTokenStoreService;
+import org.example.order.core.infra.security.jwt.filter.JwtSecurityAuthenticationFilter;
+import org.example.order.core.infra.security.jwt.provider.JwtTokenManager;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,23 +18,26 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties
-public class SecurityConfig {
+public class AuthSecurityConfiguration {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenManager tokenProvider;
+    private final AuthTokenStoreService authTokenStoreService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/v1/auth/**"
-                                   , "/swagger-ui/**"
-                                   , "/v3/api-docs/**"
-                                   , "/actuator/health").permitAll()
-                    .anyRequest().authenticated()
-            )
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/v1/auth/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/actuator/health"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(new JwtSecurityAuthenticationFilter(tokenProvider, authTokenStoreService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

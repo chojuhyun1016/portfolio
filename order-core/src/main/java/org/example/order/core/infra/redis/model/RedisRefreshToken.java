@@ -1,4 +1,4 @@
-package org.example.order.core.infra.security.redis;
+package org.example.order.core.infra.redis.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,8 +12,8 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash("refreshToken")
-public class RefreshTokenEntity implements Serializable {
+@RedisHash("refresh_token")
+public class RedisRefreshToken implements Serializable {
     private String id;
     private String token;
 }
