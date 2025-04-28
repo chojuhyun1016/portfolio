@@ -11,8 +11,6 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "encrypt")
 public class EncryptProperties {
 
-    private String kmsRegion;
-
     private Aes128 aes128 = new Aes128();
     private Aes256 aes256 = new Aes256();
     private AesGcm aesgcm = new AesGcm();

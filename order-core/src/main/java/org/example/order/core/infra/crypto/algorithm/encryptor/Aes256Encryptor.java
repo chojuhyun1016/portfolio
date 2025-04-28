@@ -5,10 +5,9 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.utils.encode.Base64Utils;
-import org.example.order.core.infra.common.kms.decryptor.KmsDecryptor;
+import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
-import org.example.order.core.infra.crypto.config.EncryptProperties;
 import org.example.order.core.infra.crypto.exception.DecryptException;
 import org.example.order.core.infra.crypto.exception.EncryptException;
 import org.springframework.stereotype.Component;
@@ -18,24 +17,30 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * AES-256 CBC 암호화/복호화 Encryptor
+ */
 @Slf4j
 @Component("aes256Encryptor")
 @RequiredArgsConstructor
 public class Aes256Encryptor implements Encryptor {
 
-    private static final int KEY_LENGTH = 32;
-    private static final int IV_LENGTH = 16;
-    private static final byte VERSION = 0x01;
+    private static final int KEY_LENGTH = 32;      // 32바이트 (256비트)
+    private static final int IV_LENGTH = 16;       // 16바이트 (128비트)
+    private static final byte VERSION = 0x01;      // 암호화 버전 관리
 
-    private final EncryptProperties encryptProperties;
-    private final KmsDecryptor kmsDecryptor;
+    private final SecretsKeyResolver secretsKeyResolver; // Secrets Manager 기반 키 관리
     private final SecureRandom random = new SecureRandom();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private byte[] key;
 
+    private byte[] key;  // 현재 사용 중인 키
+
+    /**
+     * 부팅 시 Secrets Manager에서 키를 가져와 초기화
+     */
     @PostConstruct
     public void init() {
-        this.key = kmsDecryptor.decryptBase64EncodedKey(encryptProperties.getAes256().getKey());
+        this.key = secretsKeyResolver.getCurrentKey();
 
         if (key.length != KEY_LENGTH) {
             throw new IllegalArgumentException("AES-256 key must be 32 bytes.");
@@ -44,7 +49,7 @@ public class Aes256Encryptor implements Encryptor {
 
     @Override
     public void setKey(String base64Key) {
-        throw new UnsupportedOperationException("setKey is not supported. Use constructor initialization.");
+        throw new UnsupportedOperationException("setKey is not supported. Use Secrets Manager auto-load.");
     }
 
     @Override
@@ -67,7 +72,7 @@ public class Aes256Encryptor implements Encryptor {
 
             return objectMapper.writeValueAsString(payload);
         } catch (Exception e) {
-            log.error("AES-256 encryption failed: {}", e.getMessage(), e);
+            log.error("AES-256 encryption failed", e);
             throw new EncryptException("AES-256 encryption failed", e);
         }
     }
@@ -92,7 +97,7 @@ public class Aes256Encryptor implements Encryptor {
 
             return new String(plain, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.error("AES-256 decryption failed: {}", e.getMessage(), e);
+            log.error("AES-256 decryption failed", e);
             throw new DecryptException("AES-256 decryption failed", e);
         }
     }

@@ -6,11 +6,15 @@ import org.hibernate.id.IdentifierGenerator;
 
 import java.io.Serializable;
 
+/**
+ * Hibernate IdentifierGenerator
+ *
+ * - 엔티티의 ID 생성시 TSID를 생성하여 반환
+ */
 public class CustomTsidGenerator implements IdentifierGenerator {
 
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object object) {
-        CustomTsid.FactorySupplier factorySupplier = CustomTsid.FactorySupplier.INSTANCE;
-        return factorySupplier.get().generate().toLong();
+        return CustomTsid.FactorySupplier.factory.generate().toLong();
     }
 }

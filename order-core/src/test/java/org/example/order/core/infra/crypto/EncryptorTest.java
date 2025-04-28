@@ -1,13 +1,11 @@
 package org.example.order.core.infra.crypto;
 
-import org.example.order.core.infra.common.kms.config.KmsProperties;
-import org.example.order.core.infra.common.kms.decryptor.KmsDecryptor;
-import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
-import org.example.order.core.infra.crypto.config.EncryptProperties;
-import org.example.order.core.infra.crypto.contract.Encryptor;
+import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.crypto.algorithm.encryptor.Aes128Encryptor;
 import org.example.order.core.infra.crypto.algorithm.encryptor.Aes256Encryptor;
 import org.example.order.core.infra.crypto.algorithm.encryptor.AesGcmEncryptor;
+import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
+import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.util.EncryptionKeyGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,36 +14,23 @@ import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Encryptor 계열 (AES128 / AES256 / AES-GCM) 단위 테스트
+ */
 class EncryptorTest {
 
-    private EncryptProperties properties;
-    private KmsDecryptor mockKmsDecryptor;
+    private SecretsKeyResolver secretsKeyResolver;
 
     @BeforeEach
     void setup() {
-        // 설정 생성
-        properties = new EncryptProperties();
+        // 테스트용 SecretsKeyResolver 준비
+        this.secretsKeyResolver = new SecretsKeyResolver();
 
-        EncryptProperties.Aes128 aes128 = new EncryptProperties.Aes128();
-        EncryptProperties.Aes256 aes256 = new EncryptProperties.Aes256();
-        EncryptProperties.AesGcm aesgcm = new EncryptProperties.AesGcm();
+        // 기본 AES-256 키 생성 후 저장 (Secrets Manager처럼)
+        String base64Key = EncryptionKeyGenerator.generateKey(CryptoAlgorithmType.AES256);
+        byte[] decodedKey = Base64.getUrlDecoder().decode(base64Key);
 
-        aes128.setKey(EncryptionKeyGenerator.generateKey(CryptoAlgorithmType.AES128));
-        aes256.setKey(EncryptionKeyGenerator.generateKey(CryptoAlgorithmType.AES256));
-        aesgcm.setKey(EncryptionKeyGenerator.generateKey(CryptoAlgorithmType.AESGCM));
-
-        properties.setAes128(aes128);
-        properties.setAes256(aes256);
-        properties.setAesgcm(aesgcm);
-
-        // Mock KMS (base64 디코딩만 수행)
-        mockKmsDecryptor = new KmsDecryptor(new KmsProperties()) {
-            @Override
-            public byte[] decryptBase64EncodedKey(String base64Key) {
-                String normalizedKey = base64Key.replace('-', '+').replace('_', '/');
-                return Base64.getDecoder().decode(normalizedKey);
-            }
-        };
+        secretsKeyResolver.updateKey(decodedKey);
     }
 
     private Encryptor initEncryptor(Encryptor encryptor) {
@@ -61,7 +46,7 @@ class EncryptorTest {
 
     @Test
     void testAes128EncryptAndDecrypt() {
-        Encryptor encryptor = initEncryptor(new Aes128Encryptor(properties, mockKmsDecryptor));
+        Encryptor encryptor = initEncryptor(new Aes128Encryptor(secretsKeyResolver));
 
         assertTrue(encryptor.isReady());
         String plainText = "Sensitive data for AES128";
@@ -74,7 +59,7 @@ class EncryptorTest {
 
     @Test
     void testAes256EncryptAndDecrypt() {
-        Encryptor encryptor = initEncryptor(new Aes256Encryptor(properties, mockKmsDecryptor));
+        Encryptor encryptor = initEncryptor(new Aes256Encryptor(secretsKeyResolver));
 
         assertTrue(encryptor.isReady());
         String plainText = "Sensitive data for AES256";
@@ -87,10 +72,10 @@ class EncryptorTest {
 
     @Test
     void testAesGcmEncryptAndDecrypt() {
-        Encryptor encryptor = initEncryptor(new AesGcmEncryptor(properties, mockKmsDecryptor));
+        Encryptor encryptor = initEncryptor(new AesGcmEncryptor(secretsKeyResolver));
 
         assertTrue(encryptor.isReady());
-        String plainText = "Sensitive data for GCM";
+        String plainText = "Sensitive data for AES-GCM";
         String encrypted = encryptor.encrypt(plainText);
         String decrypted = encryptor.decrypt(encrypted);
 

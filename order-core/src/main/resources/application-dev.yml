@@ -52,8 +52,10 @@ aws:
     accessKey: test
     secretKey: test
 
-  kms:
-    region: ap-northeast-2
+  secrets-manager:
+    region: ap-northeast-2          # AWS 리전 (예: 서울 리전)
+    secret-name: myapp/secret-key    # 저장한 Secret 이름
+    refresh-interval-millis: 300000  # 키 갱신 주기 (5분 = 300,000ms)
 
 lock:
   redisson:

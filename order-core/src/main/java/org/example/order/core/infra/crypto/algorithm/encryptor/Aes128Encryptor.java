@@ -5,9 +5,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.utils.encode.Base64Utils;
-import org.example.order.core.infra.common.kms.decryptor.KmsDecryptor;
+import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
-import org.example.order.core.infra.crypto.config.EncryptProperties;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.exception.DecryptException;
 import org.example.order.core.infra.crypto.exception.EncryptException;
@@ -18,6 +17,9 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * AES-128 CBC Encryptor (with SecretsKeyResolver)
+ */
 @Slf4j
 @Component("aes128Encryptor")
 @RequiredArgsConstructor
@@ -27,24 +29,31 @@ public class Aes128Encryptor implements Encryptor {
     private static final int IV_LENGTH = 16;
     private static final byte VERSION = 0x01;
 
-    private final EncryptProperties encryptProperties;
-    private final KmsDecryptor kmsDecryptor;
+    private final SecretsKeyResolver secretsKeyResolver;
     private final SecureRandom random = new SecureRandom();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private byte[] key;
 
+    /**
+     * 애플리케이션 부팅 시 최초 키 초기화
+     */
     @PostConstruct
     public void init() {
-        this.key = kmsDecryptor.decryptBase64EncodedKey(encryptProperties.getAes128().getKey());
+        this.key = secretsKeyResolver.getCurrentKey(); // SecretsKeyResolver 사용
 
-        if (key.length != KEY_LENGTH) {
-            throw new IllegalArgumentException("AES-128 key must be 16 bytes.");
+        if (key == null || key.length != KEY_LENGTH) {
+            throw new IllegalArgumentException("AES-128 key must be exactly 16 bytes.");
         }
+
+        log.info("[Aes128Encryptor] AES-128 key loaded successfully.");
     }
 
+    /**
+     * setKey는 외부 초기화를 허용하지 않음
+     */
     @Override
     public void setKey(String base64Key) {
-        throw new UnsupportedOperationException("setKey is not supported. Use constructor initialization.");
+        throw new UnsupportedOperationException("setKey is not supported. Use SecretsKeyResolver initialization.");
     }
 
     @Override

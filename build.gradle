@@ -28,6 +28,8 @@ configure(javaProjects) {
 
     repositories {
         mavenCentral()
+        maven { url "https://repo.spring.io/release" }
+        maven { url 'https://jitpack.io' }
     }
 
     dependencies {
@@ -51,29 +53,29 @@ configure(javaProjects) {
     }
 }
 
-def restDocProjects = [project(':order-api:order-api-master')]
-configure(restDocProjects) {
-    apply plugin: "org.asciidoctor.jvm.convert"
-
-    configurations {
-        asciidoctorExt
-    }
-
-    asciidoctor {
-        configurations 'asciidoctorExt'
-        dependsOn test
-        baseDirFollowsSourceFile()
-    }
-
-    bootJar {
-        dependsOn asciidoctor
-        from("${asciidoctor.outputDir}/") {
-            into 'static/docs'
-        }
-    }
-
-    dependencies {
-        asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
-        testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    }
-}
+//def restDocProjects = [project(':order-api:order-api-master')]
+//configure(restDocProjects) {
+//    apply plugin: "org.asciidoctor.jvm.convert"
+//
+//    configurations {
+//        asciidoctorExt
+//    }
+//
+//    asciidoctor {
+//        configurations 'asciidoctorExt'
+//        dependsOn test
+//        baseDirFollowsSourceFile()
+//    }
+//
+//    bootJar {
+//        dependsOn asciidoctor
+//        from("${asciidoctor.outputDir}/") {
+//            into 'static/docs'
+//        }
+//    }
+//
+//    dependencies {
+//        asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+//        testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+//    }
+//}
