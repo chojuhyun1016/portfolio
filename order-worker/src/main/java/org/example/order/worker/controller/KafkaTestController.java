@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.client.kafka.config.property.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
-import org.example.order.common.code.enums.MessageCategory;
+import org.example.order.common.code.type.MessageCategory;
 import org.example.order.common.utils.datetime.DateTimeUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.web.bind.annotation.GetMapping;

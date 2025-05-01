@@ -1,52 +1,57 @@
 package org.example.order.core.infra.common.secrets.manager;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Secret Key 핫스왑 + 롤백 관리 컴포넌트
+ * 다중 알고리즘 키 핫스왑 + 롤백 관리 컴포넌트
  */
 @Slf4j
 @Component
 public class SecretsKeyResolver {
 
-    private final AtomicReference<byte[]> currentKeyRef = new AtomicReference<>();
-    private final AtomicReference<byte[]> backupKeyRef = new AtomicReference<>();
+    private final Map<String, AtomicReference<byte[]>> currentKeyMap = new ConcurrentHashMap<>();
+    private final Map<String, AtomicReference<byte[]>> backupKeyMap = new ConcurrentHashMap<>();
 
     /**
-     * 새로운 키로 업데이트 (핫스왑)
+     * 새 키 업데이트 (핫스왑)
      */
-    public void updateKey(byte[] newKey) {
-        byte[] oldKey = currentKeyRef.get();
+    public void updateKey(String keyName, CryptoKeySpec keySpec) {
+        currentKeyMap.putIfAbsent(keyName, new AtomicReference<>());
+        backupKeyMap.putIfAbsent(keyName, new AtomicReference<>());
 
-        if (oldKey != null && !Arrays.equals(oldKey, newKey)) {
-            backupKeyRef.set(oldKey);
-            log.info("[SecretsKeyResolver] Previous key backed up for rollback.");
+        AtomicReference<byte[]> currentRef = currentKeyMap.get(keyName);
+        AtomicReference<byte[]> backupRef = backupKeyMap.get(keyName);
+
+        byte[] newKey = keySpec.decodeKey();
+        byte[] oldKey = currentRef.get();
+
+        if (oldKey != null && !java.util.Arrays.equals(oldKey, newKey)) {
+            backupRef.set(oldKey);
+            log.info("[SecretsKeyResolver] [{}] Previous key backed up.", keyName);
         }
 
-        currentKeyRef.set(newKey);
+        currentRef.set(newKey);
+        log.info("[SecretsKeyResolver] [{}] New key updated. Spec: {}", keyName, keySpec);
     }
 
-    /**
-     * 현재 활성화된 키 조회
-     */
-    public byte[] getCurrentKey() {
-        byte[] key = currentKeyRef.get();
+    public byte[] getCurrentKey(String keyName) {
+        AtomicReference<byte[]> keyRef = currentKeyMap.get(keyName);
 
-        if (key == null) {
-            throw new IllegalStateException("Secret key has not been loaded yet.");
+        if (keyRef == null || keyRef.get() == null) {
+            throw new IllegalStateException("Secret key for [" + keyName + "] is not loaded yet.");
         }
 
-        return key;
+        return keyRef.get();
     }
 
-    /**
-     * 복호화 실패 시 백업 키 조회
-     */
-    public byte[] getBackupKey() {
-        return backupKeyRef.get();
+    public byte[] getBackupKey(String keyName) {
+        AtomicReference<byte[]> backupRef = backupKeyMap.get(keyName);
+        return backupRef != null ? backupRef.get() : null;
     }
 }

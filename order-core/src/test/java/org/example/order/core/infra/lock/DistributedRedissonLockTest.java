@@ -48,7 +48,9 @@ public class DistributedRedissonLockTest {
     @DistributedLock(key = "'lock-test'", type = "redissonLock", waitTime = 3000, leaseTime = 5000)
     public void criticalSection() {
         int value = counter.incrementAndGet();
+
         log.info("[criticalSection] Executed by Thread: {}, Value: {}", Thread.currentThread().getName(), value);
+
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {

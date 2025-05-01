@@ -3,8 +3,8 @@ package org.example.order.core.domain.common.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.order.common.auth.AccessUserInfo;
-import org.example.order.common.auth.AccessUserManager;
+import org.example.order.common.context.AccessUserInfo;
+import org.example.order.common.context.AccessUserContext;
 
 import java.time.LocalDateTime;
 
@@ -37,7 +37,7 @@ public class VersionEntity {
 
     @PrePersist
     public void prePersist() {
-        AccessUserInfo userInfo = AccessUserManager.getAccessUser();
+        AccessUserInfo userInfo = AccessUserContext.getAccessUser();
         this.createdUserId = userInfo.userId();
         this.createdUserType = userInfo.userType();
         this.createdDatetime = LocalDateTime.now();
@@ -46,7 +46,7 @@ public class VersionEntity {
 
     @PreUpdate
     public void preUpdate() {
-        AccessUserInfo userInfo = AccessUserManager.getAccessUser();
+        AccessUserInfo userInfo = AccessUserContext.getAccessUser();
         this.modifiedUserId = userInfo.userId();
         this.modifiedUserType = userInfo.userType();
         this.modifiedDatetime = LocalDateTime.now();

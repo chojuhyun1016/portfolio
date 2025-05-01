@@ -1,4 +1,4 @@
-package org.example.order.common.auth;
+package org.example.order.common.context;
 
 import lombok.Builder;
 

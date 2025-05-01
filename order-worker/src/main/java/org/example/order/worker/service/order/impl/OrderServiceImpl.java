@@ -2,7 +2,7 @@ package org.example.order.worker.service.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.code.enums.MessageMethodType;
+import org.example.order.common.code.type.MessageMethodType;
 import org.example.order.core.application.order.vo.OrderDto;
 import org.example.order.core.application.order.event.message.OrderCrudEvent;
 import org.example.order.worker.service.order.OrderService;

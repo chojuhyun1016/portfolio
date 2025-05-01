@@ -2,8 +2,8 @@ package org.example.order.api.common.config.module;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.example.order.common.auth.AccessUserInfo;
-import org.example.order.common.auth.AccessUserManager;
+import org.example.order.common.context.AccessUserInfo;
+import org.example.order.common.context.AccessUserManager;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 

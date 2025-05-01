@@ -14,16 +14,19 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 
 /**
- * HMAC-SHA256 서명/검증 Signer
+ * HMAC-SHA256 서명/검증 Signer (SecretsKeyResolver 기반)
+ * - AWS Secrets Manager 연동 (키매니저1)
+ * - 다중 알고리즘 구조 지원
  */
 @Slf4j
 @Component("hmacSha256Signer")
 @RequiredArgsConstructor
 public class HmacSha256Signer implements Signer {
 
-    private static final int MIN_KEY_LENGTH = 16; // 최소 128비트 보장
-    private final SecretsKeyResolver secretsKeyResolver;
+    private static final int MIN_KEY_LENGTH = 16;  // 최소 128비트 보장
+    private static final String KEY_NAME = CryptoAlgorithmType.HMAC_SHA256.name();  // 키 식별자
 
+    private final SecretsKeyResolver secretsKeyResolver;
     private byte[] secretKey;
 
     /**
@@ -31,51 +34,86 @@ public class HmacSha256Signer implements Signer {
      */
     @PostConstruct
     public void init() {
-        this.secretKey = secretsKeyResolver.getCurrentKey();
+        try {
+            this.secretKey = secretsKeyResolver.getCurrentKey(KEY_NAME);
 
-        if (secretKey.length < MIN_KEY_LENGTH) {
-            throw new IllegalArgumentException("HMAC-SHA256 key must be at least 16 bytes.");
+            if (secretKey == null || secretKey.length < MIN_KEY_LENGTH) {
+                throw new IllegalArgumentException(
+                        String.format("HMAC-SHA256 key [%s] must be at least %d bytes. Found: %s",
+                                KEY_NAME, MIN_KEY_LENGTH, (secretKey == null ? "null" : secretKey.length + " bytes")));
+            }
+
+            log.info("[HmacSha256Signer] HMAC-SHA256 key [{}] initialized successfully.", KEY_NAME);
+        } catch (Exception e) {
+            log.error("[HmacSha256Signer] Failed to initialize key [{}]: {}", KEY_NAME, e.getMessage(), e);
+            throw e;
         }
-
-        log.info("[Signer] HMAC-SHA256 key initialized successfully.");
     }
 
+    /**
+     * 외부에서 수동으로 키를 설정하는 방식은 허용하지 않음
+     */
     @Override
     public void setKey(String base64Key) {
-        throw new UnsupportedOperationException("setKey is not supported. Use Secrets Manager auto-load.");
+        throw new UnsupportedOperationException("setKey is not supported. Use Secrets Manager integration.");
     }
 
+    /**
+     * 메시지를 HMAC-SHA256 방식으로 서명
+     *
+     * @param message 서명할 메시지
+     * @return URL-safe Base64로 인코딩된 서명 문자열
+     */
     @Override
     public String sign(String message) {
-        if (!isReady()) {
-            throw new InvalidKeyException("HMAC-SHA256 signer key not initialized.");
-        }
+        ensureReady();
 
         try {
             byte[] rawSignature = HmacSha256Engine.sign(message.getBytes(StandardCharsets.UTF_8), secretKey);
             return Base64Utils.encodeUrlSafe(rawSignature);
         } catch (Exception e) {
-            log.error("HMAC-SHA256 sign failed", e);
+            log.error("[HmacSha256Signer] Signing failed: {}", e.getMessage(), e);
             throw new SignException("HMAC-SHA256 sign failed", e);
         }
     }
 
+    /**
+     * 메시지와 서명이 일치하는지 검증
+     *
+     * @param message   원본 메시지
+     * @param signature 검증할 서명
+     * @return 검증 결과 (true=정상)
+     */
     @Override
     public boolean verify(String message, String signature) {
-        if (!isReady()) {
-            throw new InvalidKeyException("HMAC-SHA256 signer key not initialized.");
-        }
-
+        ensureReady();
         return sign(message).equals(signature);
     }
 
+    /**
+     * 준비 상태 확인
+     */
     @Override
     public boolean isReady() {
         return secretKey != null;
     }
 
+    /**
+     * 알고리즘 타입 반환
+     */
     @Override
     public CryptoAlgorithmType getType() {
         return CryptoAlgorithmType.HMAC_SHA256;
+    }
+
+    /**
+     * Signer 준비 상태를 보장
+     */
+    private void ensureReady() {
+        if (!isReady()) {
+            throw new InvalidKeyException(
+                    String.format("HMAC-SHA256 signer [%s] key not initialized.", KEY_NAME)
+            );
+        }
     }
 }

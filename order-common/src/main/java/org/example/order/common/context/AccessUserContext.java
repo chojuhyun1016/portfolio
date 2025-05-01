@@ -1,10 +1,10 @@
-package org.example.order.common.auth;
+package org.example.order.common.context;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class AccessUserManager {
+public class AccessUserContext {
 
     private static final ThreadLocal<AccessUserInfo> accessUserInfoThreadLocal = new ThreadLocal<>();
 

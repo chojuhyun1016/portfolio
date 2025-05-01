@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
 import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.security.jwt.config.JwtConfigurationProperties;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,17 +18,21 @@ import java.security.Key;
 import java.util.*;
 
 /**
- * JWT 토큰 생성, 검증, Claims 처리 매니저
+ * JWT 토큰 생성, 검증, Claims 처리 매니저.
+ * - SecretsKeyResolver를 기반으로 시크릿 키를 가져옴.
+ * - SecretsLoader의 리스너로 등록되어 키 변경 시 자동으로 재초기화됨.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtTokenManager {
+public class JwtTokenManager implements SecretKeyRefreshListener {
+
+    private static final String KEY_NAME = "JWT_SECRET";  // SecretsManager에 등록된 키 이름
 
     private final JwtConfigurationProperties jwtConfigurationProperties;
     private final SecretsKeyResolver secretsKeyResolver;
 
-    private Key secretKey;
+    private volatile Key secretKey;  // 시크릿 키 (volatile로 동시성 보장)
 
     /**
      * 애플리케이션 부팅 시 최초 Key 초기화
@@ -38,12 +43,35 @@ public class JwtTokenManager {
     }
 
     /**
-     * Secrets Manager로부터 최신 키를 가져와 Key 객체로 초기화
+     * SecretsLoader로부터 리프레시 알림을 받을 때 호출됨.
+     */
+    @Override
+    public void onSecretKeyRefreshed() {
+        log.info("[JwtTokenManager] Received secret key refresh event.");
+        refreshSecretKey();
+    }
+
+    /**
+     * SecretsKeyResolver로부터 현재 키를 가져와 Key 객체로 초기화
      */
     private void refreshSecretKey() {
-        byte[] keyBytes = secretsKeyResolver.getCurrentKey();
-        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
-        log.info("[JWT] Secret key initialized or refreshed from Secrets Manager.");
+        try {
+            byte[] keyBytes = secretsKeyResolver.getCurrentKey(KEY_NAME);
+
+            if (keyBytes == null || keyBytes.length < 32) {
+                throw new IllegalArgumentException(String.format(
+                        "[JwtTokenManager] Secret key [%s] is invalid. Must be at least 256 bits (32 bytes), found: %s",
+                        KEY_NAME,
+                        (keyBytes == null ? "null" : keyBytes.length + " bytes")
+                ));
+            }
+
+            this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+            log.info("[JwtTokenManager] Secret key [{}] refreshed successfully.", KEY_NAME);
+        } catch (Exception e) {
+            log.error("[JwtTokenManager] Failed to refresh secret key [{}]: {}", KEY_NAME, e.getMessage(), e);
+            throw e;
+        }
     }
 
     /**
@@ -90,9 +118,11 @@ public class JwtTokenManager {
     public boolean validateToken(String token) {
         try {
             getClaims(token);
+
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            log.warn("[JWT] Invalid token: {}", e.getMessage());
+            log.warn("[JwtTokenManager] Invalid token: {}", e.getMessage());
+
             return false;
         }
     }
@@ -108,17 +138,20 @@ public class JwtTokenManager {
         String device = (String) claims.get("device");
 
         if (tokenIp == null || !tokenIp.equals(requestIp)) {
-            log.warn("[JWT] IP mismatch. requestIp={}, tokenIp={}", requestIp, tokenIp);
+            log.warn("[JwtTokenManager] IP mismatch. requestIp={}, tokenIp={}", requestIp, tokenIp);
+
             return false;
         }
 
         if (scopes == null || scopes.stream().noneMatch(requiredScopes::contains)) {
-            log.warn("[JWT] Required scope missing. tokenScopes={}", scopes);
+            log.warn("[JwtTokenManager] Required scope missing. tokenScopes={}", scopes);
+
             return false;
         }
 
         if (!allowedDevices.contains(device)) {
-            log.warn("[JWT] Invalid device. device={}", device);
+            log.warn("[JwtTokenManager] Invalid device. device={}", device);
+
             return false;
         }
 
@@ -137,6 +170,7 @@ public class JwtTokenManager {
      */
     public String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
+
         return (bearer != null && bearer.startsWith("Bearer ")) ? bearer.substring(7) : null;
     }
 
@@ -152,6 +186,7 @@ public class JwtTokenManager {
      */
     public List<SimpleGrantedAuthority> getRoles(String token) {
         List<String> roles = (List<String>) getClaims(token).get("roles");
+
         return roles.stream().map(SimpleGrantedAuthority::new).toList();
     }
 

@@ -1,20 +1,25 @@
 package org.example.order.core.infra.common.idgen.tsid.generator;
 
-import org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid;
+import com.github.f4b6a3.tsid.TsidFactory;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
+import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 
 /**
- * Hibernate IdentifierGenerator
- *
- * - 엔티티의 ID 생성시 TSID를 생성하여 반환
+ * Hibernate IdentifierGenerator 구현
+ * - 스프링에서 주입받은 TsidFactory를 사용하여 TSID 생성
  */
+@Component
+@RequiredArgsConstructor
 public class CustomTsidGenerator implements IdentifierGenerator {
+
+    private final TsidFactory tsidFactory;
 
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object object) {
-        return CustomTsid.FactorySupplier.factory.generate().toLong();
+        return tsidFactory.create().toLong();
     }
 }

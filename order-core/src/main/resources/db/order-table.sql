@@ -1,4 +1,4 @@
-create table order
+create table `order`
 (
     id                    bigint            not null comment 'PK' primary key,
     user_id               bigint            not null comment '회원ID',

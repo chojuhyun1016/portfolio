@@ -3,7 +3,7 @@ package org.example.order.worker.facade.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.example.order.common.code.enums.MessageMethodType;
+import org.example.order.common.code.type.MessageMethodType;
 import org.example.order.common.exception.CommonException;
 import org.example.order.common.utils.jackson.ObjectMapperUtils;
 import org.example.order.core.application.order.command.OrderSyncCommand;

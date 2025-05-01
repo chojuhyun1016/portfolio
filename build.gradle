@@ -28,8 +28,7 @@ configure(javaProjects) {
 
     repositories {
         mavenCentral()
-        maven { url "https://repo.spring.io/release" }
-        maven { url 'https://jitpack.io' }
+//        maven { url "https://repo.spring.io/release" }
     }
 
     dependencies {

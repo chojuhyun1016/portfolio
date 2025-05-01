@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.example.order.client.kafka.config.KafkaTopic;
 import org.example.order.common.exception.code.CommonExceptionCode;
-import org.example.order.common.code.enums.MessageCategory;
-import org.example.order.common.exception.CommonException;
+import org.example.order.common.code.type.MessageCategory;
+import org.example.order.common.exception.core.CommonException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,5 @@
 package org.example.order.core.infra.lock;
 
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.lock.service.LockService;
 import org.junit.jupiter.api.Test;
@@ -19,12 +18,23 @@ import java.util.concurrent.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-@SpringBootTest(classes = DistributedNamedLockTest.TestConfig.class)
+@SpringBootTest(
+        classes = DistributedNamedLockTest.TestConfig.class,
+        properties = {
+                "spring.cloud.gateway.enabled=false",
+                "spring.cloud.gateway.redis.enabled=false",
+                "spring.main.web-application-type=servlet"
+        }
+)
 @ActiveProfiles("test")
 class DistributedNamedLockTest {
 
     @SpringBootConfiguration
-    @EnableAutoConfiguration
+    @EnableAutoConfiguration(
+            exclude = {
+                    org.springframework.cloud.gateway.config.GatewayAutoConfiguration.class
+            }
+    )
     @EnableAspectJAutoProxy(proxyTargetClass = true)
     @ComponentScan(basePackages = "org.example.order.core.infra.lock")
     static class TestConfig {}

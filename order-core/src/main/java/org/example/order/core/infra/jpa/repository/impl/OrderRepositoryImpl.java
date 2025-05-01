@@ -1,8 +1,8 @@
 package org.example.order.core.infra.jpa.repository.impl;
 
+import com.github.f4b6a3.tsid.TsidFactory;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid;
 import org.example.order.core.application.order.command.OrderSyncCommand;
 import org.example.order.core.application.order.vo.OrderVo;
 import org.example.order.core.infra.jpa.repository.CustomOrderRepository;
@@ -26,11 +26,13 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
 
     private final JPAQueryFactory queryFactory;
     private final JdbcTemplate jdbcTemplate;
+    private final TsidFactory tsidFactory;
 
-    public OrderRepositoryImpl(JPAQueryFactory queryFactory, JdbcTemplate jdbcTemplate) {
+    public OrderRepositoryImpl(JPAQueryFactory queryFactory, JdbcTemplate jdbcTemplate, TsidFactory tsidFactory) {
         super(OrderEntity.class);
         this.queryFactory = queryFactory;
         this.jdbcTemplate = jdbcTemplate;
+        this.tsidFactory = tsidFactory;
     }
 
     @Override
@@ -66,8 +68,7 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
         int[] args = {Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP, Types.TINYINT,
                       Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP};
 
-        CustomTsid.FactorySupplier instance = CustomTsid.FactorySupplier.INSTANCE;
-        entities.forEach(entity -> entity.updateTsid(instance.generate()));
+        entities.forEach(entity -> entity.updateTsid(tsidFactory.create().toLong()));
 
         for (int i = 0; i < entities.size(); i += QuerydslUtils.DEFAULT_BATCH_SIZE) {
             int end = Math.min(entities.size(), i + QuerydslUtils.DEFAULT_BATCH_SIZE);

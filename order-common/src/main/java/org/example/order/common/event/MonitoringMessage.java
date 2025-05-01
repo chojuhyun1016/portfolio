@@ -1,6 +1,6 @@
 package org.example.order.common.event;
 
-import org.example.order.common.code.enums.MonitoringType;
+import org.example.order.common.code.type.MonitoringType;
 
 public record MonitoringMessage(
         Integer type,

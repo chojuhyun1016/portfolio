@@ -2,7 +2,7 @@ package org.example.order.client.kafka.config;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.example.order.common.code.enums.MessageCategory;
+import org.example.order.common.code.type.MessageCategory;
 
 @Getter
 @Setter

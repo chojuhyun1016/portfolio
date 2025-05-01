@@ -3,7 +3,7 @@ package org.example.order.common.exception.message;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.order.common.code.enums.MonitoringLevel;
+import org.example.order.common.code.type.MonitoringLevel;
 import org.example.order.common.utils.datetime.DateTimeUtils;
 
 @Getter

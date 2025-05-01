@@ -2,7 +2,7 @@ package org.example.order.client.web.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.example.order.common.auth.AccessUserInfo;
+import org.example.order.common.context.AccessUserInfo;
 import org.example.order.common.constant.HttpConstant;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.order.common.code.enums.MessageMethodType;
+import org.example.order.common.code.type.MessageMethodType;
 import org.example.order.core.application.order.event.message.OrderRemoteEvent;
 
 @Data

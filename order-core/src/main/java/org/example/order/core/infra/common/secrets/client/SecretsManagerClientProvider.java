@@ -8,7 +8,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 
 /**
- * AWS Secrets Manager Client 제공
+ * AWS Secrets Manager Client 제공자
  */
 @Configuration
 @RequiredArgsConstructor

@@ -2,7 +2,7 @@ package org.example.order.common.event;
 
 import lombok.*;
 import org.example.order.common.exception.message.CustomErrorMessage;
-import org.example.order.common.code.enums.DlqType;
+import org.example.order.common.code.type.DlqType;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

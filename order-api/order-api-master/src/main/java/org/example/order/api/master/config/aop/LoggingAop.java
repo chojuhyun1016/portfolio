@@ -8,7 +8,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.example.order.api.common.config.module.CustomHttpServletRequestWrapper;
-import org.example.order.common.auth.AccessUserManager;
+import org.example.order.common.context.AccessUserManager;
 import org.example.order.common.web.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;

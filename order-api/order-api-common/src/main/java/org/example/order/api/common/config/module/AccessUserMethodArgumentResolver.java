@@ -1,7 +1,7 @@
 package org.example.order.api.common.config.module;
 
-import org.example.order.common.auth.AccessUserInfo;
-import org.example.order.common.auth.AccessUserManager;
+import org.example.order.common.context.AccessUserInfo;
+import org.example.order.common.context.AccessUserManager;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;

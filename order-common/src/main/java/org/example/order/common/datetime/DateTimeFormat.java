@@ -1,4 +1,4 @@
-package org.example.order.common.format;
+package org.example.order.common.datetime;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 import static java.time.format.DateTimeFormatter.ofPattern;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class DefaultDateTimeFormat {
+public class DateTimeFormat {
 
     public static final DateTimeFormatter DATE_FORMAT = ofPattern("yyyy-MM-dd");
     public static final DateTimeFormatter TIME_FORMAT = ofPattern("HH:mm:ss");
