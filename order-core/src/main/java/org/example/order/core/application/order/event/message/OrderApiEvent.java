@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.example.order.common.event.DlqMessage;
-import org.example.order.common.code.type.DlqType;
-import org.example.order.common.code.type.MessageMethodType;
+import org.example.order.common.core.code.type.DlqType;
+import org.example.order.common.core.code.type.MessageMethodType;
 
 @Getter
 @NoArgsConstructor

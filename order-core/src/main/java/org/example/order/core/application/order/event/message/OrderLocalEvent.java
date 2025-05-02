@@ -3,10 +3,10 @@ package org.example.order.core.application.order.event.message;
 import lombok.Getter;
 import lombok.ToString;
 import org.example.order.common.event.DlqMessage;
-import org.example.order.common.exception.code.CommonExceptionCode;
-import org.example.order.common.code.type.MessageMethodType;
-import org.example.order.common.code.type.DlqType;
-import org.example.order.common.exception.core.CommonException;
+import org.example.order.common.core.exception.code.CommonExceptionCode;
+import org.example.order.common.core.code.type.MessageMethodType;
+import org.example.order.common.core.code.type.DlqType;
+import org.example.order.common.core.exception.core.CommonException;
 
 import java.util.Objects;
 import java.util.stream.Stream;

@@ -1,8 +1,8 @@
 package org.example.order.common.event;
 
 import lombok.*;
-import org.example.order.common.exception.message.CustomErrorMessage;
-import org.example.order.common.code.type.DlqType;
+import org.example.order.common.core.exception.message.CustomErrorMessage;
+import org.example.order.common.core.code.type.DlqType;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

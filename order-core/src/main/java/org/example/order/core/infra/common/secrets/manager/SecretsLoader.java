@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.utils.jackson.ObjectMapperUtils;
+import org.example.order.common.infra.json.ObjectMapperUtils;
 import org.example.order.core.infra.common.secrets.config.SecretsManagerProperties;
 import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
 import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;

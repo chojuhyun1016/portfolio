@@ -3,7 +3,7 @@ package org.example.order.core.infra.crypto.algorithm.signer;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.utils.encode.Base64Utils;
+import org.example.order.common.helper.encode.Base64Utils;
 import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Signer;

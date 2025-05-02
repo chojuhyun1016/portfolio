@@ -3,7 +3,7 @@ package org.example.order.core.infra.common.secrets.model;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.example.order.common.utils.encode.Base64Utils;
+import org.example.order.common.helper.encode.Base64Utils;
 
 /**
  * 암호화 키 스펙 모델 (JSON 내 각 키 항목)

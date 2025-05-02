@@ -9,7 +9,7 @@ import org.apache.kafka.common.record.CompressionType;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.example.order.client.kafka.config.property.KafkaProducerProperties;
 import org.example.order.client.kafka.config.property.KafkaSSLProperties;
-import org.example.order.common.json.ObjectMapperFactory;
+import org.example.order.common.infra.json.ObjectMapperFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

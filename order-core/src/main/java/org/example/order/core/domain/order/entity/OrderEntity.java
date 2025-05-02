@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.order.common.utils.datetime.DateTimeUtils;
 import org.example.order.core.application.order.command.OrderSyncCommand;
 import org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid;
 

@@ -4,7 +4,7 @@ import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
-import org.example.order.common.utils.encode.Base64Utils;
+import org.example.order.common.helper.encode.Base64Utils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

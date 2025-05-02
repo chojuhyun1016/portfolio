@@ -3,8 +3,8 @@ package org.example.order.core.domain.common.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.order.common.context.AccessUserInfo;
-import org.example.order.common.context.AccessUserContext;
+import org.example.order.common.core.context.AccessUserInfo;
+import org.example.order.common.core.context.AccessUserContext;
 
 import java.time.LocalDateTime;
 
