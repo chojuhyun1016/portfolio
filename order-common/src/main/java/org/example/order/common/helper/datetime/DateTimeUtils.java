@@ -10,13 +10,12 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * 날짜 및 시간 유틸리티 클래스.
- * <p>
- * 기능:
- * - 시간대(Zone/Region) 변환
- * - 현재 시각/날짜 조회 (시스템 기본 시간대 및 지정된 시간대)
- * - Epoch 밀리초 변환
+ *
+ * - 시간대 변환 (ZoneCode, RegionCode)
+ * - 현재 시각 및 날짜 조회
+ * - Epoch 밀리초 변환 및 역변환
  * - 월 포맷 값 반환
- * - 날짜 범위 계산 (시작/종료 시각 등)
+ * - 날짜 범위 계산 (하루/월 단위)
  */
 @UtilityClass
 public class DateTimeUtils {
@@ -105,7 +104,29 @@ public class DateTimeUtils {
     }
 
     // ==============================
-    // 월 포맷
+    // Epoch 변환 (밀리초 ↔ LocalDateTime)
+    // ==============================
+
+    public static LocalDateTime longToLocalDateTime(Long epochMillis) {
+        if (epochMillis == null) {
+            return null;
+        }
+
+        return Instant.ofEpochMilli(epochMillis)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
+    public static Long localDateTimeToLong(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+
+        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    // ==============================
+    // 월 포맷 반환
     // ==============================
 
     public static String getMonthValueAsString(LocalDateTime localDateTime) {
