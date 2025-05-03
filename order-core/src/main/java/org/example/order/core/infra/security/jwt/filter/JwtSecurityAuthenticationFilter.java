@@ -18,7 +18,6 @@ import java.io.IOException;
 
 /**
  * JWT 인증 필터
- *
  * - 모든 요청마다 실행되며, JWT 토큰을 검증합니다.
  * - 유효한 토큰이 있으면 Spring Security Context에 인증 객체를 세팅합니다.
  * - 블랙리스트된 토큰 또는 재사용된 JTI 토큰은 차단합니다.

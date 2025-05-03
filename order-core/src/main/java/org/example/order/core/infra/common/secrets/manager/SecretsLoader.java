@@ -54,6 +54,7 @@ public class SecretsLoader {
             parsedKeys.forEach((keyName, spec) -> {
                 byte[] decoded = spec.decodeKey();
                 int expectedBytes = spec.getKeySize() / 8;
+
                 if (decoded.length != expectedBytes) {
                     throw new IllegalArgumentException(
                             String.format("Invalid key size for [%s]: expected %d bytes, got %d",
