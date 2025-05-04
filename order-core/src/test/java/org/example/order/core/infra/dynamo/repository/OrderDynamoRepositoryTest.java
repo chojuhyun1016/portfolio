@@ -7,7 +7,7 @@ import com.amazonaws.services.dynamodbv2.*;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import com.amazonaws.services.dynamodbv2.model.*;
 import org.example.order.core.infra.dynamo.config.DynamoDbProperties;
-import org.example.order.core.infra.dynamo.model.OrderDynamoEntity;
+import org.example.order.core.domain.order.entity.OrderDynamoEntity;
 import org.example.order.core.infra.dynamo.repository.impl.OrderDynamoRepositoryImpl;
 import org.junit.jupiter.api.*;
 

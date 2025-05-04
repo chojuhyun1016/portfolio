@@ -1,11 +1,11 @@
-package org.example.order.core.infra.jpa.repository.impl;
+package org.example.order.core.infra.jpa.repository.order.impl;
 
 import com.github.f4b6a3.tsid.TsidFactory;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.example.order.core.application.order.command.OrderSyncCommand;
 import org.example.order.core.application.order.vo.OrderVo;
-import org.example.order.core.infra.jpa.repository.CustomOrderRepository;
+import org.example.order.core.infra.jpa.repository.order.CustomOrderRepository;
 import org.example.order.core.infra.jpa.querydsl.builder.QuerydslUtils;
 import org.example.order.core.domain.order.entity.OrderEntity;
 import org.example.order.core.domain.order.entity.QOrderEntity;

@@ -1,16 +1,18 @@
-package org.example.order.core.infra.security.jwt.provider;
+package org.example.order.core.infra.security.jwt.contract;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
 import java.util.List;
 
+/**
+ * JWT 토큰 제공 인터페이스
+ */
 public interface TokenProvider {
 
     boolean validateToken(String token);
 
     String getUserId(String token);
 
-    List<SimpleGrantedAuthority> getRoles(String token);  // ✅ 변경됨
+    List<SimpleGrantedAuthority> getRoles(String token);
 
     String getJti(String token);
 

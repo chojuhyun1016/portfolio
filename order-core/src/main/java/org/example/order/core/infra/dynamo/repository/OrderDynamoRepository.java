@@ -1,6 +1,6 @@
 package org.example.order.core.infra.dynamo.repository;
 
-import org.example.order.core.infra.dynamo.model.OrderDynamoEntity;
+import org.example.order.core.domain.order.entity.OrderDynamoEntity;
 
 import java.util.List;
 import java.util.Optional;

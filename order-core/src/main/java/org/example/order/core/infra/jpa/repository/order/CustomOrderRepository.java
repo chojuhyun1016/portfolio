@@ -1,4 +1,4 @@
-package org.example.order.core.infra.jpa.repository;
+package org.example.order.core.infra.jpa.repository.order;
 
 import org.example.order.core.application.order.command.OrderSyncCommand;
 import org.example.order.core.application.order.vo.OrderVo;
