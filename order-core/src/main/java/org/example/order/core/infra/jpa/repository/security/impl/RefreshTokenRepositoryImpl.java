@@ -3,6 +3,7 @@ package org.example.order.core.infra.jpa.repository.security.impl;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.order.core.domain.security.entity.RefreshTokenEntity;
+import org.example.order.core.domain.security.entity.QRefreshTokenEntity;
 import org.example.order.core.infra.jpa.repository.security.RefreshTokenRepositoryCustom;
 import org.springframework.stereotype.Repository;
 

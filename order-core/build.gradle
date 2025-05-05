@@ -20,6 +20,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
 
+    // OAuth2 Resource Server (추가)
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
     // DB
     implementation 'com.mysql:mysql-connector-j:8.3.0'
     def isLocal = System.getenv("SPRING_PROFILES_ACTIVE") == "local"
@@ -42,6 +45,9 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // JSON Web Token 라이브러리 (OAuth2 토큰 확장 지원용, 선택)
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
 
     // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

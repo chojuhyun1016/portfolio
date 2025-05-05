@@ -59,6 +59,7 @@ public class JwtSecurityAuthenticationFilter extends OncePerRequestFilter {
         // 1. 토큰 유효성 검사
         if (!jwtTokenManager.validateToken(token)) {
             handleUnauthorized(response, JwtErrorConstants.INVALID_TOKEN);
+
             return;
         }
 

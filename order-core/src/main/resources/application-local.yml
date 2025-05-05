@@ -65,6 +65,23 @@ spring:
           predicates:
             - Path=/api/v1/orders/**
 
+  security:
+    oauth2:
+      client:
+        registration:
+          default-client:
+            client-id: your-client-id
+            client-secret: your-client-secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid,profile,email
+        provider:
+          default-client:
+            authorization-uri: https://provider.com/oauth2/authorize
+            token-uri: https://provider.com/oauth2/token
+            user-info-uri: https://provider.com/userinfo
+            user-name-attribute: sub
+
 custom:
   security:
     whitelist:
@@ -72,6 +89,20 @@ custom:
       - /swagger-ui/**
       - /v3/api-docs/**
       - /actuator/health
+  oauth2:
+    server:
+      issuer-uri: https://provider.com
+      public-key-location: classpath:oauth2/public.pem  # JWT 검증용 공개키
+    client:
+      client-id: your-client-id
+      client-secret: your-client-secret
+      scopes:
+        - read
+        - write
+    jwt:
+      secret: your-jwt-secret-key
+      access-token-validity-seconds: 3600       # 1시간
+      refresh-token-validity-seconds: 1209600   # 14일
 
 aws:
   dynamodb:

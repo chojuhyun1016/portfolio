@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * RefreshTokenStore 구현체 (Redis + DB Fallback)
- * ✅ Redis 캐시 우선 → DB Fallback → 필요 시 Redis 복구
+ * Redis 캐시 우선 → DB Fallback → 필요 시 Redis 복구
  */
 @Slf4j
 @Component
