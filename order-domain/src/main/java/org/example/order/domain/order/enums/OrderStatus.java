@@ -1,4 +1,4 @@
-package org.example.order.core.domain.order.enums;
+package org.example.order.domain.order.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

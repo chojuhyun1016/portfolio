@@ -1,4 +1,4 @@
-package org.example.order.core.domain.common.entity;
+package org.example.order.domain.common.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

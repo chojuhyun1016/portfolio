@@ -1,4 +1,4 @@
-package org.example.order.core.domain.security.entity;
+package org.example.order.domain.security.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package org.example.order.core.domain.security.entity;
+package org.example.order.domain.security.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

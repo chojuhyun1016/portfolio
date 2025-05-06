@@ -1,4 +1,4 @@
-package org.example.order.core.domain.order.entity;
+package org.example.order.domain.order.entity;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.*;

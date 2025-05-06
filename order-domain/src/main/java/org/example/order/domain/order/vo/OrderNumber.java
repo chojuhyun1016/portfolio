@@ -1,4 +1,4 @@
-package org.example.order.core.domain.order.vo;
+package org.example.order.domain.order.vo;
 
 public record OrderNumber(String value) {
     public OrderNumber {

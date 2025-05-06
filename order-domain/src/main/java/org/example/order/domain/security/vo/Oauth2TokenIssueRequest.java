@@ -1,4 +1,4 @@
-package org.example.order.core.domain.security.vo;
+package org.example.order.domain.security.vo;
 
 import lombok.Builder;
 import lombok.Getter;
