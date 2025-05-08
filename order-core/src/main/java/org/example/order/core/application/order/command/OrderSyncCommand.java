@@ -5,16 +5,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.example.order.common.helper.datetime.DateTimeUtils;
-import org.example.order.core.domain.order.entity.OrderEntity;
-
 import java.time.LocalDateTime;
 
+/**
+ * 주문 동기화 커맨드 DTO (Application 계층)
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 public class OrderSyncCommand {
+
     private Long id;
     private Long userId;
     private String userNumber;
@@ -30,10 +31,11 @@ public class OrderSyncCommand {
     private String modifiedUserType;
     private LocalDateTime modifiedDatetime;
     private Long publishedTimestamp;
+
     @JsonIgnore
     private Boolean failure = false;
 
-    public void postUpdate(Long publishedTimestamp) {
+    public void updatePublishedTimestamp(Long publishedTimestamp) {
         this.publishedTimestamp = publishedTimestamp;
     }
 
@@ -41,30 +43,17 @@ public class OrderSyncCommand {
         this.userId = userId;
     }
 
-    public void fail() {
+    public void markAsFailed() {
         this.failure = true;
     }
 
     public String getPublishedDateTimeStr() {
-        return DateTimeUtils.longToLocalDateTime(this.publishedTimestamp).toString().replace("T", " ");
-    }
+        if (this.publishedTimestamp == null) {
+            return null;
+        }
 
-    public static OrderSyncCommand toDto(OrderEntity entity) {
-        OrderSyncCommand dto = new OrderSyncCommand();
-        dto.id = entity.getId();
-        dto.userId = entity.getUserId();
-        dto.userNumber = entity.getUserNumber();
-        dto.orderId = entity.getOrderId();
-        dto.orderNumber = entity.getOrderNumber();
-        dto.orderPrice = entity.getOrderPrice();
-        dto.createdUserId = entity.getCreatedUserId();
-        dto.createdUserType = entity.getCreatedUserType();
-        dto.createdDatetime = entity.getCreatedDatetime();
-        dto.modifiedUserId = entity.getModifiedUserId();
-        dto.modifiedUserType = entity.getModifiedUserType();
-        dto.modifiedDatetime = entity.getModifiedDatetime();
-        dto.publishedTimestamp = DateTimeUtils.localDateTimeToLong(entity.getPublishedDatetime());
-
-        return dto;
+        return LocalDateTime.ofEpochSecond(this.publishedTimestamp / 1000, 0, java.time.ZoneOffset.UTC)
+                .toString()
+                .replace("T", " ");
     }
 }

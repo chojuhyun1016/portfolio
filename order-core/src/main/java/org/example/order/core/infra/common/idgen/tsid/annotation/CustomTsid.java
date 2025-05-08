@@ -6,9 +6,8 @@ import org.hibernate.annotations.IdGeneratorType;
 import java.lang.annotation.*;
 
 /**
- * Hibernate용 Custom TSID Annotation
+ * Hibernate용 Custom TSID Annotation (Infra 전용)
  * - @IdGeneratorType을 통해 CustomTsidGenerator로 연결
- * - 스프링에서 TsidFactory 주입 방식으로 동작
  */
 @IdGeneratorType(CustomTsidGenerator.class)
 @Retention(RetentionPolicy.RUNTIME)

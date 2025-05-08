@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 
 /**
- * Hibernate IdentifierGenerator 구현
- * - 스프링에서 주입받은 TsidFactory를 사용하여 TSID 생성
+ * Hibernate IdentifierGenerator 구현 (Infra 전용)
+ * - 주입받은 TsidFactory를 사용하여 TSID 생성
  */
 @Component
 @RequiredArgsConstructor

@@ -10,6 +10,7 @@ public class AccessUserContext {
 
     public static AccessUserInfo getAccessUser() {
         AccessUserInfo accessUserInfo =  accessUserInfoThreadLocal.get();
+
         return accessUserInfo == null ? AccessUserInfo.unknown() : accessUserInfo;
     }
 
@@ -20,6 +21,7 @@ public class AccessUserContext {
     public static AccessUserInfo clear() {
         AccessUserInfo accessSystemInfo = accessUserInfoThreadLocal.get();
         accessUserInfoThreadLocal.remove();
+
         return accessSystemInfo;
     }
 }

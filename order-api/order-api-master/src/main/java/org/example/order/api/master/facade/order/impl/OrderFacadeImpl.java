@@ -6,7 +6,7 @@ import org.example.order.api.master.facade.order.OrderFacade;
 import org.example.order.api.master.service.order.OrderService;
 import org.example.order.core.application.order.query.OrderCrudDto;
 import org.example.order.core.application.order.event.OrderRemoteMessageDto;
-import org.example.order.core.application.order.vo.OrderVo;
+import org.example.order.core.application.order.dto.OrderVo;
 import org.springframework.stereotype.Component;
 
 @Slf4j

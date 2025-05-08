@@ -4,11 +4,9 @@ import com.github.f4b6a3.tsid.TsidFactory;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.example.order.core.application.order.command.OrderSyncCommand;
-import org.example.order.core.application.order.vo.OrderVo;
-import org.example.order.core.infra.jpa.repository.order.CustomOrderRepository;
+import org.example.order.core.application.order.dto.OrderVo;
 import org.example.order.core.infra.jpa.querydsl.builder.QuerydslUtils;
-import org.example.order.core.domain.order.entity.OrderEntity;
-import org.example.order.core.domain.order.entity.QOrderEntity;
+import org.example.order.domain.order.entity.OrderEntity;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -48,27 +46,22 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
     @Transactional
     public void bulkInsert(List<OrderEntity> entities) {
         String sql = """
-                insert ignore into order (id,
-                                          user_id,
-                                          user_number,
-                                          order_id,
-                                          order_number,
-                                          order_price,
-                                          published_datetime,
-                                          delete_yn,
-                                          created_user_id,
-                                          created_user_type,
-                                          created_datetime,
-                                          modified_user_id,
-                                          modified_user_type,
-                                          modified_datetime) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                insert ignore into `order` (id, user_id, user_number, order_id, order_number, order_price,
+                                            published_datetime, delete_yn, created_user_id, created_user_type,
+                                            created_datetime, modified_user_id, modified_user_type, modified_datetime)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
-        List<Object[]> batchArgs = new ArrayList<>();
-        int[] args = {Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP, Types.TINYINT,
-                      Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP};
+        int[] args = {Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP,
+                Types.TINYINT, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP};
 
-        entities.forEach(entity -> entity.updateTsid(tsidFactory.create().toLong()));
+        List<Object[]> batchArgs = new ArrayList<>();
+
+        entities.forEach(entity -> {
+            if (entity.getId() == null) {
+                entity.setId(tsidFactory.create().toLong());
+            }
+        });
 
         for (int i = 0; i < entities.size(); i += QuerydslUtils.DEFAULT_BATCH_SIZE) {
             int end = Math.min(entities.size(), i + QuerydslUtils.DEFAULT_BATCH_SIZE);
@@ -76,10 +69,10 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
             for (OrderEntity entity : batchList) {
                 batchArgs.add(new Object[]{
                         entity.getId(),
-                        entity.getOrderId(),
-                        entity.getOrderNumber(),
                         entity.getUserId(),
                         entity.getUserNumber(),
+                        entity.getOrderId(),
+                        entity.getOrderNumber(),
                         entity.getOrderPrice(),
                         entity.getPublishedDatetime(),
                         entity.getDeleteYn(),
@@ -88,11 +81,9 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
                         entity.getCreatedDatetime(),
                         entity.getModifiedUserId(),
                         entity.getModifiedUserType(),
-                        entity.getModifiedDatetime(),
-                        entity.getUserNumber()
+                        entity.getModifiedDatetime()
                 });
             }
-
             jdbcTemplate.batchUpdate(sql, batchArgs, args);
             batchArgs.clear();
         }
@@ -101,24 +92,26 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
     @Override
     public void bulkUpdate(List<OrderSyncCommand> dtoList) {
         String sql = """
-                update order set user_id = ?,
-                                 user_number = ?,
-                                 order_id = ?,
-                                 order_number = ?,
-                                 order_price = ?,
-                                 published_datetime = ?,
-                                 delete_yn = ?,
-                                 created_user_id = ?,
-                                 created_user_type = ?,
-                                 created_datetime = ?,
-                                 modified_user_id = ?,
-                                 modified_user_type = ?,
-                                 modified_datetime = ?,
-                                 version = version + 1 where order_id = ? and published_datetime <= ?
+                update `order` set user_id = ?,
+                                   user_number = ?,
+                                   order_id = ?,
+                                   order_number = ?,
+                                   order_price = ?,
+                                   published_datetime = ?,
+                                   delete_yn = ?,
+                                   created_user_id = ?,
+                                   created_user_type = ?,
+                                   created_datetime = ?,
+                                   modified_user_id = ?,
+                                   modified_user_type = ?,
+                                   modified_datetime = ?,
+                                   version = version + 1
+                where order_id = ? and published_datetime <= ?
                 """;
 
         int[] args = {Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP, Types.TINYINT,
-                      Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP};
+                Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP,
+                Types.BIGINT, Types.TIMESTAMP};
 
         List<Object[]> batchArgs = new ArrayList<>();
 
@@ -140,16 +133,12 @@ public class OrderRepositoryImpl extends QuerydslRepositorySupport implements Cu
                         dto.getCreatedDatetime(),
                         dto.getModifiedUserId(),
                         dto.getModifiedUserType(),
-                        dto.getModifiedDatetime()
+                        dto.getModifiedDatetime(),
+                        dto.getOrderId(),
+                        dto.getPublishedDateTimeStr()
                 });
             }
-
-            int[] execute = jdbcTemplate.batchUpdate(sql, batchArgs, args);
-            for (int j = 0; j < execute.length; j++) {
-                if (execute[j] == 0) {
-                    batchList.get(j).fail();
-                }
-            }
+            jdbcTemplate.batchUpdate(sql, batchArgs, args);
             batchArgs.clear();
         }
     }

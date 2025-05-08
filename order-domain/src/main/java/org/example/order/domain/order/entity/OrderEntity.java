@@ -4,20 +4,20 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.order.common.helper.datetime.DateTimeUtils;
-import org.example.order.core.application.order.command.OrderSyncCommand;
-import org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid;
-
 import java.time.LocalDateTime;
 
+/**
+ * 주문 엔티티 - Domain 순수 모델
+ * - 비즈니스 로직만 포함
+ * - 생성자는 PROTECTED로 막고, 정적 팩토리 메서드 제공
+ */
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "order")
+@Table(name = "`order`")
 public class OrderEntity {
 
     @Id
-    @CustomTsid
     private Long id;
 
     @Column(columnDefinition = "bigint COMMENT '사용자ID'")
@@ -44,53 +44,65 @@ public class OrderEntity {
     @Column(columnDefinition = "bigint COMMENT '등록자'")
     private Long createdUserId;
 
-    @Column(columnDefinition = "bigint COMMENT '등록자유형'")
+    @Column(columnDefinition = "varchar(20) COMMENT '등록자유형'")
     private String createdUserType;
 
-    @Column(columnDefinition = "bigint COMMENT '등록일시'")
+    @Column(columnDefinition = "datetime COMMENT '등록일시'")
     private LocalDateTime createdDatetime;
 
     @Column(columnDefinition = "bigint COMMENT '수정자'")
     private Long modifiedUserId;
 
-    @Column(columnDefinition = "bigint COMMENT '수정자유형'")
+    @Column(columnDefinition = "varchar(20) COMMENT '수정자유형'")
     private String modifiedUserType;
 
-    @Column(columnDefinition = "bigint COMMENT '수정일시'")
+    @Column(columnDefinition = "datetime COMMENT '수정일시'")
     private LocalDateTime modifiedDatetime;
 
     @Version
     @Column(columnDefinition = "bigint COMMENT 'Data Version'")
     private Long version;
 
-    public void updateTsid(Long tsid) {
-        this.id = tsid;
+    public static OrderEntity createEmpty() {
+        return new OrderEntity();
     }
 
-    public void update(OrderSyncCommand dto) {
-        update(this, dto);
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public static OrderEntity toEntity(OrderSyncCommand dto) {
-        OrderEntity entity = new OrderEntity();
-        update(entity, dto);
-        return entity;
-    }
-
-    private static void update(OrderEntity entity, OrderSyncCommand dto) {
-        entity.userId = dto.getUserId();
-        entity.userNumber = dto.getUserNumber();
-        entity.orderId = dto.getOrderId();
-        entity.orderNumber = dto.getOrderNumber();
-        entity.orderPrice = dto.getOrderPrice();
-        entity.deleteYn = dto.getDeleteYn();
-        entity.version = dto.getVersion();
-        entity.publishedDatetime = DateTimeUtils.longToLocalDateTime(dto.getPublishedTimestamp());
-        entity.createdUserId = dto.getCreatedUserId();
-        entity.createdUserType = dto.getCreatedUserType();
-        entity.createdDatetime = dto.getCreatedDatetime();
-        entity.modifiedUserId = dto.getModifiedUserId();
-        entity.modifiedUserType = dto.getModifiedUserType();
-        entity.modifiedDatetime = dto.getModifiedDatetime();
+    /**
+     * 전체 필드를 한 번에 업데이트 (순수 데이터만 받음)
+     */
+    public void updateAll(
+            Long userId,
+            String userNumber,
+            Long orderId,
+            String orderNumber,
+            Long orderPrice,
+            Boolean deleteYn,
+            Long version,
+            LocalDateTime publishedDatetime,
+            Long createdUserId,
+            String createdUserType,
+            LocalDateTime createdDatetime,
+            Long modifiedUserId,
+            String modifiedUserType,
+            LocalDateTime modifiedDatetime
+    ) {
+        this.userId = userId;
+        this.userNumber = userNumber;
+        this.orderId = orderId;
+        this.orderNumber = orderNumber;
+        this.orderPrice = orderPrice;
+        this.deleteYn = deleteYn;
+        this.version = version;
+        this.publishedDatetime = publishedDatetime;
+        this.createdUserId = createdUserId;
+        this.createdUserType = createdUserType;
+        this.createdDatetime = createdDatetime;
+        this.modifiedUserId = modifiedUserId;
+        this.modifiedUserType = modifiedUserType;
+        this.modifiedDatetime = modifiedDatetime;
     }
 }

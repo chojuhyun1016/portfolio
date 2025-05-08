@@ -1,6 +1,6 @@
 package org.example.order.core.application.order.query;
 
-import org.example.order.core.application.order.vo.OrderVo;
+import org.example.order.core.application.order.dto.OrderVo;
 
 /**
  * global order data

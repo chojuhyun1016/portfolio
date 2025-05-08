@@ -3,6 +3,7 @@ jar.enabled = true
 
 dependencies {
     implementation project(':order-common')
+    implementation project(':order-domain')
 
     // AWS SDK
     implementation platform('software.amazon.awssdk:bom:2.20.132')
@@ -28,9 +29,10 @@ dependencies {
     def isLocal = System.getenv("SPRING_PROFILES_ACTIVE") == "local"
     implementation isLocal ? 'mysql:mysql-connector-java:8.0.33' : 'software.aws.rds:aws-mysql-jdbc:1.1.9'
 
+    implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.695'
     implementation 'com.github.f4b6a3:tsid-creator:5.2.6'
     implementation 'com.google.guava:guava:32.1.2-jre'
-    implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.695'
+
 
     // 기타 유틸
     implementation 'com.querydsl:querydsl-core'

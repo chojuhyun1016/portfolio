@@ -1,6 +1,6 @@
 package org.example.order.core.application.order.query;
 
-import org.example.order.core.domain.order.entity.OrderEntity;
+import org.example.order.domain.order.entity.OrderEntity;
 
 import java.time.LocalDateTime;
 

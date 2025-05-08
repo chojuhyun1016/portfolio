@@ -2,7 +2,6 @@ package org.example.order.core.infra.security.jwt.store;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.domain.security.entity.RefreshTokenEntity;
 import org.example.order.core.infra.jpa.repository.security.RefreshTokenRepository;
 import org.example.order.core.infra.redis.repository.RefreshTokenRedisRepository;
 import org.springframework.stereotype.Component;
