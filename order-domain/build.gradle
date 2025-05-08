@@ -1,0 +1,14 @@
+bootJar.enabled = false
+jar.enabled = true
+
+dependencies {
+    implementation project(':order-common')
+
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    implementation 'software.amazon.awssdk:dynamodb:2.25.10'
+    implementation 'software.amazon.awssdk:dynamodb-enhanced:2.25.10'
+}
