@@ -2,12 +2,12 @@ package org.example.order.core.infra.security.oauth2.core.issuer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.domain.security.entity.Oauth2RefreshTokenRedisEntity;
+import org.example.order.core.application.security.entity.Oauth2RefreshTokenRedisEntity;
+import org.example.order.core.application.security.vo.Oauth2TokenIssueRequest;
 import org.example.order.core.infra.redis.repository.Oauth2TokenRepository;
 import org.example.order.core.infra.security.jwt.contract.TokenProvider;
 import org.example.order.core.infra.security.oauth2.config.Oauth2ServerProperties;
 import org.example.order.core.application.security.response.Oauth2AccessToken;
-import org.example.order.core.domain.security.vo.Oauth2TokenIssueRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

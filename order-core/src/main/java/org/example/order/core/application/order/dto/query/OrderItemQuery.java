@@ -1,10 +1,17 @@
-package org.example.order.core.application.order.query;
+package org.example.order.core.application.order.dto.query;
 
 import org.example.order.domain.order.entity.OrderEntity;
 
 import java.time.LocalDateTime;
 
-public record OrderCrudEntityDto(
+/**
+ * 단일 주문 데이터 조회용 DTO (Application 계층)
+ *
+ * Query 계층에서 사용:
+ * - 단일 주문 데이터의 상세 정보를 응답할 때 사용
+ * - Domain Entity → DTO로 변환하는 정적 팩토리 메서드 포함
+ */
+public record OrderItemQuery(
         Long id,
         Long userId,
         String userNumber,
@@ -21,8 +28,14 @@ public record OrderCrudEntityDto(
         LocalDateTime modifiedDatetime,
         Long version
 ) {
-    public static OrderCrudEntityDto toDto(OrderEntity entity) {
-        return new OrderCrudEntityDto(
+    /**
+     * Entity → Query DTO 변환 메서드
+     *
+     * @param entity 주문 엔티티
+     * @return OrderItemQuery DTO
+     */
+    public static OrderItemQuery toDto(OrderEntity entity) {
+        return new OrderItemQuery(
                 entity.getId(),
                 entity.getUserId(),
                 entity.getUserNumber(),

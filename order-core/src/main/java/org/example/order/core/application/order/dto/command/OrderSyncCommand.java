@@ -1,4 +1,4 @@
-package org.example.order.core.application.order.command;
+package org.example.order.core.application.order.dto.command;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;

@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.ToString;
 import org.example.order.common.core.messaging.message.DlqMessage;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
-import org.example.order.common.core.code.type.MessageMethodType;
-import org.example.order.common.core.code.type.DlqType;
 import org.example.order.common.core.exception.core.CommonException;
+import org.example.order.core.messaging.order.code.DlqOrderType;
+import org.example.order.core.messaging.order.code.MessageMethodType;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -24,7 +24,7 @@ public class OrderLocalEvent extends DlqMessage {
     private Long publishedTimestamp;
 
     public OrderLocalEvent() {
-        super(DlqType.ORDER_LOCAL);
+        super(DlqOrderType.ORDER_LOCAL);
     }
 
     public void validation() {

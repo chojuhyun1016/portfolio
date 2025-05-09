@@ -2,7 +2,7 @@ package org.example.order.core.infra.redis.repository.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.domain.security.entity.Oauth2RefreshTokenRedisEntity;
+import org.example.order.core.application.security.entity.Oauth2RefreshTokenRedisEntity;
 import org.example.order.core.infra.redis.repository.Oauth2TokenRepository;
 import org.example.order.core.infra.redis.repository.RedisRepository;
 import org.springframework.stereotype.Repository;

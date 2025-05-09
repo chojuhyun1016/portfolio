@@ -13,7 +13,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.YearMonthSerializer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.example.order.common.core.code.CodeEnum;
+import org.example.order.common.core.code.type.CodeEnum;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.time.LocalDate;

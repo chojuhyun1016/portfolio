@@ -3,9 +3,9 @@ package org.example.order.core.infra.dynamo.repository.impl;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import lombok.RequiredArgsConstructor;
-import org.example.order.core.domain.order.entity.OrderDynamoEntity;
 import org.example.order.core.infra.dynamo.repository.OrderDynamoRepository;
 import org.example.order.core.infra.dynamo.support.DynamoQuerySupport;
+import org.example.order.domain.order.entity.OrderDynamoEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;

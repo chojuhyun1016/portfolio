@@ -1,6 +1,6 @@
 package org.example.order.core.infra.security.oauth2.core.provider;
 
-import org.example.order.core.domain.security.vo.Oauth2TokenIssueRequest;
+import org.example.order.core.application.security.vo.Oauth2TokenIssueRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

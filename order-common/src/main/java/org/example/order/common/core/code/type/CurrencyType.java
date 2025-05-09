@@ -2,7 +2,6 @@ package org.example.order.common.core.code.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.example.order.common.core.code.CodeEnum;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,14 +19,14 @@ public enum CurrencyType implements CodeEnum {
     ;
 
     private final String text;
-    private final List<RegionCode> regionCodeList;
+    private final List<RegionCode> regions;
 
     public static CurrencyType of(String regionCodeString) {
         if (Objects.isNull(regionCodeString))
             return null;
 
         return Arrays.stream(CurrencyType.values())
-                .filter(p -> p.getRegionCodeList().contains(RegionCode.of(regionCodeString)))
+                .filter(p -> p.getRegions().contains(RegionCode.of(regionCodeString)))
                 .findFirst()
                 .orElse(null);
     }
@@ -37,7 +36,7 @@ public enum CurrencyType implements CodeEnum {
             return null;
 
         return Arrays.stream(CurrencyType.values())
-                .filter(p -> p.getRegionCodeList().contains(regionCode))
+                .filter(p -> p.getRegions().contains(regionCode))
                 .findFirst()
                 .orElse(null);
     }

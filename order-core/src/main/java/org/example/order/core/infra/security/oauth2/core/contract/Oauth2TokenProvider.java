@@ -1,7 +1,7 @@
 package org.example.order.core.infra.security.oauth2.core.contract;
 
 import org.example.order.core.application.security.response.Oauth2AccessToken;
-import org.example.order.core.domain.security.vo.Oauth2TokenIssueRequest;
+import org.example.order.core.application.security.vo.Oauth2TokenIssueRequest;
 
 /**
  * Oauth2 토큰 발급 및 검증 인터페이스

@@ -1,7 +1,7 @@
 package org.example.order.core.application.order.mapper;
 
 import org.example.order.common.helper.datetime.DateTimeUtils;
-import org.example.order.core.application.order.command.OrderSyncCommand;
+import org.example.order.core.application.order.dto.command.OrderSyncCommand;
 import org.example.order.domain.order.entity.OrderEntity;
 
 /**

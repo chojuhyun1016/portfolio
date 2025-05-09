@@ -1,6 +1,6 @@
 package org.example.order.core.infra.redis.repository;
 
-import org.example.order.core.domain.security.entity.Oauth2RefreshTokenRedisEntity;
+import org.example.order.core.application.security.entity.Oauth2RefreshTokenRedisEntity;
 
 /**
  * RefreshToken 저장소 인터페이스 + 블랙리스트 기능.

@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.example.order.common.core.messaging.message.DlqMessage;
-import org.example.order.common.core.code.type.DlqType;
-import org.example.order.common.core.code.type.MessageMethodType;
+import org.example.order.core.messaging.order.code.DlqOrderType;
+import org.example.order.core.messaging.order.code.MessageMethodType;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -16,7 +16,7 @@ public class OrderRemoteEvent extends DlqMessage {
     private MessageMethodType methodType;
 
     public OrderRemoteEvent(Long orderId, MessageMethodType methodType) {
-        super(DlqType.ORDER_REMOTE);
+        super(DlqOrderType.ORDER_REMOTE);
         this.orderId = orderId;
         this.methodType = methodType;
     }

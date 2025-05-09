@@ -5,7 +5,7 @@ import org.example.order.api.master.service.common.KafkaProducerService;
 import org.example.order.api.master.service.order.OrderService;
 import org.example.order.core.application.order.event.OrderRemoteMessageDto;
 import org.example.order.core.application.order.event.message.OrderRemoteEvent;
-import org.example.order.core.application.order.dto.OrderVo;
+import org.example.order.core.application.order.model.OrderVo;
 import org.example.order.core.infra.jpa.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 

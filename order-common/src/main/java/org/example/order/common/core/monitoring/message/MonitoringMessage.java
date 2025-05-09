@@ -1,6 +1,7 @@
-package org.example.order.common.core.messaging.message;
+package org.example.order.common.core.monitoring.message;
 
-import org.example.order.common.core.messaging.code.MonitoringType;
+import org.example.order.common.core.monitoring.code.MonitoringType;
+import org.example.order.common.core.messaging.message.DlqMessage;
 
 public record MonitoringMessage(
         Integer type,

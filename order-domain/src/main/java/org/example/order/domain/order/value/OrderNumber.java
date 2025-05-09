@@ -1,5 +1,8 @@
-package org.example.order.domain.order.vo;
+package org.example.order.domain.order.value;
 
+/**
+ * 주문번호 VO (Value Object)
+ */
 public record OrderNumber(String value) {
     public OrderNumber {
         if (value == null || value.isBlank()) {
@@ -7,6 +10,10 @@ public record OrderNumber(String value) {
         }
     }
 
+    /**
+     * 주문번호 마스킹 (마지막 4자리 제외)
+     * @return 마스킹된 문자열
+     */
     public String masked() {
         return value.replaceAll(".(?=.{4})", "*");
     }

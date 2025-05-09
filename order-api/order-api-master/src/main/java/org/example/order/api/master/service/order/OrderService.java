@@ -1,7 +1,7 @@
 package org.example.order.api.master.service.order;
 
 import org.example.order.core.application.order.event.OrderRemoteMessageDto;
-import org.example.order.core.application.order.dto.OrderVo;
+import org.example.order.core.application.order.model.OrderVo;
 
 public interface OrderService {
     OrderVo fetchByIds(Long orderId);

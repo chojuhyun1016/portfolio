@@ -1,12 +1,12 @@
 package org.example.order.core.infra.security.oauth2.core.provider;
 
 import lombok.RequiredArgsConstructor;
+import org.example.order.core.application.security.vo.Oauth2TokenIssueRequest;
 import org.example.order.core.infra.redis.repository.Oauth2TokenRepository;
 import org.example.order.core.infra.security.oauth2.core.contract.Oauth2TokenProvider;
 import org.example.order.core.infra.security.oauth2.core.issuer.Oauth2TokenIssuer;
 import org.example.order.core.infra.security.oauth2.core.validator.Oauth2TokenValidator;
 import org.example.order.core.application.security.response.Oauth2AccessToken;
-import org.example.order.core.domain.security.vo.Oauth2TokenIssueRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

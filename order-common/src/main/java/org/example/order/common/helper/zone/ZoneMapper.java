@@ -1,4 +1,7 @@
-package org.example.order.common.core.code.type;
+package org.example.order.common.helper.zone;
+
+import org.example.order.common.core.code.type.RegionCode;
+import org.example.order.common.core.code.type.ZoneCode;
 
 public class ZoneMapper {
 

@@ -2,7 +2,7 @@ package org.example.order.core.messaging.order.code;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.example.order.common.core.code.CodeEnum;
+import org.example.order.common.core.code.type.CodeEnum;
 
 @Getter
 @RequiredArgsConstructor

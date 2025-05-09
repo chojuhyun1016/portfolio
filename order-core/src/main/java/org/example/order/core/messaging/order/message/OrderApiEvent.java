@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.example.order.common.core.messaging.message.DlqMessage;
-import org.example.order.common.core.code.type.DlqType;
-import org.example.order.common.core.code.type.MessageMethodType;
+import org.example.order.core.messaging.order.code.DlqOrderType;
+import org.example.order.core.messaging.order.code.MessageMethodType;
 
 @Getter
 @NoArgsConstructor
@@ -21,7 +21,7 @@ public class OrderApiEvent extends DlqMessage {
     private Long publishedTimestamp;
 
     public OrderApiEvent(OrderLocalEvent orderLocalEvent) {
-        super(DlqType.ORDER_API);
+        super(DlqOrderType.ORDER_API);
         this.id = orderLocalEvent.getId();
         this.methodType = orderLocalEvent.getMethodType();
         this.publishedTimestamp = orderLocalEvent.getPublishedTimestamp();
