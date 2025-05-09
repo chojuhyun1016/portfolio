@@ -27,7 +27,7 @@ public class JwtSecurityExceptionHandler {
      */
     @ExceptionHandler(ExpiredJwtException.class)
     public void handleExpiredToken(ExpiredJwtException e, HttpServletResponse response) throws IOException {
-        log.warn("🔒 Expired JWT token: {}", e.getMessage());
+        log.warn("Expired JWT token: {}", e.getMessage());
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
     }
 

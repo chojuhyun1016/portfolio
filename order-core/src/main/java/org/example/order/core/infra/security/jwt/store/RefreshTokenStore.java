@@ -1,7 +1,7 @@
 package org.example.order.core.infra.security.jwt.store;
 
 /**
- * Refresh Token 스토어 인터페이스 (Redis 또는 DB 기반 구현체 가능)
+ * Refresh Token 스토어 인터페이스 (외부 인프라 계층에서 구현)
  */
 public interface RefreshTokenStore {
 
