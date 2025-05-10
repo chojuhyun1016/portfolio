@@ -10,7 +10,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan(basePackages = "org.example.order.core")
+@ComponentScan(basePackages = {
+        "org.example.order.core",
+        "org.example.order.common"
+})
 @EntityScan(value = {"org.example.order.core.domain"})
 @EnableJpaRepositories(value = {"org.example.order.core.infra.jpa.repository"})
 @Import({QuerydslConfig.class})

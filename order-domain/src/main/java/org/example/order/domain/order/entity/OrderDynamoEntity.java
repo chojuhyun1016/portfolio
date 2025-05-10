@@ -1,11 +1,14 @@
 package org.example.order.domain.order.entity;
 
+import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-import lombok.*;
 
 /**
- * DynamoDB 엔티티 (V2 Enhanced Client용)
+ * Order DynamoDB 엔티티
+ *
+ * - DynamoDB V2 Enhanced Client용 엔티티
+ * - @DynamoDbPartitionKey: 파티션 키 설정
  */
 @Getter
 @Setter
@@ -16,11 +19,8 @@ import lombok.*;
 public class OrderDynamoEntity {
 
     private String id;
-    @Getter
     private Long userId;
-    @Getter
     private String orderNumber;
-    @Getter
     private Long orderPrice;
 
     @DynamoDbPartitionKey

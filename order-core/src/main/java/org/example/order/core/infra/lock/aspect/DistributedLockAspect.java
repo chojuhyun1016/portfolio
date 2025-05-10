@@ -13,7 +13,7 @@ import org.example.order.core.infra.lock.lock.LockCallback;
 import org.example.order.core.infra.lock.lock.LockExecutor;
 import org.example.order.core.infra.lock.factory.LockExecutorFactory;
 import org.example.order.core.infra.lock.factory.LockKeyGeneratorFactory;
-import org.example.order.core.infra.lock.service.TransactionalService;
+import org.example.order.core.infra.lock.support.TransactionalOperator;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -26,7 +26,7 @@ public class DistributedLockAspect {
 
     private final LockKeyGeneratorFactory keyGeneratorFactory;
     private final LockExecutorFactory lockExecutorFactory;
-    private final TransactionalService transactionalService;
+    private final TransactionalOperator transactionalOperator;
 
     @Around("@annotation(distributedLock)")
     public Object handle(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
@@ -43,7 +43,7 @@ public class DistributedLockAspect {
                     distributedLock.waitTime(),
                     distributedLock.leaseTime(),
                     (LockCallback<Object>) () -> {
-                        return transactionalService.runWithExistingTransaction(() -> joinPoint.proceed());
+                        return transactionalOperator.runWithExistingTransaction(() -> joinPoint.proceed());
                     }
             );
         } catch (Exception e) {
@@ -67,7 +67,7 @@ public class DistributedLockAspect {
                     distributedLockT.waitTime(),
                     distributedLockT.leaseTime(),
                     (LockCallback<Object>) () -> {
-                        return transactionalService.runWithNewTransaction(() -> joinPoint.proceed());
+                        return transactionalOperator.runWithNewTransaction(() -> joinPoint.proceed());
                     }
             );
         } catch (Exception e) {
