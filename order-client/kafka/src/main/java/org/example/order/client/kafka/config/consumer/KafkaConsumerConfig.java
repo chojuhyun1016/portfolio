@@ -1,12 +1,12 @@
-package org.example.order.client.kafka.config;
+package org.example.order.client.kafka.config.consumer;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.example.order.client.kafka.config.property.KafkaConsumerProperties;
-import org.example.order.client.kafka.config.property.KafkaSSLProperties;
+import org.example.order.client.kafka.config.properties.KafkaConsumerProperties;
+import org.example.order.client.kafka.config.properties.KafkaSSLProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package org.example.order.common.infra.json;
+package org.example.order.common.support.json;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

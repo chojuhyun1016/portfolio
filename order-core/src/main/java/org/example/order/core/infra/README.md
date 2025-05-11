@@ -1,192 +1,146 @@
-# Infra 모듈
+# 📁 order-core.infra 디렉토리 구조 및 역할
 
-Infra 모듈은 도메인 계층과 외부 시스템 간의 기술적인 연결을 담당합니다.  
-JPA, Redis, DynamoDB, 분산 락, 암호화, ID 생성기 등 다양한 기술 인프라를 캡슐화하여 제공합니다.
+`order-core.infra`는 도메인과 애플리케이션 계층이 직접 의존하지 않는 외부 시스템, 기술적 세부사항을 담당하는 **Infrastructure Layer**로 구성되어 있다. DB, Redis, 보안, 암호화, 외부 API 연동 등 기술 기반의 기능을 캡슐화한다.
 
-## 목적
+---
 
-- 도메인 계층에서 기술적인 세부 사항을 분리
-- 공통 기능 및 외부 시스템 연동의 재사용성 확보
-- AOP, 분산락, 암호화 등의 인프라성 기능 제공
+## 📂 crypto
 
-## 디렉토리 구조
+암호화와 관련된 모든 기술적 구현을 포함한다.
 
-- common
-  - aop : AOP 설정 클래스 제공 (예: AopConfig.java)
-  - idgen
-    - table : 시퀀스 기반 ID 생성기
-    - tsid : TSID 기반 글로벌 ID 생성기
+- **contract**  
+  암호화 관련 인터페이스 정의. 예: `Encryptor`, `Decryptor`.
 
-- config
-  - OrderCoreConfig.java : Infra 전체 Bean 구성 및 설정
+- **util**  
+  해시, 바이트 변환 등의 암호화 관련 유틸리티.
 
-- crypto
-  - algorithm : 암호화 엔진, 구현체
-    - hasher : SHA256, Bcrypt, Argon2 등 해시 엔진 구현
-    - signer : HMAC-SHA256 디지털 서명 엔진
-    - encryptor : AES128, AES256, AES-GCM 구현체
-  - config : 암호화 관련 설정 (AES, HMAC 등)
-  - contract : Encryptor, Hasher, Signer 등 인터페이스
-  - decryptor : AWS KMS 통하여 키값 복호화
-  - exception : 예외 정의
-  - factory : 복호화 구현체 생성
-  - util : 키 생성기 (EncryptionKeyGenerator.java)
+- **config**  
+  암호화 설정 관련 구성. 예: 알고리즘 선택, 키 설정.
 
-- dynamo
-  - config : DynamoDB 설정 및 클라이언트 구성
-  - model : 도메인 모델 (예: OrderDynamoEntity)
-  - repository : DynamoRepository 인터페이스 및 구현
-  - support : DynamoDB 쿼리 유틸
+- **algorithm**  
+  실제 사용하는 암호화 알고리즘 구현. 예: AES, RSA 등.
 
-- jpa
-  - config : JPA 및 QueryDSL 설정 (QuerydslConfig.java)
-  - querydsl : Where절 조합기 및 BooleanExpression DSL
-  - repository : 사용자 정의 JPA 리포지토리 및 구현체
+- **constant**  
+  암호화 관련 상수 정의. 예: 알고리즘명, 키 사이즈.
 
-- lock
-  - annotation : @DistributedLock, @DistributedLockT 등 락 어노테이션
-  - aspect : 분산 락 AOP 처리 (DistributedLockAspect.java)
-  - config : Named Lock, Redisson 설정 클래스
-  - exception : 락 획득 실패 예외 정의
-  - factory : LockExecutor, KeyGenerator 팩토리
-  - key : 다양한 키 생성 전략 (SHA256, SpEL 등)
-  - lock
-    - impl : NamedLockExecutor, RedissonLockExecutor
-  - service : 트랜잭션 처리 유틸 (TransactionalService.java)
+- **exception**  
+  암복호화 중 발생할 수 있는 예외 정의. 예: 키 불일치, 암호화 실패 등.
 
-- redis
-  - config : Redis 설정 (RedisConfig.java)
-  - repository : Redis 저장소 인터페이스 및 구현체
-  - support : Redis 키 관리 및 직렬화 유틸
+- **factory**  
+  암호화 객체 생성 책임을 가지는 팩토리. 예: KMS 기반 Encryptor 생성.
 
-- security
-  - jwt
-    - provider : JWT 토큰 발급/검증 클래스 (AbstractJwtTokenManager, JwtTokenManager)
-    - contract : TokenProvider 인터페이스 정의
-    - config : JWT 관련 프로퍼티 구성 (JwtConfigurationProperties)
-    - constant : 토큰 클레임 상수 정의 (JwtClaimsConstants)
-  - oauth2
-    - config : Oauth2 클라이언트/서버 설정, Security FilterChain 구성
-    - constants : 공통 상수 (Oauth2Constants)
-    - core
-      - contract : Oauth2TokenProvider, Oauth2ClientService 등 인터페이스
-      - client : DefaultOauth2ClientService (클라이언트 정보 조회)
-      - issuer : Oauth2TokenIssuer (토큰 발급 책임)
-      - provider : DefaultOauth2TokenProvider (표준 Provider)
-      - validator : Oauth2TokenValidator (토큰 검증)
-    - exception : Oauth2ExceptionHandler (글로벌 예외 핸들러)
-    - filter : Oauth2AuthenticationFilter (SecurityContext 등록용)
-    - util : Oauth2HeaderResolver, JwtTokenManager (JWT 발급/검증 유틸)
-  - gateway
-    - config : Gateway 보안 설정
-    - filter : AuthorizationFilter 등 API Gateway용 필터 구현
-    - util : JWT 파싱 및 검증 유틸
+---
 
-## 사용 예시
+## 📂 config
 
-### 분산 락 사용 예
+전체 시스템 레벨의 공통 설정을 담당하는 모듈.  
+Spring 설정 클래스, 글로벌 빈 등록, 공통 설정 파일 로딩 등이 포함된다.
 
-```java
-@DistributedLock(key = "#orderId", type = "namedLock")
-public void processOrder(String orderId) {
-    // 처리 로직
-}
-```
+---
 
-### TS ID 사용 예
+## 📂 security
 
-```java
-@CustomTsid
-private Long userId;
-```
+JWT, OAuth2 인증인가 및 Gateway 보안 관련 기능을 담당한다.
 
-### Oauth2 토큰 발급 예시
+- **jwt**  
+  JWT 토큰 발급, 검증, 파싱, 키 관리 등의 기능 구현.
 
-```java
-Oauth2TokenIssueRequest request = Oauth2TokenIssueRequest.builder()
-.userId("user123")
-.roles(List.of("ROLE_USER"))
-.scopes(List.of("read", "write"))
-.deviceId("device-abc")
-.ipAddress("192.168.0.1")
-.clientId("my-client")
-.build();
+- **oauth2**  
+  소셜 로그인 및 OAuth2 인증 프로세스 구현. 예: Kakao, Google 연동 등.
 
-Oauth2AccessToken token = oauth2TokenProvider.createAccessToken(request);
-```
+- **gateway**  
+  API Gateway 레벨의 보안 필터, 인증 헤더 처리 등 구현.
 
-### Security 필터 체인 설정 예시
+---
 
-```java
-@Bean
-public SecurityFilterChain oauth2FilterChain(HttpSecurity http) throws Exception {
-    return http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/oauth2/**").permitAll()
-                    .anyRequest().authenticated()
-            )
-            .addFilterBefore(oauth2AuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .build();
-}
-```
+## 📂 redis
 
-### 설정 참고
+Redis 캐시 및 분산 저장소와의 연동 기능.
 
-```yaml
-spring:
-datasource:
-url: jdbc:mysql://localhost:3306/dbname
-username: user
-password: pass
-driver-class-name: com.mysql.cj.jdbc.Driver
+- **repository**  
+  Redis 접근 및 데이터 처리용 Repository 구현체. 예: TTL 설정, 키 관리 등.
 
-redis:
-host: localhost
-port: 6379
+- **config**  
+  RedisConnectionFactory 및 RedisTemplate 설정.
 
-lock:
-named:
-wait-time: 5000
-retry-interval: 100
+- **support**  
+  Redis 직렬화 설정, 커스텀 Key 전략 등 지원 유틸.
 
-encrypt:
-aes128:
-key: dGhpc2lzMTZieXRla2V5IQ==  # base64 encoded key (16 byte)
-aes256:
-key: bXlTZWNyZXRLZXlTMjU2MjU2MjU2MjU2MjU2MjU2MjU=  # base64 encoded key (32 byte)
-aesgcm:
-key: bXlTMzJiYnl0ZXNnY21rZXlzdXBlcnNlY3JldGtleTE=  # base64 encoded key (32 byte)
-hmac:
-key: test-hmac-secret
+---
 
-oauth2:
-client:
-clients:
-- client-id: my-client
-client-secret: my-secret
-scopes:
-- read
-- write
-server:
-issuer: my-issuer
-access-token-validity-seconds: 3600
-refresh-token-validity-seconds: 1209600
-signing-key: my-jwt-signing-key
-```
+## 📂 lock
 
-## 작성자 노트
+분산 락 기능을 위한 Redisson 및 NamedLock 처리 계층.
 
-Infra 모듈은 도메인 계층이 비즈니스 로직에만 집중할 수 있도록  
-기술적 복잡성과 외부 시스템 연동을 캡슐화하고 추상화하는 역할을 수행합니다.
+- **config**  
+  Redisson 또는 DB 기반 Lock 설정 클래스.
 
-**Security (Oauth2 + JWT + Gateway)** 기능은 액세스 제어와 인증 시스템을 인프라 계층에서 통합하여 제공합니다.  
-특히 Oauth2 모듈은 Spring Security FilterChain과 결합되어 API 요청마다 토큰 검증 및 인증을 처리하며,  
-RefreshToken 관리 기능을 Redis 기반으로 제공해 보다 견고한 인증 구조를 갖추고 있습니다.  
-Gateway 모듈은 마이크로서비스 구조에서 API Gateway의 보안 및 인증 관리를 집중화하도록 설계되었습니다.
+- **lock**  
+  Lock 인터페이스 및 구현체. 예: `RedissonLockImpl`, `NamedLockImpl`.
 
-서비스 규모가 커질수록 분산 락, 캐시, 외부 연동, 암호화, 인증 등은 점점 중요해지고 복잡해집니다.  
-Infra 모듈을 통해 이를 구조화하고 일관된 방식으로 사용할 수 있도록 설계되었습니다.
+- **annotation**  
+  `@DistributedLock` 등 AOP 기반 Lock 처리용 어노테이션 정의.
 
-다른 모듈에서도 손쉽게 재사용할 수 있도록 구성되어 있으며,  
-변경에 유연하고 유지보수에 유리한 구조를 갖추고 있습니다.
+- **key**  
+  Lock Key 생성 전략 (SHA-256 등).
+
+- **support**  
+  공통 Lock 관련 지원 클래스. 예: 스펠링 해시 전략.
+
+- **aspect**  
+  Lock 어노테이션 처리용 Aspect 정의.
+
+- **exception**  
+  락 획득 실패, 시간 초과 등 Lock 관련 예외 정의.
+
+- **factory**  
+  락 구현체 생성 책임. `LockFactory` 등.
+
+---
+
+## 📂 jpa
+
+JPA 기반 DB 처리 기능 전반을 담당한다.
+
+- **repository**  
+  Spring Data JPA 기반의 Repository 인터페이스 및 구현체.
+
+- **config**  
+  DataSource, EntityManagerFactory 설정.
+
+- **querydsl**  
+  QueryDSL 관련 설정 및 커스텀 쿼리 지원 기능.
+
+---
+
+## 📂 dynamo
+
+AWS DynamoDB 연동 모듈.
+
+- **repository**  
+  DynamoDB Enhanced Client 기반의 Repository 구현체.
+
+- **config**  
+  LocalStack or AWS 환경에서 Dynamo 설정.
+
+- **support**  
+  테이블 스키마, 키 전략 등 부가 지원 기능.
+
+---
+
+## 📂 common
+
+기타 공통 인프라 기능.
+
+- **idgen**  
+  TSID, UUID 등의 고유 ID 생성기.
+
+- **secrets**  
+  AWS Secrets Manager 또는 로컬 키 복호화 지원.
+
+- **aop**  
+  인프라 레벨 AOP. 예: 파일 다운로드 대기, 트랜잭션 처리.
+
+---
+
+> 이 구조는 **Clean Architecture**의 Infra Layer 원칙을 따르며, 외부 시스템과의 의존성을 명확히 분리하여 테스트 용이성과 유지보수성을 확보한다.

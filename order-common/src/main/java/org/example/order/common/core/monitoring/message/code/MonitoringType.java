@@ -1,4 +1,4 @@
-package org.example.order.common.core.monitoring.code;
+package org.example.order.common.core.monitoring.message.code;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

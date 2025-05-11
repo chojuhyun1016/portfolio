@@ -1,10 +1,13 @@
 package org.example.order.core.infra.dynamo.repository.impl;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.domain.order.entity.OrderDynamoEntity;
 import org.example.order.domain.order.repository.OrderDynamoRepository;
 import org.springframework.stereotype.Repository;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,8 +25,13 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
 
     private final DynamoDbTable<OrderDynamoEntity> table;
 
-    public OrderDynamoRepositoryImpl(DynamoDbTable<OrderDynamoEntity> table) {
-        this.table = table;
+    public OrderDynamoRepositoryImpl(DynamoDbEnhancedClient enhancedClient) {
+        this.table = enhancedClient.table("order_dynamo", TableSchema.fromBean(OrderDynamoEntity.class));
+    }
+
+    @PostConstruct
+    public void init() {
+        log.info("OrderDynamoRepository initialized with table: {}", table.tableName());
     }
 
     @Override
@@ -46,6 +54,7 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
                 .items()
                 .stream()
                 .collect(Collectors.toList());
+
         log.debug("Fetched all OrderDynamoEntity, total: {}", items.size());
 
         return items;
@@ -58,6 +67,7 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
                 .stream()
                 .filter(item -> userId.equals(item.getUserId()))
                 .collect(Collectors.toList());
+
         log.debug("Fetched OrderDynamoEntity by userId={}, count: {}", userId, result.size());
 
         return result;

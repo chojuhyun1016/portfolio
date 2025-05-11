@@ -1,4 +1,4 @@
-package org.example.order.client.kafka.config.property;
+package org.example.order.client.kafka.config.properties;
 
 import lombok.Getter;
 import lombok.Setter;

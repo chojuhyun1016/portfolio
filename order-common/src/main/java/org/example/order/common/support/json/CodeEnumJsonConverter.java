@@ -1,4 +1,4 @@
-package org.example.order.common.infra.json;
+package org.example.order.common.support.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;

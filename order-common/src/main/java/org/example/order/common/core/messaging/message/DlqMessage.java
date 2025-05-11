@@ -1,7 +1,6 @@
 package org.example.order.common.core.messaging.message;
 
 import lombok.*;
-import org.example.order.common.core.exception.message.CustomErrorMessage;
 import org.example.order.common.core.messaging.code.DlqType;
 
 /**
@@ -14,7 +13,7 @@ import org.example.order.common.core.messaging.code.DlqType;
 public class DlqMessage {
     private DlqType type;
     private int failedCount = 0;
-    private CustomErrorMessage error;
+    private Throwable error;
 
     public DlqMessage(DlqType type) {
         this.type = type;
@@ -24,11 +23,23 @@ public class DlqMessage {
         this.failedCount++;
     }
 
-    public void fail(CustomErrorMessage error) {
+    public void fail(Throwable error) {
         this.error = error;
     }
 
     public boolean discard(int maxFailCount) {
         return this.failedCount > maxFailCount;
+    }
+
+    public boolean isErrorOfType(Class<? extends Throwable> errorType) {
+        return errorType.isInstance(this.error);
+    }
+
+    public String getErrorMessage() {
+        return error != null ? error.getMessage() : "No error";
+    }
+
+    public String getErrorType() {
+        return error != null ? error.getClass().getSimpleName() : "No error";
     }
 }

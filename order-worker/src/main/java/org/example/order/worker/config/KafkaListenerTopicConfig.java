@@ -2,7 +2,7 @@ package org.example.order.worker.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.client.kafka.config.property.KafkaTopicProperties;
+import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.common.code.type.MessageCategory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

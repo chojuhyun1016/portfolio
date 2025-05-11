@@ -3,7 +3,7 @@ package org.example.order.api.master.service.common.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.api.master.service.common.KafkaProducerService;
-import org.example.order.client.kafka.config.property.KafkaTopicProperties;
+import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.common.code.type.MessageCategory;
 import org.example.order.core.application.order.event.message.OrderRemoteEvent;

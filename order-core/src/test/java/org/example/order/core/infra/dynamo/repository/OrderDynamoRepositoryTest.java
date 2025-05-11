@@ -5,6 +5,7 @@ import org.example.order.core.infra.dynamo.repository.impl.OrderDynamoRepository
 import org.example.order.domain.order.entity.OrderDynamoEntity;
 import org.example.order.domain.order.repository.OrderDynamoRepository;
 import org.junit.jupiter.api.*;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,9 +25,16 @@ public class OrderDynamoRepositoryTest {
 
     @BeforeAll
     void setup() {
+        // 테스트용 DynamoDB 환경 설정
         config = new DynamoDbTestConfig();
-        // 반드시 구현체를 생성해야 함
-        repository = new OrderDynamoRepositoryImpl(config.getOrderTable());
+
+        // DynamoDbEnhancedClient 생성 (테스트용)
+        DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
+                .dynamoDbClient(config.getDynamoDbClient())
+                .build();
+
+        // 반드시 구현체를 생성해야 함 (EnhancedClient 기반)
+        repository = new OrderDynamoRepositoryImpl(enhancedClient);
     }
 
     @Test

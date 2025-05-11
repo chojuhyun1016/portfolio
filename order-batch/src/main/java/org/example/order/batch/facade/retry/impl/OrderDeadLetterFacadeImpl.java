@@ -10,7 +10,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.example.order.batch.exception.BatchExceptionCode;
 import org.example.order.batch.facade.retry.OrderDeadLetterFacade;
 import org.example.order.batch.service.retry.OrderDeadLetterService;
-import org.example.order.client.kafka.config.property.KafkaTopicProperties;
+import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.common.code.type.MessageCategory;
 import org.example.order.common.exception.CommonException;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;

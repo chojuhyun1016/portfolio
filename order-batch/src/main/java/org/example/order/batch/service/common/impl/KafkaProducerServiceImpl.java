@@ -3,7 +3,7 @@ package org.example.order.batch.service.common.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.batch.service.common.KafkaProducerService;
-import org.example.order.client.kafka.config.property.KafkaTopicProperties;
+import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.common.exception.message.CustomErrorMessage;
 import org.example.order.common.event.DlqMessage;

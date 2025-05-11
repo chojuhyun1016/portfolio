@@ -2,9 +2,15 @@ bootJar.enabled = false
 jar.enabled = true
 
 dependencies {
+    // JSON 처리
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // Spring Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    // ID 생성기
     implementation 'com.github.f4b6a3:tsid-creator:5.2.6'
+
+    // 공통 유틸
     implementation 'com.google.guava:guava:32.1.2-jre'
 }

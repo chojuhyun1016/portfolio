@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.batch.exception.BatchExceptionCode;
 import org.example.order.batch.service.common.KafkaProducerService;
 import org.example.order.batch.service.retry.OrderDeadLetterService;
-import org.example.order.client.kafka.config.property.KafkaConsumerProperties;
+import org.example.order.client.kafka.config.properties.KafkaConsumerProperties;
 import org.example.order.common.event.DlqMessage;
 import org.example.order.common.exception.code.CommonExceptionCode;
 import org.example.order.common.code.type.DlqType;

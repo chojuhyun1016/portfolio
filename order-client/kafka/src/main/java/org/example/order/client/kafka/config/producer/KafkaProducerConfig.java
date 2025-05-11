@@ -1,4 +1,4 @@
-package org.example.order.client.kafka.config;
+package org.example.order.client.kafka.config.producer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,9 +7,9 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.record.CompressionType;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.example.order.client.kafka.config.property.KafkaProducerProperties;
-import org.example.order.client.kafka.config.property.KafkaSSLProperties;
-import org.example.order.common.infra.json.ObjectMapperFactory;
+import org.example.order.client.kafka.config.properties.KafkaProducerProperties;
+import org.example.order.client.kafka.config.properties.KafkaSSLProperties;
+import org.example.order.common.support.json.ObjectMapperFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

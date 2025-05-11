@@ -2,8 +2,12 @@ bootJar.enabled = false
 jar.enabled = true
 
 dependencies {
+    // 공통 모듈
     implementation project(':order-common')
 
+    // Kafka
     implementation 'org.springframework.kafka:spring-kafka'
+
+    // Jackson (Java 8 Date/Time 지원)
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }

@@ -1,4 +1,4 @@
-package org.example.order.common.infra.idgen.tsid;
+package org.example.order.core.infra.common.idgen.tsid;
 
 import com.github.f4b6a3.tsid.TsidFactory;
 import com.google.common.hash.Hashing;

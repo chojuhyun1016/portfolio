@@ -3,7 +3,7 @@ package org.example.order.worker.listener.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.example.order.client.kafka.config.property.KafkaTopicProperties;
+import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.worker.facade.order.OrderApiMessageFacade;
 import org.example.order.worker.listener.order.OrderApiMessageListener;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
