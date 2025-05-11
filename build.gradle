@@ -5,41 +5,56 @@ plugins {
 }
 
 ext {
-    springCloudVersion = '2023.0.1' // https://spring.io/projects/spring-cloud
-    springAwsVersion = '3.1.1'      // https://github.com/awspring/spring-cloud-aws
-    awsMysqlJdbcVer = '1.1.14'      // https://github.com/awslabs/aws-mysql-jdbc
+    // 버전 관리
+    springCloudVersion = '2023.0.1'
+    springAwsVersion = '3.1.1'
+    awsMysqlJdbcVer = '1.1.14'
 }
 
+// 공통 설정 대상 서브 프로젝트 필터링
 def javaProjects = subprojects.findAll {
     it.name != 'order-client' && it.name != 'order-api'
 }
-configure(javaProjects) {
-    group 'org.example'
-    version '1.0.0'
 
+// 공통 설정 적용
+configure(javaProjects) {
+    group = 'org.example'
+    version = '1.0.0'
+
+    // Java 설정
     apply plugin: 'java'
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
 
     def javaVer = '17'
-    targetCompatibility = javaVer
     sourceCompatibility = javaVer
+    targetCompatibility = javaVer
     compileJava.options.encoding = "UTF-8"
 
+    // 저장소
     repositories {
         mavenCentral()
-//        maven { url "https://repo.spring.io/release" }
+        // maven { url "https://repo.spring.io/release" }
     }
 
+    // 공통 의존성
     dependencies {
+        // Lombok
         implementation 'org.projectlombok:lombok'
-        implementation 'org.springframework.boot:spring-boot-starter'
-        implementation 'com.google.code.findbugs:jsr305:3.0.2'
         annotationProcessor 'org.projectlombok:lombok'
         testAnnotationProcessor 'org.projectlombok:lombok'
+
+        // Spring Boot 기본
+        implementation 'org.springframework.boot:spring-boot-starter'
+
+        // 기타
+        implementation 'com.google.code.findbugs:jsr305:3.0.2'
+
+        // 테스트
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 
+    // 의존성 BOM 관리
     dependencyManagement {
         imports {
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
@@ -47,11 +62,13 @@ configure(javaProjects) {
         }
     }
 
+    // 테스트 플랫폼
     test {
         useJUnitPlatform()
     }
 }
 
+// REST Docs 설정
 //def restDocProjects = [project(':order-api:order-api-master')]
 //configure(restDocProjects) {
 //    apply plugin: "org.asciidoctor.jvm.convert"
