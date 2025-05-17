@@ -2,9 +2,12 @@ package org.example.order.worker.service.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.application.order.command.OrderSyncCommand;
-import org.example.order.core.domain.order.entity.OrderEntity;
-import org.example.order.core.infra.jpa.repository.OrderRepository;
+import org.example.order.core.application.order.dto.command.OrderSyncCommandDto;
+import org.example.order.core.application.order.mapper.OrderSyncCommandMapper;
+import org.example.order.domain.order.entity.OrderEntity;
+import org.example.order.domain.order.model.OrderUpdateCommand;
+import org.example.order.domain.order.repository.OrderCommandRepository;
+import org.example.order.domain.order.repository.OrderRepository;
 import org.example.order.worker.service.order.OrderCrudService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -17,13 +20,15 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class OrderCrudServiceImpl implements OrderCrudService {
-    private final OrderRepository repository;
+    private final OrderRepository orderRepository;
+    private final OrderCommandRepository orderCommandRepository;
+    private final OrderSyncCommandMapper orderSyncCommandMapper;
 
     @Override
-    public List<OrderEntity> bulkInsert(List<OrderSyncCommand> dtoList) {
+    public List<OrderEntity> bulkInsert(List<OrderSyncCommandDto> dtoList) {
         try {
-            List<OrderEntity> entities = dtoList.stream().map(OrderEntity::toEntity).toList();
-            repository.bulkInsert(entities);
+            List<OrderEntity> entities = dtoList.stream().map(orderSyncCommandMapper::toEntity).toList();
+            orderCommandRepository.bulkInsert(entities);
             return entities;
         } catch (DataAccessException e) {
             log.error("error : OrderCrudEntity bulkInsert failed - msg : {}, cause : {}", e.getMessage(), e.getCause(), e);
@@ -35,13 +40,14 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     @Override
-    public void bulkUpdate(List<OrderSyncCommand> dtoList) {
-        repository.bulkUpdate(dtoList);
+    public void bulkUpdate(List<OrderSyncCommandDto> dtoList) {
+        List<OrderUpdateCommand> commandList = orderSyncCommandMapper.toUpdateCommands(dtoList);
+        orderCommandRepository.bulkUpdate(commandList);
     }
 
     @Override
-    public void deleteAll(List<OrderSyncCommand> dtoList) {
-        List<Long> ids = dtoList.stream().map(OrderSyncCommand::getOrderId).toList();
-        repository.deleteByOrderIdIn(ids);
+    public void deleteAll(List<OrderSyncCommandDto> dtoList) {
+        List<Long> ids = dtoList.stream().map(OrderSyncCommandDto::getOrderId).toList();
+        orderRepository.deleteByOrderIdIn(ids);
     }
 }

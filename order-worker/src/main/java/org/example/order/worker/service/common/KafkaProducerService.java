@@ -1,10 +1,10 @@
 package org.example.order.worker.service.common;
 
-import org.example.order.common.event.DlqMessage;
-import org.example.order.core.application.order.event.message.OrderApiEvent;
-import org.example.order.core.application.order.event.message.OrderCrudEvent;
-import org.example.order.core.application.order.event.message.OrderLocalEvent;
-import org.example.order.core.application.order.event.message.OrderRemoteEvent;
+import org.example.order.common.core.messaging.message.DlqMessage;
+import org.example.order.core.messaging.order.message.OrderApiEvent;
+import org.example.order.core.messaging.order.message.OrderCrudEvent;
+import org.example.order.core.messaging.order.message.OrderLocalEvent;
+import org.example.order.core.messaging.order.message.OrderRemoteEvent;
 
 import java.util.List;
 

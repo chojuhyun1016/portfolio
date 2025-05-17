@@ -4,6 +4,7 @@ jar.enabled = true
 dependencies {
     // 공통 모듈
     implementation project(':order-common')
+    implementation project(':order-core')
 
     // Kafka
     implementation 'org.springframework.kafka:spring-kafka'

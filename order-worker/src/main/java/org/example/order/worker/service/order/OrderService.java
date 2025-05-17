@@ -1,7 +1,7 @@
 package org.example.order.worker.service.order;
 
-import org.example.order.common.code.type.MessageMethodType;
-import org.example.order.core.application.order.event.message.OrderCrudEvent;
+import org.example.order.common.core.messaging.code.MessageMethodType;
+import org.example.order.core.messaging.order.message.OrderCrudEvent;
 
 import java.util.List;
 

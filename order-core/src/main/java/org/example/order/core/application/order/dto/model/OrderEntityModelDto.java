@@ -11,6 +11,6 @@ import org.example.order.domain.order.entity.OrderEntity;
  */
 @Getter
 @AllArgsConstructor
-public class OrderEntityModel {
+public class OrderEntityModelDto {
     private OrderEntity order;
 }

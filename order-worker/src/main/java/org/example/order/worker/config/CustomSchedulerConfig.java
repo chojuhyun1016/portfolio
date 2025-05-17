@@ -20,6 +20,7 @@ public class CustomSchedulerConfig {
         scheduler.setPoolSize(2);
         scheduler.initialize();
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
+
         return scheduler;
     }
 

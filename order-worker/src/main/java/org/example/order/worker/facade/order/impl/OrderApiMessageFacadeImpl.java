@@ -2,10 +2,10 @@ package org.example.order.worker.facade.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.utils.jackson.ObjectMapperUtils;
-import org.example.order.core.application.order.model.OrderDto;
-import org.example.order.core.application.order.event.message.OrderApiEvent;
-import org.example.order.core.application.order.event.message.OrderCrudEvent;
+import org.example.order.common.support.json.ObjectMapperUtils;
+import org.example.order.core.application.order.dto.model.OrderDataModelDto;
+import org.example.order.core.messaging.order.message.OrderApiEvent;
+import org.example.order.core.messaging.order.message.OrderCrudEvent;
 import org.example.order.worker.facade.order.OrderApiMessageFacade;
 import org.example.order.worker.service.common.KafkaProducerService;
 import org.example.order.worker.service.common.OrderWebClientService;
@@ -28,8 +28,8 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
             message = ObjectMapperUtils.valueToObject(record, OrderApiEvent.class);
 
             // api 호출
-            OrderDto dto = webClientService.findOrderListByOrderId(message.getId());
-            dto.postUpdate(message.getPublishedTimestamp());
+            OrderDataModelDto dto = webClientService.findOrderListByOrderId(message.getId());
+            dto.updatePublishedTimestamp(message.getPublishedTimestamp());
 
             // 메세지 발행
             kafkaProducerService.sendToOrderCrud(OrderCrudEvent.toMessage(message, dto));

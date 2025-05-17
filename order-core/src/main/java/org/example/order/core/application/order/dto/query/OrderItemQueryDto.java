@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * - 단일 주문 데이터의 상세 정보를 응답할 때 사용
  * - Domain Entity → DTO로 변환하는 정적 팩토리 메서드 포함
  */
-public record OrderItemQuery(
+public record OrderItemQueryDto(
         Long id,
         Long userId,
         String userNumber,
@@ -34,8 +34,8 @@ public record OrderItemQuery(
      * @param entity 주문 엔티티
      * @return OrderItemQuery DTO
      */
-    public static OrderItemQuery toDto(OrderEntity entity) {
-        return new OrderItemQuery(
+    public static OrderItemQueryDto toDto(OrderEntity entity) {
+        return new OrderItemQueryDto(
                 entity.getId(),
                 entity.getUserId(),
                 entity.getUserNumber(),

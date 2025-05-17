@@ -1,7 +1,7 @@
 package org.example.order.worker.service.common;
 
-import org.example.order.core.application.order.model.OrderDto;
+import org.example.order.core.application.order.dto.model.OrderDataModelDto;
 
 public interface OrderWebClientService {
-    OrderDto findOrderListByOrderId(Long id);
+    OrderDataModelDto findOrderListByOrderId(Long id);
 }

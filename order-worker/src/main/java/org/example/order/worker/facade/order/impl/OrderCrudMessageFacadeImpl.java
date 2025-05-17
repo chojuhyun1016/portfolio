@@ -3,12 +3,12 @@ package org.example.order.worker.facade.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.example.order.common.code.type.MessageMethodType;
-import org.example.order.common.exception.CommonException;
-import org.example.order.common.utils.jackson.ObjectMapperUtils;
-import org.example.order.core.application.order.command.OrderSyncCommand;
-import org.example.order.core.application.order.event.message.OrderCrudEvent;
-import org.example.order.core.application.order.event.message.OrderRemoteEvent;
+import org.example.order.common.core.exception.core.CommonException;
+import org.example.order.common.core.messaging.code.MessageMethodType;
+import org.example.order.common.support.json.ObjectMapperUtils;
+import org.example.order.core.application.order.dto.command.OrderSyncCommandDto;
+import org.example.order.core.messaging.order.message.OrderCrudEvent;
+import org.example.order.core.messaging.order.message.OrderRemoteEvent;
 import org.example.order.worker.exception.DatabaseExecuteException;
 import org.example.order.worker.exception.WorkerExceptionCode;
 import org.example.order.worker.facade.order.OrderCrudMessageFacade;
@@ -55,7 +55,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                     orderService.execute(methodType, value);
 
                     for (OrderCrudEvent message : value) {
-                        OrderSyncCommand order = message.getDto().getOrder();
+                        OrderSyncCommandDto order = message.getDto().getOrder();
 
                         if (order.getFailure()) {
                             log.info("failed order : {}", order);

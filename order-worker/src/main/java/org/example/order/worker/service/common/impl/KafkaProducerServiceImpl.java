@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
-import org.example.order.common.exception.message.CustomErrorMessage;
-import org.example.order.common.event.DlqMessage;
-import org.example.order.common.code.type.MessageCategory;
-import org.example.order.common.exception.CommonException;
-import org.example.order.core.application.order.event.message.OrderApiEvent;
-import org.example.order.core.application.order.event.message.OrderCrudEvent;
-import org.example.order.core.application.order.event.message.OrderLocalEvent;
-import org.example.order.core.application.order.event.message.OrderRemoteEvent;
+import org.example.order.common.core.messaging.message.DlqMessage;
+import org.example.order.core.messaging.order.code.MessageCategory;
+import org.example.order.core.messaging.order.message.OrderApiEvent;
+import org.example.order.core.messaging.order.message.OrderCrudEvent;
+import org.example.order.core.messaging.order.message.OrderLocalEvent;
+import org.example.order.core.messaging.order.message.OrderRemoteEvent;
 import org.example.order.worker.service.common.KafkaProducerService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -65,13 +63,8 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         }
 
         try {
-            if (currentException instanceof CommonException commonException) {
-                message.fail(CustomErrorMessage.toMessage(commonException.getCode(), commonException));
-            } else {
-                message.fail(CustomErrorMessage.toMessage(currentException));
-            }
+            message.fail(currentException);
             log.info("Sending message to dead letter topic");
-
             send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_DLQ));
         } catch (Exception e) {
             log.error("error : send message to order-dead-letter failed : {}", message);

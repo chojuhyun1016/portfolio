@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class OrderSyncCommand {
+public class OrderSyncCommandDto {
 
     private Long id;
     private Long userId;

@@ -6,7 +6,7 @@ import org.example.order.common.core.messaging.message.DlqMessage;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
 import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.core.messaging.order.code.DlqOrderType;
-import org.example.order.core.messaging.order.code.MessageMethodType;
+import org.example.order.common.core.messaging.code.MessageMethodType;
 
 import java.util.Objects;
 import java.util.stream.Stream;

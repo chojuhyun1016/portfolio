@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.example.order.common.core.messaging.message.DlqMessage;
 import org.example.order.core.messaging.order.code.DlqOrderType;
-import org.example.order.core.messaging.order.code.MessageMethodType;
+import org.example.order.common.core.messaging.code.MessageMethodType;
 
 @Getter
 @NoArgsConstructor

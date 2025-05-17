@@ -2,9 +2,9 @@ package org.example.order.worker.service.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.common.code.type.MessageMethodType;
-import org.example.order.core.application.order.model.OrderDto;
-import org.example.order.core.application.order.event.message.OrderCrudEvent;
+import org.example.order.common.core.messaging.code.MessageMethodType;
+import org.example.order.core.application.order.dto.model.OrderDataModelDto;
+import org.example.order.core.messaging.order.message.OrderCrudEvent;
 import org.example.order.worker.service.order.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,17 +22,17 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void execute(MessageMethodType methodType, List<OrderCrudEvent> messages) {
-        List<OrderDto> dtoList = messages.stream().map(OrderCrudEvent::getDto).toList();
+        List<OrderDataModelDto> dtoList = messages.stream().map(OrderCrudEvent::getDto).toList();
 
         log.info("{}", dtoList);
 
         try {
             switch (methodType) {
                 case POST -> {
-                    orderCrudService.bulkInsert(dtoList.stream().map(OrderDto::getOrder).toList());
+                    orderCrudService.bulkInsert(dtoList.stream().map(OrderDataModelDto::getOrder).toList());
                 }
                 case PUT -> {
-                    orderCrudService.bulkUpdate(dtoList.stream().map(OrderDto::getOrder).toList());
+                    orderCrudService.bulkUpdate(dtoList.stream().map(OrderDataModelDto::getOrder).toList());
                 }
                 case DELETE -> {
                     orderCrudService.deleteAll(messages.stream().map(msg -> msg.getDto().getOrder()).toList());

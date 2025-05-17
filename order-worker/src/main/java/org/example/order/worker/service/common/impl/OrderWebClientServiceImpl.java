@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.client.web.config.property.WebClientUrlProperties;
 import org.example.order.client.web.service.WebClientService;
-import org.example.order.common.constant.HttpConstant;
-import org.example.order.common.exception.CommonException;
-import org.example.order.common.web.ApiResponse;
-import org.example.order.common.utils.jackson.ObjectMapperUtils;
-import org.example.order.core.application.order.model.OrderDto;
+import org.example.order.common.core.constant.HttpConstant;
+import org.example.order.common.core.exception.core.CommonException;
+import org.example.order.common.support.json.ObjectMapperUtils;
+import org.example.order.common.web.response.ApiResponse;
+import org.example.order.core.application.order.dto.model.OrderDataModelDto;
 import org.example.order.worker.exception.WorkerExceptionCode;
 import org.example.order.worker.service.common.OrderWebClientService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,7 +26,7 @@ public class OrderWebClientServiceImpl implements OrderWebClientService {
     private final WebClientUrlProperties webClientUrlProperties;
 
     @Override
-    public OrderDto findOrderListByOrderId(Long id) {
+    public OrderDataModelDto findOrderListByOrderId(Long id) {
         try {
             WebClientUrlProperties.Client client = webClientUrlProperties.getClient();
 
@@ -39,7 +39,7 @@ public class OrderWebClientServiceImpl implements OrderWebClientService {
             Object data = response.getData();
             log.info("{}", response.getData());
 
-            OrderDto result = ObjectMapperUtils.convertTreeToValue(data, OrderDto.class);
+            OrderDataModelDto result = ObjectMapperUtils.convertTreeToValue(data, OrderDataModelDto.class);
 
             if (result == null) {
                 throw new CommonException(WorkerExceptionCode.NOT_FOUND_LOCAL_RESOURCE);
