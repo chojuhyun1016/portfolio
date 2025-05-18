@@ -3,7 +3,7 @@ package org.example.order.core.application.order.mapper;
 import org.example.order.common.helper.datetime.DateTimeUtils;
 import org.example.order.core.application.order.dto.internal.LocalOrderDto;
 import org.example.order.domain.order.entity.OrderEntity;
-import org.example.order.domain.order.model.OrderUpdateCommand;
+import org.example.order.domain.order.model.OrderUpdate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -76,10 +76,10 @@ public final class OrderMapper {
     /**
      * LocalOrderDto → OrderUpdateCommand 변환
      */
-    public OrderUpdateCommand toUpdateCommand(LocalOrderDto dto) {
+    public OrderUpdate toUpdateCommand(LocalOrderDto dto) {
         if (dto == null) return null;
 
-        return new OrderUpdateCommand(
+        return new OrderUpdate(
                 dto.getUserId(),
                 dto.getUserNumber(),
                 dto.getOrderId(),
@@ -99,7 +99,7 @@ public final class OrderMapper {
     /**
      * List<LocalOrderDto> → List<OrderUpdateCommand> 변환
      */
-    public List<OrderUpdateCommand> toUpdateCommands(List<LocalOrderDto> dtoList) {
+    public List<OrderUpdate> toUpdateCommands(List<LocalOrderDto> dtoList) {
         return dtoList == null ? List.of() :
                 dtoList.stream()
                         .map(this::toUpdateCommand)

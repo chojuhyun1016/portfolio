@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.application.order.dto.internal.LocalOrderDto;
 import org.example.order.core.application.order.mapper.OrderMapper;
 import org.example.order.domain.order.entity.OrderEntity;
-import org.example.order.domain.order.model.OrderUpdateCommand;
+import org.example.order.domain.order.model.OrderUpdate;
 import org.example.order.domain.order.repository.OrderCommandRepository;
 import org.example.order.domain.order.repository.OrderRepository;
 import org.example.order.worker.service.order.OrderCrudService;
@@ -41,7 +41,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
 
     @Override
     public void bulkUpdate(List<LocalOrderDto> dtoList) {
-        List<OrderUpdateCommand> commandList = orderMapper.toUpdateCommands(dtoList);
+        List<OrderUpdate> commandList = orderMapper.toUpdateCommands(dtoList);
         orderCommandRepository.bulkUpdate(commandList);
     }
 

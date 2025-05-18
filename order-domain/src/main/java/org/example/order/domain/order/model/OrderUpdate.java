@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
  * 도메인 전용 커맨드 모델 (레코드 기반)
  * - Core DTO에 의존하지 않고 Domain만 아는 데이터 구조
  */
-public record OrderUpdateCommand(
+public record OrderUpdate(
         Long userId,
         String userNumber,
         Long orderId,

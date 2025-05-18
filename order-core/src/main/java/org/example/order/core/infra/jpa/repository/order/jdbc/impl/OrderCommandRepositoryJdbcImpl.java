@@ -3,7 +3,7 @@ package org.example.order.core.infra.jpa.repository.order.jdbc.impl;
 import com.github.f4b6a3.tsid.TsidFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.order.domain.order.entity.OrderEntity;
-import org.example.order.domain.order.model.OrderUpdateCommand;
+import org.example.order.domain.order.model.OrderUpdate;
 import org.example.order.domain.order.repository.OrderCommandRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -67,7 +67,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
     }
 
     @Override
-    public void bulkUpdate(List<OrderUpdateCommand> syncList) {
+    public void bulkUpdate(List<OrderUpdate> syncList) {
         String sql = """
                 update `order` set user_id = ?,
                                    user_number = ?,
@@ -94,7 +94,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
 
         List<Object[]> batchArgs = new ArrayList<>();
 
-        for (OrderUpdateCommand sync : syncList) {
+        for (OrderUpdate sync : syncList) {
             batchArgs.add(new Object[]{
                     sync.userId(),
                     sync.userNumber(),
