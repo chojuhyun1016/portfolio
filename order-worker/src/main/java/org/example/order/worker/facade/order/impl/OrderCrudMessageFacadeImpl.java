@@ -6,9 +6,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.common.core.messaging.code.MessageMethodType;
 import org.example.order.common.support.json.ObjectMapperUtils;
-import org.example.order.core.application.order.dto.command.OrderSyncCommandDto;
-import org.example.order.core.messaging.order.message.OrderCrudEvent;
-import org.example.order.core.messaging.order.message.OrderRemoteEvent;
+import org.example.order.core.application.order.dto.internal.LocalOrderDto;
+import org.example.order.core.messaging.order.message.OrderCrudMessage;
+import org.example.order.core.messaging.order.message.OrderCloseMessage;
 import org.example.order.worker.exception.DatabaseExecuteException;
 import org.example.order.worker.exception.WorkerExceptionCode;
 import org.example.order.worker.facade.order.OrderCrudMessageFacade;
@@ -39,30 +39,30 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
 
         log.debug(" order master crud records : {}", records);
 
-        List<OrderCrudEvent> messages = null;
-        List<OrderCrudEvent> failureList = new ArrayList<>();
+        List<OrderCrudMessage> messages = null;
+        List<OrderCrudMessage> failureList = new ArrayList<>();
 
         try {
             messages = records.stream()
                     .map(ConsumerRecord::value)
-                    .map(value -> ObjectMapperUtils.valueToObject(value, OrderCrudEvent.class))
+                    .map(value -> ObjectMapperUtils.valueToObject(value, OrderCrudMessage.class))
                     .toList();
 
-            Map<MessageMethodType, List<OrderCrudEvent>> map = groupingMessages(messages);
+            Map<MessageMethodType, List<OrderCrudMessage>> map = groupingMessages(messages);
             map.forEach((methodType, value) -> {
                 try {
                     // Database update
                     orderService.execute(methodType, value);
 
-                    for (OrderCrudEvent message : value) {
-                        OrderSyncCommandDto order = message.getDto().getOrder();
+                    for (OrderCrudMessage message : value) {
+                        LocalOrderDto order = message.getDto().getOrder();
 
                         if (order.getFailure()) {
                             log.info("failed order : {}", order);
                             failureList.add(message);
                         } else {
-                            OrderRemoteEvent orderRemoteEvent = OrderRemoteEvent.toMessage(order.getOrderId(), methodType);
-                            kafkaProducerService.sendToOrderRemote(orderRemoteEvent);
+                            OrderCloseMessage orderCloseMessage = OrderCloseMessage.toMessage(order.getOrderId(), methodType);
+                            kafkaProducerService.sendToOrderRemote(orderCloseMessage);
                         }
                     }
                 } catch (Exception e) {
@@ -84,11 +84,11 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
         }
     }
 
-    private Map<MessageMethodType, List<OrderCrudEvent>> groupingMessages(List<OrderCrudEvent> messages) {
+    private Map<MessageMethodType, List<OrderCrudMessage>> groupingMessages(List<OrderCrudMessage> messages) {
         try {
             return messages.stream()
                     .collect(Collectors.groupingBy(
-                            OrderCrudEvent::getMethodType
+                            OrderCrudMessage::getMethodType
                     ));
         } catch (Exception e) {
             log.error("error : order crud messages grouping failed : {}", messages);

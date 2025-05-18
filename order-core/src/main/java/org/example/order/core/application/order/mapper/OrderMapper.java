@@ -1,7 +1,7 @@
 package org.example.order.core.application.order.mapper;
 
 import org.example.order.common.helper.datetime.DateTimeUtils;
-import org.example.order.core.application.order.dto.command.OrderSyncCommandDto;
+import org.example.order.core.application.order.dto.internal.LocalOrderDto;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderUpdateCommand;
 import org.springframework.stereotype.Component;
@@ -10,28 +10,21 @@ import java.util.List;
 
 /**
  * OrderSyncCommandMapper
- * - DTO ↔ Entity 변환을 담당하는 Application 계층 Mapper
- * - DDD 원칙을 지키기 위해 Domain Entity는 DTO를 알 수 없으므로,
- *   DTO → Domain 변환은 반드시 Application 계층에서 수행해야 함
+ * - LocalOrderDto ↔ OrderEntity ↔ OrderUpdateCommand 변환
+ * - DDD 원칙에 따라 Entity는 DTO를 몰라야 하므로, 변환은 Application 계층에서 수행
  */
 @Component
-public final class OrderSyncCommandMapper {
+public final class OrderMapper {
+
+    private OrderMapper() {}
 
     /**
-     * 기본 생성자 막기 (정적 유틸리티로도 일부 사용됨)
+     * OrderEntity → LocalOrderDto 변환
      */
-    private OrderSyncCommandMapper() {}
-
-    /**
-     * OrderEntity → OrderSyncCommandDto 변환 (읽기용)
-     *
-     * @param entity OrderEntity (도메인 엔티티)
-     * @return 변환된 OrderSyncCommandDto
-     */
-    public static OrderSyncCommandDto toCommand(OrderEntity entity) {
+    public static LocalOrderDto toDto(OrderEntity entity) {
         if (entity == null) return null;
 
-        return new OrderSyncCommandDto(
+        return new LocalOrderDto(
                 entity.getId(),
                 entity.getUserId(),
                 entity.getUserNumber(),
@@ -46,21 +39,18 @@ public final class OrderSyncCommandMapper {
                 entity.getModifiedUserId(),
                 entity.getModifiedUserType(),
                 entity.getModifiedDatetime(),
-                DateTimeUtils.localDateTimeToLong(entity.getPublishedDatetime()), // UTC 기준 변환
-                false // 기본 실패 상태: false
+                DateTimeUtils.localDateTimeToLong(entity.getPublishedDatetime()),
+                false
         );
     }
 
     /**
-     * OrderSyncCommandDto → OrderEntity 변환 (쓰기용)
-     *
-     * @param dto OrderSyncCommandDto (Application Command DTO)
-     * @return OrderEntity (Domain Entity)
+     * LocalOrderDto → OrderEntity 변환
      */
-    public OrderEntity toEntity(OrderSyncCommandDto dto) {
+    public OrderEntity toEntity(LocalOrderDto dto) {
         if (dto == null) return null;
 
-        OrderEntity entity = OrderEntity.createEmpty(); // 생성자 보호된 경우 static factory 사용
+        OrderEntity entity = OrderEntity.createEmpty();
         entity.setId(dto.getId());
 
         entity.updateAll(
@@ -84,13 +74,9 @@ public final class OrderSyncCommandMapper {
     }
 
     /**
-     * OrderSyncCommandDto → OrderUpdateCommand 변환
-     * - 도메인에 전달할 명령 객체로 변환
-     *
-     * @param dto OrderSyncCommandDto
-     * @return OrderUpdateCommand (Domain Update Command)
+     * LocalOrderDto → OrderUpdateCommand 변환
      */
-    public OrderUpdateCommand toUpdateCommand(OrderSyncCommandDto dto) {
+    public OrderUpdateCommand toUpdateCommand(LocalOrderDto dto) {
         if (dto == null) return null;
 
         return new OrderUpdateCommand(
@@ -111,12 +97,9 @@ public final class OrderSyncCommandMapper {
     }
 
     /**
-     * List<OrderSyncCommandDto> → List<OrderUpdateCommand> 변환
-     *
-     * @param dtoList OrderSyncCommandDto 리스트
-     * @return 변환된 도메인 명령 리스트
+     * List<LocalOrderDto> → List<OrderUpdateCommand> 변환
      */
-    public List<OrderUpdateCommand> toUpdateCommands(List<OrderSyncCommandDto> dtoList) {
+    public List<OrderUpdateCommand> toUpdateCommands(List<LocalOrderDto> dtoList) {
         return dtoList == null ? List.of() :
                 dtoList.stream()
                         .map(this::toUpdateCommand)

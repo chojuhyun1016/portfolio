@@ -1,4 +1,4 @@
-package org.example.order.core.application.order.dto.command;
+package org.example.order.core.application.order.dto.internal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class OrderSyncCommandDto {
+public class LocalOrderDto {
 
     private Long id;
     private Long userId;

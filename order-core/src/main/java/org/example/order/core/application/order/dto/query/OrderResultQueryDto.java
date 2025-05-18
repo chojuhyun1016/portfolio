@@ -1,6 +1,6 @@
 package org.example.order.core.application.order.dto.query;
 
-import org.example.order.core.application.order.dto.model.OrderEntityModelDto;
+import org.example.order.core.application.order.dto.internal.OrderEntityDto;
 
 /**
  * 주문 조회 결과 DTO (Application 계층)
@@ -10,7 +10,7 @@ import org.example.order.core.application.order.dto.model.OrderEntityModelDto;
  * - OrderEntityModel → OrderItemQuery로 변환 후 래핑
  */
 public record OrderResultQueryDto(
-        OrderItemQueryDto order
+        OrderDetailQueryDto order
 ) {
     /**
      * EntityModel → Query DTO 변환 메서드
@@ -18,8 +18,8 @@ public record OrderResultQueryDto(
      * @param vo OrderEntityModel
      * @return OrderResultQuery DTO
      */
-    public static OrderResultQueryDto toDto(OrderEntityModelDto vo) {
-        OrderItemQueryDto orderDto = OrderItemQueryDto.toDto(vo.getOrder());
+    public static OrderResultQueryDto toDto(OrderEntityDto vo) {
+        OrderDetailQueryDto orderDto = OrderDetailQueryDto.toDto(vo.getOrder());
         return new OrderResultQueryDto(orderDto);
     }
 }

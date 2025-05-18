@@ -4,7 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.example.order.domain.order.entity.QOrderEntity;
-import org.example.order.domain.order.model.OrderDetailView;
+import org.example.order.domain.order.model.OrderView;
 import org.example.order.domain.order.repository.OrderQueryRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,10 +20,10 @@ public class OrderQueryRepositoryJpaImpl implements OrderQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public OrderDetailView fetchByOrderId(Long orderId) {
+    public OrderView fetchByOrderId(Long orderId) {
         return queryFactory
                 .select(Projections.constructor(
-                        OrderDetailView.class,
+                        OrderView.class,
                         ORDER.orderId,
                         ORDER.orderNumber,
                         ORDER.userId,

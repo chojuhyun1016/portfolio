@@ -3,9 +3,9 @@ package org.example.order.worker.facade.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.support.json.ObjectMapperUtils;
-import org.example.order.core.application.order.dto.model.OrderDataModelDto;
-import org.example.order.core.messaging.order.message.OrderApiEvent;
-import org.example.order.core.messaging.order.message.OrderCrudEvent;
+import org.example.order.core.application.order.dto.internal.OrderDto;
+import org.example.order.core.messaging.order.message.OrderApiMessage;
+import org.example.order.core.messaging.order.message.OrderCrudMessage;
 import org.example.order.worker.facade.order.OrderApiMessageFacade;
 import org.example.order.worker.service.common.KafkaProducerService;
 import org.example.order.worker.service.common.OrderWebClientService;
@@ -22,17 +22,17 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
     @Transactional
     @Override
     public void requestApi(Object record) {
-        OrderApiEvent message = null;
+        OrderApiMessage message = null;
 
         try {
-            message = ObjectMapperUtils.valueToObject(record, OrderApiEvent.class);
+            message = ObjectMapperUtils.valueToObject(record, OrderApiMessage.class);
 
             // api 호출
-            OrderDataModelDto dto = webClientService.findOrderListByOrderId(message.getId());
+            OrderDto dto = webClientService.findOrderListByOrderId(message.getId());
             dto.updatePublishedTimestamp(message.getPublishedTimestamp());
 
             // 메세지 발행
-            kafkaProducerService.sendToOrderCrud(OrderCrudEvent.toMessage(message, dto));
+            kafkaProducerService.sendToOrderCrud(OrderCrudMessage.toMessage(message, dto));
         } catch (Exception e) {
             log.error("error : order api record : {}", record);
             log.error(e.getMessage(), e);

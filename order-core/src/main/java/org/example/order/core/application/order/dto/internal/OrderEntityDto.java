@@ -1,6 +1,6 @@
 // 📦 package org.example.order.core.application.order.model;
 
-package org.example.order.core.application.order.dto.model;
+package org.example.order.core.application.order.dto.internal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,6 +11,6 @@ import org.example.order.domain.order.entity.OrderEntity;
  */
 @Getter
 @AllArgsConstructor
-public class OrderEntityModelDto {
+public class OrderEntityDto {
     private OrderEntity order;
 }

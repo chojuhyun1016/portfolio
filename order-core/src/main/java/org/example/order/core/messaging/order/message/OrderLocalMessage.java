@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 @Getter
 @ToString
-public class OrderLocalEvent extends DlqMessage {
+public class OrderLocalMessage extends DlqMessage {
     // 이벤트 수신 대상 private key
     private Long id;
 
@@ -23,7 +23,7 @@ public class OrderLocalEvent extends DlqMessage {
     // 메시지 최초 생성 시간
     private Long publishedTimestamp;
 
-    public OrderLocalEvent() {
+    public OrderLocalMessage() {
         super(DlqOrderType.ORDER_LOCAL);
     }
 

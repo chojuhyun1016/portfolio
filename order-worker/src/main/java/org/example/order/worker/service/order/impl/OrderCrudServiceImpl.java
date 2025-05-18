@@ -2,8 +2,8 @@ package org.example.order.worker.service.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.application.order.dto.command.OrderSyncCommandDto;
-import org.example.order.core.application.order.mapper.OrderSyncCommandMapper;
+import org.example.order.core.application.order.dto.internal.LocalOrderDto;
+import org.example.order.core.application.order.mapper.OrderMapper;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderUpdateCommand;
 import org.example.order.domain.order.repository.OrderCommandRepository;
@@ -22,12 +22,12 @@ import java.util.List;
 public class OrderCrudServiceImpl implements OrderCrudService {
     private final OrderRepository orderRepository;
     private final OrderCommandRepository orderCommandRepository;
-    private final OrderSyncCommandMapper orderSyncCommandMapper;
+    private final OrderMapper orderMapper;
 
     @Override
-    public List<OrderEntity> bulkInsert(List<OrderSyncCommandDto> dtoList) {
+    public List<OrderEntity> bulkInsert(List<LocalOrderDto> dtoList) {
         try {
-            List<OrderEntity> entities = dtoList.stream().map(orderSyncCommandMapper::toEntity).toList();
+            List<OrderEntity> entities = dtoList.stream().map(orderMapper::toEntity).toList();
             orderCommandRepository.bulkInsert(entities);
             return entities;
         } catch (DataAccessException e) {
@@ -40,14 +40,14 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     @Override
-    public void bulkUpdate(List<OrderSyncCommandDto> dtoList) {
-        List<OrderUpdateCommand> commandList = orderSyncCommandMapper.toUpdateCommands(dtoList);
+    public void bulkUpdate(List<LocalOrderDto> dtoList) {
+        List<OrderUpdateCommand> commandList = orderMapper.toUpdateCommands(dtoList);
         orderCommandRepository.bulkUpdate(commandList);
     }
 
     @Override
-    public void deleteAll(List<OrderSyncCommandDto> dtoList) {
-        List<Long> ids = dtoList.stream().map(OrderSyncCommandDto::getOrderId).toList();
+    public void deleteAll(List<LocalOrderDto> dtoList) {
+        List<Long> ids = dtoList.stream().map(LocalOrderDto::getOrderId).toList();
         orderRepository.deleteByOrderIdIn(ids);
     }
 }

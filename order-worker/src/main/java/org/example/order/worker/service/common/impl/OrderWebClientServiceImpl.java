@@ -8,7 +8,7 @@ import org.example.order.common.core.constant.HttpConstant;
 import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.common.support.json.ObjectMapperUtils;
 import org.example.order.common.web.response.ApiResponse;
-import org.example.order.core.application.order.dto.model.OrderDataModelDto;
+import org.example.order.core.application.order.dto.internal.OrderDto;
 import org.example.order.worker.exception.WorkerExceptionCode;
 import org.example.order.worker.service.common.OrderWebClientService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,7 +26,7 @@ public class OrderWebClientServiceImpl implements OrderWebClientService {
     private final WebClientUrlProperties webClientUrlProperties;
 
     @Override
-    public OrderDataModelDto findOrderListByOrderId(Long id) {
+    public OrderDto findOrderListByOrderId(Long id) {
         try {
             WebClientUrlProperties.Client client = webClientUrlProperties.getClient();
 
@@ -39,7 +39,7 @@ public class OrderWebClientServiceImpl implements OrderWebClientService {
             Object data = response.getData();
             log.info("{}", response.getData());
 
-            OrderDataModelDto result = ObjectMapperUtils.convertTreeToValue(data, OrderDataModelDto.class);
+            OrderDto result = ObjectMapperUtils.convertTreeToValue(data, OrderDto.class);
 
             if (result == null) {
                 throw new CommonException(WorkerExceptionCode.NOT_FOUND_LOCAL_RESOURCE);

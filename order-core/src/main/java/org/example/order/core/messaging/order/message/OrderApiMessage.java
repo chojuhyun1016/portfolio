@@ -10,7 +10,7 @@ import org.example.order.common.core.messaging.code.MessageMethodType;
 @Getter
 @NoArgsConstructor
 @ToString
-public class OrderApiEvent extends DlqMessage {
+public class OrderApiMessage extends DlqMessage {
     // 이벤트 수신 대상 private key
     private Long id;
 
@@ -20,14 +20,14 @@ public class OrderApiEvent extends DlqMessage {
     // 메시지 최초 생성 시간
     private Long publishedTimestamp;
 
-    public OrderApiEvent(OrderLocalEvent orderLocalEvent) {
+    public OrderApiMessage(OrderLocalMessage orderLocalMessage) {
         super(DlqOrderType.ORDER_API);
-        this.id = orderLocalEvent.getId();
-        this.methodType = orderLocalEvent.getMethodType();
-        this.publishedTimestamp = orderLocalEvent.getPublishedTimestamp();
+        this.id = orderLocalMessage.getId();
+        this.methodType = orderLocalMessage.getMethodType();
+        this.publishedTimestamp = orderLocalMessage.getPublishedTimestamp();
     }
 
-    public static OrderApiEvent toMessage(OrderLocalEvent orderLocalEvent) {
-        return new OrderApiEvent(orderLocalEvent);
+    public static OrderApiMessage toMessage(OrderLocalMessage orderLocalMessage) {
+        return new OrderApiMessage(orderLocalMessage);
     }
 }
