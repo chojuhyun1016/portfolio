@@ -11,6 +11,9 @@ import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.common.core.messaging.code.DlqType;
 import org.example.order.common.core.messaging.message.DlqMessage;
 import org.example.order.common.support.json.ObjectMapperUtils;
+import org.example.order.core.messaging.order.message.OrderApiMessage;
+import org.example.order.core.messaging.order.message.OrderCrudMessage;
+import org.example.order.core.messaging.order.message.OrderLocalMessage;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
@@ -41,36 +44,35 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
     }
 
     private void OrderLocal(Object message) {
-        List<Integer> discardCode = Arrays.asList(CommonExceptionCode.INVALID_REQUEST.getCode(), BatchExceptionCode.EMPTY_MESSAGE.getCode());
-        OrderLocalEvent orderLocalEvent = convertMessage(message, OrderLocalEvent.class);
-        orderLocalEvent.increaseFailedCount();
+        OrderLocalMessage orderLocalMessage = convertMessage(message, OrderLocalMessage.class);
+        orderLocalMessage.increaseFailedCount();
 
-        if (invalid(orderLocalEvent) || discardCode.contains(orderLocalEvent.getError().getCode())) {
-            kafkaProducerService.sendToDiscard(orderLocalEvent);
+        if (invalid(orderLocalMessage)) {
+            kafkaProducerService.sendToDiscard(orderLocalMessage);
         } else {
-            kafkaProducerService.sendToLocal(orderLocalEvent);
+            kafkaProducerService.sendToLocal(orderLocalMessage);
         }
     }
 
     private void OrderApi(Object message) {
-        OrderApiEvent orderApiEvent = convertMessage(message, OrderApiEvent.class);
-        orderApiEvent.increaseFailedCount();
+        OrderApiMessage orderApiMessage = convertMessage(message, OrderApiMessage.class);
+        orderApiMessage.increaseFailedCount();
 
-        if (invalid(orderApiEvent)) {
-            kafkaProducerService.sendToDiscard(orderApiEvent);
+        if (invalid(orderApiMessage)) {
+            kafkaProducerService.sendToDiscard(orderApiMessage);
         } else {
-            kafkaProducerService.sendToOrderApi(orderApiEvent);
+            kafkaProducerService.sendToOrderApi(orderApiMessage);
         }
     }
 
     private void OrderCrud(Object message) {
-        OrderCrudEvent orderCrudEvent = convertMessage(message, OrderCrudEvent.class);
-        orderCrudEvent.increaseFailedCount();
+        OrderCrudMessage orderCrudMessage = convertMessage(message, OrderCrudMessage.class);
+        orderCrudMessage.increaseFailedCount();
 
-        if (invalid(orderCrudEvent)) {
-            kafkaProducerService.sendToDiscard(orderCrudEvent);
+        if (invalid(orderCrudMessage)) {
+            kafkaProducerService.sendToDiscard(orderCrudMessage);
         } else {
-            kafkaProducerService.sendToOrderCrud(orderCrudEvent);
+            kafkaProducerService.sendToOrderCrud(orderCrudMessage);
         }
     }
 

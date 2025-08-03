@@ -6,8 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.batch.service.common.S3Service;
 import org.example.order.client.s3.config.property.S3Properties;
 import org.example.order.client.s3.service.S3Client;
-import org.example.order.common.exception.code.CommonExceptionCode;
-import org.example.order.common.exception.CommonException;
+import org.example.order.common.core.exception.code.CommonExceptionCode;
+import org.example.order.common.core.exception.core.CommonException;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +28,7 @@ public class S3ServiceImpl implements S3Service {
         } catch (Exception e) {
             log.error("error : fail to upload file", e);
             log.error(e.getMessage(), e);
+
             throw new CommonException(CommonExceptionCode.UPLOAD_FILE_TO_S3_ERROR);
         }
     }

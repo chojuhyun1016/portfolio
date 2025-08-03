@@ -10,7 +10,7 @@ public enum BatchExceptionCode implements ExceptionCodeEnum {
     MESSAGE_TRANSMISSION_FAILED(6002, "Message transmission failed", HttpStatus.INTERNAL_SERVER_ERROR),
     POLLING_FAILED(6003, "Message polling failed", HttpStatus.INTERNAL_SERVER_ERROR),
     UNSUPPORTED_EVENT_CATEGORY(6004, "Unsupported event category", HttpStatus.INTERNAL_SERVER_ERROR),
-    UNSUPPORTED_DLQ_TYPE(6005, "Message is not unregistered", HttpStatus.INTERNAL_SERVER_ERROR);
+    UNSUPPORTED_DLQ_TYPE(6005, "Dlq Type is not unregistered", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private int code;
     private String msg;
