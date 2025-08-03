@@ -6,18 +6,18 @@ import org.example.order.batch.exception.BatchExceptionCode;
 import org.example.order.batch.service.common.KafkaProducerService;
 import org.example.order.batch.service.retry.OrderDeadLetterService;
 import org.example.order.client.kafka.config.properties.KafkaConsumerProperties;
-import org.example.order.common.event.DlqMessage;
-import org.example.order.common.exception.code.CommonExceptionCode;
-import org.example.order.common.code.type.DlqType;
-import org.example.order.common.utils.jackson.ObjectMapperUtils;
-import org.example.order.core.application.order.event.message.OrderApiEvent;
-import org.example.order.core.application.order.event.message.OrderCrudEvent;
-import org.example.order.core.application.order.event.message.OrderLocalEvent;
+import org.example.order.common.core.exception.code.CommonExceptionCode;
+import org.example.order.common.core.exception.core.CommonException;
+import org.example.order.common.core.messaging.code.DlqType;
+import org.example.order.common.core.messaging.message.DlqMessage;
+import org.example.order.common.support.json.ObjectMapperUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.example.order.core.messaging.order.code.DlqOrderType.*;
 
 @Slf4j
 @Service
@@ -36,6 +36,7 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
             case ORDER_LOCAL -> OrderLocal(message);
             case ORDER_API -> OrderApi(message);
             case ORDER_CRUD -> OrderCrud(message);
+            default -> throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
         }
     }
 
