@@ -1,4 +1,4 @@
-package org.example.order.batch.service.retry;
+package org.example.order.batch;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

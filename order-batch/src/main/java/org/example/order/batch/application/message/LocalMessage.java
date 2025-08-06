@@ -1,4 +1,4 @@
-package org.example.order.batch.service.retry.application.message;
+package org.example.order.batch.application.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

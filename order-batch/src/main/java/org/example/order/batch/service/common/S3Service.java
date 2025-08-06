@@ -1,4 +1,4 @@
-package org.example.order.batch.service.retry.service.common;
+package org.example.order.batch.service.common;
 
 import com.amazonaws.services.s3.model.S3Object;
 

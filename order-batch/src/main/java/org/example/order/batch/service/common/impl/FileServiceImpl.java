@@ -1,9 +1,9 @@
-package org.example.order.batch.service.retry.service.common.impl;
+package org.example.order.batch.service.common.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.batch.service.retry.service.common.FileService;
-import org.example.order.batch.service.retry.service.common.S3Service;
+import org.example.order.batch.service.common.FileService;
+import org.example.order.batch.service.common.S3Service;
 import org.example.order.common.support.json.ObjectMapperUtils;
 import org.springframework.stereotype.Service;
 

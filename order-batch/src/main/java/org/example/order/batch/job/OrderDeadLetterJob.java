@@ -1,8 +1,8 @@
-package org.example.order.batch.service.retry.job;
+package org.example.order.batch.job;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.batch.service.retry.facade.retry.OrderDeadLetterFacade;
+import org.example.order.batch.facade.retry.OrderDeadLetterFacade;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobScope;

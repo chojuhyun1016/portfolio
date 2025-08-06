@@ -1,6 +1,7 @@
 package org.example.order.core.messaging.order.message;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.example.order.common.core.messaging.message.DlqMessage;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 @Getter
+@Setter
 @ToString
 public class OrderLocalMessage extends DlqMessage {
     // 이벤트 수신 대상 private key

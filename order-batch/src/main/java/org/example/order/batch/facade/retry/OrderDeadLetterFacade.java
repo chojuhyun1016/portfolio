@@ -1,4 +1,4 @@
-package org.example.order.batch.service.retry.facade.retry;
+package org.example.order.batch.facade.retry;
 
 public interface OrderDeadLetterFacade {
     void retry();

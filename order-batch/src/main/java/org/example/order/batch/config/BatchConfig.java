@@ -1,4 +1,4 @@
-package org.example.order.batch.service.retry.config;
+package org.example.order.batch.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.client.kafka.config.KafkaModuleConfig;

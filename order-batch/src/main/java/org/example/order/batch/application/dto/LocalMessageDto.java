@@ -1,10 +1,10 @@
-package org.example.order.batch.service.retry.application.dto;
+package org.example.order.batch.application.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.example.order.batch.service.retry.application.message.LocalMessage;
+import org.example.order.batch.application.message.LocalMessage;
 import org.example.order.core.messaging.order.code.MessageCategory;
 
 @Getter

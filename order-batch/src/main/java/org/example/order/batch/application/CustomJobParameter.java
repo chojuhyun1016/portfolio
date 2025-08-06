@@ -1,4 +1,4 @@
-package org.example.order.batch.service.retry.application;
+package org.example.order.batch.application;
 
 import lombok.Getter;
 import org.springframework.batch.core.configuration.annotation.JobScope;

@@ -1,4 +1,4 @@
-package org.example.order.batch.service.retry.exception;
+package org.example.order.batch.exception;
 
 import lombok.Getter;
 import org.example.order.common.core.exception.code.ExceptionCodeEnum;

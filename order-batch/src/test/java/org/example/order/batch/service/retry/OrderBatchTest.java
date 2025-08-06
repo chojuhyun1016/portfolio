@@ -1,8 +1,9 @@
 package org.example.order.batch.service.retry;
 
-import org.example.order.batch.service.retry.service.common.KafkaProducerService;
-import org.example.order.batch.service.retry.service.retry.impl.OrderDeadLetterServiceImpl;
+import org.example.order.batch.service.common.KafkaProducerService;
+import org.example.order.batch.service.retry.impl.OrderDeadLetterServiceImpl;
 import org.example.order.client.kafka.config.properties.KafkaConsumerProperties;
+import org.example.order.common.core.messaging.code.MessageMethodType;
 import org.example.order.core.messaging.order.message.OrderLocalMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,10 +30,18 @@ class OrderBatchTest {
         orderDeadLetterService = new OrderDeadLetterServiceImpl(kafkaProducerService, kafkaConsumerProperties);
     }
 
+    private OrderLocalMessage createValidMessage() {
+        OrderLocalMessage message = new OrderLocalMessage();
+        message.setId(123L);
+        message.setMethodType(MessageMethodType.POST); // ← enum 상수 확인 필요
+        message.setPublishedTimestamp(System.currentTimeMillis());
+        return message;
+    }
+
     @Test
     void testRetryOrderLocal_discard() {
         // given
-        OrderLocalMessage message = new OrderLocalMessage(); // 기본 생성자 사용
+        OrderLocalMessage message = createValidMessage();
         for (int i = 0; i < 4; i++) {
             message.increaseFailedCount(); // fail count = 4
         }
@@ -48,7 +57,7 @@ class OrderBatchTest {
     @Test
     void testRetryOrderLocal_retry() {
         // given
-        OrderLocalMessage message = new OrderLocalMessage();
+        OrderLocalMessage message = createValidMessage();
         message.increaseFailedCount(); // fail count = 1
 
         // when

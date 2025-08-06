@@ -1,5 +1,6 @@
 package org.example.order.common.core.monitoring.message;
 
+import org.example.order.common.core.exception.message.CustomErrorMessage;
 import org.example.order.common.core.monitoring.message.code.MonitoringContextCode;
 import org.example.order.common.core.monitoring.message.code.MonitoringLevelCode;
 import org.example.order.common.core.monitoring.message.code.MonitoringType;
@@ -17,7 +18,7 @@ public record MonitoringMessage(
         String companyName,       // 고정 회사 식별자 (예: "PORTFOLIO")
         String systemName,        // 고정 시스템 식별자 (예: "EXAMPLE")
         String domainName,        // 고정 도메인 식별자 (예: "ORDER")
-        String exceptionMessage   // DLQ에 포함된 예외 메시지 (Throwable.getMessage())
+        String exceptionMessage   // DLQ 메시지에 포함된 CustomErrorMessage의 에러 메시지 (getMsg())
 ) {
     /**
      * MonitoringMessage 팩토리 메서드
@@ -30,13 +31,13 @@ public record MonitoringMessage(
      */
     public static MonitoringMessage toMessage(MonitoringType type, MonitoringLevelCode level, DlqMessage message) {
         return new MonitoringMessage(
-                type.getLevel(),                                   // 모니터링 유형 코드
-                level.getLevel(),                                  // 장애 심각도 정수값 (1~5)
-                MonitoringContextCode.COMPANY.getText(),           // 고정 회사명
-                MonitoringContextCode.SYSTEM.getText(),            // 고정 시스템명
-                MonitoringContextCode.DOMAIN.getText(),            // 고정 도메인명
-                Optional.ofNullable(message.getError())            // 예외 메시지 추출
-                        .map(Throwable::getMessage)
+                type.getLevel(),
+                level.getLevel(),
+                MonitoringContextCode.COMPANY.getText(),
+                MonitoringContextCode.SYSTEM.getText(),
+                MonitoringContextCode.DOMAIN.getText(),
+                Optional.ofNullable(message.getError())
+                        .map(CustomErrorMessage::getMsg)
                         .orElse("unknown")
         );
     }

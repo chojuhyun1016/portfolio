@@ -1,4 +1,4 @@
-package org.example.order.batch.service.retry.service.common;
+package org.example.order.batch.service.common;
 
 import org.example.order.common.core.messaging.message.DlqMessage;
 import org.example.order.core.messaging.order.message.OrderApiMessage;

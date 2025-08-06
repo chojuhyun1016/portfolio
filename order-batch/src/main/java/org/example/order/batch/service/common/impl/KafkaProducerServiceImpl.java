@@ -1,8 +1,8 @@
-package org.example.order.batch.service.retry.service.common.impl;
+package org.example.order.batch.service.common.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.batch.service.retry.service.common.KafkaProducerService;
+import org.example.order.batch.service.common.KafkaProducerService;
 import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.common.core.exception.core.CommonException;
