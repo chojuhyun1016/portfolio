@@ -1,18 +1,20 @@
-package org.example.order.worker.service.common.impl;
+package org.example.order.batch.service.retry.service.common.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.order.batch.service.retry.service.common.KafkaProducerService;
 import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.common.core.exception.message.CustomErrorMessage;
 import org.example.order.common.core.messaging.message.DlqMessage;
+import org.example.order.common.core.monitoring.message.MonitoringMessage;
+import org.example.order.common.core.monitoring.message.code.MonitoringLevelCode;
+import org.example.order.common.core.monitoring.message.code.MonitoringType;
 import org.example.order.core.messaging.order.code.MessageCategory;
 import org.example.order.core.messaging.order.message.OrderApiMessage;
 import org.example.order.core.messaging.order.message.OrderCrudMessage;
 import org.example.order.core.messaging.order.message.OrderLocalMessage;
-import org.example.order.core.messaging.order.message.OrderCloseMessage;
-import org.example.order.worker.service.common.KafkaProducerService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -24,6 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({KafkaTopicProperties.class})
 public class KafkaProducerServiceImpl implements KafkaProducerService {
+
     private final KafkaProducerCluster cluster;
     private final KafkaTopicProperties kafkaTopicProperties;
 
@@ -43,11 +46,6 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     }
 
     @Override
-    public void sendToOrderRemote(OrderCloseMessage message) {
-        send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_REMOTE));
-    }
-
-    @Override
     public <T extends DlqMessage> void sendToDlq(List<T> messages, Exception currentException) {
         if (ObjectUtils.isEmpty(messages)) {
             return;
@@ -56,6 +54,13 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         for (T message : messages) {
             sendToDlq(message, currentException);
         }
+    }
+
+    @Override
+    public <T extends DlqMessage> void sendToDiscard(T message) {
+        log.info("Sending message to discard topic");
+
+        send(MonitoringMessage.toMessage(MonitoringType.ERROR, MonitoringLevelCode.LEVEL_3, message), kafkaTopicProperties.getName(MessageCategory.ORDER_ALARM));
     }
 
     @Override
@@ -75,7 +80,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 
             send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_DLQ));
         } catch (Exception e) {
-            log.error("error : send message to sales-order-dead-letter failed : {}", message);
+            log.error("error : send message to order-dead-letter failed : {}", message);
             log.error(e.getMessage(), e);
         }
     }

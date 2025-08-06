@@ -7,3 +7,4 @@ package org.example.order.common.core.messaging.code;
 public interface DlqType {
     String getText();
 }
+
