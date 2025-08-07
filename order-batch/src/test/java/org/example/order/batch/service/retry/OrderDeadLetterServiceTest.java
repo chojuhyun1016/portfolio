@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.*;
 
-class OrderBatchTest {
+class OrderDeadLetterServiceTest {
 
     private KafkaProducerService kafkaProducerService;
     private KafkaConsumerProperties kafkaConsumerProperties;
@@ -30,41 +30,42 @@ class OrderBatchTest {
         orderDeadLetterService = new OrderDeadLetterServiceImpl(kafkaProducerService, kafkaConsumerProperties);
     }
 
-    private OrderLocalMessage createValidMessage() {
+    private OrderLocalMessage createValidMessage(int failCount) {
         OrderLocalMessage message = new OrderLocalMessage();
         message.setId(123L);
-        message.setMethodType(MessageMethodType.POST); // ← enum 상수 확인 필요
+        message.setMethodType(MessageMethodType.POST);
         message.setPublishedTimestamp(System.currentTimeMillis());
+
+        for (int i = 0; i < failCount; i++) {
+            message.increaseFailedCount();
+        }
+
         return message;
     }
 
     @Test
-    void testRetryOrderLocal_discard() {
+    void shouldSendToDiscard_whenFailCountExceedsThreshold() {
         // given
-        OrderLocalMessage message = createValidMessage();
-        for (int i = 0; i < 4; i++) {
-            message.increaseFailedCount(); // fail count = 4
-        }
+        OrderLocalMessage message = createValidMessage(4); // maxFailCount = 3
 
         // when
         orderDeadLetterService.retry(message);
 
         // then
-        verify(kafkaProducerService, times(1)).sendToDiscard(message);
+        verify(kafkaProducerService).sendToDiscard(message);
         verify(kafkaProducerService, never()).sendToLocal(any());
     }
 
     @Test
-    void testRetryOrderLocal_retry() {
+    void shouldRetry_whenFailCountIsWithinThreshold() {
         // given
-        OrderLocalMessage message = createValidMessage();
-        message.increaseFailedCount(); // fail count = 1
+        OrderLocalMessage message = createValidMessage(2);
 
         // when
         orderDeadLetterService.retry(message);
 
         // then
-        verify(kafkaProducerService, times(1)).sendToLocal(message);
+        verify(kafkaProducerService).sendToLocal(message);
         verify(kafkaProducerService, never()).sendToDiscard(any());
     }
 }
