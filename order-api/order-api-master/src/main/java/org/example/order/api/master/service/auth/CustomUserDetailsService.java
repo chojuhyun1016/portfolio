@@ -1,6 +1,6 @@
 package org.example.order.api.master.service.auth;
 
-import org.example.order.api.common.code.ClientRole;
+import org.example.order.api.common.auth.ClientRole;
 import org.example.order.api.master.auth.CustomUserDetails;
 import org.example.order.api.master.config.ApiKeyProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

@@ -1,4 +1,4 @@
-package org.example.order.api.common.config.module;
+package org.example.order.api.common.support;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,23 +24,32 @@ import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
 
-import static org.example.order.common.format.DefaultDateTimeFormat.*;
-import static org.example.order.common.format.DefaultDateTimeFormat.DATE_TIME_FORMAT;
+import static org.example.order.common.helper.datetime.DateTimeFormat.*;
 
+/**
+ * 파라미터 변환기 및 ObjectMapper 생성 팩토리
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class FormatResourceFactory {
+public class FormatConfig {
 
+    // RequestParam용 바인딩 컨버터
     @Getter
-    private static final List<Converter<?, ?>> parameterBinders = List.of(new LocalDateTimeParamBinder(DATE_TIME_FORMAT));
+    private static final List<Converter<?, ?>> parameterBinders = List.of(
+            new DateTimeBinder(DATE_TIME_FORMAT)
+    );
 
+    // enum 바인딩용 컨버터 팩토리
     @Getter
-    private static final List<ConverterFactory<?, ?>> parameterBinderFactory = List.of(new StringToEnumConverterFactory());
+    private static final List<ConverterFactory<?, ?>> parameterBinderFactory = List.of(
+            new EnumBinder()
+    );
 
+    // 날짜 형식을 지정한 ObjectMapper
     @Getter
     private static final ObjectMapper requestObjectMapper = new Jackson2ObjectMapperBuilder()
-            .failOnUnknownProperties(false) // SpringBoot default
-            .featuresToDisable(MapperFeature.DEFAULT_VIEW_INCLUSION) // SpringBoot default
-            .featuresToEnable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS) // SpringBoot default
+            .failOnUnknownProperties(false)
+            .featuresToDisable(MapperFeature.DEFAULT_VIEW_INCLUSION)
+            .featuresToEnable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .serializerByType(LocalDate.class, new LocalDateSerializer(DATE_FORMAT))
             .deserializerByType(LocalDate.class, new LocalDateDeserializer(DATE_FORMAT))
             .serializerByType(LocalDateTime.class, new LocalDateTimeSerializer(DATE_TIME_FORMAT))
