@@ -2,7 +2,7 @@ package org.example.order.common.core.code.type;
 
 /**
  * 코드 Enum 인터페이스 표준화
- *
+ * <p>
  * - 모든 코드형 Enum은 이 인터페이스를 구현하여 일관된 getText(), getCode()를 제공해야 함
  */
 public interface CodeEnum {

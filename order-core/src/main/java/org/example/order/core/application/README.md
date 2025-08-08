@@ -80,7 +80,14 @@
 
 ### 📁 dto
 
+#### ▸ incoming
+- 시스템 연계 원본
+
+#### ▸ command
+- 동기 API 유스케이스 요청
+
 #### ▸ internal
+- 내부 표준 DTO (LocalOrderDto 등)
 
 ##### LocalOrderDto.java
 - 주문 커맨드용 내부 DTO

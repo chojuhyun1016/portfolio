@@ -32,4 +32,8 @@ public class ApiResponse<T> {
     public static <T> ResponseEntity<ApiResponse<T>> error(CommonExceptionCode code) {
         return of(code.getHttpStatus(), null, ResponseMeta.of(code.getCode(), code.getMsg()));
     }
+
+    public static <T> ResponseEntity<ApiResponse<T>> accepted(final T data) {
+        return of(HttpStatus.ACCEPTED, data, ResponseMeta.ok());
+    }
 }

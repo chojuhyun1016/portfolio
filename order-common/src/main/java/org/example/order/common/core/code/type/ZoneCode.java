@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 /**
  * 시스템에서 사용하는 주요 시간대 코드 정의
- *
+ * <p>
  * - 각 enum 상수는 실제 ZoneId 문자열과 연결됨
  * - {@link #getZoneId()} 를 통해 java.time.ZoneId 객체 반환
  * - {@link #of(String)} 메서드를 통해 문자열로부터 안전하게 ZoneCode 매핑 가능

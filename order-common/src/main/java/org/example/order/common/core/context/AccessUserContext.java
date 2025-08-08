@@ -9,7 +9,7 @@ public class AccessUserContext {
     private static final ThreadLocal<AccessUserInfo> accessUserInfoThreadLocal = new ThreadLocal<>();
 
     public static AccessUserInfo getAccessUser() {
-        AccessUserInfo accessUserInfo =  accessUserInfoThreadLocal.get();
+        AccessUserInfo accessUserInfo = accessUserInfoThreadLocal.get();
 
         return accessUserInfo == null ? AccessUserInfo.unknown() : accessUserInfo;
     }

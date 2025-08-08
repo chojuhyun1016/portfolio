@@ -1,28 +1,31 @@
 package org.example.order.api.master.facade.order.impl;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.example.order.api.master.dto.order.LocalOrderRequest;
+import org.example.order.api.master.dto.order.OrderResponse;
 import org.example.order.api.master.facade.order.OrderFacade;
+import org.example.order.api.master.mapper.order.OrderRequestMapper;
+import org.example.order.api.master.mapper.order.OrderResponseMapper;
 import org.example.order.api.master.service.order.OrderService;
-import org.example.order.core.application.order.query.OrderCrudDto;
-import org.example.order.core.application.order.event.OrderRemoteMessageDto;
-import org.example.order.core.application.order.model.OrderVo;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @RequiredArgsConstructor
 @Component
 public class OrderFacadeImpl implements OrderFacade {
+
     private final OrderService orderService;
+    private final OrderRequestMapper orderRequestMapper;
+    private final OrderResponseMapper orderResponseMapper;
 
     @Override
-    public OrderCrudDto fetchById(Long orderId) {
-        OrderVo vo = orderService.fetchByIds(orderId);
-        return vo == null ? null : OrderCrudDto.toDto(vo);
+    public OrderResponse findById(Long id) {
+        var dto = orderService.findById(id);
+        return orderResponseMapper.toResponse(dto);
     }
 
     @Override
-    public void sendOrderMessage(OrderRemoteMessageDto dto) {
-        orderService.sendMessage(dto);
+    public void sendOrderMessage(LocalOrderRequest request) {
+        var command = orderRequestMapper.toCommand(request);
+        orderService.sendMessage(command);
     }
 }

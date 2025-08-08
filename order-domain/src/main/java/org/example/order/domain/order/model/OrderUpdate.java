@@ -20,4 +20,5 @@ public record OrderUpdate(
         Long modifiedUserId,
         String modifiedUserType,
         LocalDateTime modifiedDatetime
-) {}
+) {
+}

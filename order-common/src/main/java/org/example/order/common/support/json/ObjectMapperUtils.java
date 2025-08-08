@@ -89,7 +89,8 @@ public class ObjectMapperUtils {
      * Map으로 변환 (Object → Map)
      */
     public static Map<String, Object> valueToMap(Object data) {
-        return convertValue(data, new TypeReference<>() {});
+        return convertValue(data, new TypeReference<>() {
+        });
     }
 
     /**

@@ -15,5 +15,19 @@ spring:
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
-api:
-  key: "test"
+
+order:
+  api:
+    infra:
+      logging:
+        enabled: true
+        include-patterns: ["/*"]
+        exclude-patterns: ["/actuator/*"]
+        max-payload-length: 131072   # 128KB
+      security:
+        enabled: true
+        gateway:
+          header: X-Internal-Auth
+          secret: ${INTERNAL_GATEWAY_SECRET}
+        permit-all-patterns: ["/actuator/health", "/actuator/info"]
+        authenticated-patterns: ["/order/**"]  # 추가 패턴은 필요 시 확장

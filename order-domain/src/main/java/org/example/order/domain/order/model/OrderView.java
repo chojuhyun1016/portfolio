@@ -10,4 +10,5 @@ public record OrderView(
         Long userId,
         String userNumber,
         Long orderPrice
-) {}
+) {
+}

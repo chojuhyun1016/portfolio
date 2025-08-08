@@ -1,28 +1,40 @@
-//package org.example.order.api.master.controller.order;
-//
-//import jakarta.validation.Valid;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.slf4j.Slf4j;
-//import org.example.order.api.master.facade.order.OrderFacade;
-//import org.example.order.common.web.response.ApiResponse;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//@Slf4j
-//@RestController
-//@RequiredArgsConstructor
-//@RequestMapping(value = "/order")
-//public class OrderController {
-//    private final OrderFacade facade;
-//
-//    @GetMapping
-//    public ResponseEntity<ApiResponse<OrderCrudDto>> fetchById(@RequestParam Long orderId) {
-//        return ApiResponse.ok(facade.fetchById(orderId));
-//    }
-//
-//    @PostMapping
-//    public ResponseEntity<ApiResponse<Void>> sendOrderMasterMessage(@RequestBody @Valid OrderRemoteMessageDto message) {
-//        facade.sendOrderMessage(message);
-//        return ApiResponse.ok(null);
-//    }
-//}
+package org.example.order.api.master.controller.order;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.order.api.master.dto.order.LocalOrderRequest;
+import org.example.order.api.master.dto.order.LocalOrderResponse;
+import org.example.order.api.master.dto.order.OrderResponse;
+import org.example.order.api.master.facade.order.OrderFacade;
+import org.example.order.common.web.response.ApiResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+@Slf4j
+@Validated
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/order")
+public class OrderController {
+
+    private final OrderFacade facade;
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderResponse>> findById(@PathVariable Long orderId) {
+        log.info("[OrderController][findById] orderId={}", orderId);
+        return ApiResponse.ok(facade.findById(orderId));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<LocalOrderResponse>> sendOrderMasterMessage(
+            @RequestBody @Valid LocalOrderRequest request
+    ) {
+        log.info("[OrderController][sendOrderMasterMessage] orderId={}, methodType={}",
+                request.orderId(), request.methodType());
+        facade.sendOrderMessage(request);
+        return ApiResponse.accepted(new LocalOrderResponse(request.orderId(), HttpStatus.ACCEPTED.name()));
+    }
+}

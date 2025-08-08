@@ -11,11 +11,11 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public enum CurrencyType implements CodeEnum {
 
-    USD ("USD", List.of(RegionCode.US)),
-    TWD ("TWD", List.of(RegionCode.TW)),
-    CAD ("CAD", List.of(RegionCode.CA)),
-    HKD ("HKD", List.of(RegionCode.HK)),
-    KRW ("KRW", List.of(RegionCode.KR)),
+    USD("USD", List.of(RegionCode.US)),
+    TWD("TWD", List.of(RegionCode.TW)),
+    CAD("CAD", List.of(RegionCode.CA)),
+    HKD("HKD", List.of(RegionCode.HK)),
+    KRW("KRW", List.of(RegionCode.KR)),
     ;
 
     private final String text;

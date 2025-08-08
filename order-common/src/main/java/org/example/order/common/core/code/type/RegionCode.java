@@ -11,15 +11,15 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public enum RegionCode implements CodeEnum {
 
-    NN ("NN"),
-    KR ("KR"),
-    US ("US"),
-    CA ("CA"),
-    HK ("HK"),
-    TW ("TW"),
-    MY ("MY"),
-    SG ("SG"),
-    MX ("MX"),
+    NN("NN"),
+    KR("KR"),
+    US("US"),
+    CA("CA"),
+    HK("HK"),
+    TW("TW"),
+    MY("MY"),
+    SG("SG"),
+    MX("MX"),
     ;
 
     private final String text;

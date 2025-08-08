@@ -29,6 +29,13 @@ public class OrderLocalMessage extends DlqMessage {
         super(DlqOrderType.ORDER_LOCAL);
     }
 
+    public OrderLocalMessage(Long id, MessageMethodType methodType, Long publishedTimestamp) {
+        super(DlqOrderType.ORDER_LOCAL);
+        this.id = id;
+        this.methodType = methodType;
+        this.publishedTimestamp = publishedTimestamp;
+    }
+
     public void validation() {
         if (Stream.of(id, methodType, publishedTimestamp).anyMatch(Objects::isNull)) {
             throw new CommonException(CommonExceptionCode.INVALID_REQUEST);

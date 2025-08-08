@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.api.master.service.common.KafkaProducerService;
 import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
-import org.example.order.common.code.type.MessageCategory;
-import org.example.order.core.application.order.event.message.OrderRemoteEvent;
+import org.example.order.core.messaging.order.code.MessageCategory;
+import org.example.order.core.messaging.order.message.OrderLocalMessage;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -15,11 +15,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({KafkaTopicProperties.class})
 public class KafkaProducerServiceImpl implements KafkaProducerService {
+
     private final KafkaProducerCluster cluster;
     private final KafkaTopicProperties kafkaTopicProperties;
 
     @Override
-    public void sendToOrder(OrderRemoteEvent message) {
+    public void sendToOrder(OrderLocalMessage message) {
         send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_LOCAL));
     }
 

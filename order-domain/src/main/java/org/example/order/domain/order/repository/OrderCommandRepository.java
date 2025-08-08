@@ -11,5 +11,6 @@ import java.util.List;
  */
 public interface OrderCommandRepository {
     void bulkInsert(List<OrderEntity> entities);
+
     void bulkUpdate(List<OrderUpdate> syncList);
 }

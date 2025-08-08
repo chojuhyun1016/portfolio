@@ -1,17 +1,18 @@
 package org.example.order.core.application.order.mapper;
 
 import org.example.order.common.helper.datetime.DateTimeUtils;
+import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.dto.internal.LocalOrderDto;
+import org.example.order.core.messaging.order.message.OrderLocalMessage;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderUpdate;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * OrderSyncCommandMapper
- * - LocalOrderDto ↔ OrderEntity ↔ OrderUpdateCommand 변환
- * - DDD 원칙에 따라 Entity는 DTO를 몰라야 하므로, 변환은 Application 계층에서 수행
  */
 @Component
 public final class OrderMapper {
@@ -19,9 +20,24 @@ public final class OrderMapper {
     private OrderMapper() {}
 
     /**
+     * LocalOrderCommand → OrderLocalMessage 변환
+     */
+    public OrderLocalMessage toOrderLocalMessage(LocalOrderCommand command) {
+        if (command == null) return null;
+
+        Long nowEpochMillis = DateTimeUtils.localDateTimeToLong(LocalDateTime.now());
+
+        return new OrderLocalMessage(
+                command.orderId(),
+                command.methodType(),
+                nowEpochMillis
+        );
+    }
+
+    /**
      * OrderEntity → LocalOrderDto 변환
      */
-    public static LocalOrderDto toDto(OrderEntity entity) {
+    public LocalOrderDto toDto(OrderEntity entity) {
         if (entity == null) return null;
 
         return new LocalOrderDto(

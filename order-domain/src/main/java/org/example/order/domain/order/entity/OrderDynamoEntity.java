@@ -6,7 +6,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 
 /**
  * Order DynamoDB 엔티티
- *
+ * <p>
  * - DynamoDB V2 Enhanced Client용 엔티티
  * - @DynamoDbPartitionKey: 파티션 키 설정
  */

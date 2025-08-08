@@ -5,7 +5,8 @@ import org.example.order.common.core.code.type.ZoneCode;
 
 public class ZoneMapper {
 
-    private ZoneMapper() {}
+    private ZoneMapper() {
+    }
 
     public static ZoneCode zoneOf(RegionCode regionCode) {
         if (regionCode == null) {

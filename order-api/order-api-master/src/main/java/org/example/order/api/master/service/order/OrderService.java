@@ -1,9 +1,10 @@
 package org.example.order.api.master.service.order;
 
-import org.example.order.core.application.order.event.OrderRemoteMessageDto;
-import org.example.order.core.application.order.model.OrderVo;
+import org.example.order.core.application.order.dto.command.LocalOrderCommand;
+import org.example.order.core.application.order.dto.internal.OrderDto;
 
 public interface OrderService {
-    OrderVo fetchByIds(Long orderId);
-    void sendMessage(OrderRemoteMessageDto dto);
+    OrderDto findById(Long id);
+
+    void sendMessage(LocalOrderCommand command);
 }
