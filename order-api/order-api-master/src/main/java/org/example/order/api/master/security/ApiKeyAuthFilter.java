@@ -1,4 +1,4 @@
-package org.example.order.api.master.config;
+package org.example.order.api.master.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;

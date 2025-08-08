@@ -1,8 +1,7 @@
 package org.example.order.api.master.service.auth;
 
 import org.example.order.api.common.auth.ClientRole;
-import org.example.order.api.master.auth.CustomUserDetails;
-import org.example.order.api.master.config.ApiKeyProperties;
+import org.example.order.api.master.security.ApiKeyUserDetails;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,7 +17,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private Map<String, UserDetails> store;
 
     public CustomUserDetailsService(ApiKeyProperties apiKeyProperties) {
-        this.store = Map.of(apiKeyProperties.getKey(), new CustomUserDetails(apiKeyProperties.getKey(), ClientRole.ROLE_CLIENT.getCode()));
+        this.store = Map.of(apiKeyProperties.getKey(), new ApiKeyUserDetails(apiKeyProperties.getKey(), ClientRole.ROLE_CLIENT.getCode()));
     }
 
     @Override

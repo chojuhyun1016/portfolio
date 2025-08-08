@@ -7,9 +7,9 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
-import org.example.order.api.common.config.module.CustomHttpServletRequestWrapper;
-import org.example.order.common.context.AccessUserManager;
-import org.example.order.common.web.ApiResponse;
+import org.example.order.api.common.http.CachedBodyHttpServletRequest;
+import org.example.order.common.core.context.AccessUserContext;
+import org.example.order.common.web.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -36,7 +36,7 @@ public class LoggingAop {
             return;
         }
 
-        HttpServletRequest request = new CustomHttpServletRequestWrapper(attributes.getRequest());
+        HttpServletRequest request = new CachedBodyHttpServletRequest(attributes.getRequest());
         logHttpRequest(request);
     }
 
@@ -46,10 +46,12 @@ public class LoggingAop {
     }
 
     private void logHttpRequest(HttpServletRequest request) throws IOException {
+
         StringBuilder header = new StringBuilder();
         StringBuilder body = new StringBuilder();
 
         Enumeration<String> headerNames = request.getHeaderNames();
+
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             String headerValue = request.getHeader(headerName);
@@ -58,6 +60,7 @@ public class LoggingAop {
 
         BufferedReader reader = request.getReader();
         String line;
+
         while ((line = reader.readLine()) != null) {
             body.append(line);
         }
@@ -66,7 +69,7 @@ public class LoggingAop {
         log.info("Http Request");
         log.info("url : {}", request.getRequestURL());
         log.info("ip : {}", request.getRemoteAddr());
-        log.info("access user : {}", AccessUserManager.getAccessUser() != null ? AccessUserManager.getAccessUser().toString() : "null");
+        log.info("access user : {}", AccessUserContext.getAccessUser() != null ? AccessUserContext.getAccessUser().toString() : "null");
         log.info("method : {}", request.getMethod());
         log.info("query string : {}", request.getQueryString());
         log.info("headers : {}", header);
