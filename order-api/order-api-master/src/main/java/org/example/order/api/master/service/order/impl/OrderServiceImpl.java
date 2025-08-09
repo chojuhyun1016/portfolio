@@ -12,6 +12,7 @@ import org.example.order.core.application.order.mapper.OrderMapper;
 import org.example.order.core.messaging.order.message.OrderLocalMessage;
 import org.example.order.domain.order.repository.OrderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -23,6 +24,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public OrderDto findById(Long id) {
         return orderRepository
                 .findById(id)

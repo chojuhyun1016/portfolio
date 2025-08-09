@@ -20,14 +20,20 @@ order:
   api:
     infra:
       logging:
-        enabled: true
-        include-patterns: ["/*"]
-        exclude-patterns: ["/actuator/*"]
-        max-payload-length: 131072   # 128KB
+        filter-order: 10
+        mdc-filter-order: 5
+        incoming-header: X-Request-Id
+        response-header: X-Request-Id
       security:
         enabled: true
         gateway:
           header: X-Internal-Auth
           secret: ${INTERNAL_GATEWAY_SECRET}
-        permit-all-patterns: ["/actuator/health", "/actuator/info"]
-        authenticated-patterns: ["/order/**"]  # 추가 패턴은 필요 시 확장
+        permit-all-patterns:
+          - /actuator/health
+          - /actuator/info
+        authenticated-patterns:
+          - /order/**
+      format:
+        write-dates-as-timestamps: false
+

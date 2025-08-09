@@ -1,8 +1,8 @@
 rootProject.name = 'order'
 
 include 'order-common'
-include 'order-domain'
 include 'order-core'
+include 'order-domain'
 include 'order-api:order-api-common'
 include 'order-api:order-api-master'
 include 'order-worker'
