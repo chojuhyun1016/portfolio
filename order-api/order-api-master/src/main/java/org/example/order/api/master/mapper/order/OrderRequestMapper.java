@@ -13,7 +13,10 @@ import org.springframework.stereotype.Component;
 public class OrderRequestMapper {
 
     public LocalOrderCommand toCommand(LocalOrderRequest req) {
-        if (req == null) return null;
+        if (req == null) {
+            return null;
+        }
+
         return new LocalOrderCommand(req.orderId(), req.methodType());
     }
 }

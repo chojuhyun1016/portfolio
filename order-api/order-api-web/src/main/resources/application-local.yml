@@ -1,13 +1,13 @@
 server:
-  port: 8080
+  port: 7711
 
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: local
     import:
-      - application-core-dev.yml
-      - application-kafka-dev.yml
+      - application-core-local.yml
+      - application-kafka-local.yml
   jpa:
     show-sql: true
     properties:
@@ -16,12 +16,11 @@ spring:
         highlight_sql: true
         use_sql_comments: true
 
-
 order:
   api:
     infra:
       logging:
-        filter-order: 10
+        filter-order: 10            # 공통 표준 키
         mdc-filter-order: 5
         incoming-header: X-Request-Id
         response-header: X-Request-Id
@@ -29,7 +28,7 @@ order:
         enabled: true
         gateway:
           header: X-Internal-Auth
-          secret: ${INTERNAL_GATEWAY_SECRET}
+          secret: ${INTERNAL_GATEWAY_SECRET:local-secret}
         permit-all-patterns:
           - /actuator/health
           - /actuator/info

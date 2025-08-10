@@ -1,4 +1,4 @@
-package org.example.order.api.master.dto.order;
+package com.example.order.api.web.dto.order;
 
 import jakarta.validation.constraints.NotNull;
 

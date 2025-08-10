@@ -1,4 +1,4 @@
-package org.example.order.api.master.dto.order;
+package com.example.order.api.web.dto.order;
 
 /**
  * 주문 단건 조회 응답 DTO (API 레이어)

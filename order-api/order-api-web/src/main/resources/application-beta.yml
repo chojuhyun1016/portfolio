@@ -4,10 +4,10 @@ server:
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: beta
     import:
-      - application-core-dev.yml
-      - application-kafka-dev.yml
+      - application-core-beta.yml
+      - application-kafka-beta.yml
   jpa:
     show-sql: true
     properties:
@@ -15,7 +15,6 @@ spring:
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
-
 
 order:
   api:
