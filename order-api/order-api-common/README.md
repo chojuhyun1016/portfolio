@@ -7,7 +7,6 @@ order-api 모듈의 `common` 디렉토리는 공통적으로 사용되는 **설�
 ---
 
 ## 모듈 설계 철학
-
 1. 공통 모듈은 AutoConfiguration + @ConfigurationProperties 기본값으로 "행동과 디폴트"만 제공합니다.  
    각 서비스 모듈은 필요한 경우 application.yml 등을 통해 오버라이딩합니다.
 2. 서비스 모듈에서의 설정은 최소화하고, 공통 모듈은 재사용성과 확장성을 보장합니다.
@@ -16,7 +15,6 @@ order-api 모듈의 `common` 디렉토리는 공통적으로 사용되는 **설�
 ---
 
 ## 주요 기능
-
 - **전역 예외 처리**: API 응답 포맷 통일
 - **인증 상수 및 권한 Enum 관리**
 - **WebMvc 공통 설정**: 메시지 컨버터, 바인딩, 인터셉터
@@ -98,45 +96,29 @@ order-api 모듈의 `common` 디렉토리는 공통적으로 사용되는 **설�
 2. **서비스 모듈에서 application.yml 설정**  
    공통 모듈은 기본 동작을 제공하며, 서비스 모듈에서 필요한 경우 오버라이드합니다.
     ```yaml
-    # src/main/resources/application.yml
+    spring:
+      application:
+        name: order-api
+
     api:
       infra:
-        api-key: your-api-key
+        api-key: example-key
         allowed-ips:
-          - 192.168.0.1
-          - 10.0.0.0/8
+          - 127.0.0.1
+          - 192.168.1.0/24
+
     logging:
-      pattern:
-        level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+      level:
+        root: INFO
+        org.springframework.web: DEBUG
     ```
 
 3. **AutoConfiguration 동작 방식**
-  - Spring Boot가 자동으로 `Common*AutoConfiguration` 클래스들을 로드
-  - `@ConfigurationProperties`를 통해 설정 값 주입
-  - 각 서비스 모듈에서 최소한의 설정으로 통합된 환경 제공
+- Spring Boot가 자동으로 `Common*AutoConfiguration` 클래스들을 로드
+- `@ConfigurationProperties`를 통해 설정 값 주입
+- 각 서비스 모듈에서 최소한의 설정으로 통합된 환경 제공
 
 ---
-
-## application.yml 예시 (서비스 모듈)
-
-경로: `src/main/resources/application.yml`
-
-```yaml
-spring:
-  application:
-    name: order-api
-
-api:
-  infra:
-    api-key: example-key
-    allowed-ips:
-      - 127.0.0.1
-      - 192.168.1.0/24
-
-logging:
-  level:
-    root: INFO
-    org.springframework.web: DEBUG
 
 ## 요약
 | 디렉토리 | 책임 |
@@ -148,6 +130,8 @@ logging:
 | binder | DateTime/Enum 바인딩 |
 | support | Jackson 및 포맷 설정 |
 | config.mvc | MVC 전역 설정 |
+
+---
 
 ## 권장 구성 방식
 - 공통 모듈: AutoConfiguration + @ConfigurationProperties 기본값 제공

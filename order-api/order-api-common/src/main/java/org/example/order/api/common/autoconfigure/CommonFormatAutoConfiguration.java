@@ -11,6 +11,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.YearMonthSerializer;
+import org.example.order.api.common.autoconfigure.condition.FormatConfigPresentCondition;
 import org.example.order.api.common.infra.ApiInfraProperties;
 import org.example.order.api.common.web.binder.DateTimeBinder;
 import org.example.order.api.common.web.binder.EnumBinder;
@@ -19,17 +20,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 
 import static org.example.order.common.helper.datetime.DateTimeFormat.*;
 
 /**
- * 포맷 자동 구성:
- * - Date/Time 컨버터 등록
- * - Enum ConverterFactory 등록
- * - Jackson 포맷 커스터마이즈(문자열 포맷 기본, 필요시 timestamp 스위치)
+ * 포맷 자동 구성
+ * - Date/Time 컨버터, Enum 컨버터 팩토리, Jackson 포맷 커스터마이즈
+ * - 설정 존재 시에만 활성(opt-in)
  */
 @AutoConfiguration
 @EnableConfigurationProperties(ApiInfraProperties.class)
+@Conditional(FormatConfigPresentCondition.class)
 public class CommonFormatAutoConfiguration {
 
     @Bean

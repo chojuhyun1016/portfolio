@@ -1,5 +1,6 @@
 package org.example.order.api.common.autoconfigure;
 
+import org.example.order.api.common.autoconfigure.condition.WebConfigPresentCondition;
 import org.example.order.api.common.infra.ApiInfraProperties;
 import org.example.order.api.common.web.advice.GlobalExceptionHandler;
 import org.example.order.api.common.web.binder.DateTimeBinder;
@@ -11,15 +12,16 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 
 /**
- * 공통 Web 자동 구성:
- * - 전역 예외 핸들러
- * - 바인더/포맷터 등록
- * - 요청 로깅 필터 등록
+ * 공통 Web 자동 구성
+ * - 전역 예외 핸들러, 바인더/포맷터, 요청 로깅 필터
+ * - 설정 존재 시에만 활성(opt-in)
  */
 @AutoConfiguration
 @EnableConfigurationProperties(ApiInfraProperties.class)
+@Conditional(WebConfigPresentCondition.class)
 public class CommonWebAutoConfiguration {
 
     @Bean

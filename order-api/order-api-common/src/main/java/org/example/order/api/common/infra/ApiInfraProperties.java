@@ -4,12 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * 공통 인프라 프로퍼티:
- * - logging: 필터 순서, 요청/응답 헤더명
- * - security: 활성화, permitAll/authenticated 패턴, 게이트웨이 검증 헤더/시크릿
- * - format: 날짜/시간 직렬화 방식(문자열/타임스탬프)
- */
 @Getter
 @ConfigurationProperties(prefix = "order.api.infra")
 public class ApiInfraProperties {
@@ -25,17 +19,28 @@ public class ApiInfraProperties {
         private int mdcFilterOrder = 5;
         private String incomingHeader = "X-Request-Id";
         private String responseHeader = "X-Request-Id";
-
     }
 
     @Getter
-    @Setter
     public static class Security {
+        @Setter
         private boolean enabled = true;
+
         private String[] permitAllPatterns = new String[]{"/actuator/health", "/actuator/info"};
         private String[] authenticatedPatterns = new String[]{"/api/**"};
+
         private final Gateway gateway = new Gateway();
 
+        // 세터에서 null 방지
+        public void setPermitAllPatterns(String[] v) {
+            this.permitAllPatterns = (v == null) ? new String[0] : v;
+        }
+
+        public void setAuthenticatedPatterns(String[] v) {
+            this.authenticatedPatterns = (v == null) ? new String[0] : v;
+        }
+
+        // 커스텀 접근자(코드 가독성 용도)
         public String[] permitAllPatterns() {
             return permitAllPatterns;
         }
