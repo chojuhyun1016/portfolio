@@ -10,20 +10,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.example.order.api.master.utils.ApiDocumentUtils.getDocumentRequest;
-import static org.example.order.api.master.utils.ApiDocumentUtils.getDocumentResponse;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.beneathPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
+import static org.example.order.api.master.utils.ApiDocumentUtils.getDocumentRequest;
+import static org.example.order.api.master.utils.ApiDocumentUtils.getDocumentResponse;
+
+import org.springframework.security.test.context.support.WithMockUser;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -36,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - 응답은 ApiResponse<LocalOrderResponse> 래핑 구조
  * - CSRF 적용 환경이므로 요청에 .with(csrf()) 추가
  * - enum 값은 하드코딩하지 않고 런타임에서 안전하게 선택
+ * REST Docs: document("order-send", ...) 스니펫 생성
  */
 @WebMvcTest(controllers = OrderController.class)
 @WithMockUser
@@ -52,12 +54,11 @@ class OrderControllerTest extends AbstractControllerTest {
         // given
         doNothing().when(facade).sendOrderMessage(any(LocalOrderRequest.class));
 
-        // enum을 하드코딩하지 않고, 실제 프로젝트에 정의된 첫 번째 상수를 사용
         MessageMethodType anyValidMethod = MessageMethodType.values()[0];
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("orderId", 1L);
-        payload.put("methodType", anyValidMethod.name()); // Jackson 기본 전략: name() 문자열과 매칭
+        payload.put("methodType", anyValidMethod.name());
 
         String json = objectMapper.writeValueAsString(payload);
 

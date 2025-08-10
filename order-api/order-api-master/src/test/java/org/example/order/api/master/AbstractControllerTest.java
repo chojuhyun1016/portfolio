@@ -16,7 +16,13 @@ import org.springframework.test.web.servlet.MockMvc;
  */
 @ExtendWith({SpringExtension.class, RestDocumentationExtension.class})
 @AutoConfigureMockMvc
-@AutoConfigureRestDocs(outputDir = "build/generated-snippets")
+// REST Docs: 스니펫 생성 경로 및 표시용 기본 URI 옵션
+@AutoConfigureRestDocs(
+        outputDir = "build/generated-snippets",
+        uriScheme = "https",                      // REST Docs: 문서 예시용 스킴
+        uriHost = "api.example.com",              // REST Docs: 문서 예시용 호스트
+        uriPort = 443                             // REST Docs: 문서 예시용 포트
+)
 @TestPropertySource(properties = {
         "order.api.infra.security.enabled=false",
         "order.api.infra.logging.enabled=false",

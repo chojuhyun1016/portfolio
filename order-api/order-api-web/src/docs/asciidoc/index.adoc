@@ -1,0 +1,9 @@
+= Order API 문서
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+== 주문 조회
+
+include::{snippets}/order-fetch/http-request.adoc[]
+include::{snippets}/order-fetch/http-response.adoc[]

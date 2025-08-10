@@ -1,4 +1,3 @@
-// src/test/java/com/example/order/api/web/OrderControllerTest.java
 package com.example.order.api.web;
 
 import com.example.order.api.web.controller.order.OrderController;
@@ -12,9 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 
-// 핵심: RestDocumentationRequestBuilders 사용
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-
 import static com.example.order.api.web.utils.ApiDocumentUtils.getDocumentRequest;
 import static com.example.order.api.web.utils.ApiDocumentUtils.getDocumentResponse;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -28,6 +25,13 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * OrderController 슬라이스 테스트 + REST Docs
+ * - GET /order/{orderId}
+ * - Facade는 MockBean
+ * - WithMockUser: 스프링 시큐리티 통과
+ * - 응답은 ApiResponse<data=OrderResponse> 구조
+ */
 @WebMvcTest(controllers = OrderController.class)
 @Import(OrderController.class)
 @WithMockUser
@@ -39,21 +43,15 @@ class OrderControllerTest extends AbstractControllerTest {
     @DisplayName("GET /order/{orderId} - 주문 단건 조회 문서화")
     @Test
     void findById_ok() throws Exception {
+        // given
         var resp = new OrderResponse(
-                1L,      // id
-                10L,     // userId
-                "U-10",  // userNumber
-                100L,    // orderId
-                "O-100", // orderNumber
-                15000L,  // orderPrice
-                false,   // deleteYn
-                3L,      // version
-                1710000000000L
+                1L, 10L, "U-10", 100L, "O-100", 15000L, false, 3L, 1710000000000L
         );
         when(facade.findById(anyLong())).thenReturn(resp);
 
+        // when & then
         mockMvc.perform(
-                        get("/order/{orderId}", 100L) // 템플릿 정보를 가진 빌더
+                        get("/order/{orderId}", 100L)
                                 .accept(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
