@@ -4,3 +4,15 @@
 :sectlinks:
 
 == 주문 조회
+
+경로 변수
+include::{snippets}/order-find-by-id/path-parameters.adoc[]
+
+응답 필드
+include::{snippets}/order-find-by-id/response-fields-data.adoc[]
+
+HTTP 요청 예시
+include::{snippets}/order-find-by-id/http-request.adoc[]
+
+HTTP 응답 예시
+include::{snippets}/order-find-by-id/http-response.adoc[]

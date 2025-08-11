@@ -1,6 +1,18 @@
-= Order API 문서
+= Order API Master 문서
 :toc: left
 :toclevels: 2
 :sectlinks:
 
-== 주문 조회
+== 주문 메시지 전송 (POST /order)
+
+요청 필드
+include::{snippets}/order-send/request-fields.adoc[]
+
+응답 필드
+include::{snippets}/order-send/response-fields-data.adoc[]
+
+HTTP 요청 예시
+include::{snippets}/order-send/http-request.adoc[]
+
+HTTP 응답 예시
+include::{snippets}/order-send/http-response.adoc[]

@@ -6,7 +6,7 @@ spring:
     activate:
       on-profile: local
     import:
-      - application-core-local.yml
+      - application-local.yml
       - application-kafka-local.yml
   jpa:
     show-sql: true
