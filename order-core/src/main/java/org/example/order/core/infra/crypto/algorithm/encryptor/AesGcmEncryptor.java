@@ -1,11 +1,8 @@
 package org.example.order.core.infra.crypto.algorithm.encryptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.helper.encode.Base64Utils;
-import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.exception.DecryptException;
@@ -18,53 +15,38 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * AES-GCM 256 암호화/복호화 Encryptor (SecretsKeyResolver 기반)
- * - Secrets Manager에서 AES-GCM 키를 가져와 사용
- * - 다중 알고리즘 구조를 지원하는 키매니저1 연동
+ * AES-GCM 256 Encryptor
+ * - 키는 외부에서 setKey(base64)로 주입
+ * - SecretsKeyResolver 등 외부 키 매니저에 의존하지 않음
  */
 @Slf4j
 @Component("aesGcmEncryptor")
-@RequiredArgsConstructor
 public class AesGcmEncryptor implements Encryptor {
 
-    private static final int KEY_LENGTH = 32;    // 32 bytes (256-bit)
-    private static final int IV_LENGTH = 12;     // 12 bytes (GCM 권장)
-    private static final byte VERSION = 0x01;    // 암호화 버전 관리
-    private static final String KEY_NAME = CryptoAlgorithmType.AESGCM.name();  // 키 식별자
+    private static final int KEY_LENGTH = 32;  // 256-bit
+    private static final int IV_LENGTH = 12;   // GCM 권장
+    private static final byte VERSION = 0x01;
 
-    private final SecretsKeyResolver secretsKeyResolver; // 키매니저1 주입
     private final SecureRandom random = new SecureRandom();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private byte[] key;
 
     /**
-     * 부팅 시 Secrets Manager에서 AES-GCM 키를 로드
-     */
-    @PostConstruct
-    public void init() {
-        try {
-            this.key = secretsKeyResolver.getCurrentKey(KEY_NAME);
-
-            if (key == null || key.length != KEY_LENGTH) {
-                throw new IllegalArgumentException(
-                        String.format("AES-GCM key must be exactly %d bytes. Found: %s",
-                                KEY_LENGTH, (key == null ? "null" : key.length + " bytes")));
-            }
-
-            log.info("[AesGcmEncryptor] AES-GCM key [{}] loaded successfully.", KEY_NAME);
-        } catch (Exception e) {
-            log.error("[AesGcmEncryptor] Failed to load AES-GCM key: {}", e.getMessage(), e);
-            throw e;
-        }
-    }
-
-    /**
-     * setKey는 외부 초기화를 허용하지 않음
+     * 외부에서 Base64(URL-safe) 키를 주입
      */
     @Override
     public void setKey(String base64Key) {
-        throw new UnsupportedOperationException("setKey is not supported. SecretsKeyResolver is used for key management.");
+        try {
+            byte[] k = Base64Utils.decodeUrlSafe(base64Key);
+            if (k == null || k.length != KEY_LENGTH) {
+                throw new IllegalArgumentException("AES-GCM key must be exactly 32 bytes.");
+            }
+            this.key = k;
+            log.info("[AesGcmEncryptor] key set ({} bytes).", k.length);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid AES-GCM base64 key.", e);
+        }
     }
 
     /**
@@ -91,7 +73,6 @@ public class AesGcmEncryptor implements Encryptor {
 
             return objectMapper.writeValueAsString(payload);
         } catch (Exception e) {
-            log.error("[AesGcmEncryptor] Encryption failed: {}", e.getMessage(), e);
             throw new EncryptException("AES-GCM encryption failed", e);
         }
     }
@@ -109,19 +90,16 @@ public class AesGcmEncryptor implements Encryptor {
         try {
             Map<String, Object> payload = objectMapper.readValue(json, Map.class);
             byte version = Byte.parseByte(String.valueOf(payload.get("ver")));
-
             if (version != VERSION) {
                 throw new DecryptException("Unsupported AES-GCM encryption version: " + version);
             }
 
             byte[] iv = Base64Utils.decodeUrlSafe(String.valueOf(payload.get("iv")));
             byte[] cipher = Base64Utils.decodeUrlSafe(String.valueOf(payload.get("cipher")));
-
             byte[] plain = AesGcmEngine.decrypt(cipher, key, iv);
 
             return new String(plain, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.error("[AesGcmEncryptor] Decryption failed: {}", e.getMessage(), e);
             throw new DecryptException("AES-GCM decryption failed", e);
         }
     }
@@ -131,7 +109,7 @@ public class AesGcmEncryptor implements Encryptor {
      */
     @Override
     public boolean isReady() {
-        return key != null;
+        return key != null && key.length == KEY_LENGTH;
     }
 
     /**
@@ -147,7 +125,7 @@ public class AesGcmEncryptor implements Encryptor {
      */
     private void ensureReady() {
         if (!isReady()) {
-            throw new IllegalStateException("AES-GCM encryptor not initialized. Key is missing.");
+            throw new IllegalStateException("AES-GCM encryptor not initialized. Call setKey(base64) first.");
         }
     }
 }

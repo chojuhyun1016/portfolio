@@ -1,16 +1,15 @@
-package org.example.order.core.infra.common.secrets.config;
+package org.example.order.core.infra.common.secrets.aws;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * AWS Secrets Manager 설정 프로퍼티
+ * - 자동 로드 방지를 위해 @Configuration 제거 (EnableConfigurationProperties로만 활성화)
  */
 @Getter
 @Setter
-@Configuration
 @ConfigurationProperties(prefix = "aws.secrets-manager")
 public class SecretsManagerProperties {
     private String region;

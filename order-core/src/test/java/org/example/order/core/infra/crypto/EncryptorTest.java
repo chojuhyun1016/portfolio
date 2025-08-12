@@ -1,108 +1,70 @@
 package org.example.order.core.infra.crypto;
 
 import org.example.order.common.helper.encode.Base64Utils;
-import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
-import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
 import org.example.order.core.infra.crypto.algorithm.encryptor.Aes128Encryptor;
 import org.example.order.core.infra.crypto.algorithm.encryptor.Aes256Encryptor;
 import org.example.order.core.infra.crypto.algorithm.encryptor.AesGcmEncryptor;
-import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.security.SecureRandom;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Encryptor 계열 (AES128 / AES256 / AES-GCM) 단위 테스트 - 키매니저1 적용
+ * Encryptor 계열 (AES128 / AES256 / AES-GCM) 단위 테스트 – SecretsKeyResolver 제거 버전
+ * <p>
+ * - 각 Encryptor 인스턴스를 직접 생성하고 setKey()로 키 주입
+ * - 암복호화 왕복 검증
  */
 class EncryptorTest {
 
-    private SecretsKeyResolver secretsKeyResolver;
+    private static final SecureRandom RND = new SecureRandom();
 
-    @BeforeEach
-    void setup() {
-        this.secretsKeyResolver = new SecretsKeyResolver();
-
-        // AES-128: 16 bytes key
-        byte[] aes128Key = generateKey(16);
-        secretsKeyResolver.updateKey(
-                CryptoAlgorithmType.AES128.name(),
-                createKeySpec("AES-CBC", 128, aes128Key)
-        );
-
-        // AES-256: 32 bytes key
-        byte[] aes256Key = generateKey(32);
-        secretsKeyResolver.updateKey(
-                CryptoAlgorithmType.AES256.name(),
-                createKeySpec("AES-CBC", 256, aes256Key)
-        );
-
-        // AES-GCM: 32 bytes key
-        byte[] aesGcmKey = generateKey(32);
-        secretsKeyResolver.updateKey(
-                CryptoAlgorithmType.AESGCM.name(),
-                createKeySpec("AES-GCM", 256, aesGcmKey)
-        );
-    }
-
-    private CryptoKeySpec createKeySpec(String algorithm, int keySize, byte[] keyBytes) {
-        CryptoKeySpec spec = new CryptoKeySpec();
-        spec.setAlgorithm(algorithm);
-        spec.setKeySize(keySize);
-        spec.setValue(Base64Utils.encodeUrlSafe(keyBytes));
-
-        return spec;
-    }
-
-    private byte[] generateKey(int length) {
-        byte[] keyBytes = new byte[length];
-
-        for (int i = 0; i < length; i++) {
-            keyBytes[i] = (byte) (i + 1);  // 간단한 테스트용 키 생성
-        }
-
-        return keyBytes;
+    private static String b64Key(int bytes) {
+        byte[] k = new byte[bytes];
+        RND.nextBytes(k);
+        return Base64Utils.encodeUrlSafe(k);
     }
 
     @Test
     void testAes128EncryptAndDecrypt() {
-        Aes128Encryptor encryptor = new Aes128Encryptor(secretsKeyResolver);
-        encryptor.init();
+        Aes128Encryptor encryptor = new Aes128Encryptor();
+        encryptor.setKey(b64Key(16)); // 128-bit
 
         assertTrue(encryptor.isReady());
-        String plainText = "Sensitive data for AES128";
-        String encrypted = encryptor.encrypt(plainText);
-        String decrypted = encryptor.decrypt(encrypted);
+        String plain = "Sensitive data for AES128";
+        String enc = encryptor.encrypt(plain);
+        String dec = encryptor.decrypt(enc);
 
-        assertNotNull(encrypted);
-        assertEquals(plainText, decrypted);
+        assertNotNull(enc);
+        assertEquals(plain, dec);
     }
 
     @Test
     void testAes256EncryptAndDecrypt() {
-        Aes256Encryptor encryptor = new Aes256Encryptor(secretsKeyResolver);
-        encryptor.init();
+        Aes256Encryptor encryptor = new Aes256Encryptor();
+        encryptor.setKey(b64Key(32)); // 256-bit
 
         assertTrue(encryptor.isReady());
-        String plainText = "Sensitive data for AES256";
-        String encrypted = encryptor.encrypt(plainText);
-        String decrypted = encryptor.decrypt(encrypted);
+        String plain = "Sensitive data for AES256";
+        String enc = encryptor.encrypt(plain);
+        String dec = encryptor.decrypt(enc);
 
-        assertNotNull(encrypted);
-        assertEquals(plainText, decrypted);
+        assertNotNull(enc);
+        assertEquals(plain, dec);
     }
 
     @Test
     void testAesGcmEncryptAndDecrypt() {
-        AesGcmEncryptor encryptor = new AesGcmEncryptor(secretsKeyResolver);
-        encryptor.init();
+        AesGcmEncryptor encryptor = new AesGcmEncryptor();
+        encryptor.setKey(b64Key(32)); // 256-bit
 
         assertTrue(encryptor.isReady());
-        String plainText = "Sensitive data for AES-GCM";
-        String encrypted = encryptor.encrypt(plainText);
-        String decrypted = encryptor.decrypt(encrypted);
+        String plain = "Sensitive data for AES-GCM";
+        String enc = encryptor.encrypt(plain);
+        String dec = encryptor.decrypt(enc);
 
-        assertNotNull(encrypted);
-        assertEquals(plainText, decrypted);
+        assertNotNull(enc);
+        assertEquals(plain, dec);
     }
 }

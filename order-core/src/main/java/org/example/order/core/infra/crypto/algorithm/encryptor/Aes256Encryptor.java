@@ -1,11 +1,8 @@
 package org.example.order.core.infra.crypto.algorithm.encryptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.helper.encode.Base64Utils;
-import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.exception.DecryptException;
@@ -18,52 +15,38 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * AES-256 CBC 암호화/복호화 Encryptor (SecretsKeyResolver 기반)
- * - Secrets Manager에서 다중 키를 관리하며, AES-256 키를 조회해 사용
+ * AES-256 CBC Encryptor
+ * - 키는 외부에서 setKey(base64)로 주입
+ * - SecretsKeyResolver 등 외부 키 매니저에 의존하지 않음
  */
 @Slf4j
 @Component("aes256Encryptor")
-@RequiredArgsConstructor
 public class Aes256Encryptor implements Encryptor {
 
-    private static final int KEY_LENGTH = 32;      // 32바이트 (256비트)
-    private static final int IV_LENGTH = 16;       // 16바이트 (128비트)
-    private static final byte VERSION = 0x01;      // 암호화 버전 관리
-    private static final String KEY_NAME = CryptoAlgorithmType.AES256.name();  // 키 식별자
+    private static final int KEY_LENGTH = 32;  // 256-bit
+    private static final int IV_LENGTH = 16;
+    private static final byte VERSION = 0x01;
 
-    private final SecretsKeyResolver secretsKeyResolver;
     private final SecureRandom random = new SecureRandom();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private byte[] key;  // 현재 사용 중인 AES-256 키
+    private byte[] key;
 
     /**
-     * 부팅 시 Secrets Manager에서 AES-256 키를 가져와 초기화
-     */
-    @PostConstruct
-    public void init() {
-        try {
-            this.key = secretsKeyResolver.getCurrentKey(KEY_NAME);
-
-            if (key == null || key.length != KEY_LENGTH) {
-                throw new IllegalArgumentException(
-                        String.format("AES-256 key must be exactly %d bytes. Found: %s",
-                                KEY_LENGTH, (key == null ? "null" : key.length + " bytes")));
-            }
-
-            log.info("[Aes256Encryptor] AES-256 key [{}] loaded successfully.", KEY_NAME);
-        } catch (Exception e) {
-            log.error("[Aes256Encryptor] Failed to load AES-256 key: {}", e.getMessage(), e);
-            throw e;
-        }
-    }
-
-    /**
-     * setKey는 외부 초기화를 허용하지 않음
+     * 외부에서 Base64(URL-safe) 키를 주입
      */
     @Override
     public void setKey(String base64Key) {
-        throw new UnsupportedOperationException("setKey is not supported. SecretsKeyResolver is used for key management.");
+        try {
+            byte[] k = Base64Utils.decodeUrlSafe(base64Key);
+            if (k == null || k.length != KEY_LENGTH) {
+                throw new IllegalArgumentException("AES-256 key must be exactly 32 bytes.");
+            }
+            this.key = k;
+            log.info("[Aes256Encryptor] key set ({} bytes).", k.length);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid AES-256 base64 key.", e);
+        }
     }
 
     /**
@@ -90,7 +73,6 @@ public class Aes256Encryptor implements Encryptor {
 
             return objectMapper.writeValueAsString(payload);
         } catch (Exception e) {
-            log.error("[Aes256Encryptor] Encryption failed: {}", e.getMessage(), e);
             throw new EncryptException("AES-256 encryption failed", e);
         }
     }
@@ -108,7 +90,6 @@ public class Aes256Encryptor implements Encryptor {
         try {
             Map<String, Object> payload = objectMapper.readValue(json, Map.class);
             byte version = Byte.parseByte(String.valueOf(payload.get("ver")));
-
             if (version != VERSION) {
                 throw new DecryptException("Unsupported AES-256 encryption version: " + version);
             }
@@ -119,7 +100,6 @@ public class Aes256Encryptor implements Encryptor {
 
             return new String(plain, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.error("[Aes256Encryptor] Decryption failed: {}", e.getMessage(), e);
             throw new DecryptException("AES-256 decryption failed", e);
         }
     }
@@ -129,7 +109,7 @@ public class Aes256Encryptor implements Encryptor {
      */
     @Override
     public boolean isReady() {
-        return key != null;
+        return key != null && key.length == KEY_LENGTH;
     }
 
     /**
@@ -145,7 +125,7 @@ public class Aes256Encryptor implements Encryptor {
      */
     private void ensureReady() {
         if (!isReady()) {
-            throw new IllegalStateException("AES-256 encryptor not initialized. Key is missing.");
+            throw new IllegalStateException("AES-256 encryptor not initialized. Call setKey(base64) first.");
         }
     }
 }

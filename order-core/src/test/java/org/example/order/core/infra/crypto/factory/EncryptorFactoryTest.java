@@ -1,125 +1,101 @@
 package org.example.order.core.infra.crypto.factory;
 
-import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
+import org.example.order.core.infra.crypto.algorithm.encryptor.Aes128Encryptor;
+import org.example.order.core.infra.crypto.algorithm.encryptor.Aes256Encryptor;
+import org.example.order.core.infra.crypto.algorithm.encryptor.AesGcmEncryptor;
+import org.example.order.core.infra.crypto.algorithm.hasher.Argon2Hasher;
+import org.example.order.core.infra.crypto.algorithm.hasher.BcryptHasher;
+import org.example.order.core.infra.crypto.algorithm.hasher.Sha256Hasher;
+import org.example.order.core.infra.crypto.algorithm.signer.HmacSha256Signer;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
-import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
+import org.example.order.core.infra.crypto.contract.Hasher;
+import org.example.order.core.infra.crypto.contract.Signer;
 import org.example.order.common.helper.encode.Base64Utils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.security.SecureRandom;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {
-        EncryptorFactoryTest.TestConfig.class
-})
+/**
+ * EncryptorFactory 테스트 (SecretsKeyResolver 제거 버전)
+ * <p>
+ * - Encryptor/Signer 인스턴스를 직접 생성하고 setKey()로 키 주입
+ * - Factory 생성 시 리스트로 전달하여 타입별 조회 검증
+ */
 class EncryptorFactoryTest {
 
-    @TestConfiguration
-    @ComponentScan(basePackages = "org.example.order.core.infra.crypto")
-    static class TestConfig {
+    private static final SecureRandom RND = new SecureRandom();
 
-        @Bean
-        public SecretsKeyResolver secretsKeyResolver() {
-            SecretsKeyResolver resolver = new SecretsKeyResolver();
-
-            // AES-128: 16바이트 키 스펙
-            resolver.updateKey(
-                    CryptoAlgorithmType.AES128.name(),
-                    createKeySpec("AES-CBC", 128, generateKey(16))
-            );
-
-            // AES-256: 32바이트 키 스펙
-            resolver.updateKey(
-                    CryptoAlgorithmType.AES256.name(),
-                    createKeySpec("AES-CBC", 256, generateKey(32))
-            );
-
-            // AES-GCM: 32바이트 키 스펙
-            resolver.updateKey(
-                    CryptoAlgorithmType.AESGCM.name(),
-                    createKeySpec("AES-GCM", 256, generateKey(32))
-            );
-
-            // HMAC-SHA256: 32바이트 키 스펙 (보통 256bit를 사용)
-            resolver.updateKey(
-                    CryptoAlgorithmType.HMAC_SHA256.name(),
-                    createKeySpec("HMAC-SHA256", 256, generateKey(32))
-            );
-
-            return resolver;
-        }
-
-        private static CryptoKeySpec createKeySpec(String algorithm, int keySize, byte[] keyBytes) {
-            CryptoKeySpec spec = new CryptoKeySpec();
-            spec.setAlgorithm(algorithm);
-            spec.setKeySize(keySize);
-            spec.setValue(Base64Utils.encodeUrlSafe(keyBytes));
-
-            return spec;
-        }
-
-        private static byte[] generateKey(int length) {
-            byte[] keyBytes = new byte[length];
-
-            for (int i = 0; i < length; i++) {
-                keyBytes[i] = (byte) (i + 1);
-            }
-
-            return keyBytes;
-        }
-    }
-
-    @Autowired
-    private EncryptorFactory encryptorFactory;
-
-    @Test
-    @DisplayName("EncryptorFactory 주입 확인")
-    void testFactoryIsLoaded() {
-        assertNotNull(encryptorFactory, "EncryptorFactory가 정상 주입되어야 합니다.");
+    private static String b64Key(int bytes) {
+        byte[] k = new byte[bytes];
+        RND.nextBytes(k);
+        return Base64Utils.encodeUrlSafe(k);
     }
 
     @Test
-    @DisplayName("AES-GCM Encryptor 정상 반환")
-    void testGetAesGcmEncryptor() {
-        Encryptor encryptor = encryptorFactory.getEncryptor(CryptoAlgorithmType.AESGCM);
-        assertNotNull(encryptor, "AES-GCM Encryptor가 null이 아니어야 합니다.");
-        assertEquals(CryptoAlgorithmType.AESGCM, encryptor.getType());
-    }
+    @DisplayName("EncryptorFactory 주입/조회 정상 동작")
+    void testFactoryLookup() {
+        // Encryptors (키 사전 주입)
+        Aes128Encryptor aes128 = new Aes128Encryptor();
+        aes128.setKey(b64Key(16));
 
-    @Test
-    @DisplayName("AES-128 Encryptor 정상 반환")
-    void testGetAes128Encryptor() {
-        Encryptor encryptor = encryptorFactory.getEncryptor(CryptoAlgorithmType.AES128);
-        assertNotNull(encryptor, "AES-128 Encryptor가 null이 아니어야 합니다.");
-        assertEquals(CryptoAlgorithmType.AES128, encryptor.getType());
-    }
+        Aes256Encryptor aes256 = new Aes256Encryptor();
+        aes256.setKey(b64Key(32));
 
-    @Test
-    @DisplayName("AES-256 Encryptor 정상 반환")
-    void testGetAes256Encryptor() {
-        Encryptor encryptor = encryptorFactory.getEncryptor(CryptoAlgorithmType.AES256);
-        assertNotNull(encryptor, "AES-256 Encryptor가 null이 아니어야 합니다.");
-        assertEquals(CryptoAlgorithmType.AES256, encryptor.getType());
+        AesGcmEncryptor aesgcm = new AesGcmEncryptor();
+        aesgcm.setKey(b64Key(32));
+
+        // Hashers
+        Hasher bcrypt = new BcryptHasher();
+        Hasher argon2 = new Argon2Hasher();
+        Hasher sha256 = new Sha256Hasher();
+
+        // Signer (키 사전 주입)
+        HmacSha256Signer hmac = new HmacSha256Signer();
+        hmac.setKey(b64Key(32));
+
+        EncryptorFactory factory = new EncryptorFactory(
+                List.of(aes128, aes256, aesgcm),
+                List.of(bcrypt, argon2, sha256),
+                List.of(hmac)
+        );
+
+        // Encryptor 조회
+        Encryptor g1 = factory.getEncryptor(CryptoAlgorithmType.AESGCM);
+        assertNotNull(g1);
+        assertEquals(CryptoAlgorithmType.AESGCM, g1.getType());
+
+        Encryptor e128 = factory.getEncryptor(CryptoAlgorithmType.AES128);
+        assertNotNull(e128);
+        assertEquals(CryptoAlgorithmType.AES128, e128.getType());
+
+        Encryptor e256 = factory.getEncryptor(CryptoAlgorithmType.AES256);
+        assertNotNull(e256);
+        assertEquals(CryptoAlgorithmType.AES256, e256.getType());
+
+        // Signer 조회
+        Signer s = factory.getSigner(CryptoAlgorithmType.HMAC_SHA256);
+        assertNotNull(s);
+        assertEquals(CryptoAlgorithmType.HMAC_SHA256, s.getType());
     }
 
     @Test
     @DisplayName("지원하지 않는 Encryptor 타입 예외 처리 확인")
     void testUnsupportedEncryptorThrowsException() {
-        CryptoAlgorithmType unsupportedType = CryptoAlgorithmType.ARGON2;
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> encryptorFactory.getEncryptor(unsupportedType)
+        EncryptorFactory factory = new EncryptorFactory(
+                List.of(new Aes128Encryptor()), // 키 미주입해도 조회만 검증
+                List.of(new BcryptHasher()),
+                List.of(new HmacSha256Signer())
         );
 
-        assertTrue(exception.getMessage().contains("Unsupported encryptor"), "지원하지 않는 타입은 예외를 던져야 합니다.");
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> factory.getEncryptor(CryptoAlgorithmType.ARGON2) // Encryptor 아님
+        );
+        assertTrue(ex.getMessage().contains("Unsupported encryptor"));
     }
 }

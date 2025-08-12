@@ -1,0 +1,51 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+
+  # 테스트에서 코어(시크릿/암호화) 자동구성 차단
+  autoconfigure:
+    exclude:
+      - org.example.order.core.infra.config.SecretsAutoConfiguration
+      - org.example.order.core.infra.config.CryptoAutoConfiguration
+
+# 코어 모듈의 ConditionalOnProperty 깃발도 함께 내림 (방어적)
+order:
+  core:
+    secrets:
+      enabled: false
+  crypto:
+    enabled: false
+  api:
+    infra:
+      security:
+        enabled: false
+      logging:
+        enabled: false
+      web:
+        enabled: false
+      format:
+        enabled: false
+
+# 테스트는 임베디드 Kafka를 사용 (spring-kafka-test가 spring.embedded.kafka.brokers 제공)
+kafka:
+  ssl:
+    enabled: false
+  topic:
+    - category: ORDER_LOCAL
+      name: order.local

@@ -7,13 +7,11 @@ import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.core.messaging.order.code.MessageCategory;
 import org.example.order.core.messaging.order.message.OrderLocalMessage;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@EnableConfigurationProperties({KafkaTopicProperties.class})
 public class KafkaProducerServiceImpl implements KafkaProducerService {
 
     private final KafkaProducerCluster cluster;
