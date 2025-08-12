@@ -1,4 +1,3 @@
-// src/test/java/org/example/order/api/master/restdocs/OrderControllerDocsTest.java
 package org.example.order.api.master.restdocs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,9 +30,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Tag("restdocs")
-@ExtendWith(RestDocumentationExtension.class)               // REST Docs 확장 명시
-@WebMvcTest(controllers = OrderController.class)            // MVC 슬라이스
-@AutoConfigureRestDocs(outputDir = "build/generated-snippets") // 스니펫 경로
+@ExtendWith(RestDocumentationExtension.class)
+@WebMvcTest(controllers = OrderController.class)
+@AutoConfigureRestDocs(outputDir = "build/generated-snippets")
 @WithMockUser
 class OrderControllerDocsTest {
 

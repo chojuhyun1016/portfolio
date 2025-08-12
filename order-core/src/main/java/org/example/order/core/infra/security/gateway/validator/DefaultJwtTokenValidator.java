@@ -3,6 +3,7 @@ package org.example.order.core.infra.security.gateway.validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.security.jwt.provider.JwtTokenManager;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -13,6 +14,7 @@ import org.springframework.web.server.ServerWebExchange;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnBean(JwtTokenManager.class)
 public class DefaultJwtTokenValidator implements JwtTokenValidator {
 
     protected static final String LOG_PREFIX = "[JwtValidator]";
@@ -35,14 +37,12 @@ public class DefaultJwtTokenValidator implements JwtTokenValidator {
             String tokenIp = (String) claims.get("ip");
             if (tokenIp != null && !tokenIp.equals(requestIp)) {
                 log.warn("{} IP mismatch. tokenIp={}, requestIp={}", LOG_PREFIX, tokenIp, requestIp);
-
                 return false;
             }
 
             String scope = (String) claims.get("scope");
             if (!hasRequiredScope(scope, path)) {
                 log.warn("{} Scope validation failed. scope={}, path={}", LOG_PREFIX, scope, path);
-
                 return false;
             }
 
@@ -55,17 +55,13 @@ public class DefaultJwtTokenValidator implements JwtTokenValidator {
 
     protected String extractIp(ServerWebExchange exchange) {
         String ipList = exchange.getRequest().getHeaders().getFirst("X-Forwarded-For");
-
         if (ipList != null) {
             return ipList.split(",")[0].trim();
         }
-
         String realIp = exchange.getRequest().getHeaders().getFirst("X-Real-IP");
-
         if (realIp != null) {
             return realIp;
         }
-
         return exchange.getRequest().getRemoteAddress() != null
                 ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
                 : null;

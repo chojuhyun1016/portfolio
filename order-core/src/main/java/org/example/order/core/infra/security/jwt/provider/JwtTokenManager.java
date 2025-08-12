@@ -6,17 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.security.jwt.config.JwtConfigurationProperties;
 import org.example.order.core.infra.security.jwt.constant.JwtClaimsConstants;
 import org.example.order.core.infra.security.jwt.contract.TokenProvider;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
 
 /**
- * SecretsKeyResolverAdapter 기반 JWT 토큰 매니저.
- * 실시간 키 핫스왑을 활용.
+ * 외부 KeyResolver/KidProvider 기반 JWT 토큰 매니저.
+ * - 서명 키는 TokenProvider.KeyResolver를 통해 주입받아 사용
+ * - kid는 TokenProvider.KidProvider에서 제공
  */
 @Slf4j
-@Component
 public class JwtTokenManager extends AbstractJwtTokenManager {
 
     private final TokenProvider.KeyResolver keyResolver;
@@ -33,7 +32,6 @@ public class JwtTokenManager extends AbstractJwtTokenManager {
     @Override
     public String createAccessToken(String userId, List<String> roles, String jti,
                                     String device, String ip, List<String> scopes) {
-
         Date now = new Date();
         Date expiry = new Date(now.getTime() + jwtConfig.getAccessTokenValidityInSeconds() * 1000);
 

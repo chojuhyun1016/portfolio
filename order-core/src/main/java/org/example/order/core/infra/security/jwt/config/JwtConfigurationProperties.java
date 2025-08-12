@@ -7,17 +7,14 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * JWT 설정 프로퍼티
+ * - 토큰 만료 시간 등 동작 파라미터만 관리
+ * - 서명 키는 외부 KeyResolver(JwtKeyProvider 등)로 주입
  */
 @Getter
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "jwt")
 public class JwtConfigurationProperties {
-
-    /**
-     * HMAC Secret Key (Base64 인코딩 추천)
-     */
-    private String secret;
 
     /**
      * AccessToken 유효시간 (초)
