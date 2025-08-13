@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 다중 알고리즘 키 핫스왑 + 롤백 관리 컴포넌트
- * - 자동 스캔 방지를 위해 @Component 제거 (설정에서 @Bean으로만 생성)
+ * - @Component 금지 (사용자가 설정 파일에서 조건부로만 등록)
  */
 @Slf4j
 public class SecretsKeyResolver {
@@ -38,14 +38,17 @@ public class SecretsKeyResolver {
 
     public byte[] getCurrentKey(String keyName) {
         AtomicReference<byte[]> keyRef = currentKeyMap.get(keyName);
+
         if (keyRef == null || keyRef.get() == null) {
             throw new IllegalStateException("Secret key for [" + keyName + "] is not loaded yet.");
         }
+
         return keyRef.get();
     }
 
     public byte[] getBackupKey(String keyName) {
         AtomicReference<byte[]> backupRef = backupKeyMap.get(keyName);
+
         return backupRef != null ? backupRef.get() : null;
     }
 }

@@ -12,9 +12,9 @@ import org.example.order.common.helper.encode.Base64Utils;
 @Setter
 @ToString
 public class CryptoKeySpec {
-    private String algorithm;   // 예: AES, AES-GCM
+    private String algorithm;   // 예: AES, AES-GCM, HMAC-SHA256
     private int keySize;        // 예: 128, 256
-    private String value;       // Base64 인코딩된 키 값
+    private String value;       // Base64(또는 URL-safe Base64) 인코딩 키
 
     public byte[] decodeKey() {
         return Base64Utils.decode(value);

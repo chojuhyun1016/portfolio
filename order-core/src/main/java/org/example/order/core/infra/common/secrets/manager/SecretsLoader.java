@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.support.json.ObjectMapperUtils;
-import org.example.order.core.infra.common.secrets.aws.SecretsManagerProperties;
+import org.example.order.core.infra.common.secrets.aws.AwsSecretsManagerProperties;
 import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
 import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,18 +16,17 @@ import java.util.Map;
 
 /**
  * AWS Secrets Manager에서 주기적으로 JSON 키셋을 가져와 파싱 + Resolver에 등록.
- * - 자동 스캔 방지를 위해 @Component 제거
- * - 설정 클래스에서 @Bean으로 생성 (명시적 생성자)
+ * - @Component 금지(설정 파일에서 조건부로만 등록)
  */
 @Slf4j
 public class SecretsLoader {
 
-    private final SecretsManagerProperties properties;
+    private final AwsSecretsManagerProperties properties;
     private final SecretsKeyResolver secretsKeyResolver;
     private final SecretsManagerClient secretsManagerClient;
     private final List<SecretKeyRefreshListener> refreshListeners;
 
-    public SecretsLoader(SecretsManagerProperties properties,
+    public SecretsLoader(AwsSecretsManagerProperties properties,
                          SecretsKeyResolver secretsKeyResolver,
                          SecretsManagerClient secretsManagerClient,
                          List<SecretKeyRefreshListener> refreshListeners) {
@@ -76,7 +75,8 @@ public class SecretsLoader {
             refreshListeners.forEach(listener -> {
                 try {
                     listener.onSecretKeyRefreshed();
-                    log.info("[SecretsLoader] SecretKeyRefreshListener [{}] notified.", listener.getClass().getSimpleName());
+                    log.info("[SecretsLoader] SecretKeyRefreshListener [{}] notified.",
+                            listener.getClass().getSimpleName());
                 } catch (Exception ex) {
                     log.error("[SecretsLoader] Listener {} failed during onSecretKeyRefreshed: {}",
                             listener.getClass().getSimpleName(), ex.getMessage(), ex);
@@ -85,6 +85,7 @@ public class SecretsLoader {
 
         } catch (Exception e) {
             log.error("[SecretsLoader] Failed to refresh secrets.", e);
+
             if (properties.isFailFast()) {
                 throw new IllegalStateException("Secret loading failed. Aborting app startup.", e);
             }

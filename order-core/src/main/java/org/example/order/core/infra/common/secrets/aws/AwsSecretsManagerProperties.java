@@ -11,9 +11,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "aws.secrets-manager")
-public class SecretsManagerProperties {
-    private String region;
-    private String secretName;
+public class AwsSecretsManagerProperties {
+    private String region;                          // 예: ap-northeast-2
+    private String secretName;                      // 예: myapp/secret-keyset
     private long refreshIntervalMillis = 300_000L;  // default 5분
     private boolean failFast = true;                // 실패 시 앱 중단 여부
 }
