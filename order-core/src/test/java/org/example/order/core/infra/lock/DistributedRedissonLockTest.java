@@ -11,12 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -25,34 +22,33 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Redisson(레디스 기반) 동시성 테스트
+ * - Testcontainers Redis + TestRedisConfig 으로 RedissonClient 주입
+ * - lock.enabled=true, lock.redisson.enabled=true 로 RedissonLock 실행기 활성화
+ * - NamedLock은 명시적으로 비활성화
+ */
 @Slf4j
-@Testcontainers
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ActiveProfiles("test") // 🔸 프로필 활성화(= TestRedisConfig 활성)
 @ContextConfiguration(classes = {DistributedRedissonLockTest.MockLockExecutorConfig.class, TestRedisConfig.class})
 @ComponentScan("org.example.order.core")
+@TestPropertySource(properties = {
+        "lock.enabled=true",
+        "lock.redisson.enabled=true",
+        "lock.named.enabled=false"
+})
 public class DistributedRedissonLockTest {
 
     private final AtomicInteger counter = new AtomicInteger();
 
-    @Container
-    static final GenericContainer<?> redisContainer = new GenericContainer<>("redis:7.0.5")
-            .withExposedPorts(6379);
-
-    @DynamicPropertySource
-    static void redisProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.redis.host", redisContainer::getHost);
-        registry.add("spring.redis.port", () -> redisContainer.getMappedPort(6379));
-    }
-
     @DistributedLock(key = "'lock-test'", type = "redissonLock", waitTime = 3000, leaseTime = 5000)
     public void criticalSection() {
         int value = counter.incrementAndGet();
-
-        log.info("[criticalSection] Executed by Thread: {}, Value: {}", Thread.currentThread().getName(), value);
-
+        log.info("[criticalSection] Thread={} | Value={}", Thread.currentThread().getName(), value);
         try {
-            Thread.sleep(100);
+            Thread.sleep(100); // 경합 유도
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -77,7 +73,7 @@ public class DistributedRedissonLockTest {
         latch.await();
         executor.shutdown();
 
-        log.info("Final counter value = {}", counter.get());
+        log.info("[Redisson] Final counter value = {}", counter.get());
         assertThat(counter.get()).isEqualTo(threadCount);
     }
 

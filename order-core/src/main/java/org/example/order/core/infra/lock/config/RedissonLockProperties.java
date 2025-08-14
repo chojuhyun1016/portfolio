@@ -3,13 +3,11 @@ package org.example.order.core.infra.lock.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 @Getter
 @Setter
-@Component
 @ConfigurationProperties(prefix = "lock.redisson")
-public class RedissonProperties {
+public class RedissonLockProperties {
     private String address;
     private String password;
     private int database = 0;

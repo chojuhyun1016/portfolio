@@ -14,13 +14,11 @@ import org.example.order.core.infra.lock.lock.LockExecutor;
 import org.example.order.core.infra.lock.factory.LockExecutorFactory;
 import org.example.order.core.infra.lock.factory.LockKeyGeneratorFactory;
 import org.example.order.core.infra.lock.support.TransactionalOperator;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
 @Slf4j
 @Aspect
-@Component
 @RequiredArgsConstructor
 public class DistributedLockAspect {
 
@@ -31,10 +29,8 @@ public class DistributedLockAspect {
     @Around("@annotation(distributedLock)")
     public Object handle(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
-
         LockKeyGenerator keyGenerator = keyGeneratorFactory.getGenerator(distributedLock.keyStrategy());
         String key = keyGenerator.generate(distributedLock.key(), method, joinPoint.getArgs());
-
         LockExecutor executor = lockExecutorFactory.getExecutor(distributedLock.type());
 
         try {
@@ -42,9 +38,7 @@ public class DistributedLockAspect {
                     key,
                     distributedLock.waitTime(),
                     distributedLock.leaseTime(),
-                    (LockCallback<Object>) () -> {
-                        return transactionalOperator.runWithExistingTransaction(() -> joinPoint.proceed());
-                    }
+                    (LockCallback<Object>) () -> transactionalOperator.runWithExistingTransaction(joinPoint::proceed)
             );
         } catch (Exception e) {
             log.error("Lock execution failed. key={}, type={}, method={}", key, distributedLock.type(), method.getName(), e);
@@ -55,10 +49,8 @@ public class DistributedLockAspect {
     @Around("@annotation(distributedLockT)")
     public Object handle(ProceedingJoinPoint joinPoint, DistributedLockT distributedLockT) throws Throwable {
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
-
         LockKeyGenerator keyGenerator = keyGeneratorFactory.getGenerator(distributedLockT.keyStrategy());
         String key = keyGenerator.generate(distributedLockT.key(), method, joinPoint.getArgs());
-
         LockExecutor executor = lockExecutorFactory.getExecutor(distributedLockT.type());
 
         try {
@@ -66,9 +58,7 @@ public class DistributedLockAspect {
                     key,
                     distributedLockT.waitTime(),
                     distributedLockT.leaseTime(),
-                    (LockCallback<Object>) () -> {
-                        return transactionalOperator.runWithNewTransaction(() -> joinPoint.proceed());
-                    }
+                    (LockCallback<Object>) () -> transactionalOperator.runWithNewTransaction(joinPoint::proceed)
             );
         } catch (Exception e) {
             log.error("Lock T execution failed. key={}, type={}, method={}", key, distributedLockT.type(), method.getName(), e);

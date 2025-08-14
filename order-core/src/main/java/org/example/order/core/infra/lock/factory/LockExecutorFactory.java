@@ -2,11 +2,9 @@ package org.example.order.core.infra.lock.factory;
 
 import lombok.RequiredArgsConstructor;
 import org.example.order.core.infra.lock.lock.LockExecutor;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-@Component
 @RequiredArgsConstructor
 public class LockExecutorFactory {
 

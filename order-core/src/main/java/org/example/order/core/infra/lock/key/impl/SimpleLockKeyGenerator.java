@@ -1,14 +1,10 @@
 package org.example.order.core.infra.lock.key.impl;
 
-import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.lock.key.LockKeyGenerator;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.StringJoiner;
 
-@Slf4j
-@Component("simple")
 public class SimpleLockKeyGenerator implements LockKeyGenerator {
 
     @Override

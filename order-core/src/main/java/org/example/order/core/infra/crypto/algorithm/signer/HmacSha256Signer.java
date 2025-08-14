@@ -1,6 +1,5 @@
 package org.example.order.core.infra.crypto.algorithm.signer;
 
-import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.helper.encode.Base64Utils;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Signer;
@@ -11,18 +10,21 @@ import java.util.Arrays;
 
 /**
  * HMAC-SHA256 Signer
- *
+ * <p>
  * - HMAC-SHA256 서명 및 검증 기능 제공
  * - 외부에서 Base64(URL-safe)로 인코딩된 키를 setKey(...)를 통해 주입
  * - SecretsKeyResolver 등의 외부 키 관리 매커니즘에 의존하지 않음
  */
-@Slf4j
 public class HmacSha256Signer implements Signer {
 
-    /** HMAC-SHA256 키 길이 (256-bit = 32 bytes) */
+    /**
+     * HMAC-SHA256 키 길이 (256-bit = 32 bytes)
+     */
     private static final int KEY_LENGTH = 32;
 
-    /** 서명/검증에 사용할 키 */
+    /**
+     * 서명/검증에 사용할 키
+     */
     private byte[] key;
 
     /**
@@ -37,8 +39,8 @@ public class HmacSha256Signer implements Signer {
             if (k == null || k.length != KEY_LENGTH) {
                 throw new IllegalArgumentException("HMAC-SHA256 key must be exactly 32 bytes.");
             }
+
             this.key = k;
-            log.info("[HmacSha256Signer] key set ({} bytes).", k.length);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid HMAC-SHA256 base64 key.", e);
         }
@@ -48,7 +50,7 @@ public class HmacSha256Signer implements Signer {
      * 주어진 메시지에 대해 HMAC-SHA256 서명 생성
      *
      * @param message 서명할 메시지
-     * @return Base64(URL-safe) 형식의 서명 문자열
+     * @return Base64(URL - safe) 형식의 서명 문자열
      */
     @Override
     public String sign(String message) {

@@ -1,12 +1,8 @@
 package org.example.order.core.infra.crypto.algorithm.hasher;
 
-import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.crypto.contract.Hasher;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
-import org.springframework.stereotype.Component;
 
-@Slf4j
-@Component("argon2Hasher")
 public class Argon2Hasher implements Hasher {
 
     @Override

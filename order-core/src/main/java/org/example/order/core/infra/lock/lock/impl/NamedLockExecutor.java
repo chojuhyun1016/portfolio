@@ -7,7 +7,6 @@ import org.example.order.core.infra.lock.exception.LockAcquisitionException;
 import org.example.order.core.infra.lock.lock.LockCallback;
 import org.example.order.core.infra.lock.lock.LockExecutor;
 import org.springframework.jdbc.datasource.DataSourceUtils;
-import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -15,7 +14,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 @Slf4j
-@Component("namedLock")
 @RequiredArgsConstructor
 public class NamedLockExecutor implements LockExecutor {
 

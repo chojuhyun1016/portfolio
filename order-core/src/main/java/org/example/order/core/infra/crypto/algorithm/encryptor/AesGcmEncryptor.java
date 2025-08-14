@@ -7,7 +7,6 @@ import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.exception.DecryptException;
 import org.example.order.core.infra.crypto.exception.EncryptException;
-import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -20,7 +19,6 @@ import java.util.Map;
  * - SecretsKeyResolver 등 외부 키 매니저에 의존하지 않음
  */
 @Slf4j
-@Component("aesGcmEncryptor")
 public class AesGcmEncryptor implements Encryptor {
 
     private static final int KEY_LENGTH = 32;  // 256-bit

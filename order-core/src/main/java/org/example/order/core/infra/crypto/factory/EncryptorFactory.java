@@ -4,7 +4,6 @@ import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.contract.Hasher;
 import org.example.order.core.infra.crypto.contract.Signer;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
  *
  * test 코드 : factory/EncryptorFactoryTest, EncryptorTest, HasherTest, SignerTest
  */
-@Component
 public class EncryptorFactory {
 
     private final Map<CryptoAlgorithmType, Encryptor> encryptors;

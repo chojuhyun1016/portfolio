@@ -2,29 +2,27 @@ package org.example.order.core.infra.lock.lock.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.infra.lock.config.RedissonProperties;
+import org.example.order.core.infra.lock.config.RedissonLockProperties;
 import org.example.order.core.infra.lock.exception.LockAcquisitionException;
 import org.example.order.core.infra.lock.lock.LockCallback;
 import org.example.order.core.infra.lock.lock.LockExecutor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@Component("redissonLock")
 @RequiredArgsConstructor
 public class RedissonLockExecutor implements LockExecutor {
 
-    private final RedissonProperties redissonProperties;
+    private final RedissonLockProperties redissonLockProperties;
     private final RedissonClient redissonClient;
 
     @Override
     public Object execute(String key, long waitTime, long leaseTime, LockCallback callback) throws Throwable {
-        long wait = waitTime > 0 ? waitTime : redissonProperties.getWaitTime();
-        long lease = leaseTime > 0 ? leaseTime : redissonProperties.getLeaseTime();
-        long retryInterval = redissonProperties.getRetryInterval();
+        long wait = waitTime > 0 ? waitTime : redissonLockProperties.getWaitTime();
+        long lease = leaseTime > 0 ? leaseTime : redissonLockProperties.getLeaseTime();
+        long retryInterval = redissonLockProperties.getRetryInterval();
         int maxRetries = (int) (wait / retryInterval);
 
         RLock lock = redissonClient.getLock(key);

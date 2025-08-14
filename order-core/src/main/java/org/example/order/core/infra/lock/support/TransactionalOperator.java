@@ -3,7 +3,6 @@ package org.example.order.core.infra.lock.support;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.lock.lock.LockCallback;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
  * 비즈니스 로직은 포함하지 않음.
  */
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class TransactionalOperator {
 
