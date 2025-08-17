@@ -40,11 +40,32 @@ spring:
         rewriteBatchedStatements: true
 
   redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    timeout: 3000ms
+    enabled: true
+    # uri
+    uri: redis://:secret123@redis-auto.example.com:6380/1
+    client-name: order-service
+    #     host/port
+    #     host: redis-primary.example.com
+    #     port: 6379
+    password: secret123
+    database: 0
+    client-name: order-service
     trusted-package: org.example.order
+    command-timeout-seconds: 5
+    shutdown-timeout-seconds: 5
+
+  #  redis:
+  #    host: ${REDIS_HOST}
+  #    port: ${REDIS_PORT:6379}
+  #    password: ${REDIS_PASSWORD}
+  #    timeout: 3000ms
+  #    trusted-package: org.example.order
+  #    lettuce:
+  #      pool:
+  #        max-active: 64       # 동시에 사용할 수 있는 최대 커넥션 수
+  #        max-idle: 32         # idle 상태로 유지할 수 있는 커넥션 수
+  #        min-idle: 8          # 최소 idle 커넥션 수 확보 (예열 용도)
+  #        max-wait: 2000ms     # 커넥션 풀에서 커넥션을 기다릴 수 있는 최대 시간
 
   cloud:
     gateway:

@@ -10,6 +10,8 @@ import org.example.order.core.infra.lock.key.impl.SpelLockKeyGenerator;
 import org.example.order.core.infra.lock.lock.LockExecutor;
 import org.example.order.core.infra.lock.lock.impl.NamedLockExecutor;
 import org.example.order.core.infra.lock.lock.impl.RedissonLockExecutor;
+import org.example.order.core.infra.lock.props.NamedLockProperties;
+import org.example.order.core.infra.lock.props.RedissonLockProperties;
 import org.example.order.core.infra.lock.support.TransactionalOperator;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.autoconfigure.condition.*;

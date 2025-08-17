@@ -27,6 +27,7 @@ dependencies {
     implementation 'com.mysql:mysql-connector-j:8.3.0'
     def isLocal = System.getenv("SPRING_PROFILES_ACTIVE") == "local"
     implementation isLocal ? 'mysql:mysql-connector-java:8.0.33' : 'software.aws.rds:aws-mysql-jdbc:1.1.9'
+    implementation 'org.apache.commons:commons-pool2'
 
     // DynamoDB
     implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.695'

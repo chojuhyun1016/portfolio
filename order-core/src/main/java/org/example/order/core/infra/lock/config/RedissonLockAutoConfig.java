@@ -1,6 +1,7 @@
 package org.example.order.core.infra.lock.config;
 
 import lombok.RequiredArgsConstructor;
+import org.example.order.core.infra.lock.props.RedissonLockProperties;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;

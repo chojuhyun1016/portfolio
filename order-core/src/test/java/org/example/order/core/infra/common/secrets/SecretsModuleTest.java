@@ -1,7 +1,7 @@
 package org.example.order.core.infra.common.secrets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.order.core.infra.common.secrets.aws.AwsSecretsManagerProperties;
+import org.example.order.core.infra.common.secrets.props.SecretsManagerProperties;
 import org.example.order.core.infra.common.secrets.config.SecretsAutoConfig;
 import org.example.order.core.infra.common.secrets.config.SecretsManualConfig;
 import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
@@ -142,7 +142,7 @@ class SecretsModuleTest {
                 .thenReturn(GetSecretValueResponse.builder().secretString(secretJson).build());
 
         // 프로퍼티 구성
-        AwsSecretsManagerProperties props = new AwsSecretsManagerProperties();
+        SecretsManagerProperties props = new SecretsManagerProperties();
         props.setRegion("ap-northeast-2");
         props.setSecretName("dummySecret");
         props.setFailFast(true);

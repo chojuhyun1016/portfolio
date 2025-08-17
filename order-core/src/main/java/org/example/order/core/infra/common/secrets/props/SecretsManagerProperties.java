@@ -1,4 +1,4 @@
-package org.example.order.core.infra.common.secrets.aws;
+package org.example.order.core.infra.common.secrets.props;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "aws.secrets-manager")
-public class AwsSecretsManagerProperties {
+public class SecretsManagerProperties {
     private String region;                          // 예: ap-northeast-2
     private String secretName;                      // 예: myapp/secret-keyset
     private long refreshIntervalMillis = 300_000L;  // default 5분

@@ -1,4 +1,4 @@
-package org.example.order.core.infra.dynamo.config;
+package org.example.order.core.infra.dynamo.props;
 
 import lombok.Getter;
 import lombok.Setter;

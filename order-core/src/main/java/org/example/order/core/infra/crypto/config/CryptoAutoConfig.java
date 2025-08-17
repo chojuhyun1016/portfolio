@@ -4,6 +4,7 @@ import org.example.order.core.infra.crypto.algorithm.encryptor.Aes128Encryptor;
 import org.example.order.core.infra.crypto.algorithm.encryptor.Aes256Encryptor;
 import org.example.order.core.infra.crypto.algorithm.encryptor.AesGcmEncryptor;
 import org.example.order.core.infra.crypto.algorithm.signer.HmacSha256Signer;
+import org.example.order.core.infra.crypto.props.EncryptProperties;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

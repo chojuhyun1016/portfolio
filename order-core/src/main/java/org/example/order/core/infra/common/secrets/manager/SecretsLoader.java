@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.support.json.ObjectMapperUtils;
-import org.example.order.core.infra.common.secrets.aws.AwsSecretsManagerProperties;
+import org.example.order.core.infra.common.secrets.props.SecretsManagerProperties;
 import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
 import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,12 +21,12 @@ import java.util.Map;
 @Slf4j
 public class SecretsLoader {
 
-    private final AwsSecretsManagerProperties properties;
+    private final SecretsManagerProperties properties;
     private final SecretsKeyResolver secretsKeyResolver;
     private final SecretsManagerClient secretsManagerClient;
     private final List<SecretKeyRefreshListener> refreshListeners;
 
-    public SecretsLoader(AwsSecretsManagerProperties properties,
+    public SecretsLoader(SecretsManagerProperties properties,
                          SecretsKeyResolver secretsKeyResolver,
                          SecretsManagerClient secretsManagerClient,
                          List<SecretKeyRefreshListener> refreshListeners) {

@@ -8,16 +8,16 @@ JWT/암호화 모듈 등 다른 컴포넌트가 **동일한 인터페이스(Secr
 
 ## 1) 구성 개요
 
-| 클래스/인터페이스 | 설명 |
-| --- | --- |
-| `AwsSecretsManagerProperties` | `aws.secrets-manager.*` 설정 프로퍼티 매핑 |
-| `SecretsManualConfig` | `secrets.enabled=true` 일 때 수동(Core) 모드 활성화 |
+| 클래스/인터페이스 | 설명                                                                                  |
+| --- |-------------------------------------------------------------------------------------|
+| `SecretsManagerProperties` | `props.secrets-manager.*` 설정 프로퍼티 매핑                                                |
+| `SecretsManualConfig` | `secrets.enabled=true` 일 때 수동(Core) 모드 활성화                                          |
 | `SecretsAutoConfig` | `secrets.enabled=true` **그리고** `aws.secrets-manager.enabled=true` 일 때 AWS 자동 모드 활성화 |
-| `SecretsKeyResolver` | 현재/백업 키 관리 (핫스왑 + 롤백) |
-| `SecretsKeyClient` | 애플리케이션 코드에서 손쉽게 키 set/get |
-| `SecretsLoader` | AWS Secrets Manager에서 JSON 키셋을 초기/주기 로드 |
-| `SecretKeyRefreshListener` | 키 갱신 이벤트 수신 훅 |
-| `CryptoKeySpec` | `{algorithm, keySize, value(Base64)}` 포맷의 키 스펙 |
+| `SecretsKeyResolver` | 현재/백업 키 관리 (핫스왑 + 롤백)                                                               |
+| `SecretsKeyClient` | 애플리케이션 코드에서 손쉽게 키 set/get                                                           |
+| `SecretsLoader` | AWS Secrets Manager에서 JSON 키셋을 초기/주기 로드                                             |
+| `SecretKeyRefreshListener` | 키 갱신 이벤트 수신 훅                                                                       |
+| `CryptoKeySpec` | `{algorithm, keySize, value(Base64)}` 포맷의 키 스펙                                      |
 
 > 라이브러리 클래스에는 **@Component 금지**.  
 > 모든 빈 등록은 **설정( auto-config )** 에서 **조건부**로만 이루어져,  

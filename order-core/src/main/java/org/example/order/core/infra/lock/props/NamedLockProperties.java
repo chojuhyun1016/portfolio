@@ -1,4 +1,4 @@
-package org.example.order.core.infra.lock.config;
+package org.example.order.core.infra.lock.props;
 
 import lombok.Getter;
 import lombok.Setter;

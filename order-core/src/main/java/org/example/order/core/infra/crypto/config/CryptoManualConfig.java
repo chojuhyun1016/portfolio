@@ -11,6 +11,7 @@ import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.contract.Hasher;
 import org.example.order.core.infra.crypto.contract.Signer;
 import org.example.order.core.infra.crypto.factory.EncryptorFactory;
+import org.example.order.core.infra.crypto.props.EncryptProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

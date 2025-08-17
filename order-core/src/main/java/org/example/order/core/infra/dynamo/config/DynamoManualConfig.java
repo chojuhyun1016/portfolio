@@ -1,5 +1,6 @@
 package org.example.order.core.infra.dynamo.config;
 
+import org.example.order.core.infra.dynamo.props.DynamoDbProperties;
 import org.example.order.core.infra.dynamo.repository.impl.OrderDynamoRepositoryImpl;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

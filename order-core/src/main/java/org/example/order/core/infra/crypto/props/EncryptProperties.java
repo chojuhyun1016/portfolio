@@ -1,4 +1,4 @@
-package org.example.order.core.infra.crypto.config;
+package org.example.order.core.infra.crypto.props;
 
 import lombok.Getter;
 import lombok.Setter;

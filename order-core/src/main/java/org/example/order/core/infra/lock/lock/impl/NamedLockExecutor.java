@@ -2,7 +2,7 @@ package org.example.order.core.infra.lock.lock.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.infra.lock.config.NamedLockProperties;
+import org.example.order.core.infra.lock.props.NamedLockProperties;
 import org.example.order.core.infra.lock.exception.LockAcquisitionException;
 import org.example.order.core.infra.lock.lock.LockCallback;
 import org.example.order.core.infra.lock.lock.LockExecutor;

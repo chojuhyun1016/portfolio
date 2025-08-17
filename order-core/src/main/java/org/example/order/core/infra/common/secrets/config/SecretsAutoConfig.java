@@ -1,6 +1,6 @@
 package org.example.order.core.infra.common.secrets.config;
 
-import org.example.order.core.infra.common.secrets.aws.AwsSecretsManagerProperties;
+import org.example.order.core.infra.common.secrets.props.SecretsManagerProperties;
 import org.example.order.core.infra.common.secrets.client.SecretsKeyClient;
 import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
 import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
@@ -20,7 +20,7 @@ import java.util.List;
  * - AWS SDK가 클래스패스에 존재해야 함
  */
 @Configuration
-@EnableConfigurationProperties(AwsSecretsManagerProperties.class)
+@EnableConfigurationProperties(SecretsManagerProperties.class)
 @ConditionalOnProperty(name = {"secrets.enabled", "aws.secrets-manager.enabled"}, havingValue = "true")
 @ConditionalOnClass(SecretsManagerClient.class)
 public class SecretsAutoConfig {
@@ -33,7 +33,7 @@ public class SecretsAutoConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public SecretsManagerClient secretsManagerClient(AwsSecretsManagerProperties props) {
+    public SecretsManagerClient secretsManagerClient(SecretsManagerProperties props) {
         return SecretsManagerClient.builder()
                 .region(Region.of(props.getRegion()))
                 .build();
@@ -42,7 +42,7 @@ public class SecretsAutoConfig {
     @Bean
     @ConditionalOnMissingBean
     public SecretsLoader secretsLoader(
-            AwsSecretsManagerProperties properties,
+            SecretsManagerProperties properties,
             SecretsKeyResolver secretsKeyResolver,
             SecretsManagerClient secretsManagerClient,
             List<SecretKeyRefreshListener> refreshListeners // 빈이 없으면 빈 리스트
