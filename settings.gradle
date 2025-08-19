@@ -1,15 +1,30 @@
+// settings.gradle
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
+        mavenLocal() // 로컬 캐시도 허용(환경 변화 아님)
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+
     repositories {
         mavenCentral()
+        mavenLocal()
+
+        // DynamoDB Local 전용 저장소 (요청대로 유지)
+        maven {
+            url = uri("https://s3.us-west-2.amazonaws.com/dynamodb-local/release")
+            content { includeGroup("com.amazonaws") }
+        }
     }
+
+    // ⚠ versionCatalogs(from(files("gradle/libs.versions.toml"))) 는
+    //    중복 선언 문제를 일으킬 수 있어 여기서 **추가로 선언하지 않습니다**.
+    //    (이미 빌드에서 사용 중인 catalog를 그대로 사용)
 }
 
 rootProject.name = "order"
@@ -17,7 +32,7 @@ rootProject.name = "order"
 include(
         "order-common",
         "order-core",
-         "order-domain",
+        "order-domain"
         // "order-client:web",
         // "order-client:kafka",
         // "order-client:s3",
