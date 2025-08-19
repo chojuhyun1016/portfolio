@@ -1,71 +1,77 @@
-bootJar.enabled = false
-jar.enabled = true
+plugins {
+    id "java-library"
+}
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.named("jar") { enabled = true }
 
 dependencies {
-    // 내부 프로젝트 의존성
-    implementation project(':order-common')
-    implementation project(':order-domain')
+    // 내부 모듈
+    api(project(":order-common"))
+    implementation(project(":order-domain"))
 
-    // AWS SDK
-    implementation platform('software.amazon.awssdk:bom:2.20.132')
-    implementation 'software.amazon.awssdk:secretsmanager'
-    implementation 'software.amazon.awssdk:auth'
-    implementation 'software.amazon.awssdk:regions'
+    // Spring (웹 제외)
+    implementation(libs.springBootStarter)
+    implementation(libs.springBootStarterAop)
+    implementation(libs.springBootStarterJdbc)
+    implementation(libs.springBootStarterDataJpa)
+    implementation(libs.springBootStarterValidation)
+    implementation(libs.springBootStarterSecurity) // BCrypt 등
 
-    // Spring Boot 스타터
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    // Spring Cloud Gateway
+    implementation(libs.springCloudGateway)
 
-    // 데이터베이스
-    implementation 'com.mysql:mysql-connector-j:8.3.0'
-    def isLocal = System.getenv("SPRING_PROFILES_ACTIVE") == "local"
-    implementation isLocal ? 'mysql:mysql-connector-java:8.0.33' : 'software.aws.rds:aws-mysql-jdbc:1.1.9'
-    implementation 'org.apache.commons:commons-pool2'
+    // DB 드라이버 (런타임만)
+    runtimeOnly(libs.mysqlDriver)
+    runtimeOnly(libs.awsMysqlJdbc)
 
-    // DynamoDB
-    implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.695'
-    implementation 'software.amazon.awssdk:dynamodb:2.25.10'
-    implementation 'software.amazon.awssdk:dynamodb-enhanced:2.25.10'
+    // Redis / 풀
+    implementation(libs.commonsPool2)
+    implementation(libs.redisson)
 
-    // ID 생성 및 유틸
-    implementation 'com.github.f4b6a3:tsid-creator:5.2.6'
-    implementation 'com.google.guava:guava:32.1.2-jre'
+    // Lettuce (직접 사용)
+    implementation(libs.lettuce)
+
+    // AWS SDK v2
+    implementation(platform(libs.awsBomV2))
+    implementation(libs.awsSecretsManager)
+    implementation(libs.awsAuth)
+    implementation(libs.awsRegions)
+
+    // AWS DynamoDB (Enhanced)
+    implementation(libs.awsDynamodb)
+    implementation(libs.awsDynamodbEnhanced)
+
+    // QueryDSL (Jakarta)
+    implementation(libs.querydslCore)
+    implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
+    annotationProcessor("${libs.querydslAptJakarta.get().module}:${libs.querydslAptJakarta.get().version}:jakarta")
+    annotationProcessor(libs.jakartaPersistenceApi)
+    annotationProcessor(libs.jakartaAnnotationApi)
 
     // 기타 유틸
-    implementation 'com.querydsl:querydsl-core'
-    implementation "com.querydsl:querydsl-jpa:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
-    implementation 'de.mkammerer:argon2-jvm:2.11'
-    implementation 'org.redisson:redisson-spring-boot-starter:3.16.3'
-    implementation 'org.springframework:spring-context:6.1.6'
+    implementation(libs.jacksonJsr310)
+    implementation(libs.tsid)
+    implementation(libs.guava)
+    compileOnly(libs.jakartaServlet)
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
 
-    // JWT 처리
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+    // Argon2 / JWT
+    implementation(libs.argon2)
+    implementation(libs.jjwtApi)
+    runtimeOnly(libs.jjwtImpl)
+    runtimeOnly(libs.jjwtJackson)
 
-    // 테스트
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mockito:mockito-core'
-    testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
-    testImplementation 'org.testcontainers:testcontainers:1.19.3'
-    testImplementation 'org.testcontainers:mysql:1.19.3'
-    testImplementation 'org.springframework:spring-test:6.1.6'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
-    testRuntimeOnly 'com.h2database:h2'
-
-    // 어노테이션 프로세서
-    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
-    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    // Testcontainers (GenericContainer 등)
+    testImplementation(platform(libs.testcontainersBom))
+    testImplementation(libs.testcontainers)
+    testImplementation(libs.testcontainersJunit)
+    testImplementation(libs.testcontainersRedis)
+    testImplementation(libs.springBootStarterTest)
 }

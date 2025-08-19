@@ -6,10 +6,6 @@ ext {
     snippetsDir = file('build/generated-snippets')
 }
 
-repositories {
-    mavenCentral()
-}
-
 /** REST Docs용 asciidoctor 확장 구성 */
 configurations {
     asciidoctorExt

@@ -14,13 +14,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'software.amazon.msk:aws-msk-iam-auth:2.0.2'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-    implementation 'software.amazon.msk:aws-msk-iam-auth:2.0.2'
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.530'
 
     testImplementation 'org.springframework.batch:spring-batch-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    runtimeOnly "software.aws.rds:aws-mysql-jdbc:$awsMysqlJdbcVer"
+//    testImplementation 'org.mockito:mockito-junit-jupiter:5.10.0'
+//    testImplementation 'org.mockito:mockito-inline:5.10.0'
 
+    runtimeOnly "software.aws.rds:aws-mysql-jdbc:$awsMysqlJdbcVer"
     testRuntimeOnly 'com.h2database:h2'
 }

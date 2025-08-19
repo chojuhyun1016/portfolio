@@ -1,13 +1,29 @@
-rootProject.name = 'order'
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
 
-include 'order-common'
-include 'order-core'
-include 'order-domain'
-include 'order-client:web'
-include 'order-client:kafka'
-include 'order-client:s3'
-include 'order-api:order-api-common'
-include 'order-api:order-api-master'
-include 'order-api:order-api-web'
-include 'order-worker'
-include 'order-batch'
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = "order"
+
+include(
+        "order-common",
+        "order-core",
+         "order-domain",
+        // "order-client:web",
+        // "order-client:kafka",
+        // "order-client:s3",
+        // "order-api:order-api-common",
+        // "order-api:order-api-master",
+        // "order-api:order-api-web",
+        // "order-worker",
+        // "order-batch"
+)

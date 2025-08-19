@@ -1,16 +1,21 @@
-bootJar.enabled = false
-jar.enabled = true
+plugins {
+    id "java-library"
+}
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.named("jar") { enabled = true }
 
 dependencies {
-    // JSON 처리
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    // 공용 유틸
+    api(libs.jacksonJsr310)
+    api(libs.tsid)
+    api(libs.guava)
 
-    // Spring Web
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-
-    // ID 생성기
-    implementation 'com.github.f4b6a3:tsid-creator:5.2.6'
-
-    // 공통 유틸
-    implementation 'com.google.guava:guava:32.1.2-jre'
+    api(libs.springBootStarter)
+    api(libs.springBootStarterWeb)
 }
