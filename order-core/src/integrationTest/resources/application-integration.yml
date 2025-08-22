@@ -1,0 +1,40 @@
+# ===========================
+# Integration Test (Testcontainers)
+# ===========================
+spring:
+  main:
+    web-application-type: none
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+secrets:
+  enabled: false
+
+aws:
+  secrets-manager:
+    enabled: false
+
+# DynamoDB: LocalStack 사용 (엔드포인트/자격증명은 설정 클래스/동적 주입)
+dynamodb:
+  enabled: true
+  repo-enabled: true
+  tableName: order_dynamo
+
+# Lock 기본값(각 테스트에서 Named/Redisson 중 하나만 켬)
+lock:
+  enabled: true
+  named:
+    enabled: false
+    wait-time: 3000
+    retry-interval: 150
+  redisson:
+    enabled: false
+    wait-time: 3000
+    lease-time: 10000
+    retry-interval: 150
+
+logging:
+  level:
+    org.springframework: WARN

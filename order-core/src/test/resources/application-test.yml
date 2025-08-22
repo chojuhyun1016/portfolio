@@ -2,134 +2,60 @@
 # MySQL 데이터베이스 연결 설정
 # ===========================
 spring:
+  main:
+    web-application-type: none
   datasource:
-    url: jdbc:mysql://localhost:3312/order?enabledTLSProtocols=TLSv1.2&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-    hikari:
-      maximum-pool-size: 32
+    url: jdbc:h2:mem:unit;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
 
   # ======================
   # JPA / Hibernate 설정
   # ======================
   jpa:
-    hibernate.ddl-auto: none
+    hibernate:
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
 
 # ======================
 # Secrets 모듈 설정
 # ======================
 secrets:
   # secrets.enabled=true → Secrets 모듈 활성화
-  enabled: true
+  enabled: false
 
 # ======================
 # AWS 서비스 연동 설정
 # ======================
 aws:
   secrets-manager:
-    enabled: true
-    region: ap-northeast-2
-    secret-name: myapp/secret-keyset
-    refresh-interval-millis: 300000
-    fail-fast: true
+    enabled: false
 
 # ======================
 # AWS DynamoDB 연동 설정
 # ======================
 dynamodb:
-  enabled: true
-  endpoint: http://localhost:4566
-  region: ap-northeast-2
-  accessKey: test
-  secretKey: test
-  repo-enabled: true
-  tableName: order_dynamo
+  enabled: false
 
 # ======================
 # 분산 락 (Redis/Redisson)
 # ======================
 lock:
-  enabled: true
-
+  enabled: false
   named:
-    enabled: true
-    wait-time: 3000
-    retry-interval: 150
-
+    enabled: false
   redisson:
-    enabled: true
-    address: redis://127.0.0.1:6379
-    database: 0
-    wait-time: 3000
-    lease-time: 10000
-    retry-interval: 150
+    enabled: false
 
 # ======================
 # Crypto 모듈 설정
 # ======================
 crypto:
-  enabled: true
-  props:
-    seed: true
-
-# ======================
-# 암호화 키 값 설정 (Base64 인코딩)
-# ======================
-encrypt:
-  aes128:
-    key: base64EncodedTestKey==
-  aes256:
-    key: base64EncodedTestKey==
-  aesgcm:
-    key: base64EncodedTestKey==
-
-# ======================
-# 보안(JWT, OAuth2) 관련 설정
-# ======================
-security:
-  jwt:
-    secret: ZGVtb19iYXNlNjRfc2VjcmV0X3Rva2VuX2tleQ==
-    access-token-validity: 900000      # 15분
-    refresh-token-validity: 1209600000 # 14일
-    header: Authorization
-    prefix: Bearer
-
-  # -------- OAuth2 클라이언트 --------
-  oauth2:
-    client:
-      registration:
-        # Google OAuth2 설정
-        google:
-          client-id: YOUR_GOOGLE_CLIENT_ID
-          client-secret: YOUR_GOOGLE_CLIENT_SECRET
-          scope: profile, email
-          redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-          client-name: Google
-
-        # Kakao OAuth2 설정
-        kakao:
-          client-id: YOUR_KAKAO_REST_API_KEY
-          client-secret: YOUR_KAKAO_CLIENT_SECRET  # 카카오에서는 생략 가능
-          client-authentication-method: client_secret_post
-          authorization-grant-type: authorization_code
-          redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-          scope: profile_nickname, account_email
-          client-name: Kakao
-
-      provider:
-        # Kakao OAuth2 제공자 정보
-        kakao:
-          authorization-uri: https://kauth.kakao.com/oauth/authorize
-          token-uri: https://kauth.kakao.com/oauth/token
-          user-info-uri: https://kapi.kakao.com/v2/user/me
-          user-name-attribute: id
+  enabled: false
 
 # ======================
 # 로깅 레벨 설정

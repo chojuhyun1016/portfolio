@@ -3,15 +3,16 @@ package org.example.order.core.infra.lock;
 import org.example.order.core.infra.lock.aspect.DistributedLockAspect;
 import org.example.order.core.infra.lock.config.LockManualConfig;
 import org.example.order.core.infra.lock.config.NamedLockAutoConfig;
-import org.example.order.core.infra.lock.props.NamedLockProperties;
 import org.example.order.core.infra.lock.config.RedissonLockAutoConfig;
-import org.example.order.core.infra.lock.props.RedissonLockProperties;
 import org.example.order.core.infra.lock.factory.LockExecutorFactory;
 import org.example.order.core.infra.lock.factory.LockKeyGeneratorFactory;
 import org.example.order.core.infra.lock.key.LockKeyGenerator;
 import org.example.order.core.infra.lock.lock.LockExecutor;
-import org.junit.jupiter.api.Test;
+// 🔽 [유지] 필요 import
+import org.example.order.core.infra.lock.props.NamedLockProperties;
+// 🔽 [변경] 중복 빈 원인이었던 RedissonLockProperties withBean 제거 → import 자체는 사용 안 해도 무방
 import org.redisson.api.RedissonClient;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.annotation.UserConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -110,7 +111,10 @@ class LockAutoConfigurationToggleTest {
                 .withPropertyValues(
                         "lock.enabled=true",
                         "lock.named.enabled=false",
-                        "lock.redisson.enabled=true"
+                        "lock.redisson.enabled=true",
+                        // 🔽🔽🔽 [핵심 수정] 속성만으로 RedissonLockProperties 바인딩 → 중복 빈 생성 방지
+                        "lock.redisson.address=redis://127.0.0.1:6379",
+                        "lock.redisson.database=0"
                 )
                 .withConfiguration(UserConfigurations.of(
                         LockManualConfig.class,
@@ -118,12 +122,6 @@ class LockAutoConfigurationToggleTest {
                 ))
                 // RedissonClient는 모킹으로 대체(실행 안 함)
                 .withBean(RedissonClient.class, () -> mock(RedissonClient.class))
-                .withBean(RedissonLockProperties.class, () -> {
-                    RedissonLockProperties props = new RedissonLockProperties();
-                    props.setAddress("redis://127.0.0.1:6379");
-                    props.setDatabase(0);
-                    return props;
-                })
                 .run(ctx -> {
                     Map<String, LockExecutor> executors = ctx.getBeansOfType(LockExecutor.class);
                     assertThat(executors).containsKeys("redissonLock");

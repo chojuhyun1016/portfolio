@@ -1,77 +1,221 @@
+// ============================================================================
+// order-core/build.gradle  (옵션 B 최소형, Gradle 8 호환, Jakarta 고정)
+// ----------------------------------------------------------------------------
+// - TestBootApp 은 src/test/java 그대로 유지
+// - integrationTest 는 test 산출물(class/resources)만 classpath 에 포함
+// - 모든 의존성은 libs.versions.toml 별칭만 사용
+// - Querydsl JPA는 jakarta classifier로 강제
+// - 리소스 중복(application-*.yml 등) 발생 시 EXCLUDE 처리
+// ============================================================================
+
+import org.gradle.api.file.DuplicatesStrategy
+
 plugins {
-    id "java-library"
+    id 'java'
+    id 'idea'
 }
+
+group = 'org.example'
+version = '1.0.0'
 
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(17) }
-    withSourcesJar()
-    withJavadocJar()
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
 }
 
-tasks.named("jar") { enabled = true }
+// repositories 는 루트의 설정을 사용 (여기서 중복 선언하지 않음)
 
+// ------------------------------
+// 소스셋
+// ------------------------------
+sourceSets {
+    test {
+        java.srcDir 'src/test/java'
+        resources.srcDir 'src/test/resources'
+    }
+
+    integrationTest {
+        java.srcDir 'src/integrationTest/java'
+        resources.srcDir 'src/integrationTest/resources'
+
+        // ✅ TestBootApp 등 test 산출물을 직접 포함
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+// ------------------------------
+// IntelliJ 보조
+// ------------------------------
+idea {
+    module {
+        testSourceDirs   += file('src/integrationTest/java')
+        testResourceDirs += file('src/integrationTest/resources')
+    }
+}
+
+// ------------------------------
+// 의존성 (전부 버전 카탈로그 사용)
+// ------------------------------
 dependencies {
-    // 내부 모듈
-    api(project(":order-common"))
-    implementation(project(":order-domain"))
+    // ==== 프로젝트 모듈 ====
+    implementation(project(':order-common'))
+    implementation(project(':order-domain')) // ✅ 도메인(엔티티/모델/리포지토리 인터페이스)
 
-    // Spring (웹 제외)
+    // ==== main ====
     implementation(libs.springBootStarter)
     implementation(libs.springBootStarterAop)
     implementation(libs.springBootStarterJdbc)
+    implementation(libs.springBootStarterSecurity)
     implementation(libs.springBootStarterDataJpa)
-    implementation(libs.springBootStarterValidation)
-    implementation(libs.springBootStarterSecurity) // BCrypt 등
 
-    // Spring Cloud Gateway
-    implementation(libs.springCloudGateway)
+    // Gateway(GlobalFilter 등) — 컴파일만 필요
+    compileOnly(libs.springCloudGateway)
 
-    // DB 드라이버 (런타임만)
-    runtimeOnly(libs.mysqlDriver)
-    runtimeOnly(libs.awsMysqlJdbc)
-
-    // Redis / 풀
-    implementation(libs.commonsPool2)
-    implementation(libs.redisson)
-
-    // Lettuce (직접 사용)
-    implementation(libs.lettuce)
-
-    // AWS SDK v2
-    implementation(platform(libs.awsBomV2))
-    implementation(libs.awsSecretsManager)
-    implementation(libs.awsAuth)
-    implementation(libs.awsRegions)
-
-    // AWS DynamoDB (Enhanced)
-    implementation(libs.awsDynamodb)
-    implementation(libs.awsDynamodbEnhanced)
-
-    // QueryDSL (Jakarta)
-    implementation(libs.querydslCore)
-    implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
-    annotationProcessor("${libs.querydslAptJakarta.get().module}:${libs.querydslAptJakarta.get().version}:jakarta")
-    annotationProcessor(libs.jakartaPersistenceApi)
-    annotationProcessor(libs.jakartaAnnotationApi)
-
-    // 기타 유틸
-    implementation(libs.jacksonJsr310)
-    implementation(libs.tsid)
-    implementation(libs.guava)
-    compileOnly(libs.jakartaServlet)
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-
-    // Argon2 / JWT
-    implementation(libs.argon2)
+    // JWT
     implementation(libs.jjwtApi)
     runtimeOnly(libs.jjwtImpl)
     runtimeOnly(libs.jjwtJackson)
 
-    // Testcontainers (GenericContainer 등)
-    testImplementation(platform(libs.testcontainersBom))
-    testImplementation(libs.testcontainers)
-    testImplementation(libs.testcontainersJunit)
-    testImplementation(libs.testcontainersRedis)
+    // Servlet API — 필터/서블릿 타입
+    compileOnly(libs.jakartaServlet)
+
+    // Redis 수동/자동 구성에서 사용하는 타입들
+    implementation(libs.lettuce)
+    implementation(libs.commonsPool2)
+    implementation(libs.redisson)
+
+    // Argon2 해싱
+    implementation(libs.argon2)
+
+    // AWS SDK (SecretsManager, DynamoDB)
+    implementation(platform(libs.awsBomV2))
+    implementation(libs.awsSecretsManager)
+    implementation(libs.awsRegions)
+    implementation(libs.awsAuth)
+
+    // DynamoDB (메인 코드에서 EnhancedClient/TableSchema 등 사용)
+    implementation(libs.awsDynamodb)
+    implementation(libs.awsDynamodbEnhanced)
+
+    // ===== QueryDSL (Jakarta 강제) =====
+    implementation(libs.querydslCore)
+    implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
+
+    // @ConfigurationProperties 메타 생성
+    annotationProcessor(libs.springBootConfigProcessor)
+
+    // Lombok
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    // ==== test (unit) ====
     testImplementation(libs.springBootStarterTest)
+    testImplementation(libs.h2)
+    testImplementation(libs.springBootStarterJdbc)
+    testImplementation(libs.embeddedRedis)   // ← ★ 추가: 임베디드 Redis(테스트 전용)
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+
+    // ==== integrationTest ====
+    integrationTestImplementation(platform(libs.testcontainersBom))
+    integrationTestImplementation(libs.testcontainers)
+    integrationTestImplementation(libs.testcontainersJunit)
+    integrationTestImplementation(libs.testcontainersMysql)
+    integrationTestImplementation(libs.testcontainersLocalstack)
+
+    // LocalStack + DynamoDB SDK v2
+    integrationTestImplementation(platform(libs.awsBomV2))
+    integrationTestImplementation(libs.awsDynamodb)
+    integrationTestImplementation(libs.awsRegions)
 }
+
+// ------------------------------
+// 구성 상속 (configuration 자체는 classpath에 직접 올리지 않음)
+// ------------------------------
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+// ------------------------------
+// 리소스 중복 처리 (테스트/통합테스트 리소스 빌드 시)
+// ------------------------------
+tasks.withType(ProcessResources).configureEach {
+    // 동일 파일명(application-test.yml 등) 중복시 첫 번째만 사용
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+// 개별 태스크 명시 (선택적으로 남겨둠)
+tasks.named('processTestResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.matching { it.name == 'processIntegrationTestResources' }.configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// ------------------------------
+// Test 태스크 공통
+// ------------------------------
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    testLogging {
+        events "FAILED", "SKIPPED"
+        exceptionFormat "FULL"
+        showExceptions true
+        showStackTraces true
+    }
+}
+
+test {
+    // 기본 빌드는 유닛 테스트만
+    systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-unit")
+    systemProperty "junit.jupiter.execution.parallel.enabled", "true"
+    systemProperty "junit.jupiter.execution.parallel.mode.default", "concurrent"
+}
+
+// ============================================================================
+// integrationTest 태스크 (루트에 이미 있으면 보강, 없으면 등록)
+// ============================================================================
+if (tasks.findByName('integrationTest') != null) {
+    tasks.named('integrationTest', Test) {
+        description = 'Runs integration tests (Testcontainers: MySQL/LocalStack DynamoDB).'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        useJUnitPlatform()
+
+        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-int")
+        systemProperty "junit.jupiter.execution.parallel.enabled", "false"
+
+        dependsOn tasks.named('testClasses')  // ✅ TestBootApp 등 test 산출물 생성 보장
+        shouldRunAfter tasks.named('test')
+
+        testLogging {
+            events "PASSED", "FAILED", "SKIPPED"
+            exceptionFormat "FULL"
+        }
+    }
+} else {
+    tasks.register('integrationTest', Test) {
+        description = 'Runs integration tests (Testcontainers: MySQL/LocalStack DynamoDB).'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        useJUnitPlatform()
+
+        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-int")
+        systemProperty "junit.jupiter.execution.parallel.enabled", "false"
+
+        dependsOn tasks.named('testClasses')  // ✅ TestBootApp 등 test 산출물 생성 보장
+        shouldRunAfter tasks.named('test')
+
+        testLogging {
+            events "PASSED", "FAILED", "SKIPPED"
+            exceptionFormat "FULL"
+        }
+    }
+}
+
+check.dependsOn test
+// 통합 테스트는 필요 시에만: ./gradlew integrationTest

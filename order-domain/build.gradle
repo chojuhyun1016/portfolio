@@ -2,6 +2,9 @@ plugins {
     id "java-library"
 }
 
+group = "org.example"
+version = "1.0.0"
+
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(17) }
     withSourcesJar()
@@ -11,36 +14,45 @@ java {
 tasks.named("jar") { enabled = true }
 
 dependencies {
-    // 내부 공통 모듈
+    // ===== 내부 공통 모듈 =====
     api(project(":order-common"))
 
-    // === AWS SDK v2 (DynamoDB Enhanced) ===
+    // ===== AWS SDK v2 (DynamoDB Enhanced) =====
     implementation(platform(libs.awsBomV2))
     implementation(libs.awsDynamodb)
     implementation(libs.awsDynamodbEnhanced)
 
-    // === JPA & QueryDSL (Jakarta) ===
+    // ===== JPA & QueryDSL (Jakarta) =====
     implementation(libs.springBootStarterDataJpa)
 
     implementation(libs.querydslCore)
-    implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
+    implementation(libs.querydslJpaJakarta)
 
-    // APT
-    annotationProcessor("${libs.querydslAptJakarta.get().module}:${libs.querydslAptJakarta.get().version}:jakarta")
+    // === APT (Q-타입 생성) ===
+    // ⚠️ Gradle 버전 카탈로그는 classifier를 지원하지 않음.
+    //    그래서 여기서만 jakarta classifier를 직접 붙인다.
+    annotationProcessor("com.querydsl:querydsl-apt:${libs.versions.querydsl.get()}:jakarta")
 
-    // JPA/어노테이션 메타 정보
+    // JPA/어노테이션 메타
     annotationProcessor(libs.jakartaPersistenceApi)
     annotationProcessor(libs.jakartaAnnotationApi)
     compileOnly(libs.jakartaPersistenceApi)
     compileOnly(libs.jakartaAnnotationApi)
 
-    // Lombok (루트에서 공통 지정되어 있어도 안전하게 추가 가능)
+    // Lombok
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-    // 필요 시 검증 어노테이션 사용
+    // 검증 어노테이션이 필요하면
     compileOnly(libs.springBootStarterValidation)
 
-    // 테스트
+    // ===== test =====
     testImplementation(libs.springBootStarterTest)
+}
+
+// QueryDSL 생성 패키지 범위(선택)
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += [
+            "-Aquerydsl.packages=org.example.order.domain"
+    ]
 }
