@@ -38,21 +38,6 @@ Spring 설정 클래스, 글로벌 빈 등록, 공통 설정 파일 로딩 등�
 
 ---
 
-## 📂 security
-
-JWT, OAuth2 인증인가 및 Gateway 보안 관련 기능을 담당한다.
-
-- **jwt**  
-  JWT 토큰 발급, 검증, 파싱, 키 관리 등의 기능 구현.
-
-- **oauth2**  
-  소셜 로그인 및 OAuth2 인증 프로세스 구현. 예: Kakao, Google 연동 등.
-
-- **gateway**  
-  API Gateway 레벨의 보안 필터, 인증 헤더 처리 등 구현.
-
----
-
 ## 📂 redis
 
 Redis 캐시 및 분산 저장소와의 연동 기능.
