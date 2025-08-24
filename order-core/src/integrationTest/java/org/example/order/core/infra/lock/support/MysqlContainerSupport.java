@@ -21,6 +21,7 @@ public abstract class MysqlContainerSupport {
     @Container
     @SuppressWarnings("resource")
     protected static final MySQLContainer<?> MYSQL =
+            // ✅ 공식 MySQL 8 이미지 사용
             new MySQLContainer<>("mysql:8.0.36")
                     .withUsername("test")
                     .withPassword("test")
@@ -35,7 +36,7 @@ public abstract class MysqlContainerSupport {
         registry.add("spring.datasource.url", MYSQL::getJdbcUrl);
         registry.add("spring.datasource.username", MYSQL::getUsername);
         registry.add("spring.datasource.password", MYSQL::getPassword);
-        registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
+        registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver"); // ✅ 최신 드라이버 명시
 
         // Hikari 기본 풀 설정(필수는 아님, 안정성 보강)
         registry.add("spring.datasource.hikari.maximum-pool-size", () -> "4");

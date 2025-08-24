@@ -1,60 +1,41 @@
 package org.example.order.core.infra.lock.support;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+/**
+ * 통합테스트 전용 Redis Testcontainers 지원 유틸.
+ *
+ * - @Container 정적 Redis 컨테이너 사용
+ * - @DynamicPropertySource 로 Redisson 설정 프로퍼티를 등록
+ *   (람다로 등록해야 컨테이너가 실제로 뜬 뒤 getMappedPort를 호출함)
+ */
+
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
-/**
- * Redis(Testcontainers) 통합 테스트 공통 베이스
- * - redissonLock 사용을 위해 lock.redisson.* 속성 동적 주입
- * - 충돌 방지를 위해 Redisson Starter 및 Spring Data Redis 오토설정 제외
- * <p>
- * 주의:
- * - 프로덕션 코드는 변경하지 않는다.
- */
 @Testcontainers
-public abstract class RedisContainerSupport {
+public class RedisContainerSupport {
 
-    private static final int REDIS_PORT = 6379;
+    private static final DockerImageName REDIS_IMAGE =
+            DockerImageName.parse("redis:7.2.4");
 
     @Container
-    @SuppressWarnings("resource")
-    protected static final GenericContainer<?> REDIS =
-            new GenericContainer<>("redis:7-alpine")
-                    .withExposedPorts(REDIS_PORT);
+    public static final GenericContainer<?> REDIS =
+            new GenericContainer<>(REDIS_IMAGE)
+                    .withExposedPorts(6379);
 
+    /**
+     * RedissonLockAutoConfig 가 바인딩할 프로퍼티를 동적으로 제공.
+     * 이때 반드시 람다로 등록해야 컨테이너가 시작된 뒤 포트를 읽는다.
+     */
     @DynamicPropertySource
     static void registerRedisProps(DynamicPropertyRegistry registry) {
-        registry.add("lock.enabled", () -> "true");
-        registry.add("lock.redisson.enabled", () -> "true");
-        registry.add("lock.named.enabled", () -> "false");
-
-        registry.add("lock.redisson.address",
-                () -> "redis://" + REDIS.getHost() + ":" + REDIS.getMappedPort(REDIS_PORT));
-        registry.add("lock.redisson.database", () -> "0");
-
-        // 테스트 격리를 위한 오토설정 제외(기존 문제 회피)
-        registry.add("spring.autoconfigure.exclude",
-                () -> String.join(",",
-                        "org.redisson.spring.starter.RedissonAutoConfiguration",
-                        "org.redisson.spring.starter.RedissonAutoConfigurationV2",
-                        "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration",
-                        "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration",
-                        "org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration"
-                ));
-    }
-
-    @BeforeAll
-    static void beforeAll() {
-        REDIS.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        REDIS.stop();
+        registry.add("lock.redisson.address", () ->
+                String.format("redis://%s:%d", REDIS.getHost(), REDIS.getMappedPort(6379)));
+        // 필요 시 비밀번호/DB index 등 추가
+        // registry.add("lock.redisson.password", () -> "");
+        // registry.add("lock.redisson.database", () -> 0);
     }
 }

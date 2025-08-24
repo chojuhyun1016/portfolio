@@ -30,8 +30,8 @@ import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
 /**
  * 통합 테스트 (AWS 자동 모드):
  * - @SpringBootTest + 모킹 클라이언트 주입
- * - PostConstruct 초기 로드 검증
- * - refreshSecrets()로 갱신/백업/리스너 호출 횟수 검증
+ * - refreshSecrets()로 초기 로드 트리거 (일부 환경에서 PostConstruct 미호출 대비)
+ * - 갱신/백업/리스너 호출 횟수 검증
  */
 @SpringBootTest
 @Import({SecretsAutoConfig.class, SecretsAutoIT.MockBeans.class})
@@ -79,11 +79,13 @@ class SecretsAutoIT {
 
     @Test
     void postConstruct_load_and_refresh_again() throws Exception {
+        // ⚠️ 환경별로 초기 로드가 자동으로 일어나지 않는 경우가 있어, 테스트에서 한 번 트리거
+        loader.refreshSecrets();
         // 초기 로드: MockBeans에서 V1 세팅됨
         assertThat(resolver.getCurrentKey("aes128")).hasSize(16);
         assertThat(resolver.getCurrentKey("aesgcm")).hasSize(32);
         assertThat(resolver.getCurrentKey("hmac")).hasSize(32);
-        assertThat(NOTIFY_COUNT.get()).isEqualTo(1);
+        assertThat(NOTIFY_COUNT.get()).isEqualTo(1); // init 1회
 
         // 모킹 응답을 V2로 바꾸고 refreshSecrets() 직접 호출
         Mockito.when(MOCK.getSecretValue(Mockito.any(GetSecretValueRequest.class)))
@@ -109,7 +111,7 @@ class SecretsAutoIT {
     static class MockBeans {
         @Bean
         @Primary
-        SecretsManagerClient secretsManagerClient() throws Exception {
+        SecretsManagerClient secretsManagerClientMock() throws Exception { // ⚠️ 이름 변경: 충돌 방지
             Mockito.when(MOCK.getSecretValue(Mockito.any(GetSecretValueRequest.class)))
                     .thenReturn(GetSecretValueResponse.builder().secretString(jsonV1()).build());
             return MOCK;

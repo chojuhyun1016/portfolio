@@ -35,7 +35,8 @@ class CryptoIT {
     private static String b64Key(int bytes) {
         byte[] buf = new byte[bytes];
         new SecureRandom().nextBytes(buf);
-        return Base64.getEncoder().encodeToString(buf);
+        // ✅ 운영 코드가 URL-safe 디코더를 쓰므로, 테스트 키도 URL-safe로 인코딩
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
     }
 
     @DynamicPropertySource
@@ -44,7 +45,7 @@ class CryptoIT {
         r.add("crypto.props.seed", () -> "true");
         r.add("encrypt.aes128.key", () -> b64Key(16));
         r.add("encrypt.aes256.key", () -> b64Key(32));
-        r.add("encrypt.aesgcm.key", () -> b64Key(16));
+        r.add("encrypt.aesgcm.key", () -> b64Key(32)); // ⚠️ AES-GCM은 32바이트 키 적용
         r.add("encrypt.hmac.key", () -> b64Key(32));
     }
 

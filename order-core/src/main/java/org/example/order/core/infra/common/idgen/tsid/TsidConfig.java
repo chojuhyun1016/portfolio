@@ -33,12 +33,18 @@ public class TsidConfig {
 
         log.info("Initializing TSID: nodeBits={}, nodeId={}, zone={}", nodeBits, nodeId, zone);
 
-        return TsidFactory.builder()
+        TsidFactory factory = TsidFactory.builder()
                 .withNodeBits(nodeBits)
                 .withNode(nodeId)
                 .withClock(Clock.system(zone))
                 .withRandom(new SecureRandom())
                 .build();
+
+        // ✅ [중요] Hibernate 생성기에서 사용할 수 있도록 정적 홀더에 등록
+        //    (Hibernate는 @IdGeneratorType 클래스를 스프링 주입 없이 기본생성자로 만들기 때문)
+        TsidFactoryHolder.set(factory);
+
+        return factory;
     }
 
     private int getNodeBits() {

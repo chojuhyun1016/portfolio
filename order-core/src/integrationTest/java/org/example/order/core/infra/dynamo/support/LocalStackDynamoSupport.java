@@ -1,88 +1,96 @@
 package org.example.order.core.infra.dynamo.support;
 
-import org.junit.jupiter.api.AfterAll;
+/**
+ * 통합테스트 전용 LocalStack(DynamoDB) 지원 유틸.
+ *
+ * - Testcontainers 로 LocalStack(DynamoDB) 컨테이너를 띄우고,
+ *   AWS SDK v2 가 참조하는 JVM 시스템 프로퍼티(aws.accessKeyId, aws.secretAccessKey, aws.region)를
+ *   컨테이너 기동 이후에 주입한다.
+ * - 통합테스트 각 클래스는 이 클래스를 상속(extends)해서 컨테이너를 공유할 수 있다.
+ * - DynamoDbClient 팩토리를 제공한다.
+ *
+ * 주의: integrationTest 소스셋에만 존재. main/test 코드에는 영향 없음.
+ */
+
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
 
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.DYNAMODB;
+import java.net.URI;
+import java.time.Duration;
 
-/**
- * LocalStack + DynamoDB 통합 테스트 공통 베이스
- * - 도커로 LocalStack을 기동하고, Spring Boot에 동적으로 프로퍼티 주입
- * - "Manual 모드"로 DynamoDB 엔드포인트/리전/테이블명을 명시 주입
- * - 레디슨 오토컨피그는 테스트에서만 제외(환경 독립성)
- *
- * 주의:
- * - 프로덕션 코드는 변경하지 않는다.
- * - 엔드포인트/리전/테이블명은 여기서만 주입한다.
- */
 @Testcontainers
-public abstract class LocalStackDynamoSupport {
+@TestInstance(Lifecycle.PER_CLASS)
+public class LocalStackDynamoSupport {
 
+    // LocalStack 이미지 태그 고정. 필요 시 버전 업그레이드 가능.
+    private static final DockerImageName LOCALSTACK_IMAGE =
+            DockerImageName.parse("localstack/localstack:2.3.2");
+
+    // DynamoDB 서비스만 사용. (필요 시 다른 서비스 추가)
     @Container
-    protected static final LocalStackContainer LOCALSTACK =
-            new LocalStackContainer("localstack/localstack:2.3.2")
-                    .withServices(DYNAMODB);
-
-    // 통합 테스트에서 사용할 기본 테이블명
-    protected static final String TABLE = "order_dynamo";
+    public static final LocalStackContainer LOCALSTACK =
+            new LocalStackContainer(LOCALSTACK_IMAGE)
+                    .withServices(LocalStackContainer.Service.DYNAMODB)
+                    .withStartupTimeout(Duration.ofSeconds(90));
 
     /**
-     * Spring 컨텍스트에 동적으로 프로퍼티 주입
-     * - dynamodb.enabled=true               → Dynamo 설정 활성화
-     * - dynamodb.region=<localstack region> → 수동 모드 리전
-     * - dynamodb.endpoint=<override>        → 수동 모드 엔드포인트
-     * - dynamodb.table-name=order_dynamo    → 리포지토리 등록 조건
-     * - spring.autoconfigure.exclude=RedissonV2 → 테스트에서만 레디슨 자동설정 제외
+     * 컨테이너 기동 이후, AWS SDK가 참고할 JVM 시스템 프로퍼티를 주입한다.
+     * DefaultCredentialsProvider가 System properties → Env → Profile 순으로 조회한다.
+     */
+    @BeforeAll
+    void setAwsSystemProperties() {
+        String accessKey = LOCALSTACK.getAccessKey();
+        String secretKey = LOCALSTACK.getSecretKey();
+        String region = LOCALSTACK.getRegion();
+
+        System.setProperty("aws.accessKeyId", accessKey);
+        System.setProperty("aws.secretAccessKey", secretKey);
+        System.setProperty("aws.region", region);
+    }
+
+    /**
+     * (선택) Spring 쪽으로도 동적 프로퍼티를 흘려보낸다.
+     * main 코드가 Environment/property로 endpoint/region을 읽는 경우 대비.
      */
     @DynamicPropertySource
-    static void registerProps(DynamicPropertyRegistry registry) {
-        registry.add("dynamodb.enabled", () -> "true");
-        registry.add("dynamodb.region", LOCALSTACK::getRegion);
-        registry.add("dynamodb.endpoint", () -> LOCALSTACK.getEndpointOverride(DYNAMODB).toString());
-        registry.add("dynamodb.table-name", () -> TABLE);
-
-        // 레디슨 오토컨피그 제외(테스트 격리 목적)
-        registry.add("spring.autoconfigure.exclude",
-                () -> "org.redisson.spring.starter.RedissonAutoConfigurationV2");
-    }
-
-    @BeforeAll
-    static void beforeAll() {
-        // Testcontainers @Container 가 알아서 start() 하지만, 명시적으로 호출해도 안전
-        LOCALSTACK.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        LOCALSTACK.stop();
+    static void registerAwsProps(DynamicPropertyRegistry registry) {
+        registry.add("aws.region", LOCALSTACK::getRegion);
+        registry.add("aws.dynamodb.endpoint", () ->
+                LOCALSTACK.getEndpointOverride(LocalStackContainer.Service.DYNAMODB).toString());
     }
 
     /**
-     * 통합 테스트 시작 전, 테이블이 없다면 생성한다.
-     * - 수동 모드로 주입된 DynamoDbClient를 사용한다.
+     * LocalStack용 DynamoDbClient 생성기.
+     * - endpointOverride: 컨테이너 엔드포인트
+     * - region: 컨테이너 리전
+     * - credentials: 컨테이너가 노출하는 더미 AK/SK (정적 크레덴셜)
      */
-    protected static void ensureTable(DynamoDbClient dynamo) {
-        try {
-            dynamo.describeTable(DescribeTableRequest.builder().tableName(TABLE).build());
-        } catch (ResourceNotFoundException e) {
-            dynamo.createTable(CreateTableRequest.builder()
-                    .tableName(TABLE)
-                    .keySchema(KeySchemaElement.builder()
-                            .attributeName("id").keyType(KeyType.HASH).build())
-                    .attributeDefinitions(AttributeDefinition.builder()
-                            .attributeName("id").attributeType(ScalarAttributeType.S).build())
-                    .billingMode(BillingMode.PAY_PER_REQUEST)
-                    .build());
-            dynamo.waiter().waitUntilTableExists(
-                    DescribeTableRequest.builder().tableName(TABLE).build()
-            );
-        }
+    public static DynamoDbClient dynamoDbClient() {
+        URI endpoint = LOCALSTACK.getEndpointOverride(LocalStackContainer.Service.DYNAMODB);
+        Region region = Region.of(LOCALSTACK.getRegion());
+
+        return DynamoDbClient.builder()
+                .endpointOverride(endpoint)
+                .region(region)
+                .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                                AwsBasicCredentials.create(
+                                        LOCALSTACK.getAccessKey(),
+                                        LOCALSTACK.getSecretKey()
+                                )
+                        )
+                )
+                .build();
     }
 }

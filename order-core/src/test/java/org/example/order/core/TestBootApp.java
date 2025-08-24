@@ -15,7 +15,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Profile;
 
-// ✅ 추가 import
+// ✅ 추가 import (기존 주석 유지)
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -43,6 +43,9 @@ import org.springframework.transaction.PlatformTransactionManager;
  *    이렇게 해야 @PersistenceContext 가 붙은 사용자 구성(QuerydslConfig 등)이 로드되지 않고,
  *    EntityManagerFactory 미존재 예외(NoSuchBeanDefinitionException)가 발생하지 않습니다.
  * ──────────────────────────────────────────────────────────────────────────
+ *
+ * ✅ [중요] 이 클래스는 **src/test/java**(유닛 테스트 전용) 에만 존재합니다.
+ *    통합 테스트 클래스패스에는 포함되지 않으므로 @SpringBootConfiguration 충돌이 발생하지 않습니다.
  */
 @SpringBootConfiguration
 @EnableAutoConfiguration(
@@ -79,74 +82,74 @@ import org.springframework.transaction.PlatformTransactionManager;
         }
 )
 public class TestBootApp {
-        // 빈 정의 없음: 스캔 & 자동구성에만 의존
+    // 빈 정의 없음: 스캔 & 자동구성에만 의존
 
-        // ───────────────────────────────────────────────────────────────
-        // ✅ 추가 방어선 (test-unit 프로필 한정):
-        //    QuerydslConfig 에 @PersistenceContext 가 존재해도, 여기서 더미 EMF/EM/SharedEM 을 제공하여
-        //    PersistenceAnnotationBeanPostProcessor 가 실패하지 않도록 한다.
-        //    → 어떤 경로(@Import 등)로 QuerydslConfig/JPA Repo 가 유입돼도 NPE/NoSuchBeanDefinitionException 차단
-        // ───────────────────────────────────────────────────────────────
+    // ───────────────────────────────────────────────────────────────
+    // ✅ 추가 방어선 (test-unit 프로필 한정):
+    //    QuerydslConfig 에 @PersistenceContext 가 존재해도, 여기서 더미 EMF/EM/SharedEM 을 제공하여
+    //    PersistenceAnnotationBeanPostProcessor 가 실패하지 않도록 한다.
+    //    → 어떤 경로(@Import 등)로 QuerydslConfig/JPA Repo 가 유입돼도 NPE/NoSuchBeanDefinitionException 차단
+    // ───────────────────────────────────────────────────────────────
 
-        // ※ 이번 오류는 Spring Data JPA가 'jpaSharedEM_entityManagerFactory' 이름의 공유 EM 빈을 찾다가
-        //    내부적으로 'entityManagerFactory' 빈을 요구하는 과정에서 실패했습니다.
-        //    따라서 정확한 “빈 이름”으로 등록해 줘야 순환이 완전히 끊깁니다.
+    // ※ 이번 오류는 Spring Data JPA가 'jpaSharedEM_entityManagerFactory' 이름의 공유 EM 빈을 찾다가
+    //    내부적으로 'entityManagerFactory' 빈을 요구하는 과정에서 실패했습니다.
+    //    따라서 정확한 “빈 이름”으로 등록해 줘야 순환이 완전히 끊깁니다.
 
-        @Bean(name = "entityManagerFactory")
-        @Profile("test-unit")
-        public EntityManagerFactory testEntityManagerFactory() {
-                // org.mockito.Mockito 를 사용 (test 스코프)
-                EntityManagerFactory emf = Mockito.mock(EntityManagerFactory.class);
-                EntityManager em = Mockito.mock(EntityManager.class);
-                Mockito.when(emf.createEntityManager()).thenReturn(em);
-                return emf;
-        }
+    @Bean(name = "entityManagerFactory")
+    @Profile("test-unit")
+    public EntityManagerFactory testEntityManagerFactory() {
+        // org.mockito.Mockito 를 사용 (test 스코프)
+        EntityManagerFactory emf = Mockito.mock(EntityManagerFactory.class);
+        EntityManager em = Mockito.mock(EntityManager.class);
+        Mockito.when(emf.createEntityManager()).thenReturn(em);
+        return emf;
+    }
 
-        @Bean(name = "jpaSharedEM_entityManagerFactory")
-        @Profile("test-unit")
-        public EntityManager jpaSharedEntityManager(EntityManagerFactory emf) {
-                // Spring이 JPA 자동구성 시 만들어주는 공유 EM 빈 이름과 타입을 그대로 맞춰줌
-                // 실제 DB 접근은 없고, 더미 EMF 기반 프록시 EM 이므로 안전
-                return SharedEntityManagerCreator.createSharedEntityManager(emf);
-        }
+    @Bean(name = "jpaSharedEM_entityManagerFactory")
+    @Profile("test-unit")
+    public EntityManager jpaSharedEntityManager(EntityManagerFactory emf) {
+        // Spring이 JPA 자동구성 시 만들어주는 공유 EM 빈 이름과 타입을 그대로 맞춰줌
+        // 실제 DB 접근은 없고, 더미 EMF 기반 프록시 EM 이므로 안전
+        return SharedEntityManagerCreator.createSharedEntityManager(emf);
+    }
 
-        // 필요 시 직접 EM 을 주입받는 곳을 위해 노멀 EM 도 노출(빈 이름 강제는 필요치 않음)
-        @Bean
-        @Profile("test-unit")
-        public EntityManager testEntityManager(EntityManagerFactory emf) {
-                return emf.createEntityManager();
-        }
+    // 필요 시 직접 EM 을 주입받는 곳을 위해 노멀 EM 도 노출(빈 이름 강제는 필요치 않음)
+    @Bean
+    @Profile("test-unit")
+    public EntityManager testEntityManager(EntityManagerFactory emf) {
+        return emf.createEntityManager();
+    }
 
-        // ───────────────────────────────────────────────────────────────
-        // ✅ JDBC 안전판: 어떤 구성(@Import/컴포넌트스캔) 경로로 JDBC 레이어 빈이 유입돼도
-        //    컨텍스트 로딩 실패 방지. DB 자동구성은 exclude 상태이므로 실제 연결은 절대 일어나지 않음.
-        // ───────────────────────────────────────────────────────────────
+    // ───────────────────────────────────────────────────────────────
+    // ✅ JDBC 안전판: 어떤 구성(@Import/컴포넌트스캔) 경로로 JDBC 레이어 빈이 유입돼도
+    //    컨텍스트 로딩 실패 방지. DB 자동구성은 exclude 상태이므로 실제 연결은 절대 일어나지 않음.
+    // ───────────────────────────────────────────────────────────────
 
-        @Bean
-        @Profile("test-unit")
-        public DataSource testDataSource() {
-                // DataSource 을 요구하는 빈 대비 더미로 스텁
-                return Mockito.mock(DataSource.class);
-        }
+    @Bean
+    @Profile("test-unit")
+    public DataSource testDataSource() {
+        // DataSource 을 요구하는 빈 대비 더미로 스텁
+        return Mockito.mock(DataSource.class);
+    }
 
-        @Bean
-        @Profile("test-unit")
-        public JdbcTemplate testJdbcTemplate(DataSource ds) {
-                // JdbcTemplate 자체는 DataSource 를 사용하지만,
-                // 위에서 더미 DataSource 를 주입하므로 실제 커넥션은 발생하지 않음
-                return new JdbcTemplate(ds);
-        }
+    @Bean
+    @Profile("test-unit")
+    public JdbcTemplate testJdbcTemplate(DataSource ds) {
+        // JdbcTemplate 자체는 DataSource 를 사용하지만,
+        // 위에서 더미 DataSource 를 주입하므로 실제 커넥션은 발생하지 않음
+        return new JdbcTemplate(ds);
+    }
 
-        @Bean
-        @Profile("test-unit")
-        public NamedParameterJdbcTemplate testNamedParameterJdbcTemplate(JdbcTemplate jdbcTemplate) {
-                return new NamedParameterJdbcTemplate(jdbcTemplate);
-        }
+    @Bean
+    @Profile("test-unit")
+    public NamedParameterJdbcTemplate testNamedParameterJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        return new NamedParameterJdbcTemplate(jdbcTemplate);
+    }
 
-        // (선택) 트랜잭션 관련 빈을 참조하는 경우를 대비한 얇은 스텁
-        @Bean
-        @Profile("test-unit")
-        public PlatformTransactionManager testTxManager() {
-                return Mockito.mock(PlatformTransactionManager.class);
-        }
+    // (선택) 트랜잭션 관련 빈을 참조하는 경우를 대비한 얇은 스텁
+    @Bean
+    @Profile("test-unit")
+    public PlatformTransactionManager testTxManager() {
+        return Mockito.mock(PlatformTransactionManager.class);
+    }
 }

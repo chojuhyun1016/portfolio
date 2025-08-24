@@ -10,6 +10,7 @@ version = "1.0.0"
 subprojects {
     apply plugin: "java-library"
     apply plugin: libs.plugins.springDepMgmt.get().pluginId
+    // ✅ (요청사항 반영) java-test-fixtures 미사용
 
     java {
         toolchain { languageVersion = JavaLanguageVersion.of(libs.versions.java.get().toInteger()) }
@@ -22,11 +23,16 @@ subprojects {
         options.release = libs.versions.java.get().toInteger()
     }
 
-    // Javadoc 빌드 완화(에러 무시 + doclint 비활성화 + UTF-8)
+    // Javadoc 빌드 완화
     tasks.withType(Javadoc).configureEach {
         options.encoding = "UTF-8"
         options.addStringOption("Xdoclint:none", "-quiet")
         failOnError = false
+    }
+
+    // 리소스 중복 방지 (test/integrationTest 모두 포함)
+    tasks.withType(ProcessResources).configureEach {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
     tasks.withType(Test).configureEach {
@@ -38,60 +44,72 @@ subprojects {
     }
 
     dependencies {
+        // 공통 유틸
+        implementation(libs.guava)
+
+        // Lombok (main/test 공통)
         compileOnly(libs.lombok)
         annotationProcessor(libs.lombok)
         testCompileOnly(libs.lombok)
         testAnnotationProcessor(libs.lombok)
 
-        // 공통 테스트/유틸
+        // 공통 테스트
         testImplementation(libs.springBootStarterTest)
         testImplementation(platform(libs.testcontainersBom))
-        implementation(libs.guava)
     }
 
-    // === BOM 추가 (순서 중요) ===
+    // ===== BOM =====
     dependencyManagement {
         imports {
-            // 1) Spring Boot BOM (스타터/스프링 생태계 버전 확정)
             mavenBom "org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"
-
-            // 2) Spring Cloud / AWS BOM (필요 시)
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:${libs.versions.springCloud.get()}"
             mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${libs.versions.springAws.get()}"
         }
     }
 
-    // ====== ✅ 통합 테스트 소스셋/태스크 (모든 subproject 공통) — 단일 정의 ======
+    // ===== 통합 테스트 소스셋/태스크 (공통) =====
     sourceSets {
         integrationTest {
             java.srcDir file("src/integrationTest/java")
             resources.srcDir file("src/integrationTest/resources")
 
-            // ✅ 핵심: integrationTest가 test 산출물(TestBootApp 등)을 볼 수 있도록 test.output을 명시적으로 추가
-            compileClasspath += sourceSets.main.output +
-                    sourceSets.test.output + // ✅ TestBootApp 등 test 클래스 포함
-                    configurations.testRuntimeClasspath
+            // ✅ [중요] test 산출물(TestBootApp 등)을 **제외**하여 @SpringBootConfiguration 충돌 방지
+            // 기존: compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
+            // 변경: test.output 제거
+            compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
             runtimeClasspath += output + compileClasspath
+
+            // ✅ (요청사항 반영) testFixtures 미사용 → 별도 추가 없음
         }
     }
+
     configurations {
+        // test 구성을 integrationTest에 상속
         integrationTestImplementation.extendsFrom testImplementation
         integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+
+        // Lombok 확장 (없으면 @Slf4j 인식 실패)
+        integrationTestCompileOnly.extendsFrom testCompileOnly
         integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
+
+        // ✅ (요청사항 반영) testFixtures 확장 없음
     }
+
     tasks.register("integrationTest", Test) {
         description = "Runs integration tests."
         group = "verification"
         testClassesDirs = sourceSets.integrationTest.output.classesDirs
         classpath = sourceSets.integrationTest.runtimeClasspath
         useJUnitPlatform()
-        // ⚠ 기본 build 에선 실행하지 않음. 필요할 때만 ./gradlew integrationTest
         shouldRunAfter tasks.named("test")
-        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-int")
-        // ✅ test 소스가 먼저 컴파일되도록 보장 (TestBootApp 포함)
-        dependsOn(tasks.named("testClasses"))
+        // ✅ 통합 테스트 기본 프로파일
+        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
+        // ✅ 더 이상 testClasses 선행 필요 없음(클래스패스에서 test 산출물 제외)
+        testLogging {
+            events "PASSED", "FAILED", "SKIPPED"
+            exceptionFormat "FULL"
+        }
     }
-    // ====== ✅ 여기까지 ======
 }
 
 // 실행 모듈에서만 spring-boot 적용할 때 사용 (예시)
@@ -106,45 +124,20 @@ subprojects {
 
 // (선택) REST Docs 샘플 — 주석 해제 시 대상 모듈에만 적용
 // configure([project(":order-api:order-api-master")]) {
-//     apply plugin: libs.plugins.asciidoctor.get().pluginId
+//     apply plugin: "org.asciidoctor.jvm.convert"
 //     configurations { asciidoctorExt }
 //     dependencies { asciidoctorExt "org.springframework.restdocs:spring-restdocs-asciidoctor" }
 //     tasks.named("asciidoctor") {
-//         dependsOn(tasks.named("test"))
-//         inputs.dir("src/docs/asciidoc")
+//         dependsOn test
 //         baseDirFollowsSourceFile()
 //     }
-//     tasks.named("bootJar") {
-//         dependsOn(tasks.named("asciidoctor"))
-//         from("${buildDir}/docs/asciidoc") { into("static/docs") }
+//     bootJar {
+//         dependsOn asciidoctor
+//         from("${asciidoctor.outputDir}/") {
+//             into 'static/docs'
+//         }
+//     }
+//     dependencies {
+//         testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 //     }
 // }
-
-
-// REST Docs 설정
-//def restDocProjects = [project(':order-api:order-api-master')]
-//configure(restDocProjects) {
-//    apply plugin: "org.asciidoctor.jvm.convert"
-//
-//    configurations {
-//        asciidoctorExt
-//    }
-//
-//    asciidoctor {
-//        configurations 'asciidoctorExt'
-//        dependsOn test
-//        baseDirFollowsSourceFile()
-//    }
-//
-//    bootJar {
-//        dependsOn asciidoctor
-//        from("${asciidoctor.outputDir}/") {
-//            into 'static/docs'
-//        }
-//    }
-//
-//    dependencies {
-//        asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
-//        testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-//    }
-//}

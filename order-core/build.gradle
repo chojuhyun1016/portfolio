@@ -13,6 +13,7 @@ import org.gradle.api.file.DuplicatesStrategy
 plugins {
     id 'java'
     id 'idea'
+    // ✅ (요청사항 반영) testFixtures 플러그인 사용하지 않음 — 공유 유틸은 각 소스셋에 “각자” 선언
 }
 
 group = 'org.example'
@@ -39,9 +40,14 @@ sourceSets {
         java.srcDir 'src/integrationTest/java'
         resources.srcDir 'src/integrationTest/resources'
 
-        // ✅ TestBootApp 등 test 산출물을 직접 포함
-        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        // ✅ TestBootApp 등 "test 산출물(class)"을 통합테스트에서 **제외**
+        //    → multiple @SpringBootConfiguration 충돌을 원천 차단한다.
+        //    (이전 버전에서는 sourceSets.test.output 을 포함했기 때문에 충돌이 났음)
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
         runtimeClasspath += output + compileClasspath
+
+        // ✅ (요청사항 반영) testFixtures 를 쓰지 않으므로 별도 output 추가 없음.
+        //    공용 유틸이 필요하면 integrationTest 소스셋 내에 “같은 패키지”로 별도 정의한다.
     }
 }
 
@@ -52,6 +58,7 @@ idea {
     module {
         testSourceDirs   += file('src/integrationTest/java')
         testResourceDirs += file('src/integrationTest/resources')
+        // ✅ testFixtures 경로는 사용하지 않으므로 추가하지 않음
     }
 }
 
@@ -69,6 +76,9 @@ dependencies {
     implementation(libs.springBootStarterJdbc)
     implementation(libs.springBootStarterSecurity)
     implementation(libs.springBootStarterDataJpa)
+
+    // ✅ 추가: RedisTemplate 오토 구성 제공 (Spring Data Redis)
+    implementation(libs.springBootStarterDataRedis)
 
     // Gateway(GlobalFilter 등) — 컴파일만 필요
     compileOnly(libs.springCloudGateway)
@@ -106,37 +116,52 @@ dependencies {
     // @ConfigurationProperties 메타 생성
     annotationProcessor(libs.springBootConfigProcessor)
 
-    // Lombok
+    // Lombok (main/test)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
 
     // ==== test (unit) ====
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.h2)
     testImplementation(libs.springBootStarterJdbc)
-    testImplementation(libs.embeddedRedis)   // ← ★ 추가: 임베디드 Redis(테스트 전용)
-    testCompileOnly(libs.lombok)
-    testAnnotationProcessor(libs.lombok)
+    testImplementation(libs.embeddedRedis)   // 테스트 전용(필요 시)
 
-    // ==== integrationTest ====
+    // ==== integrationTest (통합 테스트 전용) ====
+    // Testcontainers (JDBC URL 방식으로 DataSource 자동 생성)
     integrationTestImplementation(platform(libs.testcontainersBom))
     integrationTestImplementation(libs.testcontainers)
     integrationTestImplementation(libs.testcontainersJunit)
     integrationTestImplementation(libs.testcontainersMysql)
+    integrationTestImplementation(libs.testcontainersJdbc)
+
+    // ✅ MySQL 드라이버: 런타임 클래스패스 보장 (CNF 방지)
+    integrationTestImplementation(libs.mysqlDriver)
+    integrationTestRuntimeOnly(libs.mysqlDriver)
+
+    // ✅ LocalStack (DynamoDB) — 누락되면 LocalStackContainer 클래스를 못 찾음
     integrationTestImplementation(libs.testcontainersLocalstack)
 
     // LocalStack + DynamoDB SDK v2
     integrationTestImplementation(platform(libs.awsBomV2))
     integrationTestImplementation(libs.awsDynamodb)
     integrationTestImplementation(libs.awsRegions)
+
+    // ✅ Lombok 을 integrationTest에도 명시적으로 연결 (컴파일 + 어노테이션 프로세서)
+    integrationTestCompileOnly(libs.lombok)
+    integrationTestAnnotationProcessor(libs.lombok)
 }
 
 // ------------------------------
 // 구성 상속 (configuration 자체는 classpath에 직접 올리지 않음)
 // ------------------------------
 configurations {
+    // ✅ 안전하게 보강
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+
+    // ✅ (요청사항 반영) testFixtures 확장 없음
 }
 
 // ------------------------------
@@ -146,7 +171,6 @@ tasks.withType(ProcessResources).configureEach {
     // 동일 파일명(application-test.yml 등) 중복시 첫 번째만 사용
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
-// 개별 태스크 명시 (선택적으로 남겨둠)
 tasks.named('processTestResources') {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
@@ -185,10 +209,10 @@ if (tasks.findByName('integrationTest') != null) {
         classpath = sourceSets.integrationTest.runtimeClasspath
         useJUnitPlatform()
 
-        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-int")
+        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
 
-        dependsOn tasks.named('testClasses')  // ✅ TestBootApp 등 test 산출물 생성 보장
+        // ✅ 더 이상 testClasses 선행이 필요없다(통합테스트가 test 산출물을 보지 않음)
         shouldRunAfter tasks.named('test')
 
         testLogging {
@@ -204,10 +228,9 @@ if (tasks.findByName('integrationTest') != null) {
         classpath = sourceSets.integrationTest.runtimeClasspath
         useJUnitPlatform()
 
-        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-int")
+        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
 
-        dependsOn tasks.named('testClasses')  // ✅ TestBootApp 등 test 산출물 생성 보장
         shouldRunAfter tasks.named('test')
 
         testLogging {

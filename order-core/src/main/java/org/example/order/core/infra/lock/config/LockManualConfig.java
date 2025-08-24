@@ -22,9 +22,21 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 import java.util.Map;
 
+/**
+ * 락 구성 (키 생성기 / 실행기 / 팩토리 / 어스펙트)
+ *
+ * 전역 조건:
+ *  - lock.enabled = true
+ *
+ * 개별 실행기 조건:
+ *  - namedLock:    lock.named.enabled = true    && DataSource 빈 존재
+ *  - redissonLock: lock.redisson.enabled = true && RedissonClient 빈 존재
+ *
+ * → 서로 간섭 없이, 켜진 것만 빌드됩니다.
+ */
 @Configuration
 @EnableConfigurationProperties({NamedLockProperties.class, RedissonLockProperties.class})
-@ConditionalOnProperty(name = "lock.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "lock.enabled", havingValue = "true", matchIfMissing = false)
 public class LockManualConfig {
 
     /* ---------- Key Generators ---------- */
@@ -48,7 +60,7 @@ public class LockManualConfig {
 
     /* ---------- Executors ---------- */
     @Bean(name = "namedLock")
-    @ConditionalOnProperty(name = {"lock.named.enabled"}, havingValue = "true")
+    @ConditionalOnProperty(name = "lock.named.enabled", havingValue = "true", matchIfMissing = false)
     @ConditionalOnBean(DataSource.class)
     @ConditionalOnMissingBean(name = "namedLock")
     public LockExecutor namedLockExecutor(NamedLockProperties props, DataSource dataSource) {
@@ -56,7 +68,7 @@ public class LockManualConfig {
     }
 
     @Bean(name = "redissonLock")
-    @ConditionalOnProperty(name = {"lock.redisson.enabled"}, havingValue = "true")
+    @ConditionalOnProperty(name = "lock.redisson.enabled", havingValue = "true", matchIfMissing = false)
     @ConditionalOnBean(RedissonClient.class)
     @ConditionalOnMissingBean(name = "redissonLock")
     public LockExecutor redissonLockExecutor(RedissonLockProperties props, RedissonClient client) {
@@ -67,7 +79,6 @@ public class LockManualConfig {
     @Bean
     @ConditionalOnMissingBean
     public LockKeyGeneratorFactory lockKeyGeneratorFactory(Map<String, LockKeyGenerator> generators) {
-        // 이름 기반 조회(sha256/simple/spell)를 위해 그대로 전달
         return new LockKeyGeneratorFactory(generators);
     }
 

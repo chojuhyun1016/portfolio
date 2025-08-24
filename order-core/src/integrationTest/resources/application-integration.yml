@@ -1,28 +1,21 @@
-# ===========================
-# Integration Test (Testcontainers)
-# ===========================
 spring:
   main:
     web-application-type: none
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
 
-secrets:
-  enabled: false
+# ✅ 여기서는 어떤 autoconfigure.exclude 도 지정하지 않습니다.
+#    (레디슨 스타터가 있어도, 우리가 만든 조건부 AutoConfig와 테스트 지원이 충돌 없이 제어합니다.)
 
-aws:
-  secrets-manager:
-    enabled: false
-
-# DynamoDB: LocalStack 사용 (엔드포인트/자격증명은 설정 클래스/동적 주입)
-dynamodb:
-  enabled: true
-  repo-enabled: true
-  tableName: order_dynamo
-
-# Lock 기본값(각 테스트에서 Named/Redisson 중 하나만 켬)
 lock:
   enabled: true
   named:
@@ -34,6 +27,7 @@ lock:
     wait-time: 3000
     lease-time: 10000
     retry-interval: 150
+    # address/uri/database 는 RedisTestSupport 가 동적 주입
 
 logging:
   level:
