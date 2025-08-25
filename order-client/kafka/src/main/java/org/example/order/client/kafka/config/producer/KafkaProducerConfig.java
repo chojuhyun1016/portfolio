@@ -10,9 +10,9 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.example.order.client.kafka.config.properties.KafkaProducerProperties;
 import org.example.order.client.kafka.config.properties.KafkaSSLProperties;
 import org.example.order.common.support.json.ObjectMapperFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -21,10 +21,15 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Kafka Producer 구성
+ * - ✨ producer.enabled=true 일 때만 ProducerFactory/KafkaTemplate 생성
+ */
 @Slf4j
 @Configuration
 @EnableConfigurationProperties({KafkaProducerProperties.class, KafkaSSLProperties.class})
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "kafka.producer", name = "enabled", havingValue = "true")
 public class KafkaProducerConfig {
 
     private final KafkaProducerProperties kafkaProducerProperties;
@@ -39,6 +44,7 @@ public class KafkaProducerConfig {
         configProps.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name);
         configProps.put(ProducerConfig.BATCH_SIZE_CONFIG, 65536);
 
+        // ✨ SSL/SASL 은 ssl.enabled=true 일 때만
         if (sslProperties.isEnabled()) {
             configProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, sslProperties.getSecurityProtocol());
             configProps.put(SaslConfigs.SASL_MECHANISM, sslProperties.getSaslMechanism());

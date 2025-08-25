@@ -6,14 +6,17 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.io.File;
 
+/**
+ * S3 전송 클라이언트
+ * - Config에서 AmazonS3가 조건부로 생성될 때만 함께 만들어짐
+ */
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class S3Client {
+
     private final AmazonS3 amazonS3;
 
     public void putObject(String bucketName, String key, File file) {

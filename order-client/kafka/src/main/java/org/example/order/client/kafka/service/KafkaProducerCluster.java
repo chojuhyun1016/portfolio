@@ -2,6 +2,7 @@ package org.example.order.client.kafka.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -12,9 +13,15 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Producer 사용 서비스
+ * - ✨ KafkaTemplate 빈이 있을 때만 생성(즉, producer.enabled=true일 때만)
+ *   → @ConditionalOnBean(KafkaTemplate.class)
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnBean(KafkaTemplate.class)
 public class KafkaProducerCluster implements SmartLifecycle {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -31,7 +38,8 @@ public class KafkaProducerCluster implements SmartLifecycle {
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("Sending kafka message - topic: {}, message: {}, offset: {}", topic, result.getProducerRecord().value().toString(), result.getRecordMetadata().offset());
+                log.info("Sending kafka message - topic: {}, message: {}, offset: {}",
+                        topic, result.getProducerRecord().value().toString(), result.getRecordMetadata().offset());
             } else {
                 log.error("error : Sending kafka message failed - topic: {}, message: {}", topic, ex.getMessage(), ex);
             }

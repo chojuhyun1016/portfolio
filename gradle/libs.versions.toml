@@ -68,6 +68,9 @@ awsRegions = { module = "software.amazon.awssdk:regions" }
 awsDynamodb = { module = "software.amazon.awssdk:dynamodb" }
 awsDynamodbEnhanced = { module = "software.amazon.awssdk:dynamodb-enhanced" }
 
+# ✅ AWS SDK v1 (S3) — s3 모듈에서 사용
+awsS3v1 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.530" }
+
 # Querydsl
 querydslCore = { module = "com.querydsl:querydsl-core", version.ref = "querydsl" }
 querydslJpaJakarta = { module = "com.querydsl:querydsl-jpa", version.ref = "querydsl" }

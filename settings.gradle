@@ -32,10 +32,10 @@ rootProject.name = "order"
 include(
         "order-common",
         "order-core",
-        "order-domain"
-        // "order-client:web",
-        // "order-client:kafka",
-        // "order-client:s3",
+        "order-domain",
+         "order-client:web",
+         "order-client:kafka",
+         "order-client:s3"
         // "order-api:order-api-common",
         // "order-api:order-api-master",
         // "order-api:order-api-web",

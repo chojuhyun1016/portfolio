@@ -60,6 +60,7 @@ subprojects {
 
     // ===== BOM =====
     dependencyManagement {
+        // ✅ 버전 관리는 "루트에서 가져온 BOM" + "libs.versions.toml 별칭" 중심으로 통일
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:${libs.versions.springCloud.get()}"
@@ -74,12 +75,8 @@ subprojects {
             resources.srcDir file("src/integrationTest/resources")
 
             // ✅ [중요] test 산출물(TestBootApp 등)을 **제외**하여 @SpringBootConfiguration 충돌 방지
-            // 기존: compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
-            // 변경: test.output 제거
             compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
             runtimeClasspath += output + compileClasspath
-
-            // ✅ (요청사항 반영) testFixtures 미사용 → 별도 추가 없음
         }
     }
 
@@ -91,8 +88,6 @@ subprojects {
         // Lombok 확장 (없으면 @Slf4j 인식 실패)
         integrationTestCompileOnly.extendsFrom testCompileOnly
         integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
-
-        // ✅ (요청사항 반영) testFixtures 확장 없음
     }
 
     tasks.register("integrationTest", Test) {
@@ -104,40 +99,9 @@ subprojects {
         shouldRunAfter tasks.named("test")
         // ✅ 통합 테스트 기본 프로파일
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
-        // ✅ 더 이상 testClasses 선행 필요 없음(클래스패스에서 test 산출물 제외)
         testLogging {
             events "PASSED", "FAILED", "SKIPPED"
             exceptionFormat "FULL"
         }
     }
 }
-
-// 실행 모듈에서만 spring-boot 적용할 때 사용 (예시)
-// configure([
-//     project(":order-api:order-api-master"),
-//     project(":order-api:order-api-web"),
-//     project(":order-worker"),
-//     project(":order-batch")
-// ]) {
-//     apply plugin: libs.plugins.springBoot.get().pluginId
-// }
-
-// (선택) REST Docs 샘플 — 주석 해제 시 대상 모듈에만 적용
-// configure([project(":order-api:order-api-master")]) {
-//     apply plugin: "org.asciidoctor.jvm.convert"
-//     configurations { asciidoctorExt }
-//     dependencies { asciidoctorExt "org.springframework.restdocs:spring-restdocs-asciidoctor" }
-//     tasks.named("asciidoctor") {
-//         dependsOn test
-//         baseDirFollowsSourceFile()
-//     }
-//     bootJar {
-//         dependsOn asciidoctor
-//         from("${asciidoctor.outputDir}/") {
-//             into 'static/docs'
-//         }
-//     }
-//     dependencies {
-//         testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-//     }
-// }

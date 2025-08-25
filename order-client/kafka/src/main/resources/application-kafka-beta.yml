@@ -1,3 +1,4 @@
+# application-integration.yml (또는 운영 프로필)
 kafka:
   ssl:
     enabled: true
@@ -7,7 +8,21 @@ kafka:
     sasl-client-callback-handler-class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
 
   producer:
+    enabled: true
     bootstrap-servers: "${BOOTSTRAP_SERVERS}"
+
+  consumer:
+    enabled: true
+    bootstrap-servers: "${BOOTSTRAP_SERVERS}"
+    option:
+      max-fail-count: 1
+      max-poll-records: 1000
+      fetch-max-wait-ms: 500
+      fetch-max-bytes: 52428800
+      max-poll-interval-ms: 300000
+      idle-between-polls: 0
+      auto-offset-reset: earliest
+      enable-auto-commit: false
 
   topic:
     - category: order-local
@@ -18,16 +33,3 @@ kafka:
       name: "beta-order-crud"
     - category: order-remote
       name: "beta-order-remote"
-
-  consumer:
-    bootstrap-servers: "${BOOTSTRAP_SERVERS}"
-
-    option:
-      max-fail-count: 1
-      max-poll-records: 1000
-      fetch-max-wait-ms: 500
-      fetch-max-bytes: 52428800
-      max-poll-interval-ms: 300000
-      idle-between-polls: 0
-      auto-offset-reset: "earliest"
-      enable-auto-commit: false

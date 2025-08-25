@@ -7,9 +7,9 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.example.order.client.kafka.config.properties.KafkaConsumerProperties;
 import org.example.order.client.kafka.config.properties.KafkaSSLProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -20,11 +20,18 @@ import org.springframework.util.backoff.FixedBackOff;
 import java.util.HashMap;
 import java.util.Map;
 
-@EnableKafka
+/**
+ * Kafka Consumer 구성
+ * - ✨ @ConditionalOnProperty 로 enable=true 일 때만 빈 생성
+ * - ✨ @EnableKafka 도 같은 조건으로만 활성화(리스너 컨테이너 등록)
+ */
 @Configuration
 @EnableConfigurationProperties({KafkaConsumerProperties.class, KafkaSSLProperties.class})
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "kafka.consumer", name = "enabled", havingValue = "true")
+@EnableKafka // consumer.enabled=true일 때만 이 클래스 자체가 로드되므로 안전
 public class KafkaConsumerConfig {
+
     private final KafkaConsumerProperties properties;
     private final KafkaSSLProperties sslProperties;
 
@@ -46,7 +53,6 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaBatchListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         KafkaConsumerProperties.KafkaConsumerOption option = properties.getOption();
-
 
         ContainerProperties containerProperties = factory.getContainerProperties();
         containerProperties.setIdleBetweenPolls(option.getIdleBetweenPolls()); // polling 사이 대기 시간
@@ -73,6 +79,7 @@ public class KafkaConsumerConfig {
         defaultConfigProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.getOption().getEnableAutoCommit()); // offset auto commit
         defaultConfigProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.getOption().getAutoOffsetReset()); // offset commit 이후 메시지 부터 읽음
 
+        // ✨ SSL/SASL 은 ssl.enabled=true 일 때만
         if (sslProperties.isEnabled()) {
             defaultConfigProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, sslProperties.getSecurityProtocol());
             defaultConfigProps.put(SaslConfigs.SASL_MECHANISM, sslProperties.getSaslMechanism());
