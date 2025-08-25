@@ -2,42 +2,35 @@
 // order-client/s3/build.gradle
 //  - 라이브러리 모듈: Spring Boot 플러그인 미적용 (bootJar 태스크 없음)
 //  - 표준 JAR 산출 (jar 활성화)
-//  - 추후 부트 플러그인이 실수로 붙어도 빌드가 깨지지 않도록
-//    bootJar 태스크가 "존재할 때만" 비활성화하는 가드 추가
-//  - 의존성은 전부 버전 카탈로그(libs.*) 별칭 사용
-//  - 버전 관리는 루트 dependency-management(BOM) + catalog 조합으로 일원화
+//  - 의존성은 libs.versions.toml 별칭 사용
+//  - jakarta.validation.* 오류 방지를 위해 validation starter 명시
 // ============================================================================
 
 plugins {
-    id 'java-library' // ✅ 라이브러리 모듈 (부트 플러그인 X)
-    // ⚠️ io.spring.dependency-management 는 루트 build.gradle의 subprojects 블록에서 이미 적용됨
+    id 'java-library'                         // ✅ 라이브러리 모듈
+    id 'io.spring.dependency-management'      // ✅ BOM 정렬
 }
 
 group = 'org.example.order'
 version = '1.0.0'
 
 java {
-    toolchain { languageVersion = JavaLanguageVersion.of(libs.versions.java.get().toInteger()) }
-    withSourcesJar()   // (선택) sources JAR 생성
-    withJavadocJar()   // (선택) javadoc JAR 생성
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+    withSourcesJar()
+    withJavadocJar()
 }
 
-// repositories 는 루트 설정 사용 (여기서 중복 선언하지 않음)
+// repositories 는 루트 설정 사용
 
-// ----------------------------------------------------------------------------
-// 의존성
-//  - AWS SDK v1 의존성은 버전 카탈로그 별칭(libs.awsS3v1) 사용
-//  - @ConfigurationProperties 메타데이터 제공을 위해 config-processor 추가(선택)
-// ----------------------------------------------------------------------------
 dependencies {
     // 공통 모듈
-    api project(':order-common')   // 다른 모듈이 s3 모듈을 의존할 때 타입 재노출 필요하면 api 유지
+    api project(':order-common')              // 다른 모듈이 s3 모듈을 의존할 때 타입 재노출 필요하면 api로
 
-    // AWS S3 (SDK v1) — 버전 카탈로그 별칭 사용
+    // AWS S3 (SDK v1; ✅ alias)
     implementation(libs.awsS3v1)
 
-    // (선택) @ConfigurationProperties 메타데이터 생성 → IDE 자동완성/검증에 도움
-    annotationProcessor(libs.springBootConfigProcessor)
+    // ✅ Bean Validation(@NotBlank 등) — properties 바인딩 시 필요
+    implementation(libs.springBootStarterValidation)
 
     // 테스트
     testImplementation(libs.springBootStarterTest)
@@ -51,11 +44,6 @@ tasks.withType(Test).configureEach {
     }
 }
 
-// ----------------------------------------------------------------------------
-// 패키징
-//  - 현재는 부트 플러그인이 없으므로 bootJar 자체가 없음
-//  - 혹시 나중에 누군가 부트 플러그인을 붙여도, bootJar가 "있을 때만" 비활성화
-// ----------------------------------------------------------------------------
 tasks.matching { it.name == 'bootJar' }.configureEach {
     enabled = false
 }
@@ -65,10 +53,10 @@ tasks.named('jar') {
 }
 
 // ============================================================================
-// (참고) AWS SDK v2로 전환 시 예시 (코드도 함께 수정 필요)
+// (참고) AWS SDK v2로 전환 시 예시
 // ----------------------------------------------------------------------------
 // dependencies {
-//     implementation(platform(libs.awsBomV2))
-//     implementation("software.amazon.awssdk:s3")
+//     implementation platform(libs.awsBomV2)
+//     implementation(libs.awsS3) // 별칭 추가 필요
 // }
 // ============================================================================

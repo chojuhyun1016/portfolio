@@ -2,58 +2,40 @@
 // order-client/web/build.gradle
 //  - 라이브러리 모듈: Spring Boot 플러그인 미적용 (bootJar 태스크 없음)
 //  - 표준 JAR 산출 (jar 활성화)
-//  - 부트 플러그인이 실수로 붙어도 빌드가 깨지지 않도록 bootJar 가드 추가
-//  - 모든 의존성은 버전 카탈로그(libs.*) 별칭 사용
-//  - 루트 build.gradle의 dependency-management/BOM과 함께 버전 일원화
+//  - WebClient 사용을 위해 spring-boot-starter-webflux 추가(✅ alias)
+//  - 의존성은 모두 libs.versions.toml 별칭 사용
 // ============================================================================
 
 plugins {
-    id 'java-library' // ✅ 라이브러리 모듈 (부트 플러그인 X)
-    // ⚠️ io.spring.dependency-management 는 루트 subprojects 블록에서 이미 적용됨
+    id 'java-library'                         // ✅ 라이브러리 모듈
+    id 'io.spring.dependency-management'      // ✅ BOM 정렬
 }
 
 group = 'org.example.order'
 version = '1.0.0'
 
 java {
-    toolchain { languageVersion = JavaLanguageVersion.of(libs.versions.java.get().toInteger()) }
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
     withSourcesJar()
     withJavadocJar()
 }
 
-// repositories 는 루트 설정 사용 (여기서 중복 선언하지 않음)
+// repositories 는 루트 설정 사용
 
-// ----------------------------------------------------------------------------
-// 의존성
-//  - spring-boot-starter-webflux: WebClient, Reactor, Jackson 등 포함
-//  - jackson-datatype-jsr310: Java Time 직렬화 지원 (선호에 따라 명시 추가)
-//  - spring-boot-configuration-processor: @ConfigurationProperties 메타데이터 생성
-// ----------------------------------------------------------------------------
 dependencies {
     // 공통 모듈
     api project(':order-common')
 
-    // WebFlux (부트 플러그인 없이도 starter 의존성만으로 사용 가능)
-    implementation(libs.springBootStarterWeb)
+    // Spring WebFlux (✅ alias; WebClient 포함)
+    implementation(libs.springBootStarterWebflux)
 
-    // WebFlux 전용을 쓰려면 위 줄 대신 아래 줄을 사용하세요.
-    // implementation(libs.springBootStarterWebflux)
-
-    // Java 8 Date/Time 직렬화
-    implementation(libs.jacksonJsr310)
-
-    // @ConfigurationProperties 메타데이터(IDE 자동완성/검증에 도움)
-    annotationProcessor(libs.springBootConfigProcessor)
+    // (선택) 필요한 경우 검증 사용 시
+    implementation(libs.springBootStarterValidation)
 
     // 테스트
     testImplementation(libs.springBootStarterTest)
-    // (선택) WebFlux 테스트 도우미
-    // testImplementation("io.projectreactor:reactor-test")
 }
 
-// ----------------------------------------------------------------------------
-// 테스트 공통 옵션 (추가 커스터마이징이 필요하면 루트가 아닌 여기서도 가능)
-// ----------------------------------------------------------------------------
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     testLogging {
@@ -62,22 +44,10 @@ tasks.withType(Test).configureEach {
     }
 }
 
-// ----------------------------------------------------------------------------
-// 패키징
-//  - 현재는 부트 플러그인이 없으므로 bootJar 자체가 없음
-//  - 혹시 나중에 누군가 부트 플러그인을 붙여도, bootJar가 "있을 때만" 비활성화
-// ----------------------------------------------------------------------------
 tasks.matching { it.name == 'bootJar' }.configureEach {
-    enabled = false // ✅ 부트 JAR 비활성화(라이브러리 전용)
+    enabled = false
 }
 
 tasks.named('jar') {
-    enabled = true  // ✅ 표준 JAR 생성
+    enabled = true
 }
-
-// ============================================================================
-// 참고
-// - 이 모듈은 "라이브러리"이므로 @SpringBootApplication 이나 실행용 main 클래스가 필요 없음
-// - 실제 실행 모듈(API/BATCH 등)에서 이 모듈을 의존하고, 해당 실행 모듈에서만
-//   spring-boot 플러그인을 적용하여 bootJar 를 빌드하면 된다.
-// ============================================================================

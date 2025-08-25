@@ -2,59 +2,44 @@
 // order-client/kafka/build.gradle
 //  - 라이브러리 모듈: Spring Boot 플러그인 미적용 (bootJar 없음)
 //  - 표준 JAR 산출 (jar 활성화)
-//  - 향후 누군가 부트 플러그인을 실수로 추가해도 빌드가 깨지지 않도록
-//    bootJar 태스크가 "존재할 때만" 비활성화하는 가드 추가
-//  - 의존성은 모두 버전 카탈로그(libs.*) 별칭 사용
-//  - 버전 관리는 루트의 dependency-management(BOM)에서 일괄 통제
+//  - 의존성은 모두 libs.versions.toml 별칭 사용
+//  - jakarta.validation.* 오류 방지를 위해 validation starter 명시
 // ============================================================================
 
 plugins {
-    id 'java-library'                     // ✅ 라이브러리 모듈 (부트 플러그인 X)
-    // ⚠️ io.spring.dependency-management 는 이미 루트에서 subprojects 에 적용됨 → 이 모듈에선 생략
+    id 'java-library'                         // ✅ 라이브러리 모듈 (부트 플러그인 X)
+    id 'io.spring.dependency-management'      // ✅ 상위 BOM 버전 정렬 (루트에서도 적용 중이어도 중복 무해)
 }
 
 group = 'org.example.order'
 version = '1.0.0'
 
 java {
-    // ✅ 버전 카탈로그 값 재사용
-    toolchain { languageVersion = JavaLanguageVersion.of(libs.versions.java.get().toInteger()) }
-    withSourcesJar()                      // (선택) sources JAR도 함께 생성
-    withJavadocJar()                      // (선택) javadoc JAR도 함께 생성
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 // repositories 는 루트 설정 사용 (여기서 중복 선언하지 않음)
 
-// ----------------------------------------------------------------------------
-// 의존성
-//  - spring-kafka, validation, jackson 등은 libs 별칭 사용
-//  - 버전은 루트에서 가져온 BOM을 신뢰 → 여기선 버전 명시 불필요
-// ----------------------------------------------------------------------------
 dependencies {
     // 공통 모듈
-    api project(':order-common')          // 다른 모듈이 kafka 모듈을 의존할 때 재노출 필요하면 api
+    api project(':order-common')              // 다른 모듈이 kafka 모듈을 의존할 때 재노출 필요하면 api 사용
     implementation project(':order-core')
 
-    // Kafka
+    // Kafka (✅ alias)
     implementation(libs.springKafka)
 
-    // Jackson (Java 8 Date/Time 지원)
+    // Jackson (Java 8 Date/Time 지원; ✅ alias)
     implementation(libs.jacksonJsr310)
 
-    // ✅ Jakarta Bean Validation (@NotBlank 등)
-    //    → KafkaProducerProperties/KafkaConsumerProperties 에서 jakarta.validation 사용 시 필수
+    // ✅ Bean Validation(@NotBlank 등) — properties 바인딩 시 필요
     implementation(libs.springBootStarterValidation)
-
-    // ✅ (선택) @ConfigurationProperties 메타데이터 생성 → IDE 자동완성/검증에 도움
-    annotationProcessor(libs.springBootConfigProcessor)
 
     // 테스트
     testImplementation(libs.springBootStarterTest)
 }
 
-// ----------------------------------------------------------------------------
-// 테스트 공통 옵션
-// ----------------------------------------------------------------------------
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     testLogging {
@@ -69,15 +54,9 @@ tasks.withType(Test).configureEach {
 //  - 누군가 나중에 부트 플러그인을 붙여도 깨지지 않도록 "존재할 때만" 비활성화.
 // ----------------------------------------------------------------------------
 tasks.matching { it.name == 'bootJar' }.configureEach {
-    // ✅ bootJar 가 존재하는 경우(=부트 플러그인이 붙은 경우)만 끕니다.
     enabled = false
 }
 
 tasks.named('jar') {
-    // 표준 JAR 생성 보장 (기본값 true 이지만 명시적으로 표시)
     enabled = true
 }
-
-// ----------------------------------------------------------------------------
-// (참고) 퍼블리시/배포 관련 설정이 필요하면 여기서 추가
-// ----------------------------------------------------------------------------
