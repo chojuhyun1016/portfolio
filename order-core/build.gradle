@@ -77,8 +77,8 @@ dependencies {
     implementation(libs.springBootStarterSecurity)
     implementation(libs.springBootStarterDataJpa)
 
-    // ✅ 추가: RedisTemplate 오토 구성 제공 (Spring Data Redis)
-    implementation(libs.springBootStarterDataRedis)
+    // ✅ 필요 시 RedisTemplate 등 사용 (운영 코드에서 사용 중이면 유지)
+    // implementation(libs.springBootStarterDataRedis)
 
     // Gateway(GlobalFilter 등) — 컴파일만 필요
     compileOnly(libs.springCloudGateway)
@@ -94,7 +94,7 @@ dependencies {
     // Redis 수동/자동 구성에서 사용하는 타입들
     implementation(libs.lettuce)
     implementation(libs.commonsPool2)
-    implementation(libs.redisson)
+    implementation(libs.redisson) // ⬅️ 운영용 Redisson 코어 의존성(= org.redisson:redisson)
 
     // Argon2 해싱
     implementation(libs.argon2)
@@ -127,6 +127,11 @@ dependencies {
     testImplementation(libs.h2)
     testImplementation(libs.springBootStarterJdbc)
     testImplementation(libs.embeddedRedis)   // 테스트 전용(필요 시)
+    testImplementation(libs.springBootStarterDataRedis) // ✅ Redis 타입 사용을 위한 테스트 스코프
+
+    // ✅ [핵심 추가] 테스트에서 Redisson API 심볼(org.redisson.api.*) 필요하므로
+    //    코어 라이브러리를 테스트 스코프에도 명시 (starter는 아래 exclude로 차단)
+    testImplementation(libs.redisson)
 
     // ==== integrationTest (통합 테스트 전용) ====
     // Testcontainers (JDBC URL 방식으로 DataSource 자동 생성)
@@ -140,7 +145,7 @@ dependencies {
     integrationTestImplementation(libs.mysqlDriver)
     integrationTestRuntimeOnly(libs.mysqlDriver)
 
-    // ✅ LocalStack (DynamoDB) — 누락되면 LocalStackContainer 클래스를 못 찾음
+    // ✅ LocalStack (DynamoDB)
     integrationTestImplementation(libs.testcontainersLocalstack)
 
     // LocalStack + DynamoDB SDK v2
@@ -160,6 +165,19 @@ configurations {
     // ✅ 안전하게 보강
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+
+    // ✅ (핵심) **유닛 테스트(test)에서만** redisson-spring-boot-starter 자동구성을 제외
+    //    → 테스트 시 RedissonAutoConfigurationV2 로 인한 실제 Redis 접속/컨텍스트 실패 방지
+    testCompileClasspath {
+        exclude group: 'org.redisson', module: 'redisson-spring-boot-starter'
+    }
+    testRuntimeClasspath {
+        exclude group: 'org.redisson', module: 'redisson-spring-boot-starter'
+    }
+
+    // ❗ integrationTest 에서는 “절대” 제외하지 않음 (요구사항)
+    // integrationTestCompileClasspath { /* No exclude */ }
+    // integrationTestRuntimeClasspath { /* No exclude */ }
 
     // ✅ (요청사항 반영) testFixtures 확장 없음
 }

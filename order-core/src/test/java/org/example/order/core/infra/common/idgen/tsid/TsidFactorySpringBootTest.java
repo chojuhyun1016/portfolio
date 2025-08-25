@@ -7,7 +7,8 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 // ★ 추가: 자동설정 제외용
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.redisson.spring.starter.RedissonAutoConfigurationV2;
+// ❌ [변경] redisson-spring-boot-starter의 클래스를 test 컴파일에서 참조하지 않도록 import 제거
+// import org.redisson.spring.starter.RedissonAutoConfigurationV2;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
@@ -27,10 +28,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * - JPA/DB 불필요. TsidConfig + TsidIdService 만 로드
  * - 운영 코드와 동일하게 “서비스에서 주입받아 바로 사용” 시나리오 확인
  */
-@SpringBootTest(classes = TsidFactorySpringBootTest.Boot.class)
-// ★ 핵심: Redisson/Redis 관련 자동설정 전부 제외(테스트 컨텍스트 격리)
+@SpringBootTest(
+        classes = TsidFactorySpringBootTest.Boot.class
+        // ★ (변경) redisson 자동설정 제외를 properties로 하지 않음
+)
+// ★ Redis 계열 자동설정은 클래스 리터럴로 제외 (부트 기본 autoconfigure에 포함)
 @ImportAutoConfiguration(exclude = {
-        RedissonAutoConfigurationV2.class,
         RedisAutoConfiguration.class,
         RedisReactiveAutoConfiguration.class,
         RedisRepositoriesAutoConfiguration.class
@@ -74,9 +77,13 @@ class TsidFactorySpringBootTest {
     // 스프링 부트 최소 구성:
     // - @SpringBootConfiguration + @EnableAutoConfiguration 로 부팅
     // - TsidConfig, TsidIdService 만 명시적으로 Import
+    // - ★ redisson 자동설정은 **이름 기반 excludeName** 으로 안전하게 제외
+    //   (클래스패스에 없어도 에러 없음)
     // ------------------------------------------------------------
     @SpringBootConfiguration
-    @EnableAutoConfiguration
+    @EnableAutoConfiguration(excludeName = {
+            "org.redisson.spring.starter.RedissonAutoConfigurationV2" // ★ 핵심
+    })
     @Import({TsidConfig.class, TsidIdService.class})
     static class Boot { }
 
