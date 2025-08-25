@@ -5,6 +5,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+// ★ 추가: 자동설정 제외용
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.redisson.spring.starter.RedissonAutoConfigurationV2;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
@@ -21,6 +28,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * - 운영 코드와 동일하게 “서비스에서 주입받아 바로 사용” 시나리오 확인
  */
 @SpringBootTest(classes = TsidFactorySpringBootTest.Boot.class)
+// ★ 핵심: Redisson/Redis 관련 자동설정 전부 제외(테스트 컨텍스트 격리)
+@ImportAutoConfiguration(exclude = {
+        RedissonAutoConfigurationV2.class,
+        RedisAutoConfiguration.class,
+        RedisReactiveAutoConfiguration.class,
+        RedisRepositoriesAutoConfiguration.class
+})
 class TsidFactorySpringBootTest {
 
     @org.springframework.beans.factory.annotation.Autowired
