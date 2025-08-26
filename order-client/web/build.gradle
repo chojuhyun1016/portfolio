@@ -1,14 +1,16 @@
 // ============================================================================
 // order-client/web/build.gradle
-//  - 라이브러리 모듈: Spring Boot 플러그인 미적용 (bootJar 태스크 없음)
-//  - 표준 JAR 산출 (jar 활성화)
-//  - WebClient 사용을 위해 spring-boot-starter-webflux 추가(✅ alias)
-//  - 의존성은 모두 libs.versions.toml 별칭 사용
+//
+// 주요 포인트:
+// - 라이브러리 모듈 (bootJar 비활성, jar 활성)
+// - WebClient 사용을 위해 spring-boot-starter-webflux 포함
+// - 검증 필요 시 validation starter 추가
+// - 의존성은 전부 libs.versions.toml 별칭 기반
 // ============================================================================
 
 plugins {
-    id 'java-library'                         // ✅ 라이브러리 모듈
-    id 'io.spring.dependency-management'      // ✅ BOM 정렬
+    id 'java-library'                         // 라이브러리 모듈
+    id 'io.spring.dependency-management'      // BOM 정렬
 }
 
 group = 'org.example.order'
@@ -20,22 +22,23 @@ java {
     withJavadocJar()
 }
 
-// repositories 는 루트 설정 사용
+// 루트 repositories 사용
 
 dependencies {
     // 공통 모듈
     api project(':order-common')
 
-    // Spring WebFlux (✅ alias; WebClient 포함)
+    // WebClient 제공 (Spring WebFlux)
     implementation(libs.springBootStarterWebflux)
 
-    // (선택) 필요한 경우 검증 사용 시
+    // Bean Validation (선택적)
     implementation(libs.springBootStarterValidation)
 
-    // 테스트
+    // 단위 테스트
     testImplementation(libs.springBootStarterTest)
 }
 
+// 테스트 공통 설정
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     testLogging {
@@ -44,6 +47,7 @@ tasks.withType(Test).configureEach {
     }
 }
 
+// 패키징 설정
 tasks.matching { it.name == 'bootJar' }.configureEach {
     enabled = false
 }

@@ -12,11 +12,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * AmazonS3 Client 설정
- *
- * - aws.endpoint 가 지정된 경우: LocalStack/프록시 환경
- * - aws.credential.enabled=true 인 경우: accessKey/secretKey 강제 주입
- * - 기본은 IAM Role 기반 인증 (EC2/EKS/ECS)
+ * S3Config
+ * <p>
+ * 주요 포인트:
+ * - aws.endpoint 가 지정된 경우 → EndpointConfiguration만 설정 (LocalStack/프록시)
+ * - endpoint 없으면 → Region 기반 설정 (실제 AWS)
+ * - credential.enabled=true → AccessKey/SecretKey 직접 사용
+ * - credential.enabled=false → IAM Role 등 기본 자격 증명 체인 사용
  */
 @Configuration
 @EnableConfigurationProperties(S3Properties.class)
@@ -27,24 +29,24 @@ public class S3Config {
     @Bean
     public AmazonS3 amazonS3Client() {
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
-                .withRegion(props.getRegion())
-                .enablePathStyleAccess();
+                .enablePathStyleAccess(); // LocalStack 호환
 
-        // 로컬/프록시 환경일 경우 endpoint 설정
-        if (props.getEndpoint() != null && !props.getEndpoint().isBlank()) {
+        String endpoint = props.getEndpoint();
+        if (endpoint != null && !endpoint.isBlank()) {
             builder.withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(
-                            props.getEndpoint(),
-                            props.getRegion()
-                    )
+                    new AwsClientBuilder.EndpointConfiguration(endpoint, props.getRegion())
             );
+        } else {
+            builder.withRegion(props.getRegion());
         }
 
-        // AccessKey/SecretKey 인증 사용
-        if (props.getCredential().isEnabled()) {
+        if (props.getCredential() != null && props.getCredential().isEnabled()) {
             BasicAWSCredentials awsCredentials =
-                    new BasicAWSCredentials(props.getCredential().getAccessKey(),
-                            props.getCredential().getSecretKey());
+                    new BasicAWSCredentials(
+                            props.getCredential().getAccessKey(),
+                            props.getCredential().getSecretKey()
+                    );
+
             builder.withCredentials(new AWSStaticCredentialsProvider(awsCredentials));
         }
 

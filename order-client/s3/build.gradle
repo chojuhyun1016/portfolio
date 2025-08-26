@@ -1,14 +1,17 @@
 // ============================================================================
 // order-client/s3/build.gradle
-//  - 라이브러리 모듈: Spring Boot 플러그인 미적용 (bootJar 태스크 없음)
-//  - 표준 JAR 산출 (jar 활성화)
-//  - 의존성은 libs.versions.toml 별칭 사용
-//  - jakarta.validation.* 오류 방지를 위해 validation starter 명시
+//
+// 주요 포인트:
+// - 라이브러리 모듈 (bootJar 비활성, jar 활성)
+// - integrationTest 소스셋/태스크 별도 정의
+// - AWS SDK v1 (S3) + Validation 의존성 포함
+// - Testcontainers(LocalStack) 기반 통합테스트 환경 구성
+// - 기존 test 태스크와 충돌하지 않도록 integrationTest 태스크 조건부 등록
 // ============================================================================
 
 plugins {
-    id 'java-library'                         // ✅ 라이브러리 모듈
-    id 'io.spring.dependency-management'      // ✅ BOM 정렬
+    id 'java-library'                         // 라이브러리 모듈
+    id 'io.spring.dependency-management'      // BOM 정렬
 }
 
 group = 'org.example.order'
@@ -20,30 +23,83 @@ java {
     withJavadocJar()
 }
 
-// repositories 는 루트 설정 사용
-
-dependencies {
-    // 공통 모듈
-    api project(':order-common')              // 다른 모듈이 s3 모듈을 의존할 때 타입 재노출 필요하면 api로
-
-    // AWS S3 (SDK v1; ✅ alias)
-    implementation(libs.awsS3v1)
-
-    // ✅ Bean Validation(@NotBlank 등) — properties 바인딩 시 필요
-    implementation(libs.springBootStarterValidation)
-
-    // 테스트
-    testImplementation(libs.springBootStarterTest)
+// integrationTest 소스셋 정의
+sourceSets {
+    integrationTest {
+        java.srcDir file('src/integrationTest/java')
+        resources.srcDir file('src/integrationTest/resources')
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
 }
 
+// integrationTest 구성 확장
+configurations {
+    integrationTestImplementation {
+        extendsFrom testImplementation
+    }
+    integrationTestRuntimeOnly {
+        extendsFrom testRuntimeOnly
+    }
+}
+
+// 의존성 선언
+dependencies {
+    // 공통 모듈
+    api project(':order-common')
+
+    // AWS S3 SDK v1
+    implementation(libs.awsS3v1)
+
+    // Bean Validation
+    implementation(libs.springBootStarterValidation)
+
+    // 단위 테스트
+    testImplementation(libs.springBootStarterTest)
+
+    // 통합 테스트
+    integrationTestImplementation(platform(libs.testcontainersBom))
+    integrationTestImplementation(libs.testcontainersJunit)
+    integrationTestImplementation(libs.testcontainersLocalstack)
+    integrationTestImplementation(libs.testcontainers) // core 명시
+}
+
+// 모든 Test 태스크 공통 설정
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     testLogging {
         events "FAILED", "SKIPPED"
         exceptionFormat "FULL"
+        showExceptions true
+        showCauses true
+        showStackTraces true
     }
 }
 
+// integrationTest 태스크 (조건부 등록)
+if (!tasks.findByName('integrationTest')) {
+    tasks.register('integrationTest', Test) {
+        description = 'Runs integration tests.'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        shouldRunAfter tasks.test
+        useJUnitPlatform()
+        testLogging {
+            events "FAILED", "SKIPPED"
+            exceptionFormat "FULL"
+            showExceptions true
+            showCauses true
+            showStackTraces true
+        }
+        reports {
+            junitXml.required = true
+            html.required = true
+        }
+    }
+}
+
+// 패키징 설정
 tasks.matching { it.name == 'bootJar' }.configureEach {
     enabled = false
 }
@@ -52,11 +108,9 @@ tasks.named('jar') {
     enabled = true
 }
 
-// ============================================================================
-// (참고) AWS SDK v2로 전환 시 예시
-// ----------------------------------------------------------------------------
-// dependencies {
-//     implementation platform(libs.awsBomV2)
-//     implementation(libs.awsS3) // 별칭 추가 필요
-// }
-// ============================================================================
+// BOM 관리 (Testcontainers 버전 일관성)
+dependencyManagement {
+    imports {
+        mavenBom(libs.testcontainersBom.get().toString())
+    }
+}

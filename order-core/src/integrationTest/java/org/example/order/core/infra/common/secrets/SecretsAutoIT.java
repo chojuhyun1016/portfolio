@@ -10,6 +10,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
+
+// ✅ 변경 포인트: 테스트 전용 최소 부트 컨텍스트 + 자동설정 제외를 위해 필요한 import
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -29,14 +35,35 @@ import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
 
 /**
  * 통합 테스트 (AWS 자동 모드):
- * - @SpringBootTest + 모킹 클라이언트 주입
- * - refreshSecrets()로 초기 로드 트리거 (일부 환경에서 PostConstruct 미호출 대비)
- * - 갱신/백업/리스너 호출 횟수 검증
+ *
+ * ✅ 변경 요약
+ * - 이전: @SpringBootTest 만 사용하여 IntegrationBootApp 스캔 → infra.redis 유입 → Redisson 자동설정 시도
+ * - 현재: 테스트 내부에 최소 Boot 컨텍스트(SecretsAutoIT.Boot) 도입 + @ImportAutoConfiguration(exclude=…) 로
+ *         Redisson/Redis 자동설정을 **테스트 컨텍스트에서만 명시적으로 제외**하여
+ *         localhost:6379 접속 시도 문제를 제거.
+ *
+ * ⚠️ 운영/다른 테스트에는 영향 없음 (이 클래스 내부에서만 격리)
  */
-@SpringBootTest
+@SpringBootTest(classes = SecretsAutoIT.Boot.class) // ✅ 통합 테스트의 루트 컨텍스트를 테스트 내부 Boot 클래스로 제한
 @Import({SecretsAutoConfig.class, SecretsAutoIT.MockBeans.class})
+@ImportAutoConfiguration(exclude = {
+        // ✅ 레디슨/레디스 자동설정 전부 제외 (이 테스트에서는 불필요하며, 미기동 Redis 연결 시도 방지)
+        org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
+})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SecretsAutoIT {
+
+    /**
+     * ✅ 테스트 전용 최소 부트 컨텍스트
+     * - @EnableAutoConfiguration 은 유지하되, 불필요한 컴포넌트 스캔은 하지 않는다.
+     * - 이 클래스가 컨텍스트의 루트가 되므로, 다른 모듈(@ComponentScan 등)은 유입되지 않음.
+     */
+    @SpringBootConfiguration
+    @EnableAutoConfiguration
+    static class Boot { }
 
     static final AtomicInteger NOTIFY_COUNT = new AtomicInteger(0);
     static final SecretsManagerClient MOCK = Mockito.mock(SecretsManagerClient.class);

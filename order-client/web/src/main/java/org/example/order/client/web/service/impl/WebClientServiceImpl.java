@@ -14,9 +14,12 @@ import java.net.URI;
 import java.util.Map;
 
 /**
- * WebClient 사용 서비스
- * - ✨ WebClient 빈이 있을 때만 생성 → web-client.enabled=false면 이 구현체도 등록되지 않음
- * - 필요 시 NoOp 구현을 별도로 두고 @ConditionalOnMissingBean(WebClientService.class)로 대체 가능
+ * WebClientServiceImpl
+ * <p>
+ * 주요 포인트:
+ * - web-client.enabled=true 일 때만 활성화됨 (@ConditionalOnBean(WebClient))
+ * - GET 요청을 수행하고 JSON 응답을 지정한 타입으로 반환
+ * - 필요 시 NoOp 구현을 통해 교체 가능
  */
 @Slf4j
 @Service
@@ -29,18 +32,19 @@ public class WebClientServiceImpl implements WebClientService {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T get(String url, Map<String, String> headers, MultiValueMap<String, String> params, Class<T> clz) {
-        URI uri = UriComponentsBuilder
-                .fromUriString(url)
+        URI uri = UriComponentsBuilder.fromUriString(url)
                 .queryParams(params)
-                .build(true) // 인코딩 안전
+                .build(true)
                 .toUri();
 
-        log.info("web client - http method : GET, uri : {}", uri);
+        log.info("WebClient GET → uri: {}", uri);
 
         return webClient.get()
                 .uri(uri)
                 .headers(httpHeaders -> {
-                    if (headers != null) httpHeaders.setAll(headers);
+                    if (headers != null) {
+                        httpHeaders.setAll(headers);
+                    }
                 })
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()

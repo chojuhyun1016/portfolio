@@ -7,10 +7,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * AWS S3 설정 Properties
- *
- * - aws.credential.enabled: true 인 경우 AccessKey/SecretKey 필수
- * - endpoint: 로컬(LocalStack) 또는 프록시용 커스텀 엔드포인트 (옵션)
+ * S3Properties
+ * <p>
+ * 주요 포인트:
+ * - aws.region: 필수 리전
+ * - aws.credential: AccessKey/SecretKey (enabled=true일 때 필수)
+ * - aws.endpoint: LocalStack/프록시 환경용 커스텀 엔드포인트 (옵션)
+ * - aws.s3.bucket / default-folder: 기본 버킷 및 폴더 경로
  */
 @Getter
 @Setter
@@ -25,8 +28,7 @@ public class S3Properties {
 
     private S3 s3;
 
-    /** ✨ 신규: 로컬/프록시 환경을 위한 커스텀 엔드포인트 */
-    private String endpoint;
+    private String endpoint; // 로컬/프록시 환경용 엔드포인트
 
     public String fullPath() {
         return String.format("%s/%s", s3.bucket, s3.defaultFolder);
@@ -36,8 +38,10 @@ public class S3Properties {
     @Setter
     public static class Credential {
         private boolean enabled = true;
+
         @NotBlank(message = "aws.credential.access-key must not be blank when enabled=true")
         private String accessKey;
+
         @NotBlank(message = "aws.credential.secret-key must not be blank when enabled=true")
         private String secretKey;
     }
@@ -47,6 +51,7 @@ public class S3Properties {
     public static class S3 {
         @NotBlank(message = "aws.s3.bucket must not be blank")
         private String bucket;
+
         @NotBlank(message = "aws.s3.default-folder must not be blank")
         private String defaultFolder;
     }

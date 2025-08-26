@@ -9,6 +9,12 @@ import org.example.order.core.infra.crypto.contract.Signer;
 import org.example.order.core.infra.crypto.factory.EncryptorFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+
+// ✅ 변경 포인트: 테스트 전용 최소 부트 컨텍스트 + 자동설정 제외를 위해 필요한 import
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -23,14 +29,31 @@ import jakarta.annotation.Resource; // ✅ Spring Boot 3.x에서는 jakarta 패�
 
 /**
  * 통합 테스트:
- * - SpringBootTest 로 CryptoManualConfig + CryptoAutoConfig 만 로드
- * - 동적 프로퍼티로 키 시딩
- * - 암/복호화, 해시, 서명 e2e 확인
+ *
+ * ✅ 변경 요약
+ * - 이전: @SpringBootTest 로 IntegrationBootApp 경유 → infra.redis 유입 → Redisson 자동설정 시도
+ * - 현재: 테스트 내부 Boot 컨텍스트(CryptoIT.Boot) + @ImportAutoConfiguration(exclude=…) 로
+ *         Redisson/Redis 자동구성만 테스트 컨텍스트에서 제외하여 Redis 연결 실패 제거.
+ * - Crypto 기능 자체는 수동/자동 설정 클래스를 @Import 로 정확히 로딩.
  */
-@SpringBootTest
+@SpringBootTest(classes = CryptoIT.Boot.class) // ✅ 최소 컨텍스트 사용
 @Import({CryptoManualConfig.class, CryptoAutoConfig.class})
+@ImportAutoConfiguration(exclude = {
+        // ✅ 이 테스트는 Redis/Redisson과 무관 → 자동설정 제외
+        org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
+})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CryptoIT {
+
+    /**
+     * ✅ 테스트 전용 최소 부트 컨텍스트
+     */
+    @SpringBootConfiguration
+    @EnableAutoConfiguration
+    static class Boot { }
 
     private static String b64Key(int bytes) {
         byte[] buf = new byte[bytes];

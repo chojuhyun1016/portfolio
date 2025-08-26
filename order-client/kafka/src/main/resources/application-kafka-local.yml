@@ -23,7 +23,7 @@ kafka:
   #  - bootstrap-servers : 로컬 멀티브로커(예: 9092/9093/9094)
   # ------------------------------------------------------------------------
   producer:
-    enabled: true                           # ✨ 로컬에서 기본 ON
+    enabled: true
     bootstrap-servers: 127.0.0.1:9092,127.0.0.1:9093,127.0.0.1:9094
     # (선택) 필요 시 코드 확장해 아래 속성도 바인딩 가능
     # acks: all
@@ -52,7 +52,7 @@ kafka:
   #  - auto-offset-reset=earliest : 신규 그룹은 처음부터 읽기
   # ------------------------------------------------------------------------
   consumer:
-    enabled: true                           # ✨ 로컬에서 기본 ON
+    enabled: true
     bootstrap-servers: 127.0.0.1:9092,127.0.0.1:9093,127.0.0.1:9094
 
     option:

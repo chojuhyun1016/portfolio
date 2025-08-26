@@ -24,7 +24,7 @@ kafka:
   #  - JsonSerializer + LZ4 + batch.size(65536)는 코드에서 기본 적용됨
   # ------------------------------------------------------------------
   producer:
-    enabled: true                           # ✨ 운영에서 명시적으로 ON
+    enabled: true
     bootstrap-servers: "${BOOTSTRAP_SERVERS}"
 
   # ------------------------------------------------------------------
@@ -51,7 +51,7 @@ kafka:
   #  - 옵션 값은 운영 트래픽/소비 패턴에 맞게 조절
   # ------------------------------------------------------------------
   consumer:
-    enabled: true                           # ✨ 운영에서 명시적으로 ON
+    enabled: true
     bootstrap-servers: "${BOOTSTRAP_SERVERS}"
 
     option:

@@ -25,7 +25,7 @@ kafka:
   #  - 추가 세부 튜닝은 코드에서 바인딩 확장 (acks, linger.ms, batch.size 등)
   # ------------------------------------------------------------------------
   producer:
-    enabled: true                                # ✨ 필요 시 꺼도 됨 (false)
+    enabled: true
     bootstrap-servers: "${BOOTSTRAP_SERVERS}"    # 예) b-1.msk.dev:9098,b-2.msk.dev:9098
 
   # ------------------------------------------------------------------------
@@ -51,7 +51,7 @@ kafka:
   #  - (중요) 그룹ID는 @KafkaListener나 코드에서 지정 권장
   # ------------------------------------------------------------------------
   consumer:
-    enabled: true                                # ✨ 필요 시 끄기 가능
+    enabled: true
     bootstrap-servers: "${BOOTSTRAP_SERVERS}"
 
     option:

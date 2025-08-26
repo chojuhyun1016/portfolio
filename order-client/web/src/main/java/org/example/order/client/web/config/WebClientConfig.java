@@ -23,17 +23,13 @@ import reactor.netty.http.client.HttpClient;
 import java.time.Duration;
 
 /**
- * WebClient 구성
- *
- * - ✨ web-client.enabled=true 일 때만 WebClient 빈 생성(@ConditionalOnProperty)
- * - Jackson 인코더/디코더를 ObjectMapper로 맞추고 maxInMemorySize 조절
- * - 기본 헤더(X-USER-*)를 시스템 계정으로 셋업(필요 시 교체 가능)
- * - connect/read 타임아웃을 프로퍼티로 튜닝
- *
- * ⚠️ 변경 사항:
- * - ObjectMapper를 강제 주입하지 않고 ObjectProvider로 "선택 주입" 받음.
- *   → 실행 컨텍스트에 ObjectMapper 빈이 없을 경우에도 fallback ObjectMapper를 생성하여 사용.
- *   → 라이브러리 모듈/단위 테스트에서 'Could not autowire ObjectMapper' 문제 방지.
+ * WebClientConfig
+ * <p>
+ * 주요 구성 포인트:
+ * - web-client.enabled=true 일 때만 활성화됨
+ * - WebClient 기본 설정: 공통 헤더(X-USER-*) 주입
+ * - Timeout 설정 (connect/read)
+ * - ObjectMapper: 스프링 컨텍스트에서 주입되면 사용, 없으면 fallback 생성
  */
 @Configuration
 @EnableConfigurationProperties(WebClientUrlProperties.class)
@@ -41,23 +37,21 @@ import java.time.Duration;
 @ConditionalOnProperty(prefix = "web-client", name = "enabled", havingValue = "true")
 public class WebClientConfig {
 
-    // ⚠️ 기존: private final ObjectMapper objectMapper;
-    // ✨ 변경: 선택 주입으로 전환 (없으면 fallback 사용)
     private final ObjectProvider<ObjectMapper> objectMapperProvider;
-
     private final WebClientUrlProperties props;
 
     @Bean
     public WebClient webClient() {
-        // 시스템 계정 헤더(서비스 공통 상수) — 필요 시 Request마다 덮어쓸 수 있음
+        // 시스템 계정 기본 헤더 세팅
         AccessUserInfo accessUser = AccessUserInfo.system();
 
-        // Netty 타임아웃
+        // Reactor Netty 기반 HttpClient 구성 (timeout + 압축 + redirect)
         HttpClient httpClient = HttpClient.create()
                 .responseTimeout(Duration.ofMillis(props.getTimeout().getReadMs()))
                 .compress(true)
                 .followRedirect(true)
-                .resolver(spec -> {}) // 필요 시 DNS/Proxy 커스터마이징
+                .resolver(spec -> {
+                })
                 .doOnConnected(conn -> conn
                         .addHandlerLast(new io.netty.handler.timeout.ReadTimeoutHandler(
                                 props.getTimeout().getReadMs(), java.util.concurrent.TimeUnit.MILLISECONDS))
@@ -65,11 +59,12 @@ public class WebClientConfig {
                                 props.getTimeout().getReadMs(), java.util.concurrent.TimeUnit.MILLISECONDS)))
                 .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, props.getTimeout().getConnectMs());
 
-        // Jackson + maxInMemorySize
+        // Codec 전략 (ObjectMapper 기반 JSON 인코더/디코더, maxInMemorySize 적용)
         ExchangeStrategies strategies = ExchangeStrategies.builder()
                 .codecs(this::customizeCodecs)
                 .build();
 
+        // WebClient Bean 정의
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .exchangeStrategies(strategies)
@@ -78,12 +73,13 @@ public class WebClientConfig {
                     httpHeaders.add(HttpConstant.X_LOGIN_ID, accessUser.loginId());
                     httpHeaders.add(HttpConstant.X_USER_TYPE, accessUser.userType());
                 })
-                // .baseUrl(...) 는 고정 엔드포인트가 하나일 때만. 여기선 동적으로 URL을 쓰므로 생략
                 .build();
     }
 
+    /**
+     * JSON 직렬화/역직렬화 Codec 구성
+     */
     private void customizeCodecs(ClientCodecConfigurer clientDefaultCodecsConfigurer) {
-        // ✨ ObjectMapper가 컨텍스트에 없으면 fallback 생성
         ObjectMapper om = objectMapperProvider.getIfAvailable(this::fallbackObjectMapper);
 
         clientDefaultCodecsConfigurer.defaultCodecs()
@@ -91,11 +87,12 @@ public class WebClientConfig {
         clientDefaultCodecsConfigurer.defaultCodecs()
                 .jackson2JsonDecoder(new Jackson2JsonDecoder(om, MediaType.APPLICATION_JSON));
         clientDefaultCodecsConfigurer.defaultCodecs()
-                .maxInMemorySize(props.getCodec().getMaxBytes()); // ✨ 응답 사이즈 제한
+                .maxInMemorySize(props.getCodec().getMaxBytes());
     }
 
-    // ✨ 부트 자동구성이 없어도 안전하게 동작하도록 하는 기본 ObjectMapper
-    //    - JavaTimeModule 등록 (LocalDateTime 등 직렬화/역직렬화)
+    /**
+     * ObjectMapper fallback (JavaTimeModule 포함)
+     */
     private ObjectMapper fallbackObjectMapper() {
         return JsonMapper.builder()
                 .addModule(new JavaTimeModule())

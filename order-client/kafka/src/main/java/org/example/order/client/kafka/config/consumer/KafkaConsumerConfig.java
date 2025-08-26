@@ -9,7 +9,8 @@ import org.example.order.client.kafka.config.properties.KafkaConsumerProperties;
 import org.example.order.client.kafka.config.properties.KafkaSSLProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -21,72 +22,88 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Kafka Consumer 구성
- * - ✨ @ConditionalOnProperty 로 enable=true 일 때만 빈 생성
- * - ✨ @EnableKafka 도 같은 조건으로만 활성화(리스너 컨테이너 등록)
+ * 큰 맥락
+ * - consumer.enabled=true 일 때에만 컨슈머 관련 빈과 @EnableKafka를 활성화한다.
+ * - 기본 팩토리(단건)와 배치용 팩토리를 분리 제공한다.
+ * - Ack 모드는 MANUAL_IMMEDIATE(리스너에서 ack.acknowledge() 호출 전제)로 고정한다.
+ * - 재처리는 테스트/운영 정책에 맞추기 위해 기본 값은 "재시도 없음"으로 둔다.
+ * - SSL/SASL 설정은 kafka.ssl.enabled=true 일 때만 주입한다.
  */
 @Configuration
 @EnableConfigurationProperties({KafkaConsumerProperties.class, KafkaSSLProperties.class})
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "kafka.consumer", name = "enabled", havingValue = "true")
-@EnableKafka // consumer.enabled=true일 때만 이 클래스 자체가 로드되므로 안전
+@EnableKafka
 public class KafkaConsumerConfig {
 
     private final KafkaConsumerProperties properties;
     private final KafkaSSLProperties sslProperties;
 
-    // default
+    /**
+     * 단건 리스너 컨테이너 팩토리
+     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
 
-        ContainerProperties containerProperties = factory.getContainerProperties();
-        containerProperties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE); // acknowledgment.acknowledge() 동작 시 offset 즉시 커밋
+        // 수동 커밋(ack 호출 시 즉시 커밋)
+        ContainerProperties cp = factory.getContainerProperties();
+        cp.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
-        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(0L, 0L))); // 재처리 하지 않음
+        // 에러 핸들러: 재시도 없음(필요 시 바꿔서 사용)
+        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(0L, 0L)));
+
+        // 표준 설정
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(getDefaultConfigProps()));
-
         return factory;
     }
 
+    /**
+     * 배치 리스너 컨테이너 팩토리
+     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaBatchListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
         KafkaConsumerProperties.KafkaConsumerOption option = properties.getOption();
 
-        ContainerProperties containerProperties = factory.getContainerProperties();
-        containerProperties.setIdleBetweenPolls(option.getIdleBetweenPolls()); // polling 사이 대기 시간
-        containerProperties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE); // acknowledgment.acknowledge() 동작 시 offset 즉시 커밋
+        // 배치 환경에서도 수동 커밋
+        ContainerProperties cp = factory.getContainerProperties();
+        cp.setIdleBetweenPolls(option.getIdleBetweenPolls());
+        cp.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
+        // 배치 튜닝 옵션 반영
         Map<String, Object> configProps = getDefaultConfigProps();
-        configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, option.getMaxPollRecords()); // 한번에 가져올 최대 메세지
-        configProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, option.getFetchMaxWaitMs()); // 메세지 크기를 채우지 못했을 때 기다릴 최대 시간
-        configProps.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, option.getFetchMaxBytes()); // 50mb
-        configProps.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, option.getMaxPollIntervalMs()); // 해당 시간동안 poll 발생 안할 시 리밸런싱
+        configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, option.getMaxPollRecords());
+        configProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, option.getFetchMaxWaitMs());
+        configProps.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, option.getFetchMaxBytes());
+        configProps.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, option.getMaxPollIntervalMs());
 
-        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(0L, 0L))); // 재처리 하지 않음
+        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(0L, 0L)));
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(configProps));
         factory.setBatchListener(true);
-
         return factory;
     }
 
+    /**
+     * 공통 컨슈머 프로퍼티
+     */
     private Map<String, Object> getDefaultConfigProps() {
-        Map<String, Object> defaultConfigProps = new HashMap<>();
-        defaultConfigProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers());
-        defaultConfigProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        defaultConfigProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        defaultConfigProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.getOption().getEnableAutoCommit()); // offset auto commit
-        defaultConfigProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.getOption().getAutoOffsetReset()); // offset commit 이후 메시지 부터 읽음
+        Map<String, Object> propsMap = new HashMap<>();
+        propsMap.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers());
+        propsMap.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        propsMap.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        propsMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.getOption().getEnableAutoCommit());
+        propsMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.getOption().getAutoOffsetReset());
 
-        // ✨ SSL/SASL 은 ssl.enabled=true 일 때만
+        // 보안 설정은 명시적으로 켜진 경우에만 적용
         if (sslProperties.isEnabled()) {
-            defaultConfigProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, sslProperties.getSecurityProtocol());
-            defaultConfigProps.put(SaslConfigs.SASL_MECHANISM, sslProperties.getSaslMechanism());
-            defaultConfigProps.put(SaslConfigs.SASL_JAAS_CONFIG, sslProperties.getSaslJaasConfig());
-            defaultConfigProps.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, sslProperties.getSaslClientCallbackHandlerClass());
+            propsMap.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, sslProperties.getSecurityProtocol());
+            propsMap.put(SaslConfigs.SASL_MECHANISM, sslProperties.getSaslMechanism());
+            propsMap.put(SaslConfigs.SASL_JAAS_CONFIG, sslProperties.getSaslJaasConfig());
+            propsMap.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, sslProperties.getSaslClientCallbackHandlerClass());
         }
-
-        return defaultConfigProps;
+        return propsMap;
     }
 }

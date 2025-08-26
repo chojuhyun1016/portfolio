@@ -1,8 +1,7 @@
 # ======================================================================
 # gradle/libs.versions.toml
 #  - 버전/의존성 카탈로그 (프로젝트 전역)
-#  - ✅ springKafka, springBootStarterWebflux 별칭 추가
-#  - 기존 주석/항목 그대로 유지 + 필요한 항목만 보강
+#  - ✅ springKafka, springKafkaTest, springBootStarterWebflux 별칭 포함
 # ======================================================================
 
 [versions]
@@ -57,11 +56,12 @@ springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter
 springBootConfigProcessor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 springBootAutoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
 
-# ✅ 추가: Spring Data Redis (RedisTemplate 자동 구성)
+# ✅ Spring Data Redis (RedisTemplate 자동 구성)
 springBootStarterDataRedis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 
 # Spring for Apache Kafka
-springKafka = { module = "org.springframework.kafka:spring-kafka" }                               # ✅ 추가 (kafka 모듈용)
+springKafka = { module = "org.springframework.kafka:spring-kafka" }                               # ✅ kafka 런타임
+springKafkaTest = { module = "org.springframework.kafka:spring-kafka-test" }                      # ✅ kafka 테스트 (★ 신규 추가)
 
 # Spring Cloud Gateway
 springCloudGateway = { module = "org.springframework.cloud:spring-cloud-starter-gateway", version.ref = "springCloudGateway" }
@@ -108,7 +108,6 @@ lettuce = { module = "io.lettuce:lettuce-core", version = "6.3.2.RELEASE" }
 embeddedRedis = { module = "com.github.codemonstur:embedded-redis", version.ref = "embeddedRedis" }
 
 # Testcontainers
-# 나머지는 BOM에 맡기되,
 testcontainers = { module = "org.testcontainers:testcontainers" }
 testcontainersJunit = { module = "org.testcontainers:junit-jupiter" }
 testcontainersJdbc = { module = "org.testcontainers:jdbc" }

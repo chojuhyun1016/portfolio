@@ -5,6 +5,12 @@ import org.example.order.core.infra.common.secrets.config.SecretsManualConfig;
 import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+
+// ✅ 변경 포인트: 테스트 전용 최소 부트 컨텍스트 + 자동설정 제외를 위해 필요한 import
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -15,13 +21,30 @@ import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
 
 /**
  * 통합 테스트 (수동 모드):
- * - @SpringBootTest + SecretsManualConfig 만 로드
- * - Client setKey/getKey/backup 흐름 e2e 검증
+ *
+ * ✅ 변경 요약
+ * - 이전: @SpringBootTest 로 IntegrationBootApp 경유 → infra.redis 유입 → Redisson 자동설정 시도
+ * - 현재: 테스트 내부 Boot 컨텍스트(SecretsManualIT.Boot) + @ImportAutoConfiguration(exclude=…) 로
+ *         Redis/Redisson 자동구성만 테스트에서 제외하여 localhost:6379 접속 시도 제거.
  */
-@SpringBootTest
+@SpringBootTest(classes = SecretsManualIT.Boot.class) // ✅ 최소 컨텍스트 사용
 @Import(SecretsManualConfig.class)
+@ImportAutoConfiguration(exclude = {
+        // ✅ 이 테스트에서는 레디슨/레디스가 전혀 필요 없으므로 자동설정 제외
+        org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
+})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SecretsManualIT {
+
+    /**
+     * ✅ 테스트 전용 최소 부트 컨텍스트
+     */
+    @SpringBootConfiguration
+    @EnableAutoConfiguration
+    static class Boot { }
 
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
