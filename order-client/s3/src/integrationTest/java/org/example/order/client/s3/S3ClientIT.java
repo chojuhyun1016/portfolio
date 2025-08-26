@@ -34,11 +34,15 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * S3ClientIT (통합 테스트)
  * <p>
- * 주요 포인트:
- * - LocalStack 컨테이너로 S3 환경을 시뮬레이션
- * - @DynamicPropertySource 로 Spring Boot AWS 설정 주입
- * - AmazonS3 빈을 통해 버킷/객체 CRUD 동작 검증
- * - IDE의 @Autowired 경고는 오탐이므로 억제 처리
+ * 문제 원인:
+ * - 컨테이너가 뜨기 전에 @DynamicPropertySource Supplier가 호출되어
+ * getEndpointOverride()에서 "Mapped port can only be obtained after the container is started" 예외가 발생할 수 있음.
+ * <p>
+ * 해결:
+ * - 컨테이너를 static 블록에서 미리 start() 하고,
+ * region/endpoint/credentials/bucket/default-folder 값을 상수로 캐싱한 뒤
+ *
+ * @DynamicPropertySource에서는 캐싱된 상수만 반환한다.
  */
 @SpringBootTest(classes = S3Config.class)
 @Testcontainers
@@ -53,15 +57,36 @@ class S3ClientIT {
     static final LocalStackContainer LOCALSTACK = new LocalStackContainer(LOCALSTACK_IMAGE)
             .withServices(LocalStackContainer.Service.S3);
 
+    // ---- 컨테이너 정보를 미리 확보해 두는 캐시 상수들 ----
+    static final String REGION;
+    static final String ENDPOINT;
+    static final String ACCESS_KEY;
+    static final String SECRET_KEY;
+    static final String BUCKET;
+    static final String DEFAULT_FOLDER;
+
+    static {
+        // 컨테이너를 선제적으로 시작하여 포트 매핑/엔드포인트가 유효하도록 보장
+        LOCALSTACK.start();
+
+        REGION = LOCALSTACK.getRegion();
+        ENDPOINT = LOCALSTACK.getEndpointOverride(LocalStackContainer.Service.S3).toString();
+        ACCESS_KEY = LOCALSTACK.getAccessKey();
+        SECRET_KEY = LOCALSTACK.getSecretKey();
+        BUCKET = "it-bucket-" + UUID.randomUUID();
+        DEFAULT_FOLDER = "it-folder";
+    }
+
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
-        r.add("aws.region", LOCALSTACK::getRegion);
-        r.add("aws.endpoint", () -> LOCALSTACK.getEndpointOverride(LocalStackContainer.Service.S3).toString());
+        // Supplier 내부에서 컨테이너 API를 호출하지 않고, 캐싱된 상수만 사용
+        r.add("aws.region", () -> REGION);
+        r.add("aws.endpoint", () -> ENDPOINT);
         r.add("aws.credential.enabled", () -> "true");
-        r.add("aws.credential.access-key", LOCALSTACK::getAccessKey);
-        r.add("aws.credential.secret-key", LOCALSTACK::getSecretKey);
-        r.add("aws.s3.bucket", () -> "it-bucket-" + UUID.randomUUID());
-        r.add("aws.s3.default-folder", () -> "it-folder");
+        r.add("aws.credential.access-key", () -> ACCESS_KEY);
+        r.add("aws.credential.secret-key", () -> SECRET_KEY);
+        r.add("aws.s3.bucket", () -> BUCKET);
+        r.add("aws.s3.default-folder", () -> DEFAULT_FOLDER);
     }
 
     @Autowired
