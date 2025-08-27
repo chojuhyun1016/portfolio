@@ -11,9 +11,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * 유닛 테스트: TsidConfig 가 만드는 TsidFactory 동작 검증
- */
 class TsidFactoryTest {
 
     @Test
@@ -22,9 +19,11 @@ class TsidFactoryTest {
         TsidFactory factory = new TsidConfig().tsidFactory();
 
         Set<Long> ids = new HashSet<>();
+
         for (int i = 0; i < 1_000; i++) {
             ids.add(factory.create().toLong());
         }
+
         assertThat(ids).hasSize(1_000);
     }
 

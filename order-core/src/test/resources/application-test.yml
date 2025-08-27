@@ -1,6 +1,3 @@
-# ===========================
-# MySQL 데이터베이스 연결 설정
-# ===========================
 spring:
   main:
     web-application-type: none
@@ -10,9 +7,6 @@ spring:
     username: sa
     password:
 
-  # ======================
-  # JPA / Hibernate 설정
-  # ======================
   jpa:
     hibernate:
       ddl-auto: none
@@ -21,29 +15,16 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
 
-# ======================
-# Secrets 모듈 설정
-# ======================
 secrets:
-  # secrets.enabled=true → Secrets 모듈 활성화
   enabled: false
 
-# ======================
-# AWS 서비스 연동 설정
-# ======================
 aws:
   secrets-manager:
     enabled: false
 
-# ======================
-# AWS DynamoDB 연동 설정
-# ======================
 dynamodb:
   enabled: false
 
-# ======================
-# 분산 락 (Redis/Redisson)
-# ======================
 lock:
   enabled: false
   named:
@@ -51,15 +32,9 @@ lock:
   redisson:
     enabled: false
 
-# ======================
-# Crypto 모듈 설정
-# ======================
 crypto:
   enabled: false
 
-# ======================
-# 로깅 레벨 설정
-# ======================
 logging:
   level:
     org.springframework.data.redis: DEBUG

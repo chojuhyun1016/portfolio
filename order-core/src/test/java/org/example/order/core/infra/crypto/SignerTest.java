@@ -13,15 +13,12 @@ import java.util.Base64;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * HMAC-SHA256 Signer 단위 테스트
- * - HMAC 키는 URL-Safe Base64 여야 한다.
- */
 class SignerTest {
 
     private static String b64UrlKey(int bytes) {
         byte[] buf = new byte[bytes];
         new SecureRandom().nextBytes(buf);
+
         return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
     }
 

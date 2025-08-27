@@ -6,11 +6,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * namedLock 전용 테스트용 빈
- * - 프로덕션 DummyLockTarget 은 redissonLock 이므로, 여기서는 namedLock 으로 동일 시나리오 검증
- * - 프로덕션 소스는 수정하지 않는다.
- */
 @Slf4j
 @Component
 public class TestNamedLockTarget {
@@ -28,7 +23,7 @@ public class TestNamedLockTarget {
         log.info("[IT named criticalSection] Thread={} | Value={} | concurrent={}",
                 Thread.currentThread().getName(), value, now);
         try {
-            Thread.sleep(80); // 동시성 상황 노출 유도
+            Thread.sleep(80);
         } catch (InterruptedException ignored) {
             Thread.currentThread().interrupt();
         } finally {

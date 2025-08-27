@@ -7,11 +7,6 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
 
-/**
- * SecretsKeyResolver 단위 테스트
- * - 현재/백업 키 저장 및 조회
- * - 미등록 키 조회 시 예외
- */
 class SecretsKeyResolverTest {
 
     @Test
@@ -21,7 +16,7 @@ class SecretsKeyResolverTest {
         CryptoKeySpec v1 = new CryptoKeySpec();
         v1.setAlgorithm("AES");
         v1.setKeySize(128);
-        v1.setValue(std(16)); // 표준 Base64
+        v1.setValue(std(16));
 
         resolver.updateKey("aes128", v1);
 
@@ -32,7 +27,7 @@ class SecretsKeyResolverTest {
         CryptoKeySpec v2 = new CryptoKeySpec();
         v2.setAlgorithm("AES");
         v2.setKeySize(128);
-        v2.setValue(std(16)); // 다른 값
+        v2.setValue(std(16));
 
         resolver.updateKey("aes128", v2);
 

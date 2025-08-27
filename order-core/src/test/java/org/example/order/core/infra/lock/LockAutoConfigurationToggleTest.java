@@ -1,4 +1,3 @@
-// src/test/java/org/example/order/core/infra/lock/LockAutoConfigurationToggleTest.java
 package org.example.order.core.infra.lock;
 
 import org.example.order.core.infra.lock.aspect.DistributedLockAspect;
@@ -17,9 +16,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * 설정 토글 가벼운 검증 (빈 로딩 결과만 확인)
- */
 class LockAutoConfigurationToggleTest {
 
     @Test

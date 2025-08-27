@@ -13,9 +13,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
 
-# ✅ 여기서는 어떤 autoconfigure.exclude 도 지정하지 않습니다.
-#    (레디슨 스타터가 있어도, 우리가 만든 조건부 AutoConfig와 테스트 지원이 충돌 없이 제어합니다.)
-
 lock:
   enabled: true
   named:
@@ -27,7 +24,6 @@ lock:
     wait-time: 3000
     lease-time: 10000
     retry-interval: 150
-    # address/uri/database 는 RedisTestSupport 가 동적 주입
 
 logging:
   level:

@@ -18,10 +18,11 @@ public class DummyLockTarget {
     public void criticalSection() {
         int now = concurrent.incrementAndGet();
         maxObserved.accumulateAndGet(now, Math::max);
-
         int value = counter.incrementAndGet();
+
         log.info("[UNIT criticalSection] Thread={} | Value={} | concurrent={}",
                 Thread.currentThread().getName(), value, now);
+
         try {
             Thread.sleep(50);
         } catch (InterruptedException ignored) {

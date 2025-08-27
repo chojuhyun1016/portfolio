@@ -16,16 +16,12 @@ import java.util.Base64;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-/**
- * EncryptorFactory 토글/시딩 단위 테스트
- * - 원본 소스 불변
- * - ApplicationContextRunner 로 가볍게 검증
- */
 class EncryptorFactoryTest {
 
     private static String b64UrlKey(int bytes) {
         byte[] buf = new byte[bytes];
         new SecureRandom().nextBytes(buf);
+
         return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
     }
 
@@ -46,7 +42,7 @@ class EncryptorFactoryTest {
                     assertThat(ctx).hasSingleBean(EncryptorFactory.class);
 
                     EncryptorFactory f = ctx.getBean(EncryptorFactory.class);
-                    // get* 메서드만 확인 (키 미시딩 상태에서 실제 호출은 금지)
+
                     assertThat(f.getEncryptor(CryptoAlgorithmType.AES128)).isNotNull();
                     assertThat(f.getEncryptor(CryptoAlgorithmType.AES256)).isNotNull();
                     assertThat(f.getEncryptor(CryptoAlgorithmType.AESGCM)).isNotNull();
@@ -61,7 +57,6 @@ class EncryptorFactoryTest {
     void when_enabled_and_seeded_then_end_to_end_sanity_via_factory() {
         String k128 = b64UrlKey(16);
         String k256 = b64UrlKey(32);
-        // ⚠️ AES-GCM 32바이트 요구
         String kgcm = b64UrlKey(32);
         String khmac = b64UrlKey(32);
 
@@ -78,27 +73,22 @@ class EncryptorFactoryTest {
                 .run(ctx -> {
                     EncryptorFactory f = ctx.getBean(EncryptorFactory.class);
 
-                    // AES128
                     Encryptor e128 = f.getEncryptor(CryptoAlgorithmType.AES128);
                     String c1 = e128.encrypt("hello");
                     assertThat(e128.decrypt(c1)).isEqualTo("hello");
 
-                    // AES256
                     Encryptor e256 = f.getEncryptor(CryptoAlgorithmType.AES256);
                     String c2 = e256.encrypt("world");
                     assertThat(e256.decrypt(c2)).isEqualTo("world");
 
-                    // AES-GCM
                     Encryptor egcm = f.getEncryptor(CryptoAlgorithmType.AESGCM);
                     String c3 = egcm.encrypt("gcm");
                     assertThat(egcm.decrypt(c3)).isEqualTo("gcm");
 
-                    // Sign
                     Signer signer = f.getSigner(CryptoAlgorithmType.HMAC_SHA256);
                     String sig = signer.sign("data");
                     assertThat(signer.verify("data", sig)).isTrue();
 
-                    // Hash
                     Hasher bcrypt = f.getHasher(CryptoAlgorithmType.BCRYPT);
                     String bh = bcrypt.hash("pw");
                     assertThat(bcrypt.matches("pw", bh)).isTrue();
@@ -110,7 +100,7 @@ class EncryptorFactoryTest {
                     Hasher sha256 = f.getHasher(CryptoAlgorithmType.SHA256);
                     String sh = sha256.hash("x");
                     assertThat(sh).isNotEmpty();
-                    // 구현에 따라 항상 true는 아닐 수 있어 예외만 방지
+
                     assertThatCode(() -> sha256.matches("x", sh)).doesNotThrowAnyException();
                 });
     }

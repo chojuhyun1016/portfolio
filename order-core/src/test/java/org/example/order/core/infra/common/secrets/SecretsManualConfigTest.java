@@ -11,11 +11,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
 
-/**
- * SecretsManualConfig 컨텍스트 테스트
- * - secrets.enabled=true → Resolver/Client 빈 등록 확인
- * - Client setKey/getKey/backup 흐름 검증
- */
 class SecretsManualConfigTest {
 
     @Test
@@ -32,7 +27,7 @@ class SecretsManualConfigTest {
                     CryptoKeySpec spec = new CryptoKeySpec();
                     spec.setAlgorithm("HMAC-SHA256");
                     spec.setKeySize(256);
-                    spec.setValue(std(32)); // 표준 Base64
+                    spec.setValue(std(32));
 
                     client.setKey("hmac", spec);
 

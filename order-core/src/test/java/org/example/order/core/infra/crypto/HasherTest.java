@@ -11,11 +11,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Hasher 단위 기능 테스트
- * - BCRYPT / ARGON2 / SHA256
- * - 키 시딩 불필요 (해시류는 대개 키가 필요 없음)
- */
 class HasherTest {
 
     private ApplicationContextRunner runnerEnabled() {

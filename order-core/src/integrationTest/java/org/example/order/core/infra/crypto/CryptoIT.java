@@ -10,7 +10,6 @@ import org.example.order.core.infra.crypto.factory.EncryptorFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-// ✅ 변경 포인트: 테스트 전용 최소 부트 컨텍스트 + 자동설정 제외를 위해 필요한 import
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -25,21 +24,11 @@ import java.util.Base64;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.annotation.Resource; // ✅ Spring Boot 3.x에서는 jakarta 패키지 사용
+import jakarta.annotation.Resource;
 
-/**
- * 통합 테스트:
- *
- * ✅ 변경 요약
- * - 이전: @SpringBootTest 로 IntegrationBootApp 경유 → infra.redis 유입 → Redisson 자동설정 시도
- * - 현재: 테스트 내부 Boot 컨텍스트(CryptoIT.Boot) + @ImportAutoConfiguration(exclude=…) 로
- *         Redisson/Redis 자동구성만 테스트 컨텍스트에서 제외하여 Redis 연결 실패 제거.
- * - Crypto 기능 자체는 수동/자동 설정 클래스를 @Import 로 정확히 로딩.
- */
-@SpringBootTest(classes = CryptoIT.Boot.class) // ✅ 최소 컨텍스트 사용
+@SpringBootTest(classes = CryptoIT.Boot.class)
 @Import({CryptoManualConfig.class, CryptoAutoConfig.class})
 @ImportAutoConfiguration(exclude = {
-        // ✅ 이 테스트는 Redis/Redisson과 무관 → 자동설정 제외
         org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
         org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
         org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
@@ -48,17 +37,15 @@ import jakarta.annotation.Resource; // ✅ Spring Boot 3.x에서는 jakarta 패�
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CryptoIT {
 
-    /**
-     * ✅ 테스트 전용 최소 부트 컨텍스트
-     */
     @SpringBootConfiguration
     @EnableAutoConfiguration
-    static class Boot { }
+    static class Boot {
+    }
 
     private static String b64Key(int bytes) {
         byte[] buf = new byte[bytes];
         new SecureRandom().nextBytes(buf);
-        // ✅ 운영 코드가 URL-safe 디코더를 쓰므로, 테스트 키도 URL-safe로 인코딩
+
         return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
     }
 
@@ -68,7 +55,7 @@ class CryptoIT {
         r.add("crypto.props.seed", () -> "true");
         r.add("encrypt.aes128.key", () -> b64Key(16));
         r.add("encrypt.aes256.key", () -> b64Key(32));
-        r.add("encrypt.aesgcm.key", () -> b64Key(32)); // ⚠️ AES-GCM은 32바이트 키 적용
+        r.add("encrypt.aesgcm.key", () -> b64Key(32));
         r.add("encrypt.hmac.key", () -> b64Key(32));
     }
 
@@ -77,7 +64,6 @@ class CryptoIT {
 
     @Test
     void end_to_end_encrypt_hash_sign() {
-        // Encrypt/Decrypt
         Encryptor e128 = factory.getEncryptor(CryptoAlgorithmType.AES128);
         String c1 = e128.encrypt("it-128");
         assertThat(e128.decrypt(c1)).isEqualTo("it-128");
@@ -90,13 +76,11 @@ class CryptoIT {
         String c3 = egcm.encrypt("it-gcm");
         assertThat(egcm.decrypt(c3)).isEqualTo("it-gcm");
 
-        // Sign/Verify
         Signer signer = factory.getSigner(CryptoAlgorithmType.HMAC_SHA256);
         String msg = "hello-integration";
         String sig = signer.sign(msg);
         assertThat(signer.verify(msg, sig)).isTrue();
 
-        // Hash
         Hasher bcrypt = factory.getHasher(CryptoAlgorithmType.BCRYPT);
         String bh = bcrypt.hash("pw!");
         assertThat(bcrypt.matches("pw!", bh)).isTrue();

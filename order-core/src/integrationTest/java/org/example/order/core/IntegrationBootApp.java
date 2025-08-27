@@ -10,18 +10,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
 
-/**
- * 통합 테스트 전용 Boot 루트
- *
- * - integrationTest 클래스패스에만 존재(@SpringBootConfiguration)
- * - DataSource 자동구성은 허용(컨테이너 MySQL을 사용)
- * - JPA/Repo/Flyway/Liquibase는 제외 (락/레디슨 통합테스트에 불필요)
- * - 스캔을 infra.lock / infra.redis 로 한정 → QuerydslConfig 등 유입 차단
- *
- * ✅ 이 클래스를 별도 파일로 둠으로써, test 산출물(TestBootApp.class)을
- *    integrationTest 클래스패스에서 제외했을 때 @SpringBootConfiguration이
- *    “단 하나”만 존재하도록 보장한다. (중복 부트루트 충돌 원천 차단)
- */
 @SpringBootConfiguration
 @EnableAutoConfiguration(
         exclude = {
@@ -43,5 +31,4 @@ import org.springframework.context.annotation.FilterType;
         }
 )
 public class IntegrationBootApp {
-    // 빈 정의 없음 (필요한 건 각 테스트의 @DynamicPropertySource로 주입)
 }

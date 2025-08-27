@@ -20,16 +20,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
 
-/**
- * SecretsAutoConfig 테스트
- * - AWS SDK 클라이언트 모킹으로 SecretsLoader 동작 검증 (@PostConstruct 로 1회 로드)
- * - 리스너 콜백 호출 확인
- */
 class SecretsAutoConfigTest {
 
     @Test
     void aws_auto_mode_loads_and_notifies_listener() throws Exception {
-        // 1) 시크릿 JSON 구성 (표준 Base64)
+
         Map<String, CryptoKeySpec> keys = new HashMap<>();
 
         CryptoKeySpec k1 = new CryptoKeySpec();
@@ -52,7 +47,6 @@ class SecretsAutoConfigTest {
 
         String secretJson = new ObjectMapper().writeValueAsString(keys);
 
-        // 2) AWS Client 모킹
         SecretsManagerClient mockClient = Mockito.mock(SecretsManagerClient.class);
         Mockito.when(mockClient.getSecretValue(Mockito.any(GetSecretValueRequest.class)))
                 .thenReturn(GetSecretValueResponse.builder().secretString(secretJson).build());
@@ -67,9 +61,7 @@ class SecretsAutoConfigTest {
                         "aws.secrets-manager.secret-name=myapp/secret-keyset",
                         "aws.secrets-manager.fail-fast=false"
                 )
-                // 모킹 빈 직접 주입
                 .withBean(SecretsManagerClient.class, () -> mockClient)
-                // ✅ Functional interface에 맞는 람다로 교체 (onSecretKeyRefreshed 호출 시 true로 세팅)
                 .withBean(SecretKeyRefreshListener.class, () -> () -> notified.set(true))
                 .withConfiguration(UserConfigurations.of(SecretsAutoConfig.class))
                 .run(ctx -> {
@@ -80,7 +72,7 @@ class SecretsAutoConfigTest {
                     assertThat(resolver.getCurrentKey("aesgcm")).hasSize(32);
                     assertThat(resolver.getCurrentKey("hmac")).hasSize(32);
 
-                    assertThat(notified.get()).isTrue(); // 리스너 호출 확인
+                    assertThat(notified.get()).isTrue();
                 });
     }
 }
