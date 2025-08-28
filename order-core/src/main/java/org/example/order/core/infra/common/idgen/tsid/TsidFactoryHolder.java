@@ -3,29 +3,32 @@ package org.example.order.core.infra.common.idgen.tsid;
 import com.github.f4b6a3.tsid.TsidFactory;
 
 /**
- * TSID 팩토리 정적 홀더 (Hibernate 식별자 생성기에서 사용)
- *
- * - Hibernate는 @IdGeneratorType 대상 클래스를 스프링 빈으로 주입해주지 않고,
- *   리플렉션으로 "기본 생성자"로만 인스턴스화한다.
- * - 따라서 CustomTsidGenerator가 스프링 주입 없이도 TsidFactory에 접근할 수 있도록
- *   본 정적 홀더를 사용한다.
- *
- * ⚠️ 테스트/애플리케이션 부팅 시 TsidConfig에서 set(...)로 반드시 주입됨.
+ * TSID 팩토리 정적 홀더
+ * - Hibernate 에서는 스프링 DI가 불가 → 정적 접근 필요
+ * - TsidConfig 부팅 시 set(...) 호출로 초기화
  */
 public final class TsidFactoryHolder {
 
     private static volatile TsidFactory FACTORY;
 
-    private TsidFactoryHolder() {}
+    private TsidFactoryHolder() {
+    }
 
+    /**
+     * 스프링 구성에서 팩토리를 주입(1회성)
+     */
     public static void set(TsidFactory factory) {
         FACTORY = factory;
     }
 
+    /**
+     * Hibernate IdentifierGenerator 등에서 정적 취득
+     */
     public static TsidFactory get() {
         if (FACTORY == null) {
-            throw new IllegalStateException("TsidFactoryHolder has not been initialized yet.");
+            throw new IllegalStateException("TsidFactoryHolder is not initialized. Check tsid.enabled=true and configuration.");
         }
+
         return FACTORY;
     }
 }

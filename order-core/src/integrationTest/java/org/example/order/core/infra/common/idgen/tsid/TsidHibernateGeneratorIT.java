@@ -2,6 +2,7 @@ package org.example.order.core.infra.common.idgen.tsid;
 
 import jakarta.persistence.*;
 import org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid;
+import org.example.order.core.infra.common.idgen.tsid.config.TsidModuleConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
         "spring.jpa.show-sql=false",
+        // ---- TSID 모듈 활성화 ----
+        "tsid.enabled=true"
 })
 @ImportAutoConfiguration(exclude = {
         RedissonAutoConfigurationV2.class,
@@ -48,7 +51,7 @@ class TsidHibernateGeneratorIT {
             basePackageClasses = TsidHibernateGeneratorIT.OrderRepository.class,
             considerNestedRepositories = true
     )
-    @Import(TsidConfig.class)
+    @Import(TsidModuleConfig.class)
     static class JpaBoot {
     }
 

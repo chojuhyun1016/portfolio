@@ -28,3 +28,9 @@ lock:
 logging:
   level:
     org.springframework: WARN
+
+tsid:
+  enabled: true          # ✅ 켜면 TsidFactory 생성 + 홀더 등록
+  node-bits: 10          # (옵션) 기본 10
+  zone-id: Asia/Seoul    # (옵션) 미설정 시 시스템 기본/ENV_TZ
+  prefer-ec2-meta: true  # (옵션) EC2 IMDSv2 우선 사용
