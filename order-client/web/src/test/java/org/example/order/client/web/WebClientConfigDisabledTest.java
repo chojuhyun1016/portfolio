@@ -1,6 +1,6 @@
 package org.example.order.client.web;
 
-import org.example.order.client.web.config.WebClientConfig;
+import org.example.order.client.web.config.WebClientModuleConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -12,11 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * WebClientConfigDisabledTest
  * <p>
- * 주요 포인트:
  * - web-client.enabled=false 일 때 WebClient 빈이 생성되지 않아야 함
  * - ApplicationContext 조회 시 NoSuchBeanDefinitionException 발생을 검증
  */
-@SpringBootTest(classes = WebClientConfig.class)
+@SpringBootTest(classes = WebClientModuleConfig.class)
 @TestPropertySource(properties = {
         "web-client.enabled=false"
 })

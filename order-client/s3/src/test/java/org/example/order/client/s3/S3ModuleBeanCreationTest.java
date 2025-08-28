@@ -1,7 +1,8 @@
 package org.example.order.client.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
-import org.example.order.client.s3.config.S3Config;
+import org.example.order.client.s3.config.S3ModuleConfig;
+import org.example.order.client.s3.service.S3Client;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,15 +11,12 @@ import org.springframework.test.context.TestPropertySource;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * S3ConfigBeanCreationTest
- * <p>
- * 주요 포인트:
- * - S3Config 가 AmazonS3 빈을 정상적으로 생성하는지 확인
- * - 실제 S3 연결/네트워크 호출은 하지 않음 (속도/안정성 확보)
- * - 단순히 Bean 존재 여부만 검증하는 "유닛 성격" 테스트
+ * S3ModuleBeanCreationTest
+ * - aws.s3.enabled=true 일 때 AmazonS3 / S3Client 빈 생성 여부만 검증(네트워크 호출 없음)
  */
-@SpringBootTest(classes = S3Config.class)
+@SpringBootTest(classes = S3ModuleConfig.class)
 @TestPropertySource(properties = {
+        "aws.s3.enabled=true",
         "aws.region=us-east-1",
         "aws.endpoint=http://localhost:4566", // LocalStack/프록시 가정
         "aws.credential.enabled=true",
@@ -27,14 +25,18 @@ import static org.junit.jupiter.api.Assertions.*;
         "aws.s3.bucket=test-bucket",
         "aws.s3.default-folder=tmp"
 })
-class S3ConfigBeanCreationTest {
+class S3ModuleBeanCreationTest {
 
     @org.springframework.beans.factory.annotation.Autowired
     AmazonS3 amazonS3;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    S3Client s3Client;
+
     @Test
-    @DisplayName("S3Config → AmazonS3 빈 생성")
-    void amazonS3BeanCreated() {
+    @DisplayName("aws.s3.enabled=true → AmazonS3 / S3Client 빈 생성")
+    void beansCreated() {
         assertNotNull(amazonS3);
+        assertNotNull(s3Client);
     }
 }

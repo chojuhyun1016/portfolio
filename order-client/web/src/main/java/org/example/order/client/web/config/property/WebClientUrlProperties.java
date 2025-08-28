@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 /**
  * WebClientUrlProperties
  * <p>
- * 주요 구성 포인트:
  * - web-client.enabled : 모듈 on/off 스위치
  * - client : 호출자 ID 및 대상 API URL
  * - timeout : connect/read 타임아웃(ms)
@@ -21,7 +20,11 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties("web-client")
 public class WebClientUrlProperties {
 
+    /**
+     * 모듈 on/off 스위치 (기본 false)
+     */
     private boolean enabled = false;
+
     private Client client = new Client();
     private Timeout timeout = new Timeout();
     private Codec codec = new Codec();

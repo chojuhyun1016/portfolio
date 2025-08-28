@@ -2,7 +2,7 @@ package org.example.order.client.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
-import org.example.order.client.s3.config.S3Config;
+import org.example.order.client.s3.config.S3ModuleConfig;
 import org.example.order.client.s3.config.property.S3Properties;
 import org.example.order.client.s3.service.S3Client;
 import org.junit.jupiter.api.DisplayName;
@@ -34,17 +34,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * S3ClientIT (통합 테스트)
  * <p>
- * 문제 원인:
- * - 컨테이너가 뜨기 전에 @DynamicPropertySource Supplier가 호출되어
- * getEndpointOverride()에서 "Mapped port can only be obtained after the container is started" 예외가 발생할 수 있음.
- * <p>
- * 해결:
- * - 컨테이너를 static 블록에서 미리 start() 하고,
- * region/endpoint/credentials/bucket/default-folder 값을 상수로 캐싱한 뒤
- *
- * @DynamicPropertySource에서는 캐싱된 상수만 반환한다.
+ * - 대표 모듈 S3ModuleConfig 만 로드
+ * - LocalStack 컨테이너는 static 블록에서 선기동
+ * - @DynamicPropertySource에서는 컨테이너 API를 다시 호출하지 않고, 캐시된 상수만 사용
  */
-@SpringBootTest(classes = S3Config.class)
+@SpringBootTest(classes = S3ModuleConfig.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
@@ -79,6 +73,8 @@ class S3ClientIT {
 
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
+        // 스위치 ON (미설정이면 모듈이 비활성화되어 빈이 생성되지 않음)
+        r.add("aws.s3.enabled", () -> "true");
         // Supplier 내부에서 컨테이너 API를 호출하지 않고, 캐싱된 상수만 사용
         r.add("aws.region", () -> REGION);
         r.add("aws.endpoint", () -> ENDPOINT);
@@ -91,23 +87,28 @@ class S3ClientIT {
 
     @Autowired
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    AmazonS3 amazonS3;
+    AmazonS3 amazonS3; // 버킷 생성 용도
+
+    @Autowired
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    S3Client s3Client;
 
     @Autowired
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     S3Properties props;
 
     @Test
-    @DisplayName("S3 put/get round-trip")
+    @DisplayName("S3 put/get round-trip (LocalStack)")
     void putGetObject() throws Exception {
 
-        // 1) 버킷 생성
+        // 0) 버킷 준비(없으면 생성)
         String bucket = props.getS3().getBucket();
+
         if (!amazonS3.doesBucketExistV2(bucket)) {
             amazonS3.createBucket(bucket);
         }
 
-        // 2) 임시 파일 생성 및 업로드
+        // 1) 업로드할 임시 파일 준비
         String key = props.getS3().getDefaultFolder() + "/hello-" + UUID.randomUUID() + ".txt";
         File tmp = Files.createTempFile("s3-it-", ".txt").toFile();
         tmp.deleteOnExit();
@@ -116,14 +117,13 @@ class S3ClientIT {
             w.write("hello-s3");
         }
 
-        // 3) 클라이언트로 업로드/다운로드 실행
-        S3Client client = new S3Client(amazonS3);
-        client.putObject(bucket, key, tmp);
+        // 2) 업로드
+        s3Client.putObject(bucket, key, tmp);
 
-        S3Object obj = client.getObject(bucket, key);
+        // 3) 다운로드 & 내용 검증
+        S3Object obj = s3Client.getObject(bucket, key);
         assertNotNull(obj);
 
-        // 4) 다운로드된 파일 내용 검증
         try (InputStream in = obj.getObjectContent()) {
             String text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             assertEquals("hello-s3", text);

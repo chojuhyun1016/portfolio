@@ -10,11 +10,10 @@ import org.springframework.test.context.TestPropertySource;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * 큰 맥락
- * - Kafka Producer 설정이 활성화(producer.enabled=true) 되었을 때
- * KafkaTemplate 빈이 생성되는지 확인하는 단위 테스트.
- * - bootstrap-servers 값은 더미(localhost:9092)로 설정,
- * 실제 브로커 연결 시도는 하지 않고 단순 빈 존재 여부만 검증한다.
+ * producer.enabled=true 이고 bootstrap-servers 가 지정되면
+ * - KafkaTemplate 생성
+ * - KafkaProducerCluster 생성
+ * (실제 브로커 연결 시도는 하지 않음)
  */
 @SpringBootTest(classes = KafkaModuleConfig.class)
 @TestPropertySource(properties = {
@@ -28,9 +27,15 @@ class KafkaProducerConfigEnabledTest {
     private org.springframework.context.ApplicationContext ctx;
 
     @Test
-    @DisplayName("producer.enabled=true → KafkaTemplate 빈 생성")
-    void kafkaTemplateBeanPresentWhenEnabled() {
+    @DisplayName("producer.enabled=true → KafkaTemplate/KafkaProducerCluster 생성")
+    void kafkaBeansPresentWhenEnabled() {
         KafkaTemplate<String, Object> template = ctx.getBean(KafkaTemplate.class);
+
         assertNotNull(template, "KafkaTemplate must be created when enabled=true");
+
+        org.example.order.client.kafka.service.KafkaProducerCluster cluster =
+                ctx.getBean(org.example.order.client.kafka.service.KafkaProducerCluster.class);
+
+        assertNotNull(cluster, "KafkaProducerCluster must be created when enabled=true");
     }
 }

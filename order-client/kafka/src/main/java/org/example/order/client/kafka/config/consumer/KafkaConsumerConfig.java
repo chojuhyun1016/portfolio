@@ -22,12 +22,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 큰 맥락
- * - consumer.enabled=true 일 때에만 컨슈머 관련 빈과 @EnableKafka를 활성화한다.
- * - 기본 팩토리(단건)와 배치용 팩토리를 분리 제공한다.
- * - Ack 모드는 MANUAL_IMMEDIATE(리스너에서 ack.acknowledge() 호출 전제)로 고정한다.
- * - 재처리는 테스트/운영 정책에 맞추기 위해 기본 값은 "재시도 없음"으로 둔다.
- * - SSL/SASL 설정은 kafka.ssl.enabled=true 일 때만 주입한다.
+ * consumer.enabled=true 일 때만 활성화되는 Consumer 구성.
+ * - AckMode: MANUAL_IMMEDIATE 고정(리스너 내 ack.acknowledge() 호출 전제)
+ * - 재처리 기본 없음(DefaultErrorHandler + FixedBackOff(0,0))
+ * - SSL/SASL: kafka.ssl.enabled=true 일 때만 주입
  */
 @Configuration
 @EnableConfigurationProperties({KafkaConsumerProperties.class, KafkaSSLProperties.class})
@@ -39,9 +37,6 @@ public class KafkaConsumerConfig {
     private final KafkaConsumerProperties properties;
     private final KafkaSSLProperties sslProperties;
 
-    /**
-     * 단건 리스너 컨테이너 팩토리
-     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
@@ -56,54 +51,78 @@ public class KafkaConsumerConfig {
 
         // 표준 설정
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(getDefaultConfigProps()));
+
         return factory;
     }
 
-    /**
-     * 배치 리스너 컨테이너 팩토리
-     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaBatchListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        KafkaConsumerProperties.KafkaConsumerOption option = properties.getOption();
+
+        // 옵션 널 안전 처리
+        KafkaConsumerProperties.KafkaConsumerOption option =
+                properties.getOption() != null ? properties.getOption() : new KafkaConsumerProperties.KafkaConsumerOption();
 
         // 배치 환경에서도 수동 커밋
         ContainerProperties cp = factory.getContainerProperties();
-        cp.setIdleBetweenPolls(option.getIdleBetweenPolls());
+
+        if (option.getIdleBetweenPolls() != null) {
+            cp.setIdleBetweenPolls(option.getIdleBetweenPolls());
+        }
+
         cp.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
-        // 배치 튜닝 옵션 반영
+        // 배치 튜닝 옵션 반영 (널 체크 후 주입)
         Map<String, Object> configProps = getDefaultConfigProps();
-        configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, option.getMaxPollRecords());
-        configProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, option.getFetchMaxWaitMs());
-        configProps.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, option.getFetchMaxBytes());
-        configProps.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, option.getMaxPollIntervalMs());
+
+        if (option.getMaxPollRecords() != null) {
+            configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, option.getMaxPollRecords());
+        }
+        if (option.getFetchMaxWaitMs() != null) {
+            configProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, option.getFetchMaxWaitMs());
+        }
+        if (option.getFetchMaxBytes() != null) {
+            configProps.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, option.getFetchMaxBytes());
+        }
+        if (option.getMaxPollIntervalMs() != null) {
+            configProps.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, option.getMaxPollIntervalMs());
+        }
 
         factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(0L, 0L)));
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(configProps));
         factory.setBatchListener(true);
+
         return factory;
     }
 
-    /**
-     * 공통 컨슈머 프로퍼티
-     */
     private Map<String, Object> getDefaultConfigProps() {
         Map<String, Object> propsMap = new HashMap<>();
+
+        // 필수
         propsMap.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers());
         propsMap.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         propsMap.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        propsMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.getOption().getEnableAutoCommit());
-        propsMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.getOption().getAutoOffsetReset());
 
-        // 보안 설정은 명시적으로 켜진 경우에만 적용
+        // 옵션 널 안전 처리
+        if (properties.getOption() != null) {
+            if (properties.getOption().getEnableAutoCommit() != null) {
+                propsMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.getOption().getEnableAutoCommit());
+            }
+
+            if (properties.getOption().getAutoOffsetReset() != null) {
+                propsMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.getOption().getAutoOffsetReset());
+            }
+        }
+
+        // 보안 설정: 명시적으로 켜진 경우에만
         if (sslProperties.isEnabled()) {
             propsMap.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, sslProperties.getSecurityProtocol());
             propsMap.put(SaslConfigs.SASL_MECHANISM, sslProperties.getSaslMechanism());
             propsMap.put(SaslConfigs.SASL_JAAS_CONFIG, sslProperties.getSaslJaasConfig());
             propsMap.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, sslProperties.getSaslClientCallbackHandlerClass());
         }
+
         return propsMap;
     }
 }

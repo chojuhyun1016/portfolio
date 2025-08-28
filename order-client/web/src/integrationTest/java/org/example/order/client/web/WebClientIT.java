@@ -3,9 +3,8 @@ package org.example.order.client.web;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.example.order.client.web.config.WebClientConfig;
+import org.example.order.client.web.config.WebClientModuleConfig;
 import org.example.order.client.web.service.WebClientService;
-import org.example.order.client.web.service.impl.WebClientServiceImpl;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,13 +28,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * WebClient 통합 테스트
  * <p>
- * 주요 흐름:
  * - JDK HttpServer 로 임시 API 서버 구동
- * - WebClientServiceImpl 호출 → JSON 응답 검증
- * - @SpringBootTest 로 WebClientConfig + ServiceImpl 컨텍스트 구성
- * - IDE Autowiring 경고는 억제
+ * - WebClientService 호출 → JSON 응답 검증
+ * - @SpringBootTest 로 WebClientModuleConfig 컨텍스트 구성
  */
-@SpringBootTest(classes = {WebClientConfig.class, WebClientServiceImpl.class})
+@SpringBootTest(classes = WebClientModuleConfig.class)
 @TestPropertySource(properties = {
         "web-client.enabled=true",
         "web-client.timeout.connect-ms=2000",
@@ -99,6 +96,7 @@ class WebClientIT {
 
             byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, bytes.length);
+
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(bytes);
             }

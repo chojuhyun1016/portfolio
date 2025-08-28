@@ -29,11 +29,9 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * 통합 테스트 개요
- * - EmbeddedKafka로 브로커 기동
- * - KafkaTemplate로 전송하고, 로우 KafkaConsumer로 수신 검증
- * - 프로덕션의 JsonSerializer 특성 반영(문자열이 JSON 문자열로 실전송될 수 있음)
- * - IDE 자동주입 경고는 스프링 확장 + 경고억제로 처리(테스트 컨텍스트에선 정상 주입)
+ * EmbeddedKafka 기반 통합 테스트
+ * - ModuleConfig 단일 구성 사용
+ * - producer.enabled=true + 동적 bootstrap-servers 주입
  */
 @SpringBootTest(
         classes = KafkaModuleConfig.class,
@@ -60,6 +58,7 @@ class KafkaProducerIT {
 
     private static String resolveBrokers() {
         String brokers = System.getProperty("spring.embedded.kafka.brokers");
+
         return (brokers == null || brokers.isBlank()) ? "127.0.0.1:9092" : brokers;
     }
 
@@ -69,7 +68,7 @@ class KafkaProducerIT {
     }
 
     @Test
-    @DisplayName("KafkaTemplate 전송 → Consumer 폴링 수신 검증")
+    @DisplayName("KafkaTemplate 전송 → Raw Consumer 폴링 수신 검증")
     void sendAndConsume() {
         String key = "it-key";
         String value = "hello-kafka-" + UUID.randomUUID();
