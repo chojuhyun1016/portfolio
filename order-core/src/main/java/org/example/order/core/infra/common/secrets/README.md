@@ -1,40 +1,48 @@
-# 🔐 infra:secrets — Secrets Manager/수동 키 로딩 모듈
+# 🔐 infra:secrets — Secrets Manager / 수동 키 로딩 모듈
 
 Spring Boot에서 AES/HMAC 등 **암·복호화용 SecretKey**를 안전하게 주입/관리하기 위한 경량 모듈입니다.  
-**AWS 자동 모드** 또는 **CORE 수동 모드**로 동작하며, 서비스 코드는 **SecretsKeyClient** 하나로 `setKey/getKey/getBackupKey`를 단순히 호출하면 됩니다.
+**CORE 수동 모드** 또는 **AWS 자동 모드**로 동작하며, 서비스 코드는 **`SecretsKeyClient`** 하나로 `setKey` / `getKey` / `getBackupKey` 를 단순 호출하면 됩니다.
+
+---
+
+## 🔄 변경 사항 요약 (현행 구조)
+
+- **단일 진입점 구성으로 통합:** `SecretsInfraConfig` 1개만 사용 (`@Import(SecretsInfraConfig.class)` 한 줄로 모듈 조립)
+- **조건부 빈 등록 게이트:**
+    - `secrets.enabled=true` → Core 빈(`SecretsKeyResolver`, `SecretsKeyClient`)만 등록
+    - 추가로 `aws.secrets-manager.enabled=true` + **AWS SDK 클래스패스 존재** → AWS 로더(`SecretsLoader`, `SecretsManagerClient`)까지 등록
+- **삭제됨:** `SecretsAutoConfig`, `SecretsManualConfig` (기능은 `SecretsInfraConfig`로 흡수)
+- **스케줄링 범위 최소화:** AWS 로더가 활성화될 때에만 스케줄링(`@EnableScheduling`) 활성
 
 ---
 
 ## 1) 구성 개요
 
-| 클래스/인터페이스                   | 설명 |
-|-------------------------------------|------|
-| `SecretsManualConfig`               | `secrets.enabled=true` 시 CORE(수동) 모드 활성화, Resolver/Client 빈 등록 |
-| `SecretsAutoConfig`                 | `secrets.enabled=true` & `aws.secrets-manager.enabled=true` 시 AWS 자동 모드 활성화 |
-| `SecretsKeyClient`                  | 서비스 코드용 얇은 래퍼: `setKey/getKey/getBackupKey` 제공 |
-| `SecretsKeyResolver`                | 현재/백업 키 보관(핫스왑/롤백), 동시성 안전 |
-| `SecretsLoader`                     | AWS Secrets Manager에서 주기적으로 비밀(JSON) 로드 → Resolver 반영 → 리스너 알림 |
-| `SecretKeyRefreshListener`          | 로드/교체 후 콜백 인터페이스 |
-| `CryptoKeySpec`                     | `{ algorithm, keySize, value(Base64) }` 키 스펙 모델 |
-| `SecretsManagerProperties`          | `region`, `secret-name`, `refresh-interval-millis`, `fail-fast` 등 |
+| 클래스/인터페이스             | 설명 |
+|-------------------------------|------|
+| `SecretsInfraConfig`          | 진입점 구성. `secrets.enabled=true` 시 활성화. Core 빈 등록. AWS 조건 충족 시 로더 포함 |
+| `SecretsKeyClient`            | 서비스 코드용 얇은 래퍼: `setKey` / `getKey` / `getBackupKey` 제공 |
+| `SecretsKeyResolver`          | 현재/백업 키 보관(핫스왑/롤백), 동시성 안전 |
+| `SecretsLoader`               | AWS Secrets Manager에서 주기적으로 JSON 비밀 로드 → Resolver 반영 → 리스너 알림 |
+| `SecretKeyRefreshListener`    | 로드/교체 후 콜백 인터페이스 |
+| `CryptoKeySpec`               | `{ algorithm, keySize, value(Base64) }` 키 스펙 모델 |
+| `SecretsManagerProperties`    | `region`, `secret-name`, `refresh-interval-millis`, `fail-fast` 등 프로퍼티 바인딩 |
 
-> **빈 등록 원칙**  
-> 라이브러리 클래스에는 `@Component` 금지.  
-> 모든 빈은 **조건부(@ConditionalOnProperty, @ConditionalOnMissingBean)** 로만 등록되어 불필요한 부작용을 방지합니다.
+> 원칙: 라이브러리 클래스에는 `@Component`를 사용하지 않고, **설정 기반(@Bean) + 조건부**로만 등록합니다.
 
 ---
 
-## 2) 동작 모드
+## 2) 동작 모드 & 프로퍼티
 
 ### 2.1 OFF (기본)
-아무 설정도 없으면 빈이 등록되지 않으며, 다른 모듈에 영향을 주지 않습니다.
+설정이 없으면 **아무 빈도 등록되지 않음** (다른 모듈 영향 없음)
 
 ### 2.2 CORE(수동) 모드
 ```properties
 secrets.enabled=true
 ```
 - 등록 빈: `SecretsKeyResolver`, `SecretsKeyClient`
-- 서비스 코드에서 `SecretsKeyClient#setKey(name, spec)` 로 직접 키 주입
+- 서비스 코드에서 `SecretsKeyClient#setKey(name, spec)` 로 **직접 키 주입**
 - 로컬/개발/테스트 환경에 적합
 
 ### 2.3 AWS 자동 모드
@@ -47,8 +55,8 @@ aws.secrets-manager.refresh-interval-millis=300000
 aws.secrets-manager.fail-fast=true
 ```
 - 등록 빈: `SecretsKeyResolver`, `SecretsManagerClient`, `SecretsLoader`, `SecretsKeyClient`
-- 부팅 시 1회 즉시 로드 + 주기적 갱신
-- JSON 예시
+- **부팅 시 1회 즉시 로드 + 주기적 갱신**
+- Secrets JSON 예시:
 ```json
 {
   "aes.main":  { "algorithm": "AES",          "keySize": 256, "value": "BASE64_KEY_BYTES" },
@@ -58,29 +66,46 @@ aws.secrets-manager.fail-fast=true
 
 ---
 
-## 3) 동작 흐름
+## 3) 동작 흐름 (핵심 로직)
 
+CORE(수동):
 ```
 Caller(서비스 코드)
  └─> SecretsKeyClient.setKey("aes.main", spec)
       └─> SecretsKeyResolver.updateKey("aes.main", spec)
            ├─ 이전 currentKey ≠ 새Key → backupKey 로 보관
            └─ currentKey 교체(핫스왑)
+```
 
-[AWS 모드]
- └─> SecretsLoader
-      1) Secrets Manager GetSecretValue(secretName)
-      2) JSON → Map<String, CryptoKeySpec> 파싱
-      3) spec.decodeKey() & (keySize/8) 길이 검증
-      4) Resolver.updateKey(...)
-      5) SecretKeyRefreshListener.onSecretKeyRefreshed() 알림
+AWS 자동:
+```
+└─> SecretsLoader.refreshSecrets()
+    1) Secrets Manager GetSecretValue(secretName)
+    2) JSON → Map<String, CryptoKeySpec> 파싱
+    3) spec.decodeKey() & (keySize/8) 길이 검증
+    4) Resolver.updateKey(...)
+    5) SecretKeyRefreshListener.onSecretKeyRefreshed() 알림
 ```
 
 ---
 
-## 4) 빠른 시작
+## 4) 애플리케이션 조립 (가장 중요한 사용법)
 
-### 4.1 CORE(수동) 모드 — 코드로 시드
+### 4.1 모듈 조립 (Kafka/S3/Web과 동일한 패턴)
+```java
+// 애플리케이션 진입점 (또는 Infra 조립용 @Configuration)
+@Import(SecretsInfraConfig.class)
+@SpringBootApplication
+public class App {
+    public static void main(String[] args) { SpringApplication.run(App.class, args); }
+}
+```
+
+### 4.2 CORE(수동) 모드 — 코드로 시드
+```properties
+secrets.enabled=true
+```
+
 ```java
 @Service
 @RequiredArgsConstructor
@@ -90,7 +115,7 @@ public class CryptoService {
     public void rotateAes256() {
         CryptoKeySpec spec = new CryptoKeySpec();
         spec.setAlgorithm("AES");
-        spec.setKeySize(256);
+        spec.setKeySize(256);                    // 256비트 → 32바이트
         spec.setValue("BASE64_ENCODED_32B_KEY"); // 반드시 Base64
         secrets.setKey("aes.main", spec);        // 기존 키는 자동 백업
     }
@@ -100,7 +125,7 @@ public class CryptoService {
 }
 ```
 
-### 4.2 AWS 자동 모드 — 설정만으로 동작
+### 4.3 AWS 자동 모드 — 설정만으로 동작
 ```properties
 secrets.enabled=true
 aws.secrets-manager.enabled=true
@@ -110,12 +135,13 @@ aws.secrets-manager.secret-name=myapp/crypto-keyset
 # aws.secrets-manager.fail-fast=true                  # 초기 로드 실패 시 부팅 중단(운영 권장)
 ```
 - 별도 `setKey()` 호출 불필요
-- SecretsLoader 가 주기적으로 Secrets Manager에서 키 갱신
+- `SecretsLoader`가 주기적으로 Secrets Manager에서 키 조회/갱신
 
 ---
 
-## 5) 애플리케이션 사용 예
+## 5) 서비스 코드 사용 예 (가장 자주 쓰는 패턴)
 
+### 5.1 HMAC 서명/검증
 ```java
 @Component
 @RequiredArgsConstructor
@@ -125,7 +151,7 @@ public class JwtSigner {
     public String sign(String payload) {
         byte[] key = secrets.getKey("hmac.auth");
         // HMAC-SHA256 서명 로직...
-        return Base64.getEncoder().encodeToString(hmacSha256(key, payload.getBytes(StandardCharsets.UTF_8)));
+        return base64(hmacSha256(key, payload.getBytes(StandardCharsets.UTF_8)));
     }
 
     public boolean verify(String payload, String sigBase64) {
@@ -136,58 +162,52 @@ public class JwtSigner {
 }
 ```
 
----
-
-## 6) 테스트 가이드
-
-### 6.1 CORE(수동) 모드
+### 5.2 리스너로 컴포넌트 재초기화
 ```java
-@Test
-void manual_seed_and_get() {
-    ApplicationContextRunner ctx = new ApplicationContextRunner()
-        .withPropertyValues("secrets.enabled=true")
-        .withConfiguration(UserConfigurations.of(SecretsManualConfig.class));
+@Component
+@RequiredArgsConstructor
+public class JwtKeyRefreshListener implements SecretKeyRefreshListener {
+    private final JwtSigner signer;
 
-    ctx.run(c -> {
-        SecretsKeyClient client = c.getBean(SecretsKeyClient.class);
-        CryptoKeySpec spec = new CryptoKeySpec();
-        spec.setAlgorithm("AES"); spec.setKeySize(256); spec.setValue(base64Key(32));
-        client.setKey("aes.main", spec);
-        assertThat(client.getKey("aes.main")).isNotNull();
-    });
+    @Override
+    public void onSecretKeyRefreshed() {
+        // 예: 서명기 내부 캐시 재빌드 등
+        // signer.rebuild();
+    }
 }
 ```
 
-### 6.2 AWS 자동 모드(스텁/통합)
-- 통합: LocalStack(Secrets Manager) + `SecretsAutoConfig` 로 실제 로드 검증
-- 단위: `SecretsLoader#refreshSecrets()` 호출 시 JSON 파싱/검증/등록/리스너 호출 여부 확인
+---
+
+## 6) 에러/예외와 대처 (운영에서 꼭 유의)
+
+- `IllegalStateException`: `getKey()` 시 **키 미로드**
+    - CORE: `setKey()` 누락 → 부팅 로직에서 필수 키를 선 주입
+    - AWS: 권한/네트워크/`secret-name` 오류 → 프로퍼티/권한 점검, 운영은 `fail-fast=true` 권장
+- `IllegalArgumentException`: **키 길이 불일치**
+    - `decoded.length != keySize/8` → 예: AES-256은 32바이트 Base64 필요
+- 리스너 콜백 예외: 개별 로깅 후 나머지 리스너는 계속 호출 (전체 실패로 전파하지 않음)
 
 ---
 
-## 7) 보안 권장사항
-- **Base64 표준 인코딩** 필수(`CryptoKeySpec.value`)
-- 길이 준수: AES-128=16B, AES-256/HMAC=32B (`keySize/8`)
-- 키 원문/베이스64 **로그 출력 금지**
-- 운영은 **IAM 최소권한**(`secretsmanager:GetSecretValue`) + `fail-fast=true` 권장
-- 롤링 시 기존 키는 자동 백업 → 문제 시 **백업 승격**으로 즉시 롤백
+## 7) 보안 체크리스트 (Best Practice)
+
+- **Base64 표준 인코딩** 필수 (`CryptoKeySpec.value`)
+- **키 길이 준수:** AES-128=16B, AES-256/HMAC=32B
+- **키/시크릿 값 로깅 금지** (알고리즘/비트수 같은 메타만 로깅)
+- 운영은 **IAM 최소권한**(`secretsmanager:GetSecretValue`) + `fail-fast=true`
+- **핫스왑+백업 보존**: 새 키 투입 시 이전 키 자동 백업 → 문제 시 **백업 승격**으로 즉시 롤백
 
 ---
 
-## 8) 에러/예외 메시지
-- `IllegalStateException`: `getKey()` 시 키 미로드(수동: `setKey()` 누락, 자동: 권한/네트워크/secretName 오류)
-- `IllegalArgumentException`: 길이 불일치(`decoded.length != keySize/8`)
-- 리스너 콜백 실패: 개별 로그 후 나머지 리스너는 계속 호출
+## 8) 설정 레퍼런스 (요약)
 
----
-
-## 9) 설정 레퍼런스
-
-### 9.1 CORE(수동) 모드
+CORE(수동):
 ```properties
 secrets.enabled=true
 ```
 
-### 9.2 AWS 자동 모드
+AWS 자동:
 ```properties
 secrets.enabled=true
 aws.secrets-manager.enabled=true
@@ -199,66 +219,35 @@ aws.secrets-manager.fail-fast=true
 
 ---
 
-## 10) 설계 원칙
-- 기본은 **OFF**
-- 조건 만족 시에만 **조건부 빈 등록**
-- **핫스왑 + 백업 보존**으로 무중단 키 교체
-- 라이브러리 클래스에 `@Component` 금지(구성/수명주기 통제)
-
----
-
-## 11) 클래스 다이어그램 (개념)
+## 9) 클래스 다이어그램 (개념)
 
 ```
-SecretsAutoConfig  ─┬─> SecretsManagerProperties
-                    ├─> SecretsKeyResolver
-                    ├─> SecretsManagerClient
-                    ├─> SecretsLoader
-                    └─> SecretsKeyClient
-
-SecretsManualConfig ─┬─> SecretsKeyResolver
-                     └─> SecretsKeyClient
+SecretsInfraConfig
+ ├─> SecretsKeyResolver
+ ├─> SecretsKeyClient
+ └─ AwsLoaderConfig (조건 충족 시)
+      ├─> SecretsManagerProperties
+      ├─> SecretsManagerClient
+      └─> SecretsLoader
 ```
 
 ---
 
-## 12) FAQ
-**Q1. 수동/자동을 동시에 켤 수 있나요?**  
-A. 가능하지만 운영에선 자동 모드 권장. 자동이 로드한 키를 필요 시 코드에서 `setKey()`로 오버라이드할 수도 있습니다.
+## 10) FAQ (사용법 위주)
 
-**Q2. JSON 일부만 제공(부분 시딩)해도 되나요?**  
-A. 가능합니다. 미지정 키는 사용 전까지 `getKey()`에서 예외가 발생하므로, 실제 사용 키는 반드시 시딩되어야 합니다.
+Q1. 수동/자동을 동시에 켤 수 있나요?  
+A. 가능합니다. 자동이 로드한 키를 필요 시 코드에서 `setKey()`로 오버라이드할 수 있습니다.
 
-**Q3. 장애 시 롤백은 어떻게 하나요?**  
+Q2. JSON 일부만 제공(부분 시딩)해도 되나요?  
+A. 가능합니다. 미지정 키는 사용 전까지 `getKey()`에서 예외가 발생하므로, 실제 사용하는 키는 반드시 시딩되어야 합니다.
+
+Q3. 장애 시 롤백은 어떻게 하나요?  
 A. 이전 키가 자동 백업되므로 `secrets.setKey(name, specOfBackup)` 으로 **백업 승격**하면 됩니다.
 
 ---
 
-## 13) 샘플 코드 모음
+## 11) 마지막 한 줄 요약
 
-### 13.1 AES256 키 로테이션(수동)
-```java
-CryptoKeySpec spec = new CryptoKeySpec();
-spec.setAlgorithm("AES"); spec.setKeySize(256); spec.setValue(base64Key(32));
-secrets.setKey("aes.main", spec);
-```
-
-### 13.2 HMAC 키 조회
-```java
-byte[] key = secrets.getKey("hmac.auth");
-String sig = signHmacSha256Base64(key, "payload");
-```
-
-### 13.3 리스너로 서명기 재초기화
-```java
-@Component
-public class JwtKeyRefreshListener implements SecretKeyRefreshListener {
-  public void onSecretKeyRefreshed() { jwtSigner.rebuild(); }
-}
-```
-
----
-
-## 14) 마지막 한 줄 요약
-**SecretsKeyClient 하나로 수동/자동 모두 단순 사용** — 운영은 자동 로딩, 개발은 수동 시딩.  
+**`@Import(SecretsInfraConfig.class)` + 프로퍼티 두 줄**로 조립하고,  
+**`SecretsKeyClient` 하나로 수동/자동 모두 단순 사용.**  
 핫스왑·백업·리스너로 **무중단 키 교체**와 **안전한 롤백**을 지원합니다.

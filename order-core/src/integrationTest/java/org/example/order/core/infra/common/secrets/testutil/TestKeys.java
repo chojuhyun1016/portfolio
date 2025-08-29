@@ -11,6 +11,28 @@ public final class TestKeys {
     private TestKeys() {
     }
 
+    public static String std(int length) {
+        if (length < 0) {
+            throw new IllegalArgumentException("length must be >= 0");
+        }
+
+        byte[] key = new byte[length];
+        RNG.nextBytes(key);
+
+        return Base64.getEncoder().encodeToString(key);
+    }
+
+    public static String url(int length) {
+        if (length < 0) {
+            throw new IllegalArgumentException("length must be >= 0");
+        }
+
+        byte[] key = new byte[length];
+        RNG.nextBytes(key);
+
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(key);
+    }
+
     public static String std(String... parts) {
         if (parts == null || parts.length == 0) {
             return "";
@@ -21,16 +43,5 @@ public final class TestKeys {
         }
 
         return String.join(":", parts);
-    }
-
-    public static String std(int length) {
-        if (length < 0) {
-            throw new IllegalArgumentException("length must be >= 0");
-        }
-
-        byte[] key = new byte[length];
-        RNG.nextBytes(key);
-
-        return Base64.getEncoder().encodeToString(key);
     }
 }

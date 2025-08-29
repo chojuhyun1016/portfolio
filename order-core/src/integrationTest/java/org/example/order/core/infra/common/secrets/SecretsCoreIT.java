@@ -1,16 +1,13 @@
 package org.example.order.core.infra.common.secrets;
 
 import org.example.order.core.infra.common.secrets.client.SecretsKeyClient;
-import org.example.order.core.infra.common.secrets.config.SecretsManualConfig;
+import org.example.order.core.infra.common.secrets.config.SecretsInfraConfig;
 import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -18,8 +15,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
 
-@SpringBootTest(classes = SecretsManualIT.Boot.class)
-@Import(SecretsManualConfig.class)
+@org.springframework.boot.test.context.SpringBootTest(classes = SecretsCoreIT.Boot.class)
+@Import(SecretsInfraConfig.class)
 @ImportAutoConfiguration(exclude = {
         org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
         org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
@@ -27,7 +24,7 @@ import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
         org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SecretsManualIT {
+class SecretsCoreIT {
 
     @SpringBootConfiguration
     @EnableAutoConfiguration
@@ -37,6 +34,7 @@ class SecretsManualIT {
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
         r.add("secrets.enabled", () -> "true");
+        r.add("aws.secrets-manager.enabled", () -> "false");
     }
 
     @org.springframework.beans.factory.annotation.Autowired

@@ -1,9 +1,10 @@
 package org.example.order.core.infra.common.secrets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.order.core.infra.common.secrets.config.SecretsAutoConfig;
+import org.example.order.core.infra.common.secrets.config.SecretsInfraConfig;
 import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
 import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
+import org.example.order.core.infra.common.secrets.manager.SecretsLoader;
 import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -20,25 +21,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
 
-class SecretsAutoConfigTest {
+class SecretsInfraConfigTest {
 
     @Test
     void aws_auto_mode_loads_and_notifies_listener() throws Exception {
-
         Map<String, CryptoKeySpec> keys = new HashMap<>();
-
         CryptoKeySpec k1 = new CryptoKeySpec();
         k1.setAlgorithm("AES");
         k1.setKeySize(128);
         k1.setValue(std(16));
         keys.put("aes128", k1);
-
         CryptoKeySpec k2 = new CryptoKeySpec();
         k2.setAlgorithm("AES-GCM");
         k2.setKeySize(256);
         k2.setValue(std(32));
         keys.put("aesgcm", k2);
-
         CryptoKeySpec k3 = new CryptoKeySpec();
         k3.setAlgorithm("HMAC-SHA256");
         k3.setKeySize(256);
@@ -63,8 +60,11 @@ class SecretsAutoConfigTest {
                 )
                 .withBean(SecretsManagerClient.class, () -> mockClient)
                 .withBean(SecretKeyRefreshListener.class, () -> () -> notified.set(true))
-                .withConfiguration(UserConfigurations.of(SecretsAutoConfig.class))
+                .withConfiguration(UserConfigurations.of(SecretsInfraConfig.class))
                 .run(ctx -> {
+                    SecretsLoader loader = ctx.getBean(SecretsLoader.class);
+                    loader.refreshSecrets();
+
                     assertThat(ctx).hasSingleBean(SecretsKeyResolver.class);
                     SecretsKeyResolver resolver = ctx.getBean(SecretsKeyResolver.class);
 
@@ -73,6 +73,20 @@ class SecretsAutoConfigTest {
                     assertThat(resolver.getCurrentKey("hmac")).hasSize(32);
 
                     assertThat(notified.get()).isTrue();
+                });
+    }
+
+    @Test
+    void core_only_mode_registers_core_beans_without_aws_loader() {
+        new ApplicationContextRunner()
+                .withPropertyValues(
+                        "secrets.enabled=true",
+                        "aws.secrets-manager.enabled=false"
+                )
+                .withConfiguration(UserConfigurations.of(SecretsInfraConfig.class))
+                .run(ctx -> {
+                    assertThat(ctx).hasSingleBean(SecretsKeyResolver.class);
+                    assertThat(ctx).doesNotHaveBean(SecretsManagerClient.class);
                 });
     }
 }

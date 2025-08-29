@@ -67,6 +67,7 @@ public class SecretsLoader {
                                     keyName, expectedBytes, decoded.length)
                     );
                 }
+
                 secretsKeyResolver.updateKey(keyName, spec);
             });
 

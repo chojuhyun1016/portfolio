@@ -1,7 +1,8 @@
+// src/integrationTest/java/org/example/order/core/infra/common/secrets/SecretsInfraIT.java
 package org.example.order.core.infra.common.secrets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.order.core.infra.common.secrets.config.SecretsAutoConfig;
+import org.example.order.core.infra.common.secrets.config.SecretsInfraConfig;
 import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
 import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.common.secrets.manager.SecretsLoader;
@@ -10,12 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
-
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -32,8 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
 
-@SpringBootTest(classes = SecretsAutoIT.Boot.class)
-@Import({SecretsAutoConfig.class, SecretsAutoIT.MockBeans.class})
+@org.springframework.boot.test.context.SpringBootTest(classes = SecretsInfraIT.Boot.class)
+@Import({SecretsInfraConfig.class, SecretsInfraIT.MockBeans.class})
 @ImportAutoConfiguration(exclude = {
         org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
         org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
@@ -41,7 +39,7 @@ import static org.example.order.core.infra.common.secrets.testutil.TestKeys.std;
         org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SecretsAutoIT {
+class SecretsInfraIT {
 
     @SpringBootConfiguration
     @EnableAutoConfiguration
@@ -58,6 +56,7 @@ class SecretsAutoIT {
         r.add("aws.secrets-manager.region", () -> "ap-northeast-2");
         r.add("aws.secrets-manager.secret-name", () -> "myapp/secret-keyset");
         r.add("aws.secrets-manager.fail-fast", () -> "false");
+        r.add("spring.task.scheduling.enabled", () -> "false");
     }
 
     @BeforeEach
@@ -82,6 +81,7 @@ class SecretsAutoIT {
         k3.setKeySize(256);
         k3.setValue(std(32));
         keys.put("hmac", k3);
+
         return new ObjectMapper().writeValueAsString(keys);
     }
 
@@ -102,6 +102,7 @@ class SecretsAutoIT {
         k3.setKeySize(256);
         k3.setValue(std(32));
         keys.put("hmac", k3);
+
         return new ObjectMapper().writeValueAsString(keys);
     }
 
@@ -113,17 +114,23 @@ class SecretsAutoIT {
 
     @Test
     void postConstruct_load_and_refresh_again() throws Exception {
+        // 첫 번째 리프레시: 상대 증가 검증
+        int before = NOTIFY_COUNT.get();
         loader.refreshSecrets();
+        assertThat(NOTIFY_COUNT.get()).isEqualTo(before + 1);
 
+        // 키 로드 확인
         assertThat(resolver.getCurrentKey("aes128")).hasSize(16);
         assertThat(resolver.getCurrentKey("aesgcm")).hasSize(32);
         assertThat(resolver.getCurrentKey("hmac")).hasSize(32);
-        assertThat(NOTIFY_COUNT.get()).isEqualTo(1);
 
+        // 두 번째 리프레시: mock 변경 → 백업 생성 확인
         Mockito.when(MOCK.getSecretValue(Mockito.any(GetSecretValueRequest.class)))
                 .thenReturn(GetSecretValueResponse.builder().secretString(jsonV2()).build());
 
+        int before2 = NOTIFY_COUNT.get();
         loader.refreshSecrets();
+        assertThat(NOTIFY_COUNT.get()).isEqualTo(before2 + 1);
 
         assertThat(resolver.getCurrentKey("aes128")).hasSize(16);
         assertThat(resolver.getBackupKey("aes128")).isNotNull().hasSize(16);
@@ -133,8 +140,6 @@ class SecretsAutoIT {
 
         assertThat(resolver.getCurrentKey("hmac")).hasSize(32);
         assertThat(resolver.getBackupKey("hmac")).isNotNull().hasSize(32);
-
-        assertThat(NOTIFY_COUNT.get()).isEqualTo(2);
     }
 
     static class MockBeans {
@@ -143,6 +148,7 @@ class SecretsAutoIT {
         SecretsManagerClient secretsManagerClientMock() throws Exception {
             Mockito.when(MOCK.getSecretValue(Mockito.any(GetSecretValueRequest.class)))
                     .thenReturn(GetSecretValueResponse.builder().secretString(jsonV1()).build());
+
             return MOCK;
         }
 
