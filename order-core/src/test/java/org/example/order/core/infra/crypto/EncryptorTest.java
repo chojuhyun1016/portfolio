@@ -1,7 +1,6 @@
 package org.example.order.core.infra.crypto;
 
-import org.example.order.core.infra.crypto.config.CryptoAutoConfig;
-import org.example.order.core.infra.crypto.config.CryptoManualConfig;
+import org.example.order.core.infra.crypto.config.CryptoInfraConfig;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.factory.EncryptorFactory;
@@ -33,7 +32,7 @@ class EncryptorTest {
                         "encrypt.aesgcm.key=" + b64UrlKey(32),
                         "encrypt.hmac.key=" + b64UrlKey(32)
                 )
-                .withConfiguration(UserConfigurations.of(CryptoManualConfig.class, CryptoAutoConfig.class));
+                .withConfiguration(UserConfigurations.of(CryptoInfraConfig.class));
     }
 
     @Test

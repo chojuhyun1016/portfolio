@@ -1,11 +1,11 @@
-package org.example.order.core.infra.crypto.factory;
+package org.example.order.core.infra.crypto;
 
-import org.example.order.core.infra.crypto.config.CryptoAutoConfig;
-import org.example.order.core.infra.crypto.config.CryptoManualConfig;
+import org.example.order.core.infra.crypto.config.CryptoInfraConfig;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.contract.Hasher;
 import org.example.order.core.infra.crypto.contract.Signer;
+import org.example.order.core.infra.crypto.factory.EncryptorFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.annotation.UserConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -29,18 +29,17 @@ class EncryptorFactoryTest {
     void when_disabled_then_no_beans() {
         new ApplicationContextRunner()
                 .withPropertyValues("crypto.enabled=false")
-                .withConfiguration(UserConfigurations.of(CryptoManualConfig.class, CryptoAutoConfig.class))
+                .withConfiguration(UserConfigurations.of(CryptoInfraConfig.class))
                 .run(ctx -> assertThat(ctx).doesNotHaveBean(EncryptorFactory.class));
     }
 
     @Test
     void when_enabled_without_seed_then_factory_and_algorithms_exist_but_no_usage() {
         new ApplicationContextRunner()
-                .withPropertyValues("crypto.enabled=true")
-                .withConfiguration(UserConfigurations.of(CryptoManualConfig.class, CryptoAutoConfig.class))
+                .withPropertyValues("crypto.enabled=true", "crypto.props.seed=false")
+                .withConfiguration(UserConfigurations.of(CryptoInfraConfig.class))
                 .run(ctx -> {
                     assertThat(ctx).hasSingleBean(EncryptorFactory.class);
-
                     EncryptorFactory f = ctx.getBean(EncryptorFactory.class);
 
                     assertThat(f.getEncryptor(CryptoAlgorithmType.AES128)).isNotNull();
@@ -69,7 +68,7 @@ class EncryptorFactoryTest {
                         "encrypt.aesgcm.key=" + kgcm,
                         "encrypt.hmac.key=" + khmac
                 )
-                .withConfiguration(UserConfigurations.of(CryptoManualConfig.class, CryptoAutoConfig.class))
+                .withConfiguration(UserConfigurations.of(CryptoInfraConfig.class))
                 .run(ctx -> {
                     EncryptorFactory f = ctx.getBean(EncryptorFactory.class);
 

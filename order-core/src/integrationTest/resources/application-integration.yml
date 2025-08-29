@@ -1,36 +1,60 @@
 spring:
   main:
     web-application-type: none
-
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
+    url: jdbc:h2:mem:integration;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.H2Dialect
+
+# 기본은 모두 OFF (통합 테스트도 개별 테스트에서 필요한 설정을 명시적으로 켭니다)
+secrets:
+  enabled: false
+
+aws:
+  secrets-manager:
+    enabled: false
+
+dynamodb:
+  enabled: false
 
 lock:
-  enabled: true
+  enabled: false
   named:
     enabled: false
-    wait-time: 3000
-    retry-interval: 150
   redisson:
     enabled: false
-    wait-time: 3000
-    lease-time: 10000
-    retry-interval: 150
+
+crypto:
+  enabled: false
+  # props:
+  #   seed: true
+  # encrypt:
+  #   aes128:
+  #     key: "BASE64_URL_SAFE_16B"
+  #   aes256:
+  #     key: "BASE64_URL_SAFE_32B"
+  #   aesgcm:
+  #     key: "BASE64_URL_SAFE_32B"
+  #   hmac:
+  #     key: "BASE64_URL_SAFE_32B"
+  # ↑ 통합 테스트에서 YML로 시딩을 하고 싶다면 주석 해제 후 사용.
+  #   다만 현재 제공한 통합 테스트(CryptoIT)는 DynamicPropertySource로 키를 주입하므로
+  #   기본은 OFF가 안전합니다(중복 주입/오염 방지).
 
 logging:
   level:
-    org.springframework: WARN
+    org.springframework.data.redis: DEBUG
 
 tsid:
-  enabled: true          # ✅ 켜면 TsidFactory 생성 + 홀더 등록
-  node-bits: 10          # (옵션) 기본 10
-  zone-id: Asia/Seoul    # (옵션) 미설정 시 시스템 기본/ENV_TZ
-  prefer-ec2-meta: true  # (옵션) EC2 IMDSv2 우선 사용
+  enabled: true
+  node-bits: 10
+  zone-id: Asia/Seoul
+  prefer-ec2-meta: true

@@ -6,7 +6,6 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
-
   jpa:
     hibernate:
       ddl-auto: none
@@ -15,6 +14,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
 
+# 기본은 모두 OFF (각 테스트에서 DynamicPropertySource / withPropertyValues 로 켭니다)
 secrets:
   enabled: false
 
@@ -40,7 +40,7 @@ logging:
     org.springframework.data.redis: DEBUG
 
 tsid:
-  enabled: true          # ✅ 켜면 TsidFactory 생성 + 홀더 등록
+  enabled: true          # 켜면 TsidFactory 생성 + 홀더 등록
   node-bits: 10          # (옵션) 기본 10
   zone-id: Asia/Seoul    # (옵션) 미설정 시 시스템 기본/ENV_TZ
   prefer-ec2-meta: true  # (옵션) EC2 IMDSv2 우선 사용

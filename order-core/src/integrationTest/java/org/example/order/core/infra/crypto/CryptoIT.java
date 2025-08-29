@@ -1,7 +1,7 @@
 package org.example.order.core.infra.crypto;
 
-import org.example.order.core.infra.crypto.config.CryptoAutoConfig;
-import org.example.order.core.infra.crypto.config.CryptoManualConfig;
+import jakarta.annotation.Resource;
+import org.example.order.core.infra.crypto.config.CryptoInfraConfig;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Encryptor;
 import org.example.order.core.infra.crypto.contract.Hasher;
@@ -9,11 +9,9 @@ import org.example.order.core.infra.crypto.contract.Signer;
 import org.example.order.core.infra.crypto.factory.EncryptorFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -24,10 +22,8 @@ import java.util.Base64;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.annotation.Resource;
-
 @SpringBootTest(classes = CryptoIT.Boot.class)
-@Import({CryptoManualConfig.class, CryptoAutoConfig.class})
+@Import(CryptoInfraConfig.class) // 단일 구성만 사용
 @ImportAutoConfiguration(exclude = {
         org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
         org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
@@ -42,10 +38,9 @@ class CryptoIT {
     static class Boot {
     }
 
-    private static String b64Key(int bytes) {
+    private static String b64UrlKey(int bytes) {
         byte[] buf = new byte[bytes];
         new SecureRandom().nextBytes(buf);
-
         return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
     }
 
@@ -53,10 +48,10 @@ class CryptoIT {
     static void props(DynamicPropertyRegistry r) {
         r.add("crypto.enabled", () -> "true");
         r.add("crypto.props.seed", () -> "true");
-        r.add("encrypt.aes128.key", () -> b64Key(16));
-        r.add("encrypt.aes256.key", () -> b64Key(32));
-        r.add("encrypt.aesgcm.key", () -> b64Key(32));
-        r.add("encrypt.hmac.key", () -> b64Key(32));
+        r.add("encrypt.aes128.key", () -> b64UrlKey(16));
+        r.add("encrypt.aes256.key", () -> b64UrlKey(32));
+        r.add("encrypt.aesgcm.key", () -> b64UrlKey(32));
+        r.add("encrypt.hmac.key", () -> b64UrlKey(32));
     }
 
     @Resource

@@ -1,9 +1,9 @@
 package org.example.order.core.infra.crypto;
 
-import org.example.order.core.infra.crypto.config.CryptoAutoConfig;
-import org.example.order.core.infra.crypto.config.CryptoManualConfig;
+import org.example.order.core.infra.crypto.config.CryptoInfraConfig;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Signer;
+import org.example.order.core.infra.crypto.factory.EncryptorFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.annotation.UserConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -24,7 +24,7 @@ class SignerTest {
 
     @Test
     void hmac_sha256_sign_and_verify() {
-        String khmac = b64UrlKey(32); // ✅ URL-Safe Base64
+        String khmac = b64UrlKey(32); // URL-safe Base64
 
         new ApplicationContextRunner()
                 .withPropertyValues(
@@ -32,9 +32,9 @@ class SignerTest {
                         "crypto.props.seed=true",
                         "encrypt.hmac.key=" + khmac
                 )
-                .withConfiguration(UserConfigurations.of(CryptoManualConfig.class, CryptoAutoConfig.class))
+                .withConfiguration(UserConfigurations.of(CryptoInfraConfig.class))
                 .run(ctx -> {
-                    var factory = ctx.getBean(org.example.order.core.infra.crypto.factory.EncryptorFactory.class);
+                    EncryptorFactory factory = ctx.getBean(EncryptorFactory.class);
                     Signer signer = factory.getSigner(CryptoAlgorithmType.HMAC_SHA256);
 
                     String msg = "sign-me";

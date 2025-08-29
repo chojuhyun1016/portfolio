@@ -1,7 +1,6 @@
 package org.example.order.core.infra.crypto;
 
-import org.example.order.core.infra.crypto.config.CryptoAutoConfig;
-import org.example.order.core.infra.crypto.config.CryptoManualConfig;
+import org.example.order.core.infra.crypto.config.CryptoInfraConfig;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
 import org.example.order.core.infra.crypto.contract.Hasher;
 import org.example.order.core.infra.crypto.factory.EncryptorFactory;
@@ -15,8 +14,8 @@ class HasherTest {
 
     private ApplicationContextRunner runnerEnabled() {
         return new ApplicationContextRunner()
-                .withPropertyValues("crypto.enabled=true")
-                .withConfiguration(UserConfigurations.of(CryptoManualConfig.class, CryptoAutoConfig.class));
+                .withPropertyValues("crypto.enabled=true", "crypto.props.seed=false")
+                .withConfiguration(UserConfigurations.of(CryptoInfraConfig.class));
     }
 
     @Test
