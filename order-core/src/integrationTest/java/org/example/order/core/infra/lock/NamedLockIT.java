@@ -1,11 +1,13 @@
 package org.example.order.core.infra.lock;
 
 import org.example.order.core.IntegrationBootApp;
+import org.example.order.core.infra.lock.config.LockInfraConfig; // ★ 단일 구성 사용
 import org.example.order.core.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -17,6 +19,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * NamedLockIT
+ * <p>
+ * 기존 주석/구조 유지.
+ * - MySQL GET_LOCK/RELEASE_LOCK 직검증
+ * - application-integration.yml 은 기본 OFF (named/redisson 모두 false)
+ * - 명시적으로 named=ON, redisson=OFF 를 켭니다.
+ * - Redisson Spring Starter 자동구성/Redis 자동구성은 명시적으로 제외(충돌/불필요 생성 방지)
+ */
 @SpringBootTest(
         classes = IntegrationBootApp.class,
         properties = {
@@ -32,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
         org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
         org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
 })
+@Import(LockInfraConfig.class) // ★ 새 구성 조립
 class NamedLockIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -46,7 +58,9 @@ class NamedLockIT extends AbstractIntegrationTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        if (conn != null) conn.close();
+        if (conn != null) {
+            conn.close();
+        }
     }
 
     @Test

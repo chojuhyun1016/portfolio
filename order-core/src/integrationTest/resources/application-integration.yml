@@ -1,20 +1,10 @@
 spring:
   main:
     web-application-type: none
-  datasource:
-    url: jdbc:h2:mem:integration;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+  # 통합 테스트에선 DataSource, Redis endpoint 를 Testcontainers 로 주입하므로
+  # datasource/jpa 기본값은 AbstractIntegrationTest 가 동적으로 설정합니다.
 
-# 기본은 모두 OFF (통합 테스트도 개별 테스트에서 필요한 설정을 명시적으로 켭니다)
+# 기본은 모두 OFF(필수 스위치는 IT 클래스에서 properties 또는 DynamicPropertySource 로 ON)
 secrets:
   enabled: false
 
@@ -25,29 +15,23 @@ aws:
 dynamodb:
   enabled: false
 
+# - named.enabled: false (개별 테스트에서 ON)
+# - redisson.enabled: false (개별 테스트에서 ON)
 lock:
-  enabled: false
+  enabled: true
   named:
     enabled: false
+    wait-time: 3000
+    retry-interval: 150
   redisson:
     enabled: false
+    database: 0
+    wait-time: 3000
+    lease-time: 10000
+    retry-interval: 150
 
 crypto:
   enabled: false
-  # props:
-  #   seed: true
-  # encrypt:
-  #   aes128:
-  #     key: "BASE64_URL_SAFE_16B"
-  #   aes256:
-  #     key: "BASE64_URL_SAFE_32B"
-  #   aesgcm:
-  #     key: "BASE64_URL_SAFE_32B"
-  #   hmac:
-  #     key: "BASE64_URL_SAFE_32B"
-  # ↑ 통합 테스트에서 YML로 시딩을 하고 싶다면 주석 해제 후 사용.
-  #   다만 현재 제공한 통합 테스트(CryptoIT)는 DynamicPropertySource로 키를 주입하므로
-  #   기본은 OFF가 안전합니다(중복 주입/오염 방지).
 
 logging:
   level:

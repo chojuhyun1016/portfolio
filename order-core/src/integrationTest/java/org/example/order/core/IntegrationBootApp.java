@@ -10,6 +10,11 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
 
+/**
+ * 통합 테스트용 부트스트랩
+ * - 기존 주석/구성 유지
+ * - 락/AOP 스캔만 유지
+ */
 @SpringBootConfiguration
 @EnableAutoConfiguration(
         exclude = {

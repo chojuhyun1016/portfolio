@@ -1,4 +1,3 @@
-// src/integrationTest/java/org/example/order/core/infra/common/secrets/SecretsInfraIT.java
 package org.example.order.core.infra.common.secrets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,6 +55,7 @@ class SecretsInfraIT {
         r.add("aws.secrets-manager.region", () -> "ap-northeast-2");
         r.add("aws.secrets-manager.secret-name", () -> "myapp/secret-keyset");
         r.add("aws.secrets-manager.fail-fast", () -> "false");
+        // @Scheduled 인프라를 전역으로 켜지 않기 위해 비활성. (로더는 TaskScheduler로 동작)
         r.add("spring.task.scheduling.enabled", () -> "false");
     }
 
@@ -114,9 +114,9 @@ class SecretsInfraIT {
 
     @Test
     void postConstruct_load_and_refresh_again() throws Exception {
-        // 첫 번째 리프레시: 상대 증가 검증
+        // 첫 번째 로드: ApplicationReady 이벤트 핸들러 직접 호출로 초기 로드 수행
         int before = NOTIFY_COUNT.get();
-        loader.refreshSecrets();
+        loader.onApplicationReady(); // ← 변경: refreshSecrets() 대신 준비 완료 이벤트 메서드 호출
         assertThat(NOTIFY_COUNT.get()).isEqualTo(before + 1);
 
         // 키 로드 확인
@@ -124,14 +124,15 @@ class SecretsInfraIT {
         assertThat(resolver.getCurrentKey("aesgcm")).hasSize(32);
         assertThat(resolver.getCurrentKey("hmac")).hasSize(32);
 
-        // 두 번째 리프레시: mock 변경 → 백업 생성 확인
+        // 두 번째 로드: mock 응답 변경 후 다시 ApplicationReady 호출로 1회 재로딩 유도
         Mockito.when(MOCK.getSecretValue(Mockito.any(GetSecretValueRequest.class)))
                 .thenReturn(GetSecretValueResponse.builder().secretString(jsonV2()).build());
 
         int before2 = NOTIFY_COUNT.get();
-        loader.refreshSecrets();
+        loader.onApplicationReady(); // ← 변경: 두 번째 로드도 동일하게 호출
         assertThat(NOTIFY_COUNT.get()).isEqualTo(before2 + 1);
 
+        // 백업 키 생성 확인
         assertThat(resolver.getCurrentKey("aes128")).hasSize(16);
         assertThat(resolver.getBackupKey("aes128")).isNotNull().hasSize(16);
 

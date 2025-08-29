@@ -63,7 +63,9 @@ class SecretsInfraConfigTest {
                 .withConfiguration(UserConfigurations.of(SecretsInfraConfig.class))
                 .run(ctx -> {
                     SecretsLoader loader = ctx.getBean(SecretsLoader.class);
-                    loader.refreshSecrets();
+
+                    // 준비 완료 이벤트 메서드 호출로 초기 1회 로드 트리거
+                    loader.onApplicationReady();
 
                     assertThat(ctx).hasSingleBean(SecretsKeyResolver.class);
                     SecretsKeyResolver resolver = ctx.getBean(SecretsKeyResolver.class);

@@ -16,6 +16,11 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
+/**
+ * 유닛 테스트 전용 슬라이스 Config
+ * - 실제 NamedLock/RedissonLockExecutor 대신 InMemory MockExecutor 를 주입할 수 있음
+ * - 트랜잭션 오퍼레이터는 단순 실행으로 대체
+ */
 @Configuration
 @ConditionalOnProperty(name = "lock.enabled", havingValue = "true")
 public class LockCoreTestSlice {
@@ -47,6 +52,7 @@ public class LockCoreTestSlice {
 
     @Bean
     public TransactionalOperator transactionalOperator() {
+        // 실제 트랜잭션 대신 단순 실행
         return new TransactionalOperator() {
             @Override
             public Object runWithExistingTransaction(LockCallback<Object> callback) throws Throwable {
@@ -61,9 +67,11 @@ public class LockCoreTestSlice {
     }
 
     @Bean
-    public DistributedLockAspect distributedLockAspect(LockKeyGeneratorFactory keyGeneratorFactory,
-                                                       LockExecutorFactory lockExecutorFactory,
-                                                       TransactionalOperator transactionalOperator) {
+    public DistributedLockAspect distributedLockAspect(
+            LockKeyGeneratorFactory keyGeneratorFactory,
+            LockExecutorFactory lockExecutorFactory,
+            TransactionalOperator transactionalOperator
+    ) {
         return new DistributedLockAspect(keyGeneratorFactory, lockExecutorFactory, transactionalOperator);
     }
 }
