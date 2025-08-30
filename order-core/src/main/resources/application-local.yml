@@ -41,42 +41,63 @@ spring:
 
   redis:
     enabled: true
-    # uri
-    uri: redis://:secret123@redis-auto.example.com:6380/1
-    client-name: order-service
-    #     host/port
-    #     host: redis-primary.example.com
-    #     port: 6379
-    password: secret123
-    database: 0
-    client-name: order-service
+    # 1) URI 우선 (TLS는 rediss://)
+    # uri: rediss://my-redis.example.com:6380
+    # 2) 없으면 host/port
+    host: 127.0.0.1
+    port: 6379
+    # password: your-pass
+    # database: 0
+
+    # (선택) clientName 설정/추론
+    # client-name: my-app-redis
+    # enable-default-client-name: true
+    # default-client-name: order-core
+
+    # 직렬화 신뢰 패키지
     trusted-package: org.example.order
-    command-timeout-seconds: 5
-    shutdown-timeout-seconds: 5
+
+    # 타임아웃/풀 설정
+    command-timeout-seconds: 3
+    shutdown-timeout-seconds: 3
+    pool-max-active: 64
+    pool-max-idle: 32
+    pool-min-idle: 8
+    pool-max-wait: 2000
+
+jpa:
+  enabled: false
+
+dynamodb:
+  enabled: true
+  endpoint: http://localhost:4566
+  region: ap-northeast-2      # endpoint만 줄 때 region 미지정이면 내부 기본값(us-east-1) 사용
+  access-key: local
+  secret-key: local
+  table-name: order_dynamo
 
 aws:
-  dynamodb:
-    endpoint: https://dynamodb.ap-northeast-2.amazonaws.com
-    region: ap-northeast-2
-    accessKey: test
-    secretKey: test
-
   secrets-manager:
+    enabled: true                   # Secret Manager 사용 여부
     region: ap-northeast-2          # AWS 리전 (예: 서울 리전)
-    secret-name: myapp/secret-key    # 저장한 Secret 이름
-    refresh-interval-millis: 300000  # 키 갱신 주기 (5분 = 300,000ms)
+    secret-name: myapp/secret-key   # Secret 이름 (클래스 필드명과 일치)
+    scheduler-enabled: true         # Scheduler 사용 여부
+    refresh-interval-millis: 300000 # Secret 갱신 주기 (5분 = 300,000ms)
+    fail-fast: true                 # Secret 조회 실패 시 앱 기동 중단 여부
 
 lock:
   redisson:
-    address: redis://localhost:6379
-    password: # 선택
+    enabled: true
+    address: redis://127.0.0.1:6379
     database: 0
-    wait-time: 3000
-    lease-time: 10000
+    wait-time: 3000       # ms
+    lease-time: 10000     # ms
+    retry-interval: 150   # ms
 
   named:
-    wait-time: 5000       # milliseconds
-    retry-interval: 100   # 재시도 간격 (ex: 100ms)
+    enabled: true
+    wait-time: 3000       # ms
+    retry-interval: 150   # ms
 
 crypto:
   enabled: true

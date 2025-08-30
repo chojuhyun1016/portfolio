@@ -6,12 +6,12 @@ import lombok.RequiredArgsConstructor;
 import org.example.order.domain.order.entity.QOrderEntity;
 import org.example.order.domain.order.model.OrderView;
 import org.example.order.domain.order.repository.OrderQueryRepository;
-import org.springframework.stereotype.Repository;
 
 /**
  * OrderQueryRepository 구현체 (JPA QueryDSL)
+ * <p>
+ * - JpaInfraConfig 에서 jpa.enabled=true & JPAQueryFactory 존재 시 등록
  */
-@Repository
 @RequiredArgsConstructor
 public class OrderQueryRepositoryJpaImpl implements OrderQueryRepository {
 

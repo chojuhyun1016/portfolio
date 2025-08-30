@@ -1,7 +1,7 @@
 package org.example.order.core.infra.common.idgen.tsid;
 
 import com.github.f4b6a3.tsid.TsidFactory;
-import org.example.order.core.infra.common.idgen.tsid.config.TsidModuleConfig;
+import org.example.order.core.infra.common.idgen.tsid.config.TsidInfraConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +77,7 @@ class TsidFactorySpringBootTest {
     @EnableAutoConfiguration(excludeName = {
             "org.redisson.spring.starter.RedissonAutoConfigurationV2"
     })
-    @Import({TsidModuleConfig.class, TsidIdService.class})
+    @Import({TsidInfraConfig.class, TsidIdService.class})
     static class Boot {
     }
 

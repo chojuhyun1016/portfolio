@@ -4,15 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.example.order.core.infra.jpa.repository.order.jpa.adapter.SpringDataOrderJpaRepository;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.repository.OrderRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 /**
  * OrderRepository 구현체 (JPA)
+ * <p>
+ * - JpaInfraConfig 에서 jpa.enabled=true & SpringDataOrderJpaRepository 존재 시 등록
  */
-@Repository
 @RequiredArgsConstructor
 public class OrderRepositoryJpaImpl implements OrderRepository {
 
@@ -24,12 +24,12 @@ public class OrderRepositoryJpaImpl implements OrderRepository {
     }
 
     @Override
-    public void save(OrderEntity entity) {
-        jpaRepository.save(entity);
+    public void deleteByOrderIdIn(List<Long> orderIds) {
+        jpaRepository.deleteByOrderIdIn(orderIds);
     }
 
     @Override
-    public void deleteByOrderIdIn(List<Long> orderIds) {
-        jpaRepository.deleteByOrderIdIn(orderIds);
+    public void save(OrderEntity entity) {
+        jpaRepository.save(entity);
     }
 }

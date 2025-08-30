@@ -17,6 +17,13 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import java.net.URI;
 import java.time.Duration;
 
+/**
+ * LocalStack 기반 DynamoDB 지원 유틸 (통합테스트 전용)
+ * <p>
+ * - LocalStackContainer 로 DynamoDB 인스턴스 실행
+ * - AWS SDK Client 빌더를 LocalStack endpoint + static credentials 로 구성
+ * - @DynamicPropertySource 로 Spring 환경에 region/endpoint 주입
+ */
 @Testcontainers
 @TestInstance(Lifecycle.PER_CLASS)
 public class LocalStackDynamoSupport {

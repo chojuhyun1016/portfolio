@@ -2,7 +2,7 @@ package org.example.order.core.infra.common.idgen.tsid;
 
 import com.github.f4b6a3.tsid.Tsid;
 import com.github.f4b6a3.tsid.TsidFactory;
-import org.example.order.core.infra.common.idgen.tsid.config.TsidModuleConfig;
+import org.example.order.core.infra.common.idgen.tsid.config.TsidInfraConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 순수 팩토리 동작 검증
  * - 기존 new TsidConfig().tsidFactory() 직접 생성 → 스프링 빈 주입 방식으로 변경
  */
-@SpringBootTest(classes = TsidModuleConfig.class)
+@SpringBootTest(classes = TsidInfraConfig.class)
 @TestPropertySource(properties = {
         "tsid.enabled=true"
 })

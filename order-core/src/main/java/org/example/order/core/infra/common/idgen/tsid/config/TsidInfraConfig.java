@@ -11,5 +11,5 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @Import({TsidConfig.class})
-public class TsidModuleConfig {
+public class TsidInfraConfig {
 }

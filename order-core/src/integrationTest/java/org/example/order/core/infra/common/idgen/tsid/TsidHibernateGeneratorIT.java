@@ -2,7 +2,7 @@ package org.example.order.core.infra.common.idgen.tsid;
 
 import jakarta.persistence.*;
 import org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid;
-import org.example.order.core.infra.common.idgen.tsid.config.TsidModuleConfig;
+import org.example.order.core.infra.common.idgen.tsid.config.TsidInfraConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ class TsidHibernateGeneratorIT {
             basePackageClasses = TsidHibernateGeneratorIT.OrderRepository.class,
             considerNestedRepositories = true
     )
-    @Import(TsidModuleConfig.class)
+    @Import(TsidInfraConfig.class)
     static class JpaBoot {
     }
 

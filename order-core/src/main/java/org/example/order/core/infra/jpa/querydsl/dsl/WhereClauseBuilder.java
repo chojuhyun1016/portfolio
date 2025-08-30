@@ -56,7 +56,7 @@ public class WhereClauseBuilder implements Predicate {
 
     @Override
     public Class<? extends Boolean> getType() {
-        return this.getType();
+        return Boolean.class;
     }
 
     private <V> WhereClauseBuilder applyIfNotNull(final V value, final Function<Predicate, WhereClauseBuilder> func, final LazyBooleanExpression lazyBooleanExpression) {

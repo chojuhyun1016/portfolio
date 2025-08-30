@@ -10,11 +10,17 @@ import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-
 import org.example.order.core.infra.dynamo.entity.OrderDynamoEntity;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+/**
+ * DynamoDB Repository 통합테스트 (LocalStack 사용)
+ * <p>
+ * - LocalStackDynamoSupport 에서 Client/Endpoint 준비
+ * - DynamoDbEnhancedClient 로 Table 바인딩
+ * - describeTable / createTable 로 준비 확인
+ */
 public class DynamoRepositoryIT extends LocalStackDynamoSupport {
 
     private static final String TABLE = "order_it";
@@ -31,13 +37,11 @@ public class DynamoRepositoryIT extends LocalStackDynamoSupport {
                 .build();
 
         this.table = enhanced.table(TABLE, TableSchema.fromBean(OrderDynamoEntity.class));
-
         ensureTable();
     }
 
     private void ensureTable() {
         boolean exists = true;
-
         try {
             dynamo.describeTable(DescribeTableRequest.builder().tableName(TABLE).build());
         } catch (ResourceNotFoundException e) {

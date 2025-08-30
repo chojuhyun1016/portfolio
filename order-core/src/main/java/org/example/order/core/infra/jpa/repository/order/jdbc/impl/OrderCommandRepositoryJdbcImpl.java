@@ -6,7 +6,6 @@ import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderUpdate;
 import org.example.order.domain.order.repository.OrderCommandRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Types;
@@ -15,8 +14,9 @@ import java.util.List;
 
 /**
  * OrderCommandRepository 구현체 (JDBC)
+ * <p>
+ * - JpaInfraConfig 에서 jpa.enabled=true 일 때에만 조건부 등록
  */
-@Repository
 @RequiredArgsConstructor
 public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
 
@@ -45,6 +45,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
             if (entity.getId() == null) {
                 entity.setId(tsidFactory.create().toLong());
             }
+
             batchArgs.add(new Object[]{
                     entity.getId(),
                     entity.getUserId(),
