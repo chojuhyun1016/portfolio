@@ -1,35 +1,21 @@
-// ============================================================================
-// order-core/build.gradle  (옵션 B 최소형, Gradle 8 호환, Jakarta 고정)
-// ----------------------------------------------------------------------------
-// - TestBootApp 은 src/test/java 그대로 유지
-// - integrationTest 는 test 산출물(class/resources)만 classpath 에 포함
-// - 모든 의존성은 libs.versions.toml 별칭만 사용
-// - Querydsl JPA는 jakarta classifier로 강제
-// - 리소스 중복(application-*.yml 등) 발생 시 EXCLUDE 처리
-// ============================================================================
-
-import org.gradle.api.file.DuplicatesStrategy
-
+// ===== 플러그인 =====
 plugins {
     id 'java'
     id 'idea'
-    // ✅ (요청사항 반영) testFixtures 플러그인 사용하지 않음 — 공유 유틸은 각 소스셋에 “각자” 선언
 }
 
+// ===== 그룹/버전 =====
 group = 'org.example'
 version = '1.0.0'
 
+// ===== 자바 설정 =====
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(17) }
     sourceCompatibility = '17'
     targetCompatibility = '17'
 }
 
-// repositories 는 루트의 설정을 사용 (여기서 중복 선언하지 않음)
-
-// ------------------------------
-// 소스셋
-// ------------------------------
+// ===== 소스셋 =====
 sourceSets {
     test {
         java.srcDir 'src/test/java'
@@ -40,35 +26,24 @@ sourceSets {
         java.srcDir 'src/integrationTest/java'
         resources.srcDir 'src/integrationTest/resources'
 
-        // ✅ TestBootApp 등 "test 산출물(class)"을 통합테스트에서 **제외**
-        //    → multiple @SpringBootConfiguration 충돌을 원천 차단한다.
-        //    (이전 버전에서는 sourceSets.test.output 을 포함했기 때문에 충돌이 났음)
         compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
         runtimeClasspath += output + compileClasspath
-
-        // ✅ (요청사항 반영) testFixtures 를 쓰지 않으므로 별도 output 추가 없음.
-        //    공용 유틸이 필요하면 integrationTest 소스셋 내에 “같은 패키지”로 별도 정의한다.
     }
 }
 
-// ------------------------------
-// IntelliJ 보조
-// ------------------------------
+// ===== IntelliJ IDEA 보조 설정 =====
 idea {
     module {
-        testSourceDirs   += file('src/integrationTest/java')
+        testSourceDirs += file('src/integrationTest/java')
         testResourceDirs += file('src/integrationTest/resources')
-        // ✅ testFixtures 경로는 사용하지 않으므로 추가하지 않음
     }
 }
 
-// ------------------------------
-// 의존성 (전부 버전 카탈로그 사용)
-// ------------------------------
+// ===== 의존성(버전 카탈로그) =====
 dependencies {
     // ==== 프로젝트 모듈 ====
     implementation(project(':order-common'))
-    implementation(project(':order-domain')) // ✅ 도메인(엔티티/모델/리포지토리 인터페이스)
+    implementation(project(':order-domain'))
 
     // ==== main ====
     implementation(libs.springBootStarter)
@@ -76,9 +51,6 @@ dependencies {
     implementation(libs.springBootStarterJdbc)
     implementation(libs.springBootStarterSecurity)
     implementation(libs.springBootStarterDataJpa)
-
-    // ✅ 필요 시 RedisTemplate 등 사용 (운영 코드에서 사용 중이면 유지)
-    // implementation(libs.springBootStarterDataRedis)
 
     // Gateway(GlobalFilter 등) — 컴파일만 필요
     compileOnly(libs.springCloudGateway)
@@ -94,7 +66,7 @@ dependencies {
     // Redis 수동/자동 구성에서 사용하는 타입들
     implementation(libs.lettuce)
     implementation(libs.commonsPool2)
-    implementation(libs.redisson) // ⬅️ 운영용 Redisson 코어 의존성(= org.redisson:redisson)
+    implementation(libs.redisson)
 
     // Argon2 해싱
     implementation(libs.argon2)
@@ -126,11 +98,8 @@ dependencies {
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.h2)
     testImplementation(libs.springBootStarterJdbc)
-    testImplementation(libs.embeddedRedis)   // 테스트 전용(필요 시)
-    testImplementation(libs.springBootStarterDataRedis) // ✅ Redis 타입 사용을 위한 테스트 스코프
-
-    // ✅ [핵심 추가] 테스트에서 Redisson API 심볼(org.redisson.api.*) 필요하므로
-    //    코어 라이브러리를 테스트 스코프에도 명시 (starter는 아래 exclude로 차단)
+    testImplementation(libs.embeddedRedis)
+    testImplementation(libs.springBootStarterDataRedis)
     testImplementation(libs.redisson)
 
     // ==== integrationTest (통합 테스트 전용) ====
@@ -141,11 +110,11 @@ dependencies {
     integrationTestImplementation(libs.testcontainersMysql)
     integrationTestImplementation(libs.testcontainersJdbc)
 
-    // ✅ MySQL 드라이버: 런타임 클래스패스 보장 (CNF 방지)
+    // MySQL 드라이버: 런타임 클래스패스 보장 (CNF 방지)
     integrationTestImplementation(libs.mysqlDriver)
     integrationTestRuntimeOnly(libs.mysqlDriver)
 
-    // ✅ LocalStack (DynamoDB)
+    // LocalStack (DynamoDB)
     integrationTestImplementation(libs.testcontainersLocalstack)
 
     // LocalStack + DynamoDB SDK v2
@@ -153,40 +122,26 @@ dependencies {
     integrationTestImplementation(libs.awsDynamodb)
     integrationTestImplementation(libs.awsRegions)
 
-    // ✅ Lombok 을 integrationTest에도 명시적으로 연결 (컴파일 + 어노테이션 프로세서)
+    // Lombok 을 integrationTest에도 명시적으로 연결 (컴파일 + 어노테이션 프로세서)
     integrationTestCompileOnly(libs.lombok)
     integrationTestAnnotationProcessor(libs.lombok)
 }
 
-// ------------------------------
-// 구성 상속 (configuration 자체는 classpath에 직접 올리지 않음)
-// ------------------------------
+// ===== 구성 상속/제외(Configurations) =====
 configurations {
-    // ✅ 안전하게 보강
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 
-    // ✅ (핵심) **유닛 테스트(test)에서만** redisson-spring-boot-starter 자동구성을 제외
-    //    → 테스트 시 RedissonAutoConfigurationV2 로 인한 실제 Redis 접속/컨텍스트 실패 방지
     testCompileClasspath {
         exclude group: 'org.redisson', module: 'redisson-spring-boot-starter'
     }
     testRuntimeClasspath {
         exclude group: 'org.redisson', module: 'redisson-spring-boot-starter'
     }
-
-    // ❗ integrationTest 에서는 “절대” 제외하지 않음 (요구사항)
-    // integrationTestCompileClasspath { /* No exclude */ }
-    // integrationTestRuntimeClasspath { /* No exclude */ }
-
-    // ✅ (요청사항 반영) testFixtures 확장 없음
 }
 
-// ------------------------------
-// 리소스 중복 처리 (테스트/통합테스트 리소스 빌드 시)
-// ------------------------------
+// ===== 리소스 처리(중복 제외) =====
 tasks.withType(ProcessResources).configureEach {
-    // 동일 파일명(application-test.yml 등) 중복시 첫 번째만 사용
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 tasks.named('processTestResources') {
@@ -196,9 +151,7 @@ tasks.matching { it.name == 'processIntegrationTestResources' }.configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-// ------------------------------
-// Test 태스크 공통
-// ------------------------------
+// ===== 테스트 태스크 공통 =====
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     testLogging {
@@ -210,15 +163,12 @@ tasks.withType(Test).configureEach {
 }
 
 test {
-    // 기본 빌드는 유닛 테스트만
     systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-unit")
     systemProperty "junit.jupiter.execution.parallel.enabled", "true"
     systemProperty "junit.jupiter.execution.parallel.mode.default", "concurrent"
 }
 
-// ============================================================================
-// integrationTest 태스크 (루트에 이미 있으면 보강, 없으면 등록)
-// ============================================================================
+// ===== integrationTest 태스크(존재 시 보강/없으면 등록) =====
 if (tasks.findByName('integrationTest') != null) {
     tasks.named('integrationTest', Test) {
         description = 'Runs integration tests (Testcontainers: MySQL/LocalStack DynamoDB).'
@@ -230,7 +180,6 @@ if (tasks.findByName('integrationTest') != null) {
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
 
-        // ✅ 더 이상 testClasses 선행이 필요없다(통합테스트가 test 산출물을 보지 않음)
         shouldRunAfter tasks.named('test')
 
         testLogging {
@@ -258,5 +207,7 @@ if (tasks.findByName('integrationTest') != null) {
     }
 }
 
+// ===== 빌드 파이프라인 마무리 =====
 check.dependsOn test
-// 통합 테스트는 필요 시에만: ./gradlew integrationTest
+// 테스트: ./gradlew clean build test
+// 통합 테스트: ./gradlew clean build integrationTest

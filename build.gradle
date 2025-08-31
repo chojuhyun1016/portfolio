@@ -8,9 +8,9 @@ group = "org.example"
 version = "1.0.0"
 
 subprojects {
+    // ===== 공통 플러그인 설정 =====
     apply plugin: "java-library"
     apply plugin: libs.plugins.springDepMgmt.get().pluginId
-    // ✅ (요청사항 반영) java-test-fixtures 미사용
 
     java {
         toolchain { languageVersion = JavaLanguageVersion.of(libs.versions.java.get().toInteger()) }
@@ -18,23 +18,23 @@ subprojects {
         withJavadocJar()
     }
 
+    // ===== 컴파일/문서화 설정 =====
     tasks.withType(JavaCompile).configureEach {
         options.encoding = "UTF-8"
         options.release = libs.versions.java.get().toInteger()
     }
 
-    // Javadoc 빌드 완화
     tasks.withType(Javadoc).configureEach {
         options.encoding = "UTF-8"
         options.addStringOption("Xdoclint:none", "-quiet")
         failOnError = false
     }
 
-    // 리소스 중복 방지 (test/integrationTest 모두 포함)
     tasks.withType(ProcessResources).configureEach {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
+    // ===== 테스트 설정 =====
     tasks.withType(Test).configureEach {
         useJUnitPlatform()
         testLogging {
@@ -43,24 +43,21 @@ subprojects {
         }
     }
 
+    // ===== 공통 의존성 =====
     dependencies {
-        // 공통 유틸
         implementation(libs.guava)
 
-        // Lombok (main/test 공통)
         compileOnly(libs.lombok)
         annotationProcessor(libs.lombok)
         testCompileOnly(libs.lombok)
         testAnnotationProcessor(libs.lombok)
 
-        // 공통 테스트
         testImplementation(libs.springBootStarterTest)
         testImplementation(platform(libs.testcontainersBom))
     }
 
-    // ===== BOM =====
+    // ===== BOM 설정 =====
     dependencyManagement {
-        // ✅ 버전 관리는 "루트에서 가져온 BOM" + "libs.versions.toml 별칭" 중심으로 통일
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:${libs.versions.springCloud.get()}"
@@ -68,28 +65,26 @@ subprojects {
         }
     }
 
-    // ===== 통합 테스트 소스셋/태스크 (공통) =====
+    // ===== 통합 테스트 소스셋 설정 =====
     sourceSets {
         integrationTest {
             java.srcDir file("src/integrationTest/java")
             resources.srcDir file("src/integrationTest/resources")
 
-            // ✅ [중요] test 산출물(TestBootApp 등)을 **제외**하여 @SpringBootConfiguration 충돌 방지
             compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
             runtimeClasspath += output + compileClasspath
         }
     }
 
     configurations {
-        // test 구성을 integrationTest에 상속
         integrationTestImplementation.extendsFrom testImplementation
         integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 
-        // Lombok 확장 (없으면 @Slf4j 인식 실패)
         integrationTestCompileOnly.extendsFrom testCompileOnly
         integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
     }
 
+    // ===== 통합 테스트 태스크 등록 =====
     tasks.register("integrationTest", Test) {
         description = "Runs integration tests."
         group = "verification"
@@ -97,7 +92,7 @@ subprojects {
         classpath = sourceSets.integrationTest.runtimeClasspath
         useJUnitPlatform()
         shouldRunAfter tasks.named("test")
-        // ✅ 통합 테스트 기본 프로파일
+
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         testLogging {
             events "PASSED", "FAILED", "SKIPPED"

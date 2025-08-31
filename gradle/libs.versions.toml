@@ -1,7 +1,7 @@
 # ======================================================================
 # gradle/libs.versions.toml
-#  - 버전/의존성 카탈로그 (프로젝트 전역)
-#  - ✅ springKafka, springKafkaTest, springBootStarterWebflux 별칭 포함
+#  - 프로젝트 전역 버전/의존성 카탈로그
+#  - 핵심: Java, Spring Boot/Cloud/AWS, DB Driver, Redis, Kafka, Querydsl, Testcontainers
 # ======================================================================
 
 [versions]
@@ -11,27 +11,20 @@ springDepMgmt = "1.1.4"
 springCloud = "2023.0.1"
 springAws = "3.1.1"
 querydsl = "5.0.0"
-
 guava = "32.1.2-jre"
 tsid = "5.2.6"
 jacksonJsr310 = "2.17.2"
 mysqlDriver = "8.3.0"
 awsMysqlJdbc = "1.1.14"
 lombok = "1.18.32"
-
-# Testcontainers BOM은 그대로 두되,
-# ✅ LocalStack 모듈만 별도 버전 별칭으로 '명시 고정'한다.
 testcontainersBom = "1.19.7"
 testcontainers = "1.19.7"
-
 embeddedRedis = "1.4.3"
 mariaDB4j = "2.5.3"
 mariadbDriver = "3.3.3"
 dynamodbLocal = "1.21.0"
 sqlite4javaCore = "1.0.392"
 h2 = "2.2.224"
-
-# ✅ Spring Cloud Gateway 개별 버전 (BOM 미사용 시에도 확정)
 springCloudGateway = "4.1.0"
 
 [plugins]
@@ -46,7 +39,7 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 # Spring Boot / Spring
 springBootStarter = { module = "org.springframework.boot:spring-boot-starter" }
 springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web" }
-springBootStarterWebflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }   # ✅ 추가 (web 모듈용)
+springBootStarterWebflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 springBootStarterAop = { module = "org.springframework.boot:spring-boot-starter-aop" }
 springBootStarterJdbc = { module = "org.springframework.boot:spring-boot-starter-jdbc" }
 springBootStarterDataJpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
@@ -55,31 +48,27 @@ springBootStarterSecurity = { module = "org.springframework.boot:spring-boot-sta
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test" }
 springBootConfigProcessor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 springBootAutoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
-
-# ✅ Spring Data Redis (RedisTemplate 자동 구성)
 springBootStarterDataRedis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 
-# Spring for Apache Kafka
-springKafka = { module = "org.springframework.kafka:spring-kafka" }                               # ✅ kafka 런타임
-springKafkaTest = { module = "org.springframework.kafka:spring-kafka-test" }                      # ✅ kafka 테스트 (★ 신규 추가)
+# Kafka
+springKafka = { module = "org.springframework.kafka:spring-kafka" }
+springKafkaTest = { module = "org.springframework.kafka:spring-kafka-test" }
 
 # Spring Cloud Gateway
 springCloudGateway = { module = "org.springframework.cloud:spring-cloud-starter-gateway", version.ref = "springCloudGateway" }
 
-# DB / Drivers
+# DB Drivers
 mysqlDriver = { module = "com.mysql:mysql-connector-j", version.ref = "mysqlDriver" }
 mariadbDriver = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadbDriver" }
 awsMysqlJdbc = { module = "software.aws.rds:aws-mysql-jdbc", version.ref = "awsMysqlJdbc" }
 
-# AWS SDK v2
+# AWS SDK v2/v1
 awsBomV2 = { module = "software.amazon.awssdk:bom", version = "2.25.10" }
 awsSecretsManager = { module = "software.amazon.awssdk:secretsmanager" }
 awsAuth = { module = "software.amazon.awssdk:auth" }
 awsRegions = { module = "software.amazon.awssdk:regions" }
 awsDynamodb = { module = "software.amazon.awssdk:dynamodb" }
 awsDynamodbEnhanced = { module = "software.amazon.awssdk:dynamodb-enhanced" }
-
-# ✅ AWS SDK v1 (S3) — s3 모듈에서 사용
 awsS3v1 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.530" }
 
 # Querydsl
@@ -112,7 +101,6 @@ testcontainers = { module = "org.testcontainers:testcontainers" }
 testcontainersJunit = { module = "org.testcontainers:junit-jupiter" }
 testcontainersJdbc = { module = "org.testcontainers:jdbc" }
 testcontainersMysql = { module = "org.testcontainers:mysql" }
-# ✅ LocalStack만 '명시 버전'을 사용해서 컴파일 타임에 반드시 들어오도록 한다.
 testcontainersLocalstack = { module = "org.testcontainers:localstack", version.ref = "testcontainers" }
 testcontainersBom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainersBom" }
 mockitoBom = { module = "org.mockito:mockito-bom", version = "5.12.0" }
