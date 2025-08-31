@@ -21,17 +21,15 @@ sourceSets {
         java.srcDir 'src/test/java'
         resources.srcDir 'src/test/resources'
     }
-
     integrationTest {
         java.srcDir 'src/integrationTest/java'
         resources.srcDir 'src/integrationTest/resources'
-
         compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
         runtimeClasspath += output + compileClasspath
     }
 }
 
-// ===== IntelliJ IDEA 보조 설정 =====
+// ===== IntelliJ IDEA =====
 idea {
     module {
         testSourceDirs += file('src/integrationTest/java')
@@ -39,9 +37,9 @@ idea {
     }
 }
 
-// ===== 의존성(버전 카탈로그 우선) =====
+// ===== 의존성 =====
 dependencies {
-    // ==== 프로젝트 모듈 ====
+    // 프로젝트 모듈
     implementation(project(':order-common'))
     implementation(project(':order-core'))
     implementation(project(':order-domain'))
@@ -49,39 +47,39 @@ dependencies {
     implementation(project(':order-client:kafka'))
     implementation(project(':order-client:s3'))
 
-    // ==== main ====
+    // main
     implementation(libs.springKafka)
     implementation(libs.springBootStarterWeb)
     implementation(libs.springBootStarterDataJpa)
     implementation(libs.querydslCore)
     implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
     implementation(libs.springBootStarterValidation)
-    implementation(libs.springBootStarter)            // actuator와 함께 공통 부팅 의존성
-    implementation('org.springframework.boot:spring-boot-starter-actuator')
+    implementation(libs.springBootStarter)
+    implementation(libs.springBootStarterActuator)
 
-    // 로깅/직렬화(카탈로그 미등재 → 직접 선언)
-    implementation('ch.qos.logback.contrib:logback-json-classic:0.1.5')
-    implementation('ch.qos.logback.contrib:logback-jackson:0.1.5')
+    // 로깅/직렬화
+    implementation(libs.logbackJsonClassic)
+    implementation(libs.logbackJackson)
     implementation(libs.jacksonJsr310)
-    implementation('com.fasterxml.jackson.core:jackson-databind:2.15.2')
-    implementation('net.logstash.logback:logstash-logback-encoder:7.4')
+    implementation(libs.jacksonDatabind)
+    implementation(libs.logstashLogbackEncoder)
 
     // AWS
-    implementation('software.amazon.msk:aws-msk-iam-auth:2.0.2') // MSK IAM Auth (직접 선언)
-    implementation(libs.awsS3v1)                                  // S3 v1 (카탈로그)
-    runtimeOnly(libs.awsMysqlJdbc)                                 // RDS MySQL JDBC Wrapper
+    implementation(libs.awsMskIamAuth)
+    implementation(libs.awsS3v1)
+    runtimeOnly(libs.awsMysqlJdbc)
 
-    // Lombok / Configuration Processor
+    // Lombok / Config Processor
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.springBootConfigProcessor)
 
-    // ==== test (unit) ====
+    // test (unit)
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.springKafkaTest)
     testRuntimeOnly(libs.h2)
 
-    // ==== integrationTest (통합 테스트 전용) ====
+    // integrationTest
     integrationTestImplementation(platform(libs.testcontainersBom))
     integrationTestImplementation(libs.testcontainers)
     integrationTestImplementation(libs.testcontainersJunit)
@@ -89,18 +87,17 @@ dependencies {
     integrationTestImplementation(libs.testcontainersJdbc)
     integrationTestRuntimeOnly(libs.mysqlDriver)
 
-    // Lombok 을 integrationTest에도 명시적으로 연결
     integrationTestCompileOnly(libs.lombok)
     integrationTestAnnotationProcessor(libs.lombok)
 }
 
-// ===== 구성 상속/제외(Configurations) =====
+// ===== 구성 =====
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
-// ===== 리소스 처리(중복 제외) =====
+// ===== 리소스 =====
 tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
@@ -111,7 +108,7 @@ tasks.matching { it.name == 'processIntegrationTestResources' }.configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-// ===== 테스트 태스크 공통 =====
+// ===== 테스트 =====
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     testLogging {
@@ -121,14 +118,13 @@ tasks.withType(Test).configureEach {
         showStackTraces true
     }
 }
-
 test {
     systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-unit")
     systemProperty "junit.jupiter.execution.parallel.enabled", "true"
     systemProperty "junit.jupiter.execution.parallel.mode.default", "concurrent"
 }
 
-// ===== integrationTest 태스크(존재 시 보강/없으면 등록) =====
+// ===== integrationTest 태스크 =====
 if (tasks.findByName('integrationTest') != null) {
     tasks.named('integrationTest', Test) {
         description = 'Runs integration tests (Testcontainers: MySQL).'
@@ -136,12 +132,9 @@ if (tasks.findByName('integrationTest') != null) {
         testClassesDirs = sourceSets.integrationTest.output.classesDirs
         classpath = sourceSets.integrationTest.runtimeClasspath
         useJUnitPlatform()
-
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
-
         shouldRunAfter tasks.named('test')
-
         testLogging {
             events "PASSED", "FAILED", "SKIPPED"
             exceptionFormat "FULL"
@@ -154,12 +147,9 @@ if (tasks.findByName('integrationTest') != null) {
         testClassesDirs = sourceSets.integrationTest.output.classesDirs
         classpath = sourceSets.integrationTest.runtimeClasspath
         useJUnitPlatform()
-
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
-
         shouldRunAfter tasks.named('test')
-
         testLogging {
             events "PASSED", "FAILED", "SKIPPED"
             exceptionFormat "FULL"
@@ -167,7 +157,5 @@ if (tasks.findByName('integrationTest') != null) {
     }
 }
 
-// ===== 빌드 파이프라인 마무리 =====
+// ===== 파이프라인 =====
 check.dependsOn test
-// 테스트: ./gradlew clean build test
-// 통합 테스트: ./gradlew clean build integrationTest

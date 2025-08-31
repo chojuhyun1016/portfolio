@@ -1,10 +1,10 @@
 package org.example.order.worker.service.common;
 
 import org.example.order.common.core.messaging.message.DlqMessage;
-import org.example.order.core.messaging.order.message.OrderApiMessage;
-import org.example.order.core.messaging.order.message.OrderCrudMessage;
-import org.example.order.core.messaging.order.message.OrderLocalMessage;
-import org.example.order.core.messaging.order.message.OrderCloseMessage;
+import org.example.order.core.infra.messaging.order.message.OrderApiMessage;
+import org.example.order.core.infra.messaging.order.message.OrderCloseMessage;
+import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
+import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
 
 import java.util.List;
 

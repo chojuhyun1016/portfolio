@@ -209,5 +209,3 @@ if (tasks.findByName('integrationTest') != null) {
 
 // ===== 빌드 파이프라인 마무리 =====
 check.dependsOn test
-// 테스트: ./gradlew clean build test
-// 통합 테스트: ./gradlew clean build integrationTest

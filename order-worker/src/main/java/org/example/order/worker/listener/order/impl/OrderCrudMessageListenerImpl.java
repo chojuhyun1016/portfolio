@@ -24,6 +24,7 @@ public class OrderCrudMessageListenerImpl implements OrderCrudMessageListener {
 
         try {
             records.stream().map(ConsumerRecord::value).forEach(value -> log.info("{}", value));
+
             facade.executeOrderCrud(records);
         } catch (Exception e) {
             log.error("error : order-crud", e);

@@ -30,7 +30,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "org.example.order.core.domain"
 })
 @EnableJpaRepositories(basePackages = {
-        "org.example.order.core.infra.jpa.repository"
+        "org.example.order.core.infra.persistence.order.jpa.adapter"
 })
 @Import({
         // ====== TSID ======
@@ -55,5 +55,4 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         RedisInfraConfig.class
 })
 public class OrderCoreConfig {
-    // Import 허브. 빈 정의 없음.
 }

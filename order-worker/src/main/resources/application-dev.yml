@@ -1,10 +1,12 @@
+# ===== Server =====
 server:
   shutdown: graceful
 
+# ===== Spring =====
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
     import:
       - application-core-dev.yml
       - application-kafka-dev.yml
@@ -15,20 +17,47 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s
 
+# ===== Feature Toggles (use only: jpa, kafka, s3, web-client) =====
+jpa:
+  enabled: true
+
+kafka:
+  enabled: true
+  bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+  consumer:
+    group-id: ${KAFKA_GROUP_ID:order-worker}
+    auto-offset-reset: ${KAFKA_AUTO_OFFSET_RESET:latest}
+
+s3:
+  enabled: true
+
+web-client:
+  enabled: true
+  url:
+    order: ${ORDER_API_URL:http://localhost:8080/orders}
+
+# ===== Unused Modules (explicit OFF) =====
+dynamodb:
+  enabled: false
+
+redis:
+  enabled: false
+
+lock:
+  enabled: false
+
+# ===== AWS =====
 aws:
   credential:
     enabled: false
-    accessKey: ${AWS_ACCESS_KEY}
-    secretKey: ${AWS_SECRET_KEY}
-  region: ${AWS_REGION}
+    accessKey: ${AWS_ACCESS_KEY:}
+    secretKey: ${AWS_SECRET_KEY:}
+  region: ${AWS_REGION:ap-northeast-2}
   s3:
-    bucket: ${BUCKET}
-    default-folder: ${DEFAULT_FOLDER}
+    bucket: ${BUCKET:}
+    default-folder: ${DEFAULT_FOLDER:}
 
-web-client:
-  url:
-    order: "http://localhost:8080/orders"
-
+# ===== Logging =====
 logging:
   file:
     path: /app/logs

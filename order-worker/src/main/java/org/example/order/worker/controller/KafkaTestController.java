@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.common.helper.datetime.DateTimeUtils;
-import org.example.order.core.messaging.order.code.MessageCategory;
+import org.example.order.core.infra.messaging.order.code.MessageCategory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +31,9 @@ public class KafkaTestController {
         HashMap<String, Object> message = new HashMap<>();
         message.put("id", 1L);
         message.put("publishedTimestamp", DateTimeUtils.localDateTimeToLong(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS)));
+
         cluster.sendMessage(message, kafkaTopicProperties.getName(MessageCategory.ORDER_LOCAL));
+
         return "ok";
     }
 }

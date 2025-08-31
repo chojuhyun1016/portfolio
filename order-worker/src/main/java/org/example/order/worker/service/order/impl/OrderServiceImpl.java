@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.core.messaging.code.MessageMethodType;
 import org.example.order.core.application.order.dto.internal.OrderDto;
-import org.example.order.core.messaging.order.message.OrderCrudMessage;
+import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
 import org.example.order.worker.service.order.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;

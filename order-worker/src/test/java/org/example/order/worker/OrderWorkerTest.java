@@ -11,5 +11,4 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest(classes = {OrderCoreConfig.class})
 @ActiveProfiles("local")
 public class OrderWorkerTest {
-
 }
