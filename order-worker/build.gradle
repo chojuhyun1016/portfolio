@@ -1,25 +1,173 @@
-dependencies {
-    implementation project(':order-common')
-    implementation project(':order-core')
-    implementation project(':order-domain')
-    implementation project(':order-client:web')
-    implementation project(':order-client:kafka')
-    implementation project(':order-client:s3')
-
-    implementation 'org.springframework.kafka:spring-kafka'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'com.querydsl:querydsl-core'
-    implementation "com.querydsl:querydsl-jpa:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
-    implementation 'ch.qos.logback.contrib:logback-jackson:0.1.5'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-    implementation 'software.amazon.msk:aws-msk-iam-auth:2.0.2'
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.530'
-    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
-    runtimeOnly "software.aws.rds:aws-mysql-jdbc:$awsMysqlJdbcVer"
-
-    testRuntimeOnly 'com.h2database:h2'
+// ===== 플러그인 =====
+plugins {
+    id 'java'
+    id 'idea'
 }
+
+// ===== 그룹/버전 =====
+group = 'org.example'
+version = '1.0.0'
+
+// ===== 자바 설정 =====
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+}
+
+// ===== 소스셋 =====
+sourceSets {
+    test {
+        java.srcDir 'src/test/java'
+        resources.srcDir 'src/test/resources'
+    }
+
+    integrationTest {
+        java.srcDir 'src/integrationTest/java'
+        resources.srcDir 'src/integrationTest/resources'
+
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+// ===== IntelliJ IDEA 보조 설정 =====
+idea {
+    module {
+        testSourceDirs += file('src/integrationTest/java')
+        testResourceDirs += file('src/integrationTest/resources')
+    }
+}
+
+// ===== 의존성(버전 카탈로그 우선) =====
+dependencies {
+    // ==== 프로젝트 모듈 ====
+    implementation(project(':order-common'))
+    implementation(project(':order-core'))
+    implementation(project(':order-domain'))
+    implementation(project(':order-client:web'))
+    implementation(project(':order-client:kafka'))
+    implementation(project(':order-client:s3'))
+
+    // ==== main ====
+    implementation(libs.springKafka)
+    implementation(libs.springBootStarterWeb)
+    implementation(libs.springBootStarterDataJpa)
+    implementation(libs.querydslCore)
+    implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
+    implementation(libs.springBootStarterValidation)
+    implementation(libs.springBootStarter)            // actuator와 함께 공통 부팅 의존성
+    implementation('org.springframework.boot:spring-boot-starter-actuator')
+
+    // 로깅/직렬화(카탈로그 미등재 → 직접 선언)
+    implementation('ch.qos.logback.contrib:logback-json-classic:0.1.5')
+    implementation('ch.qos.logback.contrib:logback-jackson:0.1.5')
+    implementation(libs.jacksonJsr310)
+    implementation('com.fasterxml.jackson.core:jackson-databind:2.15.2')
+    implementation('net.logstash.logback:logstash-logback-encoder:7.4')
+
+    // AWS
+    implementation('software.amazon.msk:aws-msk-iam-auth:2.0.2') // MSK IAM Auth (직접 선언)
+    implementation(libs.awsS3v1)                                  // S3 v1 (카탈로그)
+    runtimeOnly(libs.awsMysqlJdbc)                                 // RDS MySQL JDBC Wrapper
+
+    // Lombok / Configuration Processor
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    annotationProcessor(libs.springBootConfigProcessor)
+
+    // ==== test (unit) ====
+    testImplementation(libs.springBootStarterTest)
+    testImplementation(libs.springKafkaTest)
+    testRuntimeOnly(libs.h2)
+
+    // ==== integrationTest (통합 테스트 전용) ====
+    integrationTestImplementation(platform(libs.testcontainersBom))
+    integrationTestImplementation(libs.testcontainers)
+    integrationTestImplementation(libs.testcontainersJunit)
+    integrationTestImplementation(libs.testcontainersMysql)
+    integrationTestImplementation(libs.testcontainersJdbc)
+    integrationTestRuntimeOnly(libs.mysqlDriver)
+
+    // Lombok 을 integrationTest에도 명시적으로 연결
+    integrationTestCompileOnly(libs.lombok)
+    integrationTestAnnotationProcessor(libs.lombok)
+}
+
+// ===== 구성 상속/제외(Configurations) =====
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+// ===== 리소스 처리(중복 제외) =====
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.named('processTestResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.matching { it.name == 'processIntegrationTestResources' }.configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// ===== 테스트 태스크 공통 =====
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    testLogging {
+        events "FAILED", "SKIPPED"
+        exceptionFormat "FULL"
+        showExceptions true
+        showStackTraces true
+    }
+}
+
+test {
+    systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-unit")
+    systemProperty "junit.jupiter.execution.parallel.enabled", "true"
+    systemProperty "junit.jupiter.execution.parallel.mode.default", "concurrent"
+}
+
+// ===== integrationTest 태스크(존재 시 보강/없으면 등록) =====
+if (tasks.findByName('integrationTest') != null) {
+    tasks.named('integrationTest', Test) {
+        description = 'Runs integration tests (Testcontainers: MySQL).'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        useJUnitPlatform()
+
+        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
+        systemProperty "junit.jupiter.execution.parallel.enabled", "false"
+
+        shouldRunAfter tasks.named('test')
+
+        testLogging {
+            events "PASSED", "FAILED", "SKIPPED"
+            exceptionFormat "FULL"
+        }
+    }
+} else {
+    tasks.register('integrationTest', Test) {
+        description = 'Runs integration tests (Testcontainers: MySQL).'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        useJUnitPlatform()
+
+        systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
+        systemProperty "junit.jupiter.execution.parallel.enabled", "false"
+
+        shouldRunAfter tasks.named('test')
+
+        testLogging {
+            events "PASSED", "FAILED", "SKIPPED"
+            exceptionFormat "FULL"
+        }
+    }
+}
+
+// ===== 빌드 파이프라인 마무리 =====
+check.dependsOn test
+// 테스트: ./gradlew clean build test
+// 통합 테스트: ./gradlew clean build integrationTest

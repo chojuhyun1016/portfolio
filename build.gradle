@@ -1,3 +1,9 @@
+// ======================================================================
+// 루트: build.gradle
+//  - 전 모듈 공통 플러그인/컴파일/테스트/BOM/통합테스트 소스셋/태스크
+//  - Jackson/Actuator/로깅/KAfka 등은 각 모듈에서 버전 카탈로그로 사용
+// ======================================================================
+
 plugins {
     alias(libs.plugins.springBoot) apply false
     alias(libs.plugins.springDepMgmt) apply false
@@ -8,17 +14,18 @@ group = "org.example"
 version = "1.0.0"
 
 subprojects {
-    // ===== 공통 플러그인 설정 =====
+    // ===== 공통 플러그인 =====
     apply plugin: "java-library"
     apply plugin: libs.plugins.springDepMgmt.get().pluginId
 
+    // ===== 자바/아티팩트 =====
     java {
         toolchain { languageVersion = JavaLanguageVersion.of(libs.versions.java.get().toInteger()) }
         withSourcesJar()
         withJavadocJar()
     }
 
-    // ===== 컴파일/문서화 설정 =====
+    // ===== 컴파일/Javadoc =====
     tasks.withType(JavaCompile).configureEach {
         options.encoding = "UTF-8"
         options.release = libs.versions.java.get().toInteger()
@@ -34,7 +41,7 @@ subprojects {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
-    // ===== 테스트 설정 =====
+    // ===== 테스트 =====
     tasks.withType(Test).configureEach {
         useJUnitPlatform()
         testLogging {
@@ -43,7 +50,7 @@ subprojects {
         }
     }
 
-    // ===== 공통 의존성 =====
+    // ===== 공통 의존성(테스트 보일러플레이트) =====
     dependencies {
         implementation(libs.guava)
 
@@ -56,26 +63,31 @@ subprojects {
         testImplementation(platform(libs.testcontainersBom))
     }
 
-    // ===== BOM 설정 =====
+    // ===== BOM 정렬 =====
     dependencyManagement {
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}"
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:${libs.versions.springCloud.get()}"
             mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${libs.versions.springAws.get()}"
         }
+        // (선택) Jackson 계열 강제 정렬이 필요한 경우 사용
+        // dependencies {
+        //     dependency "com.fasterxml.jackson.core:jackson-databind:${libs.versions.jackson.get()}"
+        //     dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${libs.versions.jackson.get()}"
+        // }
     }
 
-    // ===== 통합 테스트 소스셋 설정 =====
+    // ===== 통합테스트 소스셋 =====
     sourceSets {
         integrationTest {
             java.srcDir file("src/integrationTest/java")
             resources.srcDir file("src/integrationTest/resources")
-
             compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
             runtimeClasspath += output + compileClasspath
         }
     }
 
+    // ===== 통합테스트 구성 상속 =====
     configurations {
         integrationTestImplementation.extendsFrom testImplementation
         integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
@@ -84,7 +96,7 @@ subprojects {
         integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
     }
 
-    // ===== 통합 테스트 태스크 등록 =====
+    // ===== 통합테스트 태스크 =====
     tasks.register("integrationTest", Test) {
         description = "Runs integration tests."
         group = "verification"
