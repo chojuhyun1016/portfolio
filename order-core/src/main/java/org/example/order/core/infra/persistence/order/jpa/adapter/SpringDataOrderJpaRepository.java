@@ -1,4 +1,4 @@
-package org.example.order.core.infra.jpa.repository.order.jpa.adapter;
+package org.example.order.core.infra.persistence.order.jpa.adapter;
 
 import org.example.order.domain.order.entity.OrderEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -2,9 +2,9 @@ package org.example.order.core.infra.jpa;
 
 import com.github.f4b6a3.tsid.TsidFactory;
 import org.example.order.core.infra.jpa.config.JpaInfraConfig;
-import org.example.order.core.infra.jpa.repository.order.jdbc.impl.OrderCommandRepositoryJdbcImpl;
-import org.example.order.core.infra.jpa.repository.order.jpa.adapter.SpringDataOrderJpaRepository;
-import org.example.order.core.infra.jpa.repository.order.jpa.impl.OrderQueryRepositoryJpaImpl;
+import org.example.order.core.infra.persistence.order.impl.OrderCommandRepositoryJdbcImpl;
+import org.example.order.core.infra.persistence.order.jpa.adapter.SpringDataOrderJpaRepository;
+import org.example.order.core.infra.persistence.order.jpa.impl.OrderQueryRepositoryJpaImpl;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.repository.OrderCommandRepository;
 import org.example.order.domain.order.repository.OrderQueryRepository;

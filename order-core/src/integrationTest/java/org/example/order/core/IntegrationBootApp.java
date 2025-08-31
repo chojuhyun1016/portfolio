@@ -3,7 +3,7 @@ package org.example.order.core;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.f4b6a3.tsid.TsidFactory;
 import org.example.order.core.infra.jpa.config.JpaInfraConfig;
-import org.example.order.core.infra.jpa.repository.order.jpa.adapter.SpringDataOrderJpaRepository;
+import org.example.order.core.infra.persistence.order.jpa.adapter.SpringDataOrderJpaRepository;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

@@ -3,7 +3,7 @@ package org.example.order.core.application.order.mapper;
 import org.example.order.common.helper.datetime.DateTimeUtils;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.dto.internal.LocalOrderDto;
-import org.example.order.core.messaging.order.message.OrderLocalMessage;
+import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderUpdate;
 import org.springframework.stereotype.Component;

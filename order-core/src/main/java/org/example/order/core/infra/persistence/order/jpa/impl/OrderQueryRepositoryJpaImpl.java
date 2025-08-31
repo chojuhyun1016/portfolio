@@ -1,4 +1,4 @@
-package org.example.order.core.infra.jpa.repository.order.jpa.impl;
+package org.example.order.core.infra.persistence.order.jpa.impl;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;

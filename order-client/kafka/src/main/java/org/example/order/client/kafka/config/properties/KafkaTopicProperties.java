@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.example.order.common.core.code.type.RegionCode;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
 import org.example.order.common.core.exception.core.CommonException;
-import org.example.order.core.messaging.order.code.MessageCategory;
+import org.example.order.core.infra.messaging.order.code.MessageCategory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package org.example.order.core.infra.redis;
 
-import org.example.order.core.infra.redis.repository.RedisRepository;
-import org.example.order.core.infra.redis.repository.impl.RedisRepositoryImpl;
+import org.example.order.core.infra.persistence.order.redis.RedisRepository;
+import org.example.order.core.infra.persistence.order.redis.impl.RedisRepositoryImpl;
 import org.example.order.core.infra.redis.support.RedisSerializerFactory;
 import org.junit.jupiter.api.*;
 import org.springframework.data.redis.connection.RedisPassword;

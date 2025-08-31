@@ -129,3 +129,4 @@ AWS DynamoDB 연동 모듈.
 ---
 
 > 이 구조는 **Clean Architecture**의 Infra Layer 원칙을 따르며, 외부 시스템과의 의존성을 명확히 분리하여 테스트 용이성과 유지보수성을 확보한다.
+

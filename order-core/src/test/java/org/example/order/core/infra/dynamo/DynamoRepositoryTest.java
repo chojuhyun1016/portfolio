@@ -1,6 +1,6 @@
 package org.example.order.core.infra.dynamo;
 
-import org.example.order.core.infra.dynamo.repository.impl.OrderDynamoRepositoryImpl;
+import org.example.order.core.infra.persistence.order.dynamo.impl.OrderDynamoRepositoryImpl;
 import org.example.order.domain.order.entity.OrderDynamoEntity;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

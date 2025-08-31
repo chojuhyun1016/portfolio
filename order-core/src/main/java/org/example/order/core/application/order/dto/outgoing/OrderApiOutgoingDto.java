@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.order.common.core.messaging.code.MessageMethodType;
-import org.example.order.core.messaging.order.message.OrderCloseMessage;
+import org.example.order.core.infra.messaging.order.message.OrderCloseMessage;
 
 @Data
 @NoArgsConstructor

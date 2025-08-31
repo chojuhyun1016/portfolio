@@ -2,7 +2,7 @@ package org.example.order.core.infra.dynamo.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.dynamo.props.DynamoDbProperties;
-import org.example.order.core.infra.dynamo.repository.impl.OrderDynamoRepositoryImpl;
+import org.example.order.core.infra.persistence.order.dynamo.impl.OrderDynamoRepositoryImpl;
 import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

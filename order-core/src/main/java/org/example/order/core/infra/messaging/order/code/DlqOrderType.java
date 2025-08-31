@@ -1,4 +1,4 @@
-package org.example.order.core.messaging.order.code;
+package org.example.order.core.infra.messaging.order.code;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package org.example.order.core.infra.dynamo.repository.impl;
+package org.example.order.core.infra.persistence.order.dynamo.impl;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;

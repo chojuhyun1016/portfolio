@@ -1,4 +1,4 @@
-package org.example.order.core.infra.redis.repository;
+package org.example.order.core.infra.persistence.order.redis;
 
 import java.util.*;
 

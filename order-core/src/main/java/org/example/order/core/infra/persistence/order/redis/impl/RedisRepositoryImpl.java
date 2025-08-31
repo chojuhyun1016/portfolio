@@ -1,7 +1,7 @@
-package org.example.order.core.infra.redis.repository.impl;
+package org.example.order.core.infra.persistence.order.redis.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.example.order.core.infra.redis.repository.RedisRepository;
+import org.example.order.core.infra.persistence.order.redis.RedisRepository;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.*;
 

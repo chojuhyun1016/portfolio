@@ -1,4 +1,4 @@
-package org.example.order.core.messaging.order.message;
+package org.example.order.core.infra.messaging.order.message;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,7 +6,7 @@ import lombok.ToString;
 import org.example.order.common.core.messaging.message.DlqMessage;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
 import org.example.order.common.core.exception.core.CommonException;
-import org.example.order.core.messaging.order.code.DlqOrderType;
+import org.example.order.core.infra.messaging.order.code.DlqOrderType;
 import org.example.order.common.core.messaging.code.MessageMethodType;
 
 import java.util.Objects;

@@ -3,7 +3,7 @@ package org.example.order.core.infra.jpa;
 import jakarta.annotation.Resource;
 import jakarta.persistence.EntityManager;
 import org.example.order.core.IntegrationBootApp;
-import org.example.order.core.infra.jpa.repository.order.jpa.adapter.SpringDataOrderJpaRepository;
+import org.example.order.core.infra.persistence.order.jpa.adapter.SpringDataOrderJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
