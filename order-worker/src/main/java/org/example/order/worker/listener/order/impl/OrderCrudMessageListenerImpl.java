@@ -15,6 +15,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class OrderCrudMessageListenerImpl implements OrderCrudMessageListener {
+
     private final OrderCrudMessageFacade facade;
 
     @Override
@@ -24,7 +25,6 @@ public class OrderCrudMessageListenerImpl implements OrderCrudMessageListener {
 
         try {
             records.stream().map(ConsumerRecord::value).forEach(value -> log.info("{}", value));
-
             facade.executeOrderCrud(records);
         } catch (Exception e) {
             log.error("error : order-crud", e);

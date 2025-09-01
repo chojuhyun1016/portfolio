@@ -22,6 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({WebClientUrlProperties.class})
 public class OrderWebClientServiceImpl implements OrderWebClientService {
+
     private final WebClientService webClientService;
     private final WebClientUrlProperties webClientUrlProperties;
 
@@ -35,6 +36,7 @@ public class OrderWebClientServiceImpl implements OrderWebClientService {
 
             String orderUrl = client.getUrl().getWithPathVariable(client.getUrl().getOrder(), id);
             log.info("{}", orderUrl);
+
             ApiResponse<?> response = (ApiResponse<?>) webClientService.get(orderUrl, headers, null, ApiResponse.class);
             Object data = response.getData();
             log.info("{}", response.getData());
@@ -49,6 +51,7 @@ public class OrderWebClientServiceImpl implements OrderWebClientService {
         } catch (Exception e) {
             log.error("error : not found local resource - id : {}", id);
             log.error("error : find order failed", e);
+
             throw e;
         }
     }

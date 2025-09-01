@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Profile({"!local"})
 public class S3LogSyncSchedulerImpl implements S3LogSyncScheduler {
+
     private final S3LogSyncFacade facade;
 
     @Override

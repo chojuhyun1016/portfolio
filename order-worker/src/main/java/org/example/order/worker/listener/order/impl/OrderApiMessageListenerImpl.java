@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({KafkaTopicProperties.class})
 public class OrderApiMessageListenerImpl implements OrderApiMessageListener {
+
     private final OrderApiMessageFacade facade;
 
     @Override

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
+
     private final KafkaProducerService kafkaProducerService;
     private final OrderWebClientService webClientService;
 
@@ -27,7 +28,7 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
         try {
             message = ObjectMapperUtils.valueToObject(record, OrderApiMessage.class);
 
-            // api 호출
+            // API 호출
             OrderDto dto = webClientService.findOrderListByOrderId(message.getId());
             dto.updatePublishedTimestamp(message.getPublishedTimestamp());
 
@@ -36,6 +37,7 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
         } catch (Exception e) {
             log.error("error : order api record : {}", record);
             log.error(e.getMessage(), e);
+
             kafkaProducerService.sendToDlq(message, e);
 
             throw e;

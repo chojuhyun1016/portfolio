@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
+
     private final KafkaProducerService kafkaProducerService;
     private final OrderService orderService;
 
@@ -51,7 +52,6 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
             Map<MessageMethodType, List<OrderCrudMessage>> map = groupingMessages(messages);
             map.forEach((methodType, value) -> {
                 try {
-                    // Database update
                     orderService.execute(methodType, value);
 
                     for (OrderCrudMessage message : value) {
@@ -59,6 +59,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
 
                         if (order.getFailure()) {
                             log.info("failed order : {}", order);
+
                             failureList.add(message);
                         } else {
                             OrderCloseMessage orderCloseMessage = OrderCloseMessage.toMessage(order.getOrderId(), methodType);
@@ -67,6 +68,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                     }
                 } catch (Exception e) {
                     log.error("error : order crud message : {}", value, e);
+
                     kafkaProducerService.sendToDlq(value, e);
                 }
             });
@@ -76,10 +78,13 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
             }
         } catch (DatabaseExecuteException e) {
             kafkaProducerService.sendToDlq(failureList, e);
+
             throw e;
         } catch (Exception e) {
             log.error("error : order crud messages", e);
+
             kafkaProducerService.sendToDlq(messages, e);
+
             throw e;
         }
     }

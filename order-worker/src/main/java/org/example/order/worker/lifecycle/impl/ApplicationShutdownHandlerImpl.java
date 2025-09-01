@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 @EnableConfigurationProperties(S3Properties.class)
 @Profile({"!local"})
 public class ApplicationShutdownHandlerImpl implements ApplicationShutdownHandler, SmartLifecycle {
+
     private final S3Properties s3Properties;
     private final S3LogSyncService s3LogSyncEventService;
 

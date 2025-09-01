@@ -10,10 +10,6 @@ spring:
     import:
       - application-core-local.yml
       - application-kafka-local.yml
-  task:
-    scheduling:
-      pool:
-        size: 5
   lifecycle:
     timeout-per-shutdown-phase: 30s
 

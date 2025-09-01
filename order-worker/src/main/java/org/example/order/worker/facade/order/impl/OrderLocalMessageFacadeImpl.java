@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class OrderLocalMessageFacadeImpl implements OrderLocalMessageFacade {
+
     private final KafkaProducerService kafkaProducerService;
 
     @Override
@@ -29,9 +30,9 @@ public class OrderLocalMessageFacadeImpl implements OrderLocalMessageFacade {
 
             kafkaProducerService.sendToOrderApi(OrderApiMessage.toMessage(message));
         } catch (Exception e) {
-            // 비정상 메시지 DLQ 처리
             log.error("error : order-local record : {}", record);
             log.error(e.getMessage(), e);
+
             kafkaProducerService.sendToDlq(message, e);
 
             throw e;

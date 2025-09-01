@@ -24,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({KafkaTopicProperties.class})
 public class KafkaProducerServiceImpl implements KafkaProducerService {
+
     private final KafkaProducerCluster cluster;
     private final KafkaTopicProperties kafkaTopicProperties;
 
@@ -52,7 +53,6 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         if (ObjectUtils.isEmpty(messages)) {
             return;
         }
-
         for (T message : messages) {
             sendToDlq(message, currentException);
         }
@@ -63,7 +63,6 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         if (ObjectUtils.isEmpty(message)) {
             return;
         }
-
         try {
             if (currentException instanceof CommonException commonException) {
                 message.fail(CustomErrorMessage.toMessage(commonException.getCode(), commonException));
@@ -71,12 +70,12 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
                 message.fail(CustomErrorMessage.toMessage(currentException));
             }
 
-            log.info("Sending message to dead letter topic");
+            String dlqTopic = kafkaTopicProperties.getName(MessageCategory.ORDER_DLQ);
+            log.info("Sending message to dead-letter topic: {}", dlqTopic);
 
-            send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_DLQ));
+            send(message, dlqTopic);
         } catch (Exception e) {
-            log.error("error : send message to sales-order-dead-letter failed : {}", message);
-            log.error(e.getMessage(), e);
+            log.error("error : sending message to DLQ failed. message={}", message, e);
         }
     }
 

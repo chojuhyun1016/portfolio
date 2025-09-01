@@ -37,7 +37,7 @@ public class KafkaTopicProperties {
         return this.topic.stream()
                 .filter(item -> item.getCategory().equals(category))
                 .findFirst()
-                .orElseThrow(() -> new CommonException(CommonExceptionCode.UNKNOWN_SEVER_ERROR))
+                .orElseThrow(() -> new CommonException(CommonExceptionCode.UNKNOWN_SERVER_ERROR))
                 .getName();
     }
 
@@ -53,7 +53,7 @@ public class KafkaTopicProperties {
                 .filter(item -> item.getRegionCode() != null)
                 .filter(item -> item.getRegionCode().equals(regionCode) && item.getCategory().equals(category))
                 .findFirst()
-                .orElseThrow(() -> new CommonException(CommonExceptionCode.UNKNOWN_SEVER_ERROR))
+                .orElseThrow(() -> new CommonException(CommonExceptionCode.UNKNOWN_SERVER_ERROR))
                 .getName();
     }
 }

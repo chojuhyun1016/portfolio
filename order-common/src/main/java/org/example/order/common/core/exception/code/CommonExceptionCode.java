@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum CommonExceptionCode implements ExceptionCodeEnum {
-    UNKNOWN_SEVER_ERROR(1000, "Unknown server error", HttpStatus.INTERNAL_SERVER_ERROR),
+    UNKNOWN_SERVER_ERROR(1000, "Unknown server error", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_REQUEST(1001, "Invalid request", HttpStatus.BAD_REQUEST),
     NOT_FOUND_RESOURCE(1002, "Not found resource", HttpStatus.NOT_FOUND),
     DATA_PARSING_ERROR(1003, "Data parsing error", HttpStatus.INTERNAL_SERVER_ERROR),
