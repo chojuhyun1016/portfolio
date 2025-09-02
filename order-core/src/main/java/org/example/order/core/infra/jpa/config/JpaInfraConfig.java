@@ -4,7 +4,7 @@ import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.infra.persistence.order.impl.OrderCommandRepositoryJdbcImpl;
+import org.example.order.core.infra.persistence.order.jdbc.impl.OrderCommandRepositoryJdbcImpl;
 import org.example.order.core.infra.persistence.order.jpa.adapter.SpringDataOrderJpaRepository;
 import org.example.order.core.infra.persistence.order.jpa.impl.OrderQueryRepositoryJpaImpl;
 import org.example.order.core.infra.persistence.order.jpa.impl.OrderRepositoryJpaImpl;

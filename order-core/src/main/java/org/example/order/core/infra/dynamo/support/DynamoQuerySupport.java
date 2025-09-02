@@ -58,6 +58,7 @@ public class DynamoQuerySupport {
                                            String attributeName, String value) {
         var expr = eqExpr(attributeName, AttributeValue.builder().s(value).build());
         var req = ScanEnhancedRequest.builder().filterExpression(expr).build();
+
         @SuppressWarnings("unchecked")
         List<T> items = (List<T>) scan(table(client, clazz, tableName), req);
         return items;
@@ -78,8 +79,10 @@ public class DynamoQuerySupport {
                 .build();
 
         var req = ScanEnhancedRequest.builder().filterExpression(expr).build();
+
         @SuppressWarnings("unchecked")
         List<T> items = (List<T>) scan(table(client, clazz, tableName), req);
+
         return items;
     }
 
@@ -94,8 +97,10 @@ public class DynamoQuerySupport {
                 .build();
 
         var req = ScanEnhancedRequest.builder().filterExpression(expr).build();
+
         @SuppressWarnings("unchecked")
         List<T> items = (List<T>) scan(table(client, clazz, tableName), req);
+
         return items;
     }
 
@@ -110,8 +115,10 @@ public class DynamoQuerySupport {
                 .build();
 
         var req = ScanEnhancedRequest.builder().filterExpression(expr).build();
+
         @SuppressWarnings("unchecked")
         List<T> items = (List<T>) scan(table(client, clazz, tableName), req);
+
         return items;
     }
 
@@ -170,6 +177,7 @@ public class DynamoQuerySupport {
         var req = ScanEnhancedRequest.builder().filterExpression(expression).build();
         @SuppressWarnings("unchecked")
         List<T> items = (List<T>) scan(table(client, clazz, tableName), req);
+
         return items;
     }
 }

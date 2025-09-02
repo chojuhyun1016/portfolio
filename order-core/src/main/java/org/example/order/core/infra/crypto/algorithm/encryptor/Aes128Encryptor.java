@@ -37,9 +37,11 @@ public class Aes128Encryptor implements Encryptor {
     public void setKey(String base64Key) {
         try {
             byte[] k = Base64Utils.decodeUrlSafe(base64Key);
+
             if (k == null || k.length != KEY_LENGTH) {
                 throw new IllegalArgumentException("AES-128 key must be exactly 16 bytes.");
             }
+
             this.key = k;
             log.info("[Aes128Encryptor] key set ({} bytes).", k.length);
         } catch (Exception e) {
@@ -88,6 +90,7 @@ public class Aes128Encryptor implements Encryptor {
         try {
             Map<String, Object> payload = objectMapper.readValue(json, Map.class);
             byte version = Byte.parseByte(String.valueOf(payload.get("ver")));
+
             if (version != VERSION) {
                 throw new DecryptException("Unsupported AES-128 encryption version: " + version);
             }

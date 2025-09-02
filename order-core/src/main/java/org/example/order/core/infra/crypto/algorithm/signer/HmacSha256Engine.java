@@ -12,6 +12,7 @@ public class HmacSha256Engine {
         Mac mac = Mac.getInstance(HMAC_ALGORITHM);
         SecretKeySpec secretKeySpec = new SecretKeySpec(key, HMAC_ALGORITHM);
         mac.init(secretKeySpec);
+
         return mac.doFinal(message);
     }
 }

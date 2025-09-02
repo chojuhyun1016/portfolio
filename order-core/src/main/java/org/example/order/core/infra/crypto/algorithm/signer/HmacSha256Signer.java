@@ -55,8 +55,10 @@ public class HmacSha256Signer implements Signer {
     @Override
     public String sign(String message) {
         ensureReady();
+
         try {
             byte[] sig = HmacSha256Engine.sign(message.getBytes(StandardCharsets.UTF_8), key);
+
             return Base64Utils.encodeUrlSafe(sig);
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException("HMAC-SHA256 signing failed", e);
@@ -76,6 +78,7 @@ public class HmacSha256Signer implements Signer {
         try {
             byte[] expected = HmacSha256Engine.sign(message.getBytes(StandardCharsets.UTF_8), key);
             byte[] provided = Base64Utils.decodeUrlSafe(signature);
+
             return Arrays.equals(expected, provided);
         } catch (Exception e) {
             return false;

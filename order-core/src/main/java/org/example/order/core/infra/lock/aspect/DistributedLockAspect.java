@@ -42,6 +42,7 @@ public class DistributedLockAspect {
             );
         } catch (Exception e) {
             log.error("Lock execution failed. key={}, type={}, method={}", key, distributedLock.type(), method.getName(), e);
+
             throw e;
         }
     }
@@ -62,6 +63,7 @@ public class DistributedLockAspect {
             );
         } catch (Exception e) {
             log.error("Lock T execution failed. key={}, type={}, method={}", key, distributedLockT.type(), method.getName(), e);
+
             throw e;
         }
     }

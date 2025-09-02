@@ -40,10 +40,12 @@ public class S3LogSyncFacadeImpl implements S3LogSyncFacade {
         } catch (IOException e) {
             log.error("error : s3 log sync -> not found resource. file_path:{}, bucket_name:{}, bucket_path{}", LOG_DIRECTORY, s3Properties.getS3().getBucket(), s3Properties.getS3().getDefaultFolder());
             log.error(e.getMessage(), e);
+
             throw new CommonException(CommonExceptionCode.NOT_FOUND_RESOURCE);
         } catch (Exception e) {
             log.error("error : s3 log sync -> failed. file_path:{}, bucket_name:{}, bucket_path{}", LOG_DIRECTORY, s3Properties.getS3().getBucket(), s3Properties.getS3().getDefaultFolder());
             log.error(e.getMessage(), e);
+
             throw e;
         }
     }

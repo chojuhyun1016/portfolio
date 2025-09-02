@@ -33,6 +33,7 @@ public class SecretsKeyResolver {
         }
 
         currentRef.set(newKey);
+
         log.info("[SecretsKeyResolver] [{}] New key updated. Spec: {}", keyName, keySpec);
     }
 

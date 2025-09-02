@@ -49,7 +49,6 @@ public class TsidConfig {
                 .withRandom(new SecureRandom())
                 .build();
 
-        // Hibernate IdentifierGenerator 에서 접근 가능하도록 정적 홀더에 주입
         TsidFactoryHolder.set(factory);
 
         return factory;
@@ -165,6 +164,7 @@ public class TsidConfig {
         } catch (Exception e) {
             log.debug("[TSID] EC2 metadata is not available (local/non-EC2 environment is OK): {}", e.toString());
         }
+
         return null;
     }
 }

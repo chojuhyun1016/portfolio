@@ -28,13 +28,17 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     public List<OrderEntity> bulkInsert(List<LocalOrderDto> dtoList) {
         try {
             List<OrderEntity> entities = dtoList.stream().map(orderMapper::toEntity).toList();
+
             orderCommandRepository.bulkInsert(entities);
+
             return entities;
         } catch (DataAccessException e) {
             log.error("error : OrderCrudEntity bulkInsert failed - msg : {}, cause : {}", e.getMessage(), e.getCause(), e);
+
             throw e;
         } catch (Exception e) {
             log.error("error : OrderCrudEntity bulkInsert failed", e);
+
             throw e;
         }
     }

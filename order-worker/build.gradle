@@ -1,14 +1,13 @@
-// ===== 플러그인 =====
+// 파일 경로: order-worker/build.gradle
+
 plugins {
     id 'java'
     id 'idea'
 }
 
-// ===== 그룹/버전 =====
 group = 'org.example'
 version = '1.0.0'
 
-// ===== 자바 설정 =====
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(17) }
     sourceCompatibility = '17'
@@ -24,12 +23,13 @@ sourceSets {
     integrationTest {
         java.srcDir 'src/integrationTest/java'
         resources.srcDir 'src/integrationTest/resources'
-        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+
+        // [변경] classpath 정렬: main + runtimeClasspath + testRuntimeClasspath
+        compileClasspath += sourceSets.main.output + configurations.runtimeClasspath + configurations.testRuntimeClasspath
         runtimeClasspath += output + compileClasspath
     }
 }
 
-// ===== IntelliJ IDEA =====
 idea {
     module {
         testSourceDirs += file('src/integrationTest/java')
@@ -37,7 +37,6 @@ idea {
     }
 }
 
-// ===== 의존성 =====
 dependencies {
     // 프로젝트 모듈
     implementation(project(':order-common'))
@@ -74,12 +73,21 @@ dependencies {
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.springBootConfigProcessor)
 
-    // test (unit)
-    testImplementation(libs.springBootStarterTest)
-    testImplementation(libs.springKafkaTest)
+    // ===== Unit Test =====
+    testImplementation(libs.springBootStarterTest)   // JUnit/Assertions/Mockito 포함
+    testImplementation(libs.springKafkaTest)         // EmbeddedKafka 등
     testRuntimeOnly(libs.h2)
 
-    // integrationTest
+    // ===== Integration Test =====
+    // [변경] 일부 환경에서 configurations.* 접근 시점 경고가 있을 수 있으나, 기존 작성 방식을 유지합니다.
+    configurations.integrationTestImplementation.extendsFrom configurations.testImplementation
+    configurations.integrationTestRuntimeOnly.extendsFrom configurations.testRuntimeOnly
+
+    // [추가] 통합 테스트에서도 Spring Test/JUnit/Kafka Test를 명시적으로 보장
+    integrationTestImplementation(libs.springBootStarterTest)
+    integrationTestImplementation(libs.springKafkaTest)
+
+    // (옵션) Testcontainers — 필요 시만 사용
     integrationTestImplementation(platform(libs.testcontainersBom))
     integrationTestImplementation(libs.testcontainers)
     integrationTestImplementation(libs.testcontainersJunit)
@@ -91,24 +99,14 @@ dependencies {
     integrationTestAnnotationProcessor(libs.lombok)
 }
 
-// ===== 구성 =====
-configurations {
-    integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
-}
-
-// ===== 리소스 =====
 tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
-tasks.named('processTestResources') {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
+tasks.named('processTestResources') { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 tasks.matching { it.name == 'processIntegrationTestResources' }.configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-// ===== 테스트 =====
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
     testLogging {
@@ -118,6 +116,7 @@ tasks.withType(Test).configureEach {
         showStackTraces true
     }
 }
+
 test {
     systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-unit")
     systemProperty "junit.jupiter.execution.parallel.enabled", "true"
@@ -125,9 +124,12 @@ test {
 }
 
 // ===== integrationTest 태스크 =====
-if (tasks.findByName('integrationTest') != null) {
+// [변경] 루트에서 이미 만들었을 수 있으므로, 있으면 설정만(named), 없으면 새로 등록(register)
+def hasIntegrationTask = tasks.findByName('integrationTest') != null
+
+if (hasIntegrationTask) {
     tasks.named('integrationTest', Test) {
-        description = 'Runs integration tests (Testcontainers: MySQL).'
+        description = 'Runs integration tests (EmbeddedKafka; Testcontainers optional).'
         group = 'verification'
         testClassesDirs = sourceSets.integrationTest.output.classesDirs
         classpath = sourceSets.integrationTest.runtimeClasspath
@@ -142,7 +144,7 @@ if (tasks.findByName('integrationTest') != null) {
     }
 } else {
     tasks.register('integrationTest', Test) {
-        description = 'Runs integration tests (Testcontainers: MySQL).'
+        description = 'Runs integration tests (EmbeddedKafka; Testcontainers optional).'
         group = 'verification'
         testClassesDirs = sourceSets.integrationTest.output.classesDirs
         classpath = sourceSets.integrationTest.runtimeClasspath
@@ -157,5 +159,5 @@ if (tasks.findByName('integrationTest') != null) {
     }
 }
 
-// ===== 파이프라인 =====
+// [유지] 파이프라인 의존성
 check.dependsOn test

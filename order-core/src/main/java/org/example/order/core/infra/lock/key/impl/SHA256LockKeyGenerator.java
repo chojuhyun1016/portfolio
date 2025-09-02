@@ -16,6 +16,7 @@ public class SHA256LockKeyGenerator implements LockKeyGenerator {
         }
 
         String generatedKey = sb.toString();
+
         return SecureHashUtils.getSHA256Hash(generatedKey);
     }
 }

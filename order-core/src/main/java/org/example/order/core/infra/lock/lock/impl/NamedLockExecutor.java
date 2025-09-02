@@ -68,6 +68,7 @@ public class NamedLockExecutor implements LockExecutor {
 
             Object result;
             long callStart = System.currentTimeMillis();
+
             try {
                 result = callback.call();
                 log.debug("[LOCK] 처리 완료 | key={} | taskElapsed={}ms", key, System.currentTimeMillis() - callStart);
@@ -95,6 +96,7 @@ public class NamedLockExecutor implements LockExecutor {
                     log.warn("[LOCK] 커넥션 해제 실패 | key={} | error={}", key, e.getMessage(), e);
                 }
             }
+
             long totalElapsed = System.currentTimeMillis() - startTime;
             log.debug("[LOCK] 전체 수행 종료 | key={} | totalElapsed={}ms", key, totalElapsed);
         }
@@ -103,6 +105,7 @@ public class NamedLockExecutor implements LockExecutor {
     private void releaseLock(String key, Connection connection) throws Exception {
         try (PreparedStatement stmt = connection.prepareStatement(RELEASE_LOCK_SQL)) {
             stmt.setString(1, key);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next() && rs.getBoolean(1)) {
                     log.debug("[LOCK] 해제 성공 | key={}", key);

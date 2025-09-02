@@ -1,4 +1,4 @@
-package org.example.order.core.infra.persistence.order.impl;
+package org.example.order.core.infra.persistence.order.jdbc.impl;
 
 import com.github.f4b6a3.tsid.TsidFactory;
 import lombok.RequiredArgsConstructor;
