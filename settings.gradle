@@ -39,6 +39,6 @@ include(
         // "order-api:order-api-common",
         // "order-api:order-api-master",
         // "order-api:order-api-web",
-         "order-worker"
-        // "order-batch"
+         "order-worker",
+         "order-batch"
 )

@@ -1,5 +1,4 @@
-// 파일 경로: order-worker/build.gradle
-
+// ===== 플러그인 =====
 plugins {
     id 'java'
     id 'idea'
@@ -159,5 +158,5 @@ if (hasIntegrationTask) {
     }
 }
 
-// [유지] 파이프라인 의존성
+// 파이프라인 의존성
 check.dependsOn test
