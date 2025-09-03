@@ -17,8 +17,10 @@ public class FormatConfigPresentCondition implements Condition {
         var env = ctx.getEnvironment();
         var binder = Binder.get(env);
         var bound = binder.bind("order.api.infra.format", Bindable.mapOf(String.class, Object.class));
+
         boolean present = bound.isBound() && !bound.get().isEmpty();
         boolean explicitlyEnabled = "true".equalsIgnoreCase(env.getProperty("order.api.infra.format.enabled"));
+
         return present || explicitlyEnabled;
     }
 }

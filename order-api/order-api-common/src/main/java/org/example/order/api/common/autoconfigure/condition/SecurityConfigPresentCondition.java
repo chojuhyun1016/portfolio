@@ -17,8 +17,10 @@ public class SecurityConfigPresentCondition implements Condition {
         var env = ctx.getEnvironment();
         var binder = Binder.get(env);
         var bound = binder.bind("order.api.infra.security", Bindable.mapOf(String.class, Object.class));
+
         boolean present = bound.isBound() && !bound.get().isEmpty();
         boolean explicitlyEnabled = "true".equalsIgnoreCase(env.getProperty("order.api.infra.security.enabled"));
+
         return present || explicitlyEnabled;
     }
 }

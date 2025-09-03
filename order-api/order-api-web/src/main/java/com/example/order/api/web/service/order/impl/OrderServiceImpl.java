@@ -30,6 +30,7 @@ public class OrderServiceImpl implements OrderService {
                         () -> {
                             String msg = "Order not found. id=" + id;
                             log.warn("[OrderService] {}", msg);
+
                             return new CommonException(CommonExceptionCode.NOT_FOUND_RESOURCE, msg);
                         });
     }

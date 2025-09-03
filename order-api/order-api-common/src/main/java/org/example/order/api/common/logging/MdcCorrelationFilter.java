@@ -32,6 +32,7 @@ public class MdcCorrelationFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
 
         String reqId = request.getHeader(inHeader);
+
         if (reqId == null || reqId.isBlank()) {
             reqId = UUID.randomUUID().toString();
         }

@@ -6,7 +6,7 @@ import org.example.order.api.master.service.common.KafkaProducerService;
 import org.example.order.api.master.service.order.OrderService;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.mapper.OrderMapper;
-import org.example.order.core.messaging.order.message.OrderLocalMessage;
+import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -20,6 +20,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void sendMessage(LocalOrderCommand command) {
         final OrderLocalMessage message = orderMapper.toOrderLocalMessage(command);
+
         message.validation();
 
         log.info(

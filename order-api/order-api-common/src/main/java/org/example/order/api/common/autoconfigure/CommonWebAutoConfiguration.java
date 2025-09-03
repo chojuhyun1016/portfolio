@@ -60,6 +60,7 @@ public class CommonWebAutoConfiguration {
         reg.setFilter(new RequestLoggingFilter(props));
         reg.setOrder(props.getLogging().getFilterOrder());
         reg.addUrlPatterns("/*");
+
         return reg;
     }
 }

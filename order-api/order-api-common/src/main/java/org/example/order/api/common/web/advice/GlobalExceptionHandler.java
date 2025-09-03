@@ -28,6 +28,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CommonException.class)
     public ResponseEntity<ApiResponse<Void>> handleCommon(CommonException e) {
         log.warn("[Global] code={}, msg={}", e.getCode(), e.getMsg());
+
         return ApiResponse.error(e);
     }
 
@@ -39,12 +40,14 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception e) {
         log.warn("[Global] bad request: {}", e.getMessage());
+
         return ApiResponse.error(CommonExceptionCode.INVALID_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnknown(Exception e) {
         log.error("[Global] unknown", e);
-        return ApiResponse.error(CommonExceptionCode.UNKNOWN_SEVER_ERROR);
+
+        return ApiResponse.error(CommonExceptionCode.UNKNOWN_SERVER_ERROR);
     }
 }

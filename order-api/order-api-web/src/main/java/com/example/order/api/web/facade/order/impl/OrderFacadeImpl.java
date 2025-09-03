@@ -17,6 +17,7 @@ public class OrderFacadeImpl implements OrderFacade {
     @Override
     public OrderResponse findById(Long id) {
         var dto = orderService.findById(id);
+
         return orderResponseMapper.toResponse(dto);
     }
 }

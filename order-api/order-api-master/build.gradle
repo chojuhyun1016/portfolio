@@ -49,7 +49,7 @@ dependencies {
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.springSecurityTest)
 
-    // Mockito (BOM + core + junit-jupiter)  ← inline 제거
+    // Mockito (BOM + core + junit-jupiter)
     testImplementation(platform(libs.mockitoBom))
     testImplementation(libs.mockitoCore)
     testImplementation(libs.mockitoJunitJupiter)
@@ -76,19 +76,22 @@ tasks.named("test", Test) {
     useJUnitPlatform { excludeTags "restdocs" }
 }
 
+// REST Docs 전용 테스트(스니펫 생성)
 tasks.register("rest", Test) {
     description = "Run only REST Docs tests (@Tag(\"restdocs\")) and generate snippets."
     group = "verification"
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform { includeTags "restdocs" }
+    doFirst { snippetsDir.mkdirs() }                   // ← 디렉터리 없어서 실패 방지
     systemProperty "org.springframework.restdocs.outputDir", snippetsDir
     outputs.dir snippetsDir
 }
 
+// Asciidoctor 변환
 asciidoctor {
     configurations "asciidoctorExt"
-    inputs.dir snippetsDir
+    inputs.dir(snippetsDir).withPropertyName("snippets").optional(true)
     baseDirFollowsSourceFile()
     attributes(
             "snippets": snippetsDir,
@@ -97,6 +100,7 @@ asciidoctor {
             "source-highlighter": "highlightjs"
     )
     dependsOn tasks.named("rest")
+    onlyIf { snippetsDir.exists() && snippetsDir.listFiles()?.length > 0 }
 }
 
 tasks.named("bootJar") {

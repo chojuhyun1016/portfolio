@@ -27,6 +27,7 @@ public class CommonLoggingAutoConfiguration {
         reg.setFilter(new MdcCorrelationFilter(props));
         reg.setOrder(props.getLogging().getMdcFilterOrder());
         reg.addUrlPatterns("/*");
+
         return reg;
     }
 }

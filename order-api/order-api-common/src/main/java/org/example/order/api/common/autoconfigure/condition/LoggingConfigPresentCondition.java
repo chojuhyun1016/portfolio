@@ -17,8 +17,10 @@ public class LoggingConfigPresentCondition implements Condition {
         var env = ctx.getEnvironment();
         var binder = Binder.get(env);
         var bound = binder.bind("order.api.infra.logging", Bindable.mapOf(String.class, Object.class));
+
         boolean present = bound.isBound() && !bound.get().isEmpty();
         boolean explicitlyEnabled = "true".equalsIgnoreCase(env.getProperty("order.api.infra.logging.enabled"));
+
         return present || explicitlyEnabled;
     }
 }

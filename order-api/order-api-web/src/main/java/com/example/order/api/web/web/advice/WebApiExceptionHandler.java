@@ -23,12 +23,14 @@ public class WebApiExceptionHandler {
     @ExceptionHandler(CommonException.class)
     public ResponseEntity<ApiResponse<Void>> handleCommonForMaster(CommonException e) {
         log.warn("[Master] CommonException: code={}, msg={}", e.getCode(), e.getMsg());
+
         return ApiResponse.error(e);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnknownForMaster(Exception e) {
         log.error("[Master] Unknown error", e);
-        return ApiResponse.error(CommonExceptionCode.UNKNOWN_SEVER_ERROR);
+
+        return ApiResponse.error(CommonExceptionCode.UNKNOWN_SERVER_ERROR);
     }
 }

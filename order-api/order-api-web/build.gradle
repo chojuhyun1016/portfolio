@@ -15,9 +15,7 @@ ext {
 }
 
 /** REST Docs용 asciidoctor 확장 구성 */
-configurations {
-    asciidoctorExt
-}
+configurations { asciidoctorExt }
 
 dependencies {
     // --- 프로젝트 모듈 ---
@@ -63,6 +61,7 @@ dependencies {
 // 기본 test 태스크에서 스니펫을 생성
 tasks.named("test", Test) {
     useJUnitPlatform()
+    doFirst { snippetsDir.mkdirs() }
     systemProperty "org.springframework.restdocs.outputDir", snippetsDir
     outputs.dir snippetsDir
 }
@@ -70,7 +69,7 @@ tasks.named("test", Test) {
 // Asciidoctor 변환
 asciidoctor {
     configurations "asciidoctorExt"
-    inputs.dir snippetsDir
+    inputs.dir(snippetsDir).withPropertyName("snippets").optional(true)
     baseDirFollowsSourceFile()
     attributes(
             "snippets": snippetsDir,
@@ -79,12 +78,11 @@ asciidoctor {
             "source-highlighter": "highlightjs"
     )
     dependsOn tasks.named("test")
+    onlyIf { snippetsDir.exists() && snippetsDir.listFiles()?.length > 0 }
 }
 
-// 문서를 Boot JAR에 포함 (static/docs)
+// 문서 Boot JAR 포함 (static/docs)
 tasks.named("bootJar") {
     dependsOn tasks.named("asciidoctor")
-    from("${asciidoctor.outputDir}/") {
-        into "static/docs"
-    }
+    from("${asciidoctor.outputDir}/") { into "static/docs" }
 }

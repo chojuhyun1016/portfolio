@@ -27,7 +27,9 @@ public class OrderController {
     ) {
         log.info("[OrderController][sendOrderMasterMessage] orderId={}, methodType={}",
                 request.orderId(), request.methodType());
+
         facade.sendOrderMessage(request);
+
         return ApiResponse.accepted(new LocalOrderResponse(request.orderId(), HttpStatus.ACCEPTED.name()));
     }
 }

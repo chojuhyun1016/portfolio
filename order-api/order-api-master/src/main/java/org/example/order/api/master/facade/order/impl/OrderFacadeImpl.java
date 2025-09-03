@@ -17,6 +17,7 @@ public class OrderFacadeImpl implements OrderFacade {
     @Override
     public void sendOrderMessage(LocalOrderRequest request) {
         var command = orderRequestMapper.toCommand(request);
+
         orderService.sendMessage(command);
     }
 }

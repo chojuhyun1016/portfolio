@@ -21,6 +21,7 @@ public class OrderController {
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OrderResponse>> findById(@PathVariable Long orderId) {
         log.info("[OrderController][findById] orderId={}", orderId);
+
         return ApiResponse.ok(facade.findById(orderId));
     }
 }

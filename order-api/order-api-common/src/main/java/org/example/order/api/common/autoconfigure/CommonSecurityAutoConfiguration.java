@@ -85,6 +85,7 @@ public class CommonSecurityAutoConfiguration {
                     .filter(s -> s != null && !s.isBlank())
                     .forEach(white::add);
         }
+
         return new GatewayOnlyFilter(gw.header(), gw.secret(), white);
     }
 }
