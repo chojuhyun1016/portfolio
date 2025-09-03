@@ -1,115 +1,105 @@
+// ======================================================================
+// module: order-api-master / build.gradle
+//  - REST Docs + Asciidoctor, 카탈로그 기반 의존성
+// ======================================================================
+
 plugins {
-    id 'org.asciidoctor.jvm.convert'
+    alias(libs.plugins.springBoot)
+    alias(libs.plugins.asciidoctor)
 }
 
-ext {
-    snippetsDir = file('build/generated-snippets')
-}
+ext { snippetsDir = file("build/generated-snippets") }
 
-/** REST Docs용 asciidoctor 확장 구성 */
-configurations {
-    asciidoctorExt
-}
+configurations { asciidoctorExt }
 
 dependencies {
-    // --- 프로젝트 모듈 ---
-    implementation project(':order-common')
-    implementation project(':order-core')
-    implementation project(':order-domain')
-    implementation project(':order-api:order-api-common')
-    implementation project(':order-client:kafka')
+    // 모듈
+    implementation project(":order-common")
+    implementation project(":order-core")
+    implementation project(":order-domain")
+    implementation project(":order-api:order-api-common")
+    implementation project(":order-client:kafka")
 
-    // --- Spring ---
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // Spring Boot
+    implementation(libs.springBootStarterWeb)
+    implementation(libs.springBootStarterDataJpa)
+    implementation(libs.springBootStarterValidation)
+    implementation(libs.springBootStarterActuator)
+    implementation(libs.springBootStarterSecurity)
 
-    // --- Kafka ---
-    implementation 'org.springframework.kafka:spring-kafka'
-    implementation 'software.amazon.msk:aws-msk-iam-auth:2.0.2'
+    // Kafka
+    implementation(libs.springKafka)
+    implementation(libs.awsMskIamAuth)
 
-    // --- Querydsl ---
-    implementation 'com.querydsl:querydsl-core'
-    implementation "com.querydsl:querydsl-jpa:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    // Querydsl
+    implementation(libs.querydslCore)
+    implementation(libs.querydslJpaJakarta)
+    annotationProcessor(libs.querydslApt)
 
-    // --- Logging / Jackson ---
-    implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
-    implementation 'ch.qos.logback.contrib:logback-jackson:0.1.5'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    // 로깅 / Jackson
+    implementation(libs.logbackJsonClassic)
+    implementation(libs.logbackJackson)
+    implementation(libs.jacksonDatabind)
 
-    // --- 테스트 런타임 DB: H2 ---
-    runtimeOnly 'com.h2database:h2'
-    runtimeOnly "software.aws.rds:aws-mysql-jdbc:$awsMysqlJdbcVer"
+    // DB 런타임
+    runtimeOnly(libs.h2)
+    runtimeOnly(libs.awsMysqlJdbc)
 
-    // --- 공통 테스트 의존성 ---
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
+    // 테스트(test)
+    testImplementation(libs.springBootStarterTest)
+    testImplementation(libs.springSecurityTest)
 
-    // ✅ REST Docs
-    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+    // Mockito (BOM + core + junit-jupiter)  ← inline 제거
+    testImplementation(platform(libs.mockitoBom))
+    testImplementation(libs.mockitoCore)
+    testImplementation(libs.mockitoJunitJupiter)
 
-    // Mockito
-    testImplementation 'org.mockito:mockito-core:5.11.0'
-    testImplementation 'org.mockito:mockito-inline:5.2.0'
+    // REST Docs
+    testImplementation(libs.restdocsMockmvc)
+    asciidoctorExt(libs.restdocsAsciidoctor)
 
     // 임베디드 Kafka 테스트
-    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testImplementation(libs.springKafkaTest)
+
+    // 통합테스트 (integrationTest)
+    integrationTestImplementation(platform(libs.mockitoBom))
+    integrationTestImplementation(libs.mockitoCore)
+    integrationTestImplementation(libs.mockitoJunitJupiter)
+    // 필요 시:
+    // integrationTestImplementation(libs.springSecurityTest)
+    // integrationTestImplementation(libs.springKafkaTest)
 }
 
-tasks.withType(Test).configureEach {
-    useJUnitPlatform()
+tasks.withType(Test).configureEach { useJUnitPlatform() }
+
+tasks.named("test", Test) {
+    useJUnitPlatform { excludeTags "restdocs" }
 }
 
-/**
- * 기본 test = 빠른 테스트 + 임베디드 Kafka 통합 테스트 포함
- * - REST Docs(@Tag("restdocs"))만 제외
- */
-test {
-    useJUnitPlatform {
-        excludeTags 'restdocs'
-    }
-}
-
-/**
- * REST Docs 전용 테스트 (스니펫 생성)
- */
-tasks.register('rest', Test) {
+tasks.register("rest", Test) {
     description = "Run only REST Docs tests (@Tag(\"restdocs\")) and generate snippets."
     group = "verification"
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
-    useJUnitPlatform {
-        includeTags 'restdocs'
-    }
+    useJUnitPlatform { includeTags "restdocs" }
     systemProperty "org.springframework.restdocs.outputDir", snippetsDir
     outputs.dir snippetsDir
 }
 
-/**
- * Asciidoctor 문서 변환 (rest 먼저 실행)
- */
 asciidoctor {
-    configurations 'asciidoctorExt'
+    configurations "asciidoctorExt"
     inputs.dir snippetsDir
     baseDirFollowsSourceFile()
     attributes(
-            'snippets': snippetsDir,
-            'doctype': 'book',
-            'sectanchors': true,
-            'source-highlighter': 'highlightjs'
+            "snippets": snippetsDir,
+            "doctype": "book",
+            "sectanchors": true,
+            "source-highlighter": "highlightjs"
     )
-    dependsOn tasks.named('rest')
+    dependsOn tasks.named("rest")
 }
 
-/**
- * 문서를 JAR에 포함 (선택)
- */
-bootJar {
-    dependsOn asciidoctor
-    from("${asciidoctor.outputDir}/") {
-        into 'static/docs'
-    }
+tasks.named("bootJar") {
+    dependsOn tasks.named("asciidoctor")
+    from("${layout.buildDirectory.get()}/docs/asciidoc/") { into "static/docs" }
 }

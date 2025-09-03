@@ -1,12 +1,46 @@
-bootJar.enabled = false
-jar.enabled = true
+// ======================================================================
+// module: order-api-common / build.gradle
+//  - 라이브러리 모듈(부트 앱 아님): bootJar 비활성, jar 생성
+//  - 버전/의존성은 libs.versions.toml (버전 카탈로그) 기준
+//  - @AutoConfiguration 제공 모듈이므로 spring-boot-autoconfigure 의존 필요
+//  - 설정 프로퍼티 메타데이터 생성을 위해 configuration-processor 추가(컴파일 전용)
+// ======================================================================
+
+// 이 모듈은 루트에서 java-library / dependency-management 를 이미 적용받음
+// (Spring Boot 플러그인은 적용하지 않음)
+
+//// Jar 출력 설정
+tasks.matching { it.name == "bootJar" }.configureEach { enabled = false } // 안전 가드: 존재 시 비활성
+tasks.named("jar") { it.enabled = true }
 
 dependencies {
-    implementation project(':order-common')
-    implementation project(':order-core')
+    // --- 내부 모듈 ---
+    implementation project(":order-common")
+    implementation project(":order-core")
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // --- Spring Boot 스타터 (웹/시큐리티/검증/JPA) ---
+    implementation(libs.springBootStarterWeb)
+    implementation(libs.springBootStarterSecurity)
+    implementation(libs.springBootStarterValidation)
+    implementation(libs.springBootStarterDataJpa)
+
+    // --- Auto-Configuration (@AutoConfiguration 사용 모듈) ---
+    //   * 이 모듈은 자동구성 빈을 제공하므로 'spring-boot-autoconfigure' 필요
+    implementation(libs.springBootAutoconfigure)
+
+    // --- Jackson (java time 포맷 커스터마이즈 시 JSR-310 모듈 확실히 포함) ---
+    implementation(libs.jacksonJsr310)
+
+    // --- Configuration Properties 메타데이터 (컴파일 전용) ---
+    compileOnly(libs.springBootConfigProcessor)
+    annotationProcessor(libs.springBootConfigProcessor)
+
+    // --- Lombok (컴파일 전용) ---
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+
+    // --- 테스트 ---
+    testImplementation(libs.springBootStarterTest)
 }

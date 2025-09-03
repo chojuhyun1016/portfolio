@@ -14,6 +14,11 @@ group = "org.example"
 version = "1.0.0"
 
 subprojects {
+    // ===== 리포지토리 =====
+    repositories {
+        mavenCentral()
+    }
+
     // ===== 공통 플러그인 =====
     apply plugin: "java-library"
     apply plugin: libs.plugins.springDepMgmt.get().pluginId
@@ -70,11 +75,6 @@ subprojects {
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:${libs.versions.springCloud.get()}"
             mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${libs.versions.springAws.get()}"
         }
-        // (선택) Jackson 계열 강제 정렬이 필요한 경우 사용
-        // dependencies {
-        //     dependency "com.fasterxml.jackson.core:jackson-databind:${libs.versions.jackson.get()}"
-        //     dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${libs.versions.jackson.get()}"
-        // }
     }
 
     // ===== 통합테스트 소스셋 =====

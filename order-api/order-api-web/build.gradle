@@ -1,72 +1,90 @@
+// ======================================================================
+// module: order-api-web / build.gradle
+//  - Boot 웹 API 모듈 (+ Spring REST Docs 문서화)
+//  - 모든 버전/의존성은 libs.versions.toml(버전 카탈로그) 기준
+//  - Kafka, Querydsl(Jakarta), 보안/웹/JPA/검증, 로깅 포함
+// ======================================================================
+
 plugins {
-    id 'org.asciidoctor.jvm.convert'
+    alias(libs.plugins.springBoot)
+    alias(libs.plugins.asciidoctor)
 }
 
 ext {
-    snippetsDir = file('build/generated-snippets')
+    snippetsDir = file("build/generated-snippets")
 }
 
+/** REST Docs용 asciidoctor 확장 구성 */
 configurations {
     asciidoctorExt
 }
 
 dependencies {
-    implementation project(':order-common')
-    implementation project(':order-core')
-    implementation project(':order-domain')
-    implementation project(':order-api:order-api-common')
-    implementation project(':order-client:kafka')
+    // --- 프로젝트 모듈 ---
+    implementation project(":order-common")
+    implementation project(":order-core")
+    implementation project(":order-domain")
+    implementation project(":order-api:order-api-common")
+    implementation project(":order-client:kafka")
 
-    implementation 'org.springframework.kafka:spring-kafka'
-    implementation 'software.amazon.msk:aws-msk-iam-auth:2.0.2'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'com.querydsl:querydsl-core'
-    implementation "com.querydsl:querydsl-jpa:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'ch.qos.logback.contrib:logback-json-classic:0.1.5'
-    implementation 'ch.qos.logback.contrib:logback-jackson:0.1.5'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // --- Spring Boot 스타터 ---
+    implementation(libs.springBootStarterWeb)
+    implementation(libs.springBootStarterDataJpa)
+    implementation(libs.springBootStarterValidation)
+    implementation(libs.springBootStarterActuator)
+    implementation(libs.springBootStarterSecurity)
 
-    runtimeOnly "software.aws.rds:aws-mysql-jdbc:$awsMysqlJdbcVer"
+    // --- Kafka ---
+    implementation(libs.springKafka)
+    implementation(libs.awsMskIamAuth)
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
+    // --- Querydsl (Jakarta) ---
+    implementation(libs.querydslCore)
+    implementation(libs.querydslJpaJakarta)
+    annotationProcessor(libs.querydslApt)
 
-    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+    // --- 로깅 / Jackson ---
+    implementation(libs.logbackJsonClassic)
+    implementation(libs.logbackJackson)
+    implementation(libs.jacksonDatabind)
+
+    // --- DB 런타임 (RDS JDBC) ---
+    runtimeOnly(libs.awsMysqlJdbc)
+
+    // --- 테스트 공통 ---
+    testImplementation(libs.springBootStarterTest)
+    testImplementation(libs.springSecurityTest)
+
+    // --- REST Docs (버전 카탈로그 사용) ---
+    testImplementation(libs.restdocsMockmvc)
+    asciidoctorExt(libs.restdocsAsciidoctor)
 }
 
-test {
+// 기본 test 태스크에서 스니펫을 생성
+tasks.named("test", Test) {
     useJUnitPlatform()
-
     systemProperty "org.springframework.restdocs.outputDir", snippetsDir
-
     outputs.dir snippetsDir
 }
 
+// Asciidoctor 변환
 asciidoctor {
-    configurations 'asciidoctorExt'
-
+    configurations "asciidoctorExt"
     inputs.dir snippetsDir
-
     baseDirFollowsSourceFile()
-
     attributes(
-            'snippets': snippetsDir,
-            'doctype': 'book',
-            'sectanchors': true,
-            'source-highlighter': 'highlightjs'
+            "snippets": snippetsDir,
+            "doctype": "book",
+            "sectanchors": true,
+            "source-highlighter": "highlightjs"
     )
-
-    dependsOn test
+    dependsOn tasks.named("test")
 }
 
-bootJar {
-    dependsOn asciidoctor
+// 문서를 Boot JAR에 포함 (static/docs)
+tasks.named("bootJar") {
+    dependsOn tasks.named("asciidoctor")
     from("${asciidoctor.outputDir}/") {
-        into 'static/docs'
+        into "static/docs"
     }
 }

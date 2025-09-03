@@ -1,10 +1,6 @@
-# ======================================================================
+# =======================
 # gradle/libs.versions.toml
-#  - 프로젝트 전역 버전/의존성 카탈로그 (정리/추가 반영)
-#  - 핵심: Java, Spring Boot/Cloud/AWS, DB Driver, Redis, Kafka, Querydsl, Testcontainers
-#  - 신규: actuator, logback-contrib, logstash-encoder, aws-msk-iam-auth, jackson-databind 별칭
-#  - 정합성: Jackson 계열을 Spring Boot 3.2.x 라인(2.15.4)으로 정렬
-# ======================================================================
+# =======================
 
 [versions]
 java = "17"
@@ -13,35 +9,22 @@ springDepMgmt = "1.1.4"
 springCloud = "2023.0.1"
 springAws = "3.1.1"
 querydsl = "5.0.0"
-
 guava = "32.1.2-jre"
 tsid = "5.2.6"
-
-# Jackson Boot 3.2.x (2.15.4)
 jackson = "2.15.4"
-
 mysqlDriver = "8.3.0"
 awsMysqlJdbc = "1.1.14"
 lombok = "1.18.32"
-
 testcontainersBom = "1.19.7"
 testcontainers = "1.19.7"
-
 embeddedRedis = "1.4.3"
-mariaDB4j = "2.5.3"
 mariadbDriver = "3.3.3"
-dynamodbLocal = "1.21.0"
-sqlite4javaCore = "1.0.392"
 h2 = "2.2.224"
-
 springCloudGateway = "4.1.0"
-
-# 로깅 / 보조
 logbackContrib = "0.1.5"
 logstashEncoder = "7.4"
-
-# AWS/보안
 awsMskIamAuth = "2.0.2"
+mockito = "5.12.0"
 
 [plugins]
 springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
@@ -96,7 +79,6 @@ querydslCore = { module = "com.querydsl:querydsl-core", version.ref = "querydsl"
 querydslJpaJakarta = { module = "com.querydsl:querydsl-jpa", version.ref = "querydsl" }
 querydslApt = { module = "com.querydsl:querydsl-apt", version.ref = "querydsl" }
 
-
 # Jakarta / Servlet
 jakartaPersistenceApi = { module = "jakarta.persistence:jakarta.persistence-api", version = "3.1.0" }
 jakartaAnnotationApi = { module = "jakarta.annotation:jakarta.annotation-api", version = "2.1.1" }
@@ -133,10 +115,19 @@ testcontainersJdbc = { module = "org.testcontainers:jdbc" }
 testcontainersMysql = { module = "org.testcontainers:mysql" }
 testcontainersLocalstack = { module = "org.testcontainers:localstack", version.ref = "testcontainers" }
 testcontainersBom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainersBom" }
-mockitoBom = { module = "org.mockito:mockito-bom", version = "5.12.0" }
+
+# Mockito (BOM + 개별 모듈)
+mockitoBom = { module = "org.mockito:mockito-bom", version.ref = "mockito" }
+mockitoCore = { module = "org.mockito:mockito-core" }
+mockitoJunitJupiter = { module = "org.mockito:mockito-junit-jupiter" }
 
 # DBs for test
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
 
 # Crypto
 argon2 = { module = "de.mkammerer:argon2-jvm", version = "2.11" }
+
+# 테스트/문서용
+springSecurityTest = { module = "org.springframework.security:spring-security-test" }
+restdocsMockmvc = { module = "org.springframework.restdocs:spring-restdocs-mockmvc" }
+restdocsAsciidoctor = { module = "org.springframework.restdocs:spring-restdocs-asciidoctor" }
