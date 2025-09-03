@@ -20,8 +20,10 @@ public abstract class EmbeddedKafkaITBase {
     static void kafkaProps(DynamicPropertyRegistry registry) {
         registry.add("spring.kafka.bootstrap-servers",
                 () -> System.getProperty("spring.embedded.kafka.brokers"));
+
         registry.add("spring.kafka.producer.key-serializer",
                 () -> "org.apache.kafka.common.serialization.StringSerializer");
+
         registry.add("spring.kafka.producer.value-serializer",
                 () -> "org.apache.kafka.common.serialization.StringSerializer");
     }

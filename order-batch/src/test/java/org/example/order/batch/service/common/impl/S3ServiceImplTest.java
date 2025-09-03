@@ -51,6 +51,7 @@ class S3ServiceImplTest {
         } catch (CommonException e) {
             return;
         }
+
         assert false : "CommonException 이 발생해야 합니다.";
     }
 
