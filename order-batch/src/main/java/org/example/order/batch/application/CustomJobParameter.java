@@ -12,6 +12,7 @@ import java.time.YearMonth;
 @JobScope
 @Component
 public class CustomJobParameter {
+
     @Value("#{jobParameters[version]}")
     private String version;
 

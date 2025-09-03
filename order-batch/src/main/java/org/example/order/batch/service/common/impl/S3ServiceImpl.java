@@ -22,10 +22,15 @@ public class S3ServiceImpl implements S3Service {
     private final S3Client s3Client;
     private final S3Properties s3Properties;
 
+    // 파일 업로드
     @Override
     public void upload(String fileName, File file) {
         try {
-            s3Client.putObject(s3Properties.getS3().getBucket(), String.format("%s/%s", s3Properties.getS3().getDefaultFolder(), fileName), file);
+            s3Client.putObject(
+                    s3Properties.getS3().getBucket(),
+                    String.format("%s/%s", s3Properties.getS3().getDefaultFolder(), fileName),
+                    file
+            );
         } catch (Exception e) {
             log.error("error : fail to upload file", e);
             log.error(e.getMessage(), e);
@@ -34,6 +39,7 @@ public class S3ServiceImpl implements S3Service {
         }
     }
 
+    // 파일 읽기
     @Override
     public S3Object read(String key) {
         return s3Client.getObject(s3Properties.getS3().getBucket(), key);

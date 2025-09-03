@@ -18,18 +18,20 @@ public class FileServiceImpl implements FileService {
 
     private final S3Service s3Service;
 
+    // 객체를 파일로 변환 후 S3 업로드
     @Override
     public void upload(String fileName, String suffix, Object object) {
         try {
             File file = convert(suffix, object);
+
             s3Service.upload(fileName, file);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
 
+    // 객체 → JSON 직렬화 → 임시 파일 변환
     private File convert(String suffix, Object object) throws IOException {
-        // 임시 파일 생성
         File tempFile = File.createTempFile("tmp", suffix);
 
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {

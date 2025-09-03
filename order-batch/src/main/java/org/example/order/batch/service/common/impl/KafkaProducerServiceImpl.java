@@ -11,10 +11,10 @@ import org.example.order.common.core.messaging.message.DlqMessage;
 import org.example.order.common.core.monitoring.message.MonitoringMessage;
 import org.example.order.common.core.monitoring.message.code.MonitoringLevelCode;
 import org.example.order.common.core.monitoring.message.code.MonitoringType;
-import org.example.order.core.messaging.order.code.MessageCategory;
-import org.example.order.core.messaging.order.message.OrderApiMessage;
-import org.example.order.core.messaging.order.message.OrderCrudMessage;
-import org.example.order.core.messaging.order.message.OrderLocalMessage;
+import org.example.order.core.infra.messaging.order.code.MessageCategory;
+import org.example.order.core.infra.messaging.order.message.OrderApiMessage;
+import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
+import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -30,21 +30,25 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     private final KafkaProducerCluster cluster;
     private final KafkaTopicProperties kafkaTopicProperties;
 
+    // 로컬 메시지 전송
     @Override
     public void sendToLocal(OrderLocalMessage message) {
         send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_LOCAL));
     }
 
+    // API 메시지 전송
     @Override
     public void sendToOrderApi(OrderApiMessage message) {
         send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_API));
     }
 
+    // CRUD 메시지 전송
     @Override
     public void sendToOrderCrud(OrderCrudMessage message) {
         send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_CRUD));
     }
 
+    // DLQ 메시지 일괄 전송
     @Override
     public <T extends DlqMessage> void sendToDlq(List<T> messages, Exception currentException) {
         if (ObjectUtils.isEmpty(messages)) {
@@ -56,13 +60,18 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         }
     }
 
+    // 폐기(discard) 토픽으로 전송
     @Override
     public <T extends DlqMessage> void sendToDiscard(T message) {
         log.info("Sending message to discard topic");
-
-        send(MonitoringMessage.toMessage(MonitoringType.ERROR, MonitoringLevelCode.LEVEL_3, message), kafkaTopicProperties.getName(MessageCategory.ORDER_ALARM));
+        send(MonitoringMessage.toMessage(
+                        MonitoringType.ERROR,
+                        MonitoringLevelCode.LEVEL_3,
+                        message),
+                kafkaTopicProperties.getName(MessageCategory.ORDER_ALARM));
     }
 
+    // DLQ 토픽으로 전송
     @Override
     public <T extends DlqMessage> void sendToDlq(T message, Exception currentException) {
         if (ObjectUtils.isEmpty(message)) {
@@ -85,6 +94,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         }
     }
 
+    // 메시지 전송 공통 처리
     private void send(Object message, String topic) {
         cluster.sendMessage(message, topic);
     }

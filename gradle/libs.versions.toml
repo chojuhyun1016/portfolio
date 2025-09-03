@@ -17,7 +17,7 @@ querydsl = "5.0.0"
 guava = "32.1.2-jre"
 tsid = "5.2.6"
 
-# Jackson 계열은 Boot 3.2.x 라인(2.15.4)으로 통일
+# Jackson Boot 3.2.x (2.15.4)
 jackson = "2.15.4"
 
 mysqlDriver = "8.3.0"
@@ -66,6 +66,8 @@ springBootStarterActuator = { module = "org.springframework.boot:spring-boot-sta
 springBootConfigProcessor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 springBootAutoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure" }
 springBootStarterDataRedis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
+springBootStarterBatch = { module = "org.springframework.boot:spring-boot-starter-batch" }
+springBatchTest = { module = "org.springframework.batch:spring-batch-test" }
 
 # Kafka
 springKafka = { module = "org.springframework.kafka:spring-kafka" }
@@ -92,6 +94,8 @@ awsMskIamAuth = { module = "software.amazon.msk:aws-msk-iam-auth", version.ref =
 # Querydsl
 querydslCore = { module = "com.querydsl:querydsl-core", version.ref = "querydsl" }
 querydslJpaJakarta = { module = "com.querydsl:querydsl-jpa", version.ref = "querydsl" }
+querydslApt = { module = "com.querydsl:querydsl-apt", version.ref = "querydsl" }
+
 
 # Jakarta / Servlet
 jakartaPersistenceApi = { module = "jakarta.persistence:jakarta.persistence-api", version = "3.1.0" }
@@ -103,7 +107,7 @@ jjwtApi = { module = "io.jsonwebtoken:jjwt-api", version = "0.11.5" }
 jjwtImpl = { module = "io.jsonwebtoken:jjwt-impl", version = "0.11.5" }
 jjwtJackson = { module = "io.jsonwebtoken:jjwt-jackson", version = "0.11.5" }
 
-# Jackson (Boot 정렬: 2.15.4)
+# Jackson (Boot : 2.15.4)
 jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jacksonJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 

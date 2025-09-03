@@ -8,17 +8,21 @@ spring:
 
   batch:
     job:
-      name: ${JOB_NAME:NONE}
-      enabled: true
+      name: ${JOB_NAME:NONE}          # 실행할 배치 잡 이름 (기본 NONE → 자동 실행 안 함)
+      enabled: true                   # 애플리케이션 기동 시 Job 실행 여부
     jdbc:
-      initialize-schema: always
+      initialize-schema: always       # 배치 메타테이블 자동 생성 (RDS 초기가동/로컬 포함)
 
 aws:
+  endpoint: ${AWS_ENDPOINT:}
+  region: ${AWS_REGION:ap-northeast-2}
+
   credential:
     enabled: false
-    accessKey: ${AWS_ACCESS_KEY}
-    secretKey: ${AWS_SECRET_KEY}
-  region: ${AWS_REGION}
+    accessKey: ${AWS_ACCESS_KEY:}
+    secretKey: ${AWS_SECRET_KEY:}
+
   s3:
-    bucket: ${BUCKET}
-    default-folder: ${DEFAULT_FOLDER}
+    enabled: true
+    bucket: ${AWS_S3_BUCKET:my-bucket}
+    default-folder: ${AWS_S3_DEFAULT_FOLDER:tmp}

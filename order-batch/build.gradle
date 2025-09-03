@@ -52,6 +52,11 @@ dependencies {
     implementation(libs.springBootStarterValidation)
     implementation(libs.springBootStarter)
     implementation(libs.springBootStarterActuator)
+    implementation(libs.springBootStarterBatch)
+
+    // Querydsl APT
+    annotationProcessor("${libs.querydslApt.get().module}:${libs.versions.querydsl.get()}:jakarta")
+    annotationProcessor(libs.jakartaPersistenceApi)
 
     // 로깅/직렬화
     implementation(libs.logbackJsonClassic)
@@ -74,6 +79,7 @@ dependencies {
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.springKafkaTest)
     testRuntimeOnly(libs.h2)
+    testImplementation(libs.springBatchTest)
 
     // Integration Test
     configurations.integrationTestImplementation.extendsFrom configurations.testImplementation
@@ -82,7 +88,7 @@ dependencies {
     integrationTestImplementation(libs.springBootStarterTest)
     integrationTestImplementation(libs.springKafkaTest)
 
-    // Testcontainers (옵션)
+    // Testcontainers
     integrationTestImplementation(platform(libs.testcontainersBom))
     integrationTestImplementation(libs.testcontainers)
     integrationTestImplementation(libs.testcontainersJunit)
@@ -118,7 +124,7 @@ test {
     systemProperty "junit.jupiter.execution.parallel.mode.default", "concurrent"
 }
 
-// integrationTest 태스크
+// integrationTest
 def hasIntegrationTask = tasks.findByName('integrationTest') != null
 
 if (hasIntegrationTask) {

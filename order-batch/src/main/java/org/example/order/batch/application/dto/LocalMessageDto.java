@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.example.order.batch.application.message.LocalMessage;
-import org.example.order.core.messaging.order.code.MessageCategory;
+import org.example.order.core.infra.messaging.order.code.MessageCategory;
 
 @Getter
 @NoArgsConstructor

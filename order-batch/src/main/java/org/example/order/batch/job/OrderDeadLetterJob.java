@@ -23,6 +23,7 @@ public class OrderDeadLetterJob {
     private final OrderDeadLetterFacade facade;
     public static final String JOB_NAME = "ORDER_DEAD_LETTER_JOB";
 
+    // 배치 잡 정의
     @Bean(name = JOB_NAME)
     public Job job(JobRepository jobRepository, Step orderDeadLetterStep) {
         return new JobBuilder(JOB_NAME, jobRepository)
@@ -31,21 +32,27 @@ public class OrderDeadLetterJob {
                 .build();
     }
 
+    // 배치 스텝 정의
     @Bean
     @JobScope
-    public Step orderDeadLetterStep(JobRepository jobRepository, Tasklet orderDeadLetterTasklet, PlatformTransactionManager platformTransactionManager) {
+    public Step orderDeadLetterStep(JobRepository jobRepository,
+                                    Tasklet orderDeadLetterTasklet,
+                                    PlatformTransactionManager platformTransactionManager) {
         return new StepBuilder(String.format("%s.%s", JOB_NAME, "retry"), jobRepository)
                 .tasklet(orderDeadLetterTasklet, platformTransactionManager)
                 .build();
     }
 
+    // 배치 태스크릿 정의
     @Bean
     @JobScope
     public Tasklet orderDeadLetterTasklet() {
-        return ((contribution, chunkContext) -> {
+        return (contribution, chunkContext) -> {
             log.info("OrderDeadLetterJob start");
+
             facade.retry();
+
             return RepeatStatus.FINISHED;
-        });
+        };
     }
 }
