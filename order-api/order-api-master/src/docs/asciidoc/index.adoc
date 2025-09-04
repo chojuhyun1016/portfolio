@@ -1,12 +1,21 @@
-= Order API Master 문서
-:toc:
+= Order API Master REST Docs
+:toc: left
 :toclevels: 2
 :sectanchors:
+:sectnums:
+:icons: font
+:source-highlighter: highlightjs
 :snippets: {snippets}
 
-== 주문 메시지 전송 (POST /order)
+== POST /order → 202 ACCEPTED
 
-include::{snippets}/order-send/request-fields.adoc[]
-include::{snippets}/order-send/response-fields-data.adoc[]
-include::{snippets}/order-send/http-request.adoc[]
-include::{snippets}/order-send/http-response.adoc[]
+요청 / 응답 예시는 테스트에서 생성된 스니펫을 참조합니다.
+
+.Request
+include::{snippets}/order-accepted/http-request.adoc[]
+
+.Response
+include::{snippets}/order-accepted/http-response.adoc[]
+
+.Curl
+include::{snippets}/order-accepted/curl-request.adoc[]

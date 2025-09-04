@@ -1,0 +1,8 @@
+spring:
+  main:
+    web-application-type: servlet
+
+logging:
+  level:
+    root: INFO
+    org.example.order: DEBUG

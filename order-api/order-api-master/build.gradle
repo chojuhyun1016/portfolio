@@ -1,6 +1,9 @@
 // ======================================================================
 // module: order-api-master / build.gradle
 //  - REST Docs + Asciidoctor, 카탈로그 기반 의존성
+//  - integrationTest 소스셋/태스크 포함
+//  - 기본 build/test 시 integrationTest 자동실행 비활성화
+//    (필요 시: ./gradlew clean build -PincludeIT=true)
 // ======================================================================
 
 plugins {
@@ -65,9 +68,9 @@ dependencies {
     integrationTestImplementation(platform(libs.mockitoBom))
     integrationTestImplementation(libs.mockitoCore)
     integrationTestImplementation(libs.mockitoJunitJupiter)
+    integrationTestImplementation(libs.springKafkaTest)
     // 필요 시:
     // integrationTestImplementation(libs.springSecurityTest)
-    // integrationTestImplementation(libs.springKafkaTest)
 }
 
 tasks.withType(Test).configureEach { useJUnitPlatform() }
@@ -83,7 +86,7 @@ tasks.register("rest", Test) {
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform { includeTags "restdocs" }
-    doFirst { snippetsDir.mkdirs() }                   // ← 디렉터리 없어서 실패 방지
+    doFirst { snippetsDir.mkdirs() }
     systemProperty "org.springframework.restdocs.outputDir", snippetsDir
     outputs.dir snippetsDir
 }
@@ -106,4 +109,45 @@ asciidoctor {
 tasks.named("bootJar") {
     dependsOn tasks.named("asciidoctor")
     from("${layout.buildDirectory.get()}/docs/asciidoc/") { into "static/docs" }
+}
+
+// ----------------------------------------------------------------------
+// integrationTest 소스셋/태스크 정의
+// ----------------------------------------------------------------------
+sourceSets {
+    integrationTest {
+        java.srcDir 'src/integrationTest/java'
+        resources.srcDir 'src/integrationTest/resources'
+        compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+if (tasks.findByName('integrationTest') == null) {
+    tasks.register('integrationTest', Test) {
+        description = 'Runs integration tests.'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        shouldRunAfter tasks.test
+        useJUnitPlatform()
+    }
+} else {
+    tasks.named('integrationTest', Test) {
+        description = 'Runs integration tests.'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        shouldRunAfter tasks.test
+        useJUnitPlatform()
+    }
+}
+
+if (project.hasProperty("includeIT") && project.property("includeIT").toString().toBoolean()) {
+    tasks.check { dependsOn tasks.named('integrationTest') }
 }

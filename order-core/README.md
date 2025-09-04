@@ -1,267 +1,314 @@
-# 📦 order-core — 통합 분석( application + infra )
+# 📦 order-api-master — 통합 분석( REST → Kafka 퍼블리시 어댑터 )
 
 ----------------------------------------------------------------------------------------------------
 
-## 1) 최상위 개요(DDD + Clean Architecture)
+## 1) 최상위 개요(아키텍처 & 의존 흐름)
 
-    의존 흐름(요지)
-      [application] → [domain ports + mapper] ←implements— [infra adapters] —talks-to→ [DB/Kafka/Redis/External]
+    요청 플로우(요지)
+      [Client] → [REST API(Controller)] → [Facade] → [Service]
+        → [Application Mapper(core)] → [Message(validation)]
+        → [KafkaProducerService] → [KafkaProducerCluster] → [Topic]
 
     모듈 루트
-      org.example.order.core
-      ├─ application/     ← 유스케이스, DTO, 매퍼, 이벤트/리스너, 스케줄러, 예외
-      └─ infra/           ← persistence(저장/조회 구현), messaging, acl, jpa, dynamo, redis, lock, crypto, common, config
+      org.example.order.api.master
+      ├─ config/           ← 스프링 구성(@Import, ObjectMapper 조건 빈)
+      ├─ controller/       ← REST 엔드포인트(/order)
+      ├─ dto/              ← API 요청/응답(LocalOrderRequest/Response)
+      ├─ facade/           ← API↔Service 얇은 조정자
+      ├─ mapper/           ← API DTO → Application Command 변환
+      ├─ service/
+      │   ├─ common/       ← KafkaProducerService(토픽 라우팅)
+      │   └─ order/        ← 유스케이스(Service → 메시지 생성/검증/전송)
+      └─ web/advice/       ← 모듈 전용 예외 핸들러
+
+    외부 의존
+      - org.example.order.core (OrderCoreConfig import)
+      - org.example.order.client.kafka (KafkaModuleConfig import)
+      - KafkaTopicProperties(토픽명 주입, enum MessageCategory 기반)
 
     핵심 원칙
-      - 도메인 보호: Domain 은 Port(인터페이스)만 소유, 구현은 Infra Adapter
-      - 경계 보호: 외부/타 컨텍스트 스키마는 Domain 에 직접 노출 금지 → infra.acl 로 흡수/번역(Gateway/Translator/외부 DTO)
-      - 애그리거트 우선: 저장/조회 어댑터는 persistence/<aggregate>/<tech> 구조
-      - 설정 기반 조립: @ConditionalOnProperty + @Import 로 모듈 토글/배선
+      - API 레이어는 입력 검증/호출 오케스트레이션만 담당(얇게 유지)
+      - 메시지 스키마/검증은 core 의 Mapper/Message(validation)에서 책임
+      - 토픽명/브로커는 설정 기반으로 주입(환경별 분리)
 
 ----------------------------------------------------------------------------------------------------
 
-## 2) application 계층 — 디렉터리 지도(고정폭 트리)
+## 2) 실행/구동(필수 설정 · application.yml · 4-space 블록)
 
-    org.example.order.core.application
-    ├─ common/
-    │   ├─ adapter/         ← 외부 연동 인터페이스(애플리케이션 관점)
-    │   ├─ dto/
-    │   │   ├─ command/     ← 명령 요청 DTO
-    │   │   ├─ incoming/    ← 외부 유입 DTO(Kafka/Webhook)
-    │   │   ├─ internal/    ← 내부 전달 DTO(Local* 등)
-    │   │   ├─ model/       ← 단순 VO/레코드
-    │   │   ├─ outgoing/    ← 외부 송신 DTO
-    │   │   ├─ query/       ← 조회 전용 DTO(Projection)
-    │   │   └─ response/    ← API 응답 DTO
-    │   ├─ event/           ← @EventListener, @TransactionalEventListener
-    │   ├─ exception/       ← 애플리케이션 전용 예외
-    │   ├─ listener/        ← Kafka/MQ/스케줄 리스너
-    │   ├─ mapper/          ← Application ↔ Domain 변환(도메인 직접 노출 금지)
-    │   ├─ scheduler/       ← 배치/주기 작업
-    │   └─ service/         ← 유스케이스/핸들러
-    └─ order/
-        ├─ adapter/
-        ├─ dto/ (incoming|command|internal|model|outgoing|query|response)
-        ├─ event/
-        ├─ exception/
-        ├─ listener/
-        ├─ mapper/
-        ├─ scheduler/
-        └─ service/
+    spring:
+      application:
+        name: order-api-master
+    server:
+      port: 8080
 
-- DTO/매퍼 핵심
-  - LocalOrderDto(내부 전달 표준) ↔ OrderEntity(도메인)
-  - OrderApiOutgoingDto → (toMessage) → OrderCloseMessage(메시징 전송 DTO)
-  - OrderEntityDto: 도메인 엔티티의 애플리케이션용 래퍼(직접 노출 금지)
-
-- 흐름 예시(Command → Domain → Messaging)
-  LocalOrderDto
-  → (OrderMapper.toEntity) → OrderEntity
-  → 도메인 서비스/포트 호출(저장/상태변경)
-  → (mapper) → OrderApiOutgoingDto
-  → toMessage() → OrderCloseMessage → producer.send()
-
-----------------------------------------------------------------------------------------------------
-
-## 3) infra 계층 — 디렉터리 지도(고정폭 트리)
-
-    org.example.order.core.infra
-    ├─ persistence/                 ← 저장/조회 어댑터(애그리거트 우선 → 기술 하위)
-    │   ├─ order/
-    │   │   ├─ jpa/
-    │   │   │   ├─ adapter/         (SpringDataOrderJpaRepository)
-    │   │   │   └─ impl/            (OrderRepositoryJpaImpl, OrderQueryRepositoryJpaImpl)
-    │   │   ├─ jdbc/
-    │   │   │   └─ impl/            (OrderCommandRepositoryJdbcImpl)    ← 현 구조가 order/impl 인 경우, jdbc/impl 로 이관 권장
-    │   │   ├─ dynamo/
-    │   │   │   └─ impl/            (OrderDynamoRepositoryImpl)
-    │   │   └─ redis/
-    │   │       ├─ RedisRepository.java
-    │   │       └─ impl/            (RedisRepositoryImpl)
-    │   └─ payment/                 (대칭 구조: jpa|jdbc|dynamo|redis 하위 구성)
-    ├─ messaging/                   ← 브로커 설정, 프로듀서/컨슈머, 전송 DTO
-    │   ├─ config/
-    │   ├─ common/                  (DLQ/헤더/키 전략/재시도)
-    │   └─ order/
-    │       ├─ producer/
-    │       ├─ consumer/
-    │       └─ message/             (OrderCloseMessage 등)
-    ├─ acl/                         ← Anti-Corruption Layer(외부/타 컨텍스트 번역)
-    │   ├─ member/
-    │   │   ├─ MemberClient / MemberDto / MemberTranslator
-    │   │   └─ MemberGatewayHttp (implements MemberGateway)
-    │   └─ payment/
-    │       ├─ PaymentClient / PaymentDto / PaymentTranslator
-    │       └─ PaymentGatewayHttp (implements PaymentGateway)
-    ├─ jpa/                         ← JPA/QueryDSL 설정/유틸
-    │   ├─ config/                  (JpaInfraConfig: jpa.enabled)
-    │   └─ querydsl/                (QuerydslUtils, WhereClauseBuilder 등)
-    ├─ dynamo/                      ← DynamoDB 설정/유틸
-    │   ├─ config/                  (DynamoInfraConfig: dynamodb.enabled)
-    │   └─ props/                   (DynamoDbProperties)
-    ├─ redis/                       ← Redis 설정/유틸
-    ├─ lock/                        ← NamedLock + RedissonLock
-    ├─ crypto/                      ← 암호화/키관리(algorithm/contract/util/config/...)
-    ├─ common/                      ← idgen(TSID), secrets, aop 등
-    └─ config/                      ← 글로벌 오토컨피그 허브(선택)
-
-- 포트 ↔ 어댑터 매핑(주요)
-  - OrderRepository            ↔  OrderRepositoryJpaImpl
-  - OrderQueryRepository       ↔  OrderQueryRepositoryJpaImpl
-  - OrderCommandRepository     ↔  OrderCommandRepositoryJdbcImpl
-  - OrderDynamoRepository      ↔  OrderDynamoRepositoryImpl
-  - (도메인 캐시 필요 시) CachePort ↔ 전용 CacheAdapter(내부에서 RedisRepositoryImpl 사용)
-
-- ACL 사용 규칙
-  - 도메인/애플리케이션은 외부/타 컨텍스트를 직접 참조 금지
-  - 항상 PaymentGateway/MemberGateway 등 도메인 Port 에만 의존
-  - 외부 스키마 변경/하위호환/타임아웃/리트라이/서킷/폴백은 ACL 어댑터에서 캡슐화
-
-----------------------------------------------------------------------------------------------------
-
-## 4) 설정 샘플(application.yml · 4-space 블록)
-
-    jpa:
-      enabled: true
-
-    dynamodb:
-      enabled: true
-      endpoint: http://localhost:4566
-      region: ap-northeast-2
-      access-key: test
-      secret-key: test
-      table-name: order_projection
-
-    redis:
-      enabled: true
-
-    lock:
-      enabled: true
-      named:
+    # Kafka 클라이언트/토픽 매핑 예시
+    kafka:
+      bootstrap-servers: localhost:9092
+      producer:
         enabled: true
-        wait-time: 3000
-        retry-interval: 150
-      redisson:
-        enabled: true
-        address: redis://127.0.0.1:6379
-        database: 0
-        wait-time: 3000
-        lease-time: 10000
-        retry-interval: 150
+        acks: all
+        retries: 10
+        linger-ms: 5
+        batch-size: 65536
+        compression-type: lz4
+      # KafkaTopicProperties 바인딩 규약에 맞춰 enum 기반 맵핑(예시)
+      topics:
+        ORDER_LOCAL: order.local.v1
 
-    core:
-      infra:
-        persistence:
-          order:
-            jpa:    { enabled: true }
-            jdbc:   { enabled: true }
-            dynamo: { enabled: true,  table-name: order_projection }
-            redis:  { enabled: false }
-          payment:
-            jpa:    { enabled: true }
-            jdbc:   { enabled: false }
-            dynamo: { enabled: false, table-name: payment_projection }
-            redis:  { enabled: true }
-        messaging:
-          kafka:   { enabled: true }
-        acl:
-          payment:
-            enabled: true
-            base-url: https://payment.api
-            timeout-ms: 3000
+    logging:
+      level:
+        root: INFO
+        org.example.order: INFO
+
+- 위 키 이름은 프로젝트의 `KafkaModuleConfig / KafkaTopicProperties` 바인딩 규약에 맞추어 조정하십시오(예: `kafka.topic.order-local` 형태를 사용한다면 동일하게 매핑). 핵심은 **MessageCategory.ORDER_LOCAL → 실제 토픽명** 이 1:1로 설정되는 것입니다.
 
 ----------------------------------------------------------------------------------------------------
 
-## 5) 상황별 사용 스니펫(4-space 코드 블록)
+## 3) 사용법(가장 중요)
 
-A) 대량 적재/명령(JDBC)
+3.1 REST 엔드포인트
 
-        @Service
+    POST /order
+    Content-Type: application/json
+
+    요청(LocalOrderRequest)
+      - orderId: Long, 필수(@NotNull)
+      - methodType: MessageMethodType(enum), 필수(@NotNull)
+        예) CREATE | UPDATE | DELETE ... (프로젝트 정의에 따름)
+
+    성공 응답(LocalOrderResponse wrapped by ApiResponse)
+      - HTTP 202 Accepted
+      - body.data = { orderId: <요청 ID>, status: "ACCEPTED" }
+
+3.2 즉시 실행 예시(curl)
+
+    curl -X POST http://localhost:8080/order \
+         -H "Content-Type: application/json" \
+         -d '{ "orderId": 12345, "methodType": "CREATE" }'
+
+    # 개념적 성공 응답 예시(ApiResponse 래핑 규격은 common에 따름)
+    {
+      "success": true,
+      "data": { "orderId": 12345, "status": "ACCEPTED" },
+      "error": null
+    }
+
+3.3 유효성 실패/예외 응답
+- `orderId` 또는 `methodType` 누락 시 Bean Validation 예외 발생.
+- `MasterApiExceptionHandler`가 모듈 전용 로그 태깅으로 공통 규격 응답을 반환.
+- 알 수 없는 예외는 `CommonExceptionCode.UNKNOWN_SERVER_ERROR`로 표준화.
+
+----------------------------------------------------------------------------------------------------
+
+## 4) 동작 흐름(요청→토픽 퍼블리시)
+
+    [Controller] OrderController.sendOrderMasterMessage()
+      - @Valid LocalOrderRequest 검증 + 수신 로그
+      - Facade.sendOrderMessage(request) 호출
+      - ApiResponse.accepted(LocalOrderResponse(orderId, "ACCEPTED")) 반환(202)
+
+    [Facade] OrderFacadeImpl
+      - OrderRequestMapper.toCommand(request) → LocalOrderCommand
+      - OrderService.sendMessage(command)
+
+    [Service] OrderServiceImpl
+      - OrderMapper.toOrderLocalMessage(command) → OrderLocalMessage
+      - message.validation() 수행(코어 메시지의 비즈니스 규칙 검증)
+      - 로그("[OrderService] sending message ...")
+      - KafkaProducerService.sendToOrder(message)
+
+    [Producer] KafkaProducerServiceImpl
+      - KafkaTopicProperties.getName(MessageCategory.ORDER_LOCAL)로 토픽명 결정
+      - KafkaProducerCluster.sendMessage(message, topic)
+
+----------------------------------------------------------------------------------------------------
+
+## 5) 확장 사용법(상황별 가이드 · 바로 적용)
+
+A) 신규 methodType 을 별도 토픽으로 라우팅(예: CANCEL 전용 토픽)
+
+    1) enum MessageCategory 에 CANCEL_LOCAL 추가(코어)
+    2) application.yml 에 토픽명 매핑
+         kafka:
+           topics:
+             CANCEL_LOCAL: order.cancel.v1
+    3) KafkaProducerService 에 전송 메서드 추가
+         void sendToCancel(OrderLocalMessage message);
+       KafkaProducerServiceImpl 에 구현 추가
+         public void sendToCancel(OrderLocalMessage message) {
+             send(message, kafkaTopicProperties.getName(MessageCategory.CANCEL_LOCAL));
+         }
+    4) OrderServiceImpl 에 분기 추가(명령/메시지 methodType 기준)
+         if (message.getMethodType() == MessageMethodType.CANCEL) {
+             kafkaProducerService.sendToCancel(message);
+         } else {
+             kafkaProducerService.sendToOrder(message);
+         }
+
+B) 다중 토픽 브로드캐스트(동일 메시지 여러 소비자)
+
+    - KafkaProducerServiceImpl 에 다중 토픽 전송 유틸 추가
+        public void sendToTopics(Object message, List<String> topics) {
+            topics.forEach(t -> cluster.sendMessage(message, t));
+        }
+    - Facade/Service 에서 시나리오별 토픽 목록 구성 후 호출
+
+C) 메시지 스키마 확장(필드 추가/검증 강화)
+
+    - LocalOrderCommand 에 신규 필드 추가 → OrderMapper.toOrderLocalMessage 에 매핑 확장
+    - OrderLocalMessage.validation() 에 규칙 추가(널/범위/상태 일관성)
+    - Controller 의 DTO(LocalOrderRequest)에 @NotNull/@Pattern 등 전처리 검증 권장
+
+D) 환경별 토픽 분리
+
+    # 예: dev/stg/prod 각각 별도 토픽 운영
+    kafka:
+      topics:
+        ORDER_LOCAL: order.local.v1.dev   # dev
+    # stage/prod 프로파일별 yml에서 override
+    kafka:
+      topics:
+        ORDER_LOCAL: order.local.v1.stg   # stg
+    kafka:
+      topics:
+        ORDER_LOCAL: order.local.v1       # prod
+
+E) 로컬 개발시 카프카 없는 환경
+
+    kafka:
+      producer:
+        enabled: false
+    # KafkaModuleConfig 가 비활성화 시 no-op/memory-buffer 전략을 제공하도록 구성
+    # (프로젝트 규약에 따름)
+
+----------------------------------------------------------------------------------------------------
+
+## 6) 구성/코드 스니펫(4-space 고정폭 · 복붙 안전)
+
+6.1 Controller(요약)
+
+        @RestController
+        @RequestMapping("/order")
         @RequiredArgsConstructor
-        public class OrderIngestionService {
-            private final OrderCommandRepository orderCommandRepository;
-            @Transactional
-            public void ingest(List<OrderEntity> entities) {
-                orderCommandRepository.bulkInsert(entities); // JdbcTemplate + TSID
+        public class OrderController {
+            private final OrderFacade facade;
+
+            @PostMapping
+            public ResponseEntity<ApiResponse<LocalOrderResponse>> sendOrderMasterMessage(
+                    @RequestBody @Valid LocalOrderRequest request
+            ) {
+                facade.sendOrderMessage(request);
+                return ApiResponse.accepted(new LocalOrderResponse(request.orderId(), "ACCEPTED"));
             }
         }
 
-B) 정합성 조회(JPA/QueryDSL)
+6.2 Facade/Mapper
 
-        @Service
+        @Component
         @RequiredArgsConstructor
-        public class OrderQueryService {
-            private final OrderQueryRepository orderQueryRepository;
-            @Transactional(readOnly = true)
-            public OrderView view(Long orderId) {
-                return orderQueryRepository.fetchByOrderId(orderId); // Projection
+        public class OrderFacadeImpl implements OrderFacade {
+            private final OrderService orderService;
+            private final OrderRequestMapper mapper;
+
+            @Override
+            public void sendOrderMessage(LocalOrderRequest request) {
+                var command = mapper.toCommand(request);
+                orderService.sendMessage(command);
             }
         }
 
-C) 읽기모델/특수조회(Dynamo)
-
-        @Service
-        @RequiredArgsConstructor
-        public class OrderProjectionService {
-            private final OrderDynamoRepository orderDynamoRepository;
-            @Transactional(readOnly = true)
-            public Optional<OrderDynamoEntity> byId(String id) {
-                return orderDynamoRepository.findById(id);
+        @Component
+        public class OrderRequestMapper {
+            public LocalOrderCommand toCommand(LocalOrderRequest req) {
+                return (req == null) ? null : new LocalOrderCommand(req.orderId(), req.methodType());
             }
         }
 
-D) 캐시 활용(Redis 유틸 → 전용 Adapter로 감싸 권장)
+6.3 Service(메시지 생성/검증/전송)
 
         @Service
         @RequiredArgsConstructor
-        public class OrderCacheService {
-            private final RedisRepository redis;
-            public void putOrderView(String key, Object view, long ttlSec) { redis.set(key, view, ttlSec); }
-            public Object getOrderView(String key) { return redis.get(key); }
-        }
+        public class OrderServiceImpl implements OrderService {
+            private final KafkaProducerService kafkaProducerService;
+            private final OrderMapper orderMapper;
 
-E) 메시징 발행(도메인 이벤트 → 전송 DTO)
-
-        @Service
-        @RequiredArgsConstructor
-        public class OrderClosePublisher {
-            private final OrderCloseProducer producer;
-            public void publish(Long orderId) {
-                var msg = OrderCloseMessage.toMessage(orderId, MessageMethodType.CLOSE);
-                producer.send(msg);
+            @Override
+            public void sendMessage(LocalOrderCommand command) {
+                final var message = orderMapper.toOrderLocalMessage(command);
+                message.validation();
+                kafkaProducerService.sendToOrder(message);
             }
         }
 
-F) 외부 연동(반드시 ACL 경유)
+6.4 Producer 라우팅
 
-        @Service
+        @Component
         @RequiredArgsConstructor
-        public class PaymentAppService {
-            private final PaymentGateway paymentGateway; // 도메인 out-port
-            public PaymentStatus ensureAuthorized(PaymentId pid) {
-                return paymentGateway.fetchStatus(pid);   // infra.acl.payment.PaymentGatewayHttp
+        public class KafkaProducerServiceImpl implements KafkaProducerService {
+            private final KafkaProducerCluster cluster;
+            private final KafkaTopicProperties topics;
+
+            @Override
+            public void sendToOrder(OrderLocalMessage message) {
+                cluster.sendMessage(message, topics.getName(MessageCategory.ORDER_LOCAL));
+            }
+        }
+
+6.5 Config(ObjectMapper 조건 빈 + 모듈 import)
+
+        @Configuration
+        @Import({ OrderCoreConfig.class, KafkaModuleConfig.class })
+        @EnableConfigurationProperties(KafkaTopicProperties.class)
+        @ComponentScan(basePackages = "org.example.order.api.master")
+        @RequiredArgsConstructor
+        public class OrderApiMasterConfig {
+
+            @Bean
+            @ConditionalOnMissingBean(ObjectMapper.class)
+            ObjectMapper objectMapper() {
+                return ObjectMapperFactory.defaultObjectMapper();
+            }
+        }
+
+6.6 예외 처리(Master 전용 태깅)
+
+        @RestControllerAdvice(basePackages = "org.example.order.api.master")
+        @Order(Ordered.HIGHEST_PRECEDENCE)
+        @Slf4j
+        public class MasterApiExceptionHandler {
+            @ExceptionHandler(CommonException.class)
+            public ResponseEntity<ApiResponse<Void>> handleCommon(CommonException e) {
+                return ApiResponse.error(e);
+            }
+            @ExceptionHandler(Exception.class)
+            public ResponseEntity<ApiResponse<Void>> handleUnknown(Exception e) {
+                return ApiResponse.error(CommonExceptionCode.UNKNOWN_SERVER_ERROR);
             }
         }
 
 ----------------------------------------------------------------------------------------------------
 
-## 6) 운영/테스트 팁(요약)
+## 7) 운영/테스트 팁
 
-- 단위 테스트: Domain/Application 은 Port 스텁/목 사용(기술 의존 제거)
-- 인프라 검증: Testcontainers(LocalStack/RDB/Redis)로 어댑터 동작 확인
-- 구성 테스트: ConditionalOnProperty 조합별 Context 로딩 검증
-- JDBC 벌크: insert ignore 는 충돌을 조용히 흡수 → on duplicate key update/감사로그 권장
-- QueryDSL: fetchCount 비권장 → 별도 카운트 쿼리 유틸 도입
-- Dynamo: Scan 남용 지양, PK/GSI + Query 우선
-- Redis: 키 네임스페이스/TTL/직렬화 정책은 전용 CacheAdapter에 캡슐화
-- Messaging: 파티셔닝/순서보장, DLQ 관측, idempotency 키 설계
-- ACL: 타임아웃/리트라이/서킷/폴백 수치 명시, 외부 오류를 도메인 예외/상태로 변환
+- 응답 코드는 항상 202(accepted)이며, 실제 처리/소비는 비동기(Kafka)에서 진행됩니다.
+- `message.validation()` 실패 시 4xx/5xx 로 올라올 수 있으므로, 컨트롤러 이전의 DTO 검증을 강화하여 개발 초기에 빠르게 실패시키는 것이 좋습니다.
+- 토픽명 누락/오타가 가장 흔한 이슈 → `KafkaTopicProperties` 바인딩 키/프로파일별 오버라이드 여부를 우선 확인.
+- 운영에서 재시도/순서/파티셔닝 요구사항이 있으면 `KafkaModuleConfig` 의 producer 설정(acks, retries, idempotence 등)을 정책화하십시오.
 
 ----------------------------------------------------------------------------------------------------
 
-## 7) 한 줄 요약
+## 8) 점검 체크리스트
 
-- Application: 유스케이스 중심, DTO/매퍼로 도메인 보호, 외부는 **항상 ACL 경유**
-- Infra: 저장/조회 구현은 **persistence** 로 통합(애그리거트 우선 → 기술 하위)
-- Messaging: infra.messaging 으로 이동, 프로듀서/컨슈머/전송 DTO 일원화
-- 설정: 현행 키(jpa.enabled, dynamodb.*, redis.enabled, lock.*) 유지 + 선택적 세분 토글로 점진 확장
+    [ ] kafka.bootstrap-servers 가 올바른가(프로파일별 상이)
+    [ ] kafka.producer.enabled 가 true 인가(운영)
+    [ ] MessageCategory ↔ topics 매핑이 모두 등록되었는가(ORDER_LOCAL 등)
+    [ ] LocalOrderRequest DTO 의 validation 이 충분한가
+    [ ] OrderMapper → OrderLocalMessage 매핑 누락 필드 없는가
+    [ ] message.validation() 규칙이 최신 비즈니스 룰과 일치하는가
+    [ ] 로그/마스킹/상태코드/오류 응답 포맷이 공통 정책과 일치하는가
+
+----------------------------------------------------------------------------------------------------
+
+## 9) 한 줄 요약
+
+- **POST /order** 로 들어온 명령을 **코어 매퍼/검증**을 거쳐 **설정된 카프카 토픽**으로 퍼블리시하는 **얇고 확장 가능한 REST→Kafka 어댑터**입니다. 현업 적용의 핵심은 **토픽 매핑과 메시지 검증 규칙의 설정화**입니다.
