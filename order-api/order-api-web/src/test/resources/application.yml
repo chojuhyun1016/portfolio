@@ -1,0 +1,11 @@
+spring:
+  jackson:
+    time-zone: UTC
+  jpa:
+    open-in-view: false
+  main:
+    allow-bean-definition-overriding: true
+
+logging:
+  level:
+    com.example.order: INFO

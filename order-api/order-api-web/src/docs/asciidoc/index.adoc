@@ -1,18 +1,17 @@
-= Order API 문서
+= Order API Web REST Docs
 :toc: left
-:toclevels: 2
-:sectlinks:
+:toclevels: 3
+:sectanchors:
+:source-highlighter: highlightjs
+:snippets: build/generated-snippets
 
-== 주문 조회
+== GET /order/{id} → 200 OK
 
-경로 변수
-include::{snippets}/order-find-by-id/path-parameters.adoc[]
+.Request
+[source,http,options="nowrap"]
+----
+GET /order/{id}
+----
 
-응답 필드
-include::{snippets}/order-find-by-id/response-fields-data.adoc[]
-
-HTTP 요청 예시
-include::{snippets}/order-find-by-id/http-request.adoc[]
-
-HTTP 응답 예시
-include::{snippets}/order-find-by-id/http-response.adoc[]
+.Response
+include::{snippets}/order-get/http-response.adoc[]

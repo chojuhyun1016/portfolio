@@ -3,6 +3,7 @@
 //  - Boot 웹 API 모듈 (+ Spring REST Docs 문서화)
 //  - 모든 버전/의존성은 libs.versions.toml(버전 카탈로그) 기준
 //  - Kafka, Querydsl(Jakarta), 보안/웹/JPA/검증, 로깅 포함
+//  - REST Docs: test 또는 rest 태스크로 스니펫 생성
 // ======================================================================
 
 plugins {
@@ -66,6 +67,18 @@ tasks.named("test", Test) {
     outputs.dir snippetsDir
 }
 
+// REST Docs 전용 테스트(스니펫 생성) 태스크
+tasks.register("rest", Test) {
+    description = "Run only REST Docs tests (@Tag(\"restdocs\")) and generate snippets."
+    group = "verification"
+    useJUnitPlatform { includeTags "restdocs" }
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    doFirst { snippetsDir.mkdirs() }
+    systemProperty "org.springframework.restdocs.outputDir", snippetsDir
+    outputs.dir snippetsDir
+}
+
 // Asciidoctor 변환
 asciidoctor {
     configurations "asciidoctorExt"
@@ -77,7 +90,7 @@ asciidoctor {
             "sectanchors": true,
             "source-highlighter": "highlightjs"
     )
-    dependsOn tasks.named("test")
+    dependsOn("test", "rest")
     onlyIf { snippetsDir.exists() && snippetsDir.listFiles()?.length > 0 }
 }
 
