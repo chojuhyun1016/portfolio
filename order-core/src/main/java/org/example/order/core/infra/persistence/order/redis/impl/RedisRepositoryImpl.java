@@ -1,10 +1,12 @@
 package org.example.order.core.infra.persistence.order.redis.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.persistence.order.redis.RedisRepository;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +15,7 @@ import java.util.concurrent.TimeUnit;
  * 등록은 설정(InfraConfig)에서 @Bean 으로만 수행 (컴포넌트 스캔 미사용)
  */
 @RequiredArgsConstructor
+@Slf4j
 public class RedisRepositoryImpl implements RedisRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
@@ -88,11 +91,16 @@ public class RedisRepositoryImpl implements RedisRepository {
     @Override
     public List<Object> rightPop(String key, int loop) {
         List<Object> result = new ArrayList<>();
+
         for (int i = 0; i < loop; i++) {
             Object val = redisTemplate.opsForList().rightPop(key);
-            if (val == null) break;
+
+            if (val == null) {
+                break;
+            }
             result.add(val);
         }
+
         return result;
     }
 
@@ -179,19 +187,16 @@ public class RedisRepositoryImpl implements RedisRepository {
         return Boolean.TRUE.equals(redisTemplate.persist(key));
     }
 
-    @Override
-    public Set<String> keys(String pattern) {
-        return redisTemplate.keys(pattern);
-    }
-
     // === Transaction ===
     @Override
     public void transactionPutAllHash(String hashKey, Map<Object, Object> map) {
         redisTemplate.execute(new SessionCallback<>() {
+
             @Override
             public Object execute(RedisOperations operations) throws DataAccessException {
                 operations.multi();
                 operations.opsForHash().putAll(hashKey, map);
+
                 return operations.exec();
             }
         });
@@ -200,12 +205,35 @@ public class RedisRepositoryImpl implements RedisRepository {
     @Override
     public void transactionAddSet(String key, Collection<Object> members) {
         redisTemplate.execute(new SessionCallback<>() {
+
             @Override
             public Object execute(RedisOperations operations) throws DataAccessException {
                 operations.multi();
                 operations.opsForSet().add(key, members.toArray());
+
                 return operations.exec();
             }
+        });
+    }
+
+    // === TTL / Keys ===
+    @Override
+    public Set<String> keys(String pattern) {
+        final String match = (pattern == null || pattern.isBlank()) ? "*" : pattern;
+
+        return redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+            Set<String> results = new LinkedHashSet<>();
+            ScanOptions options = ScanOptions.scanOptions().match(match).count(1000).build();
+
+            try (Cursor<byte[]> cursor = connection.scan(options)) {
+                while (cursor.hasNext()) {
+                    results.add(new String(cursor.next(), StandardCharsets.UTF_8));
+                }
+            } catch (Exception e) {
+                log.warn("SCAN failed for pattern '{}': {}", match, e.toString());
+            }
+
+            return results;
         });
     }
 }
