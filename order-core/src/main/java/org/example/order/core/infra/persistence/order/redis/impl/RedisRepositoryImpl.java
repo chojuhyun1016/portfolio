@@ -2,11 +2,13 @@ package org.example.order.core.infra.persistence.order.redis.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.order.core.infra.persistence.order.redis.RedisListPopOptions;
 import org.example.order.core.infra.persistence.order.redis.RedisRepository;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.*;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -98,10 +100,50 @@ public class RedisRepositoryImpl implements RedisRepository {
             if (val == null) {
                 break;
             }
+
             result.add(val);
         }
 
         return result;
+    }
+
+    @Override
+    public List<Object> rightPop(String key, RedisListPopOptions options) {
+        if (options == null) {
+            return RedisRepository.super.rightPop(key, null);
+        }
+
+        Long timeoutSec = options.getBlockingTimeoutSeconds();
+        Integer loop = options.getLoop();
+        int n = (loop != null && loop > 0) ? loop : 1;
+
+        List<Object> result = new ArrayList<>();
+
+        if (timeoutSec != null && timeoutSec > 0) {
+            for (int i = 0; i < n; i++) {
+                Object val = redisTemplate.opsForList().rightPop(key, Duration.ofSeconds(timeoutSec));
+
+                if (val == null) {
+                    break;
+                }
+
+                result.add(val);
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("redis_list_pop op=rightPopBlocking key={} timeoutSec={} count={}", key, timeoutSec, result.size());
+            }
+
+            return result;
+        }
+
+        List<Object> nonBlocking = rightPop(key, n);
+
+        if (log.isDebugEnabled()) {
+            log.debug("redis_list_pop op=rightPopNonBlocking key={} loop={} count={}", key, n, nonBlocking.size());
+        }
+
+        return nonBlocking;
     }
 
     @Override
@@ -191,7 +233,6 @@ public class RedisRepositoryImpl implements RedisRepository {
     @Override
     public void transactionPutAllHash(String hashKey, Map<Object, Object> map) {
         redisTemplate.execute(new SessionCallback<>() {
-
             @Override
             public Object execute(RedisOperations operations) throws DataAccessException {
                 operations.multi();
@@ -205,7 +246,6 @@ public class RedisRepositoryImpl implements RedisRepository {
     @Override
     public void transactionAddSet(String key, Collection<Object> members) {
         redisTemplate.execute(new SessionCallback<>() {
-
             @Override
             public Object execute(RedisOperations operations) throws DataAccessException {
                 operations.multi();

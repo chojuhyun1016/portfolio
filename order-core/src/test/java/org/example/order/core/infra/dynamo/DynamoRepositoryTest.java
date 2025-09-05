@@ -11,6 +11,7 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.DeleteItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
+import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
 
 import java.util.Iterator;
 import java.util.List;
@@ -36,20 +37,15 @@ class DynamoRepositoryTest {
         DynamoDbTable<OrderDynamoEntity> table = mock(DynamoDbTable.class);
 
         when(enhanced.table(eq("order_dynamo"), any(TableSchema.class))).thenReturn(table);
-        when(table.getItem(any(Consumer.class))).thenReturn(null);
+        when(table.getItem(any(GetItemEnhancedRequest.class))).thenReturn(null);
 
         OrderDynamoRepositoryImpl repo = new OrderDynamoRepositoryImpl(enhanced, "order_dynamo");
         repo.findById("id-123");
 
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Consumer<GetItemEnhancedRequest.Builder>> captor =
-                ArgumentCaptor.forClass(Consumer.class);
+        ArgumentCaptor<GetItemEnhancedRequest> captor = ArgumentCaptor.forClass(GetItemEnhancedRequest.class);
         verify(table, times(1)).getItem(captor.capture());
 
-        GetItemEnhancedRequest.Builder builder = GetItemEnhancedRequest.builder();
-        captor.getValue().accept(builder);
-        GetItemEnhancedRequest built = builder.build();
-
+        GetItemEnhancedRequest built = captor.getValue();
         assertThat(built.key()).isNotNull();
         assertThat(built.key().partitionKeyValue().s()).isEqualTo("id-123");
     }
@@ -88,7 +84,7 @@ class DynamoRepositoryTest {
         when(enhanced.table(eq("order_dynamo"), any(TableSchema.class))).thenReturn(table);
         @SuppressWarnings("unchecked")
         PageIterable<OrderDynamoEntity> pageIterable = mock(PageIterable.class);
-        when(table.scan()).thenReturn(pageIterable);
+        when(table.scan(any(ScanEnhancedRequest.class))).thenReturn(pageIterable);
 
         List<OrderDynamoEntity> data = List.of(entity("a", 1L), entity("b", 2L), entity("c", 2L));
         when(pageIterable.items()).thenReturn(sdkIterableOf(data));
@@ -97,7 +93,7 @@ class DynamoRepositoryTest {
         var all = repo.findAll();
 
         assertThat(all).extracting(OrderDynamoEntity::getId).containsExactlyInAnyOrder("a", "b", "c");
-        verify(table, times(1)).scan();
+        verify(table, times(1)).scan(any(ScanEnhancedRequest.class));
         verify(pageIterable, times(1)).items();
     }
 
@@ -110,7 +106,7 @@ class DynamoRepositoryTest {
         when(enhanced.table(eq("order_dynamo"), any(TableSchema.class))).thenReturn(table);
         @SuppressWarnings("unchecked")
         PageIterable<OrderDynamoEntity> pageIterable = mock(PageIterable.class);
-        when(table.scan()).thenReturn(pageIterable);
+        when(table.scan(any(ScanEnhancedRequest.class))).thenReturn(pageIterable);
 
         List<OrderDynamoEntity> data = List.of(entity("o-1", 1L), entity("o-2", 2L), entity("o-3", 1L));
         when(pageIterable.items()).thenReturn(sdkIterableOf(data));
@@ -119,7 +115,7 @@ class DynamoRepositoryTest {
         var onlyU1 = repo.findByUserId(1L);
 
         assertThat(onlyU1).extracting(OrderDynamoEntity::getId).containsExactlyInAnyOrder("o-1", "o-3");
-        verify(table, times(1)).scan();
+        verify(table, times(1)).scan(any(ScanEnhancedRequest.class));
         verify(pageIterable, times(1)).items();
     }
 
@@ -127,7 +123,6 @@ class DynamoRepositoryTest {
         OrderDynamoEntity e = new OrderDynamoEntity();
         e.setId(id);
         e.setUserId(userId);
-
         return e;
     }
 

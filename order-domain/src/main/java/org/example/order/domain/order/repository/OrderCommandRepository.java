@@ -1,6 +1,7 @@
 package org.example.order.domain.order.repository;
 
 import org.example.order.domain.order.entity.OrderEntity;
+import org.example.order.domain.order.model.OrderBatchOptions;
 import org.example.order.domain.order.model.OrderUpdate;
 
 import java.util.List;
@@ -13,4 +14,12 @@ public interface OrderCommandRepository {
     void bulkInsert(List<OrderEntity> entities);
 
     void bulkUpdate(List<OrderUpdate> syncList);
+
+    default void bulkInsert(List<OrderEntity> entities, OrderBatchOptions options) {
+        bulkInsert(entities);
+    }
+
+    default void bulkUpdate(List<OrderUpdate> syncList, OrderBatchOptions options) {
+        bulkUpdate(syncList);
+    }
 }

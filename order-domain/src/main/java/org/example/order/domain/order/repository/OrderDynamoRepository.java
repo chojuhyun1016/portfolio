@@ -1,6 +1,7 @@
 package org.example.order.domain.order.repository;
 
 import org.example.order.domain.order.entity.OrderDynamoEntity;
+import org.example.order.domain.order.model.OrderDynamoQueryOptions;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +23,16 @@ public interface OrderDynamoRepository {
     List<OrderDynamoEntity> findByUserId(Long userId);
 
     void deleteById(String id);
+
+    default Optional<OrderDynamoEntity> findById(String id, OrderDynamoQueryOptions options) {
+        return findById(id);
+    }
+
+    default List<OrderDynamoEntity> findAll(OrderDynamoQueryOptions options) {
+        return findAll();
+    }
+
+    default List<OrderDynamoEntity> findByUserId(Long userId, OrderDynamoQueryOptions options) {
+        return findByUserId(userId);
+    }
 }

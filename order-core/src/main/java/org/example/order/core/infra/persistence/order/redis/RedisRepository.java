@@ -35,6 +35,16 @@ public interface RedisRepository {
 
     List<Object> rightPop(String key, int loop);                   // list right pop loop
 
+    default List<Object> rightPop(String key, RedisListPopOptions options) {
+        if (options == null || options.getBlockingTimeoutSeconds() == null || options.getBlockingTimeoutSeconds() <= 0) {
+            int loop = (options != null && options.getLoop() != null && options.getLoop() > 0) ? options.getLoop() : 1;
+
+            return rightPop(key, loop);
+        }
+
+        return rightPop(key, 1);
+    }
+
     Long listSize(String key);                                     // list size
 
     // === Set ===

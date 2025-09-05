@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.domain.order.entity.OrderEntity;
+import org.example.order.domain.order.model.OrderBatchOptions;
 import org.example.order.domain.order.model.OrderUpdate;
 import org.example.order.domain.order.repository.OrderCommandRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,8 +33,22 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
     @Override
     @Transactional
     public void bulkInsert(List<OrderEntity> entities) {
+        bulkInsert(entities, null);
+    }
+
+    @Override
+    public void bulkUpdate(List<OrderUpdate> syncList) {
+        bulkUpdate(syncList, null);
+    }
+
+    // === [ADD] 옵션 오버로드 구현 ===
+    @Override
+    @Transactional
+    public void bulkInsert(List<OrderEntity> entities, OrderBatchOptions options) {
+        final int chunk = resolveChunk(options);
+
         String sql = """
-                insert ignore into order (id, user_id, user_number, order_id, order_number, order_price,
+                insert ignore into `order` (id, user_id, user_number, order_id, order_number, order_price,
                                             published_datetime, delete_yn, created_user_id, created_user_type,
                                             created_datetime, modified_user_id, modified_user_type, modified_datetime)
                 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -46,12 +61,10 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
         };
 
         List<Object[]> batchArgs = new ArrayList<>();
-
         entities.forEach(entity -> {
             if (entity.getId() == null) {
                 entity.setId(tsidFactory.create().toLong());
             }
-
             batchArgs.add(new Object[]{
                     entity.getId(),
                     entity.getUserId(),
@@ -70,22 +83,24 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
             });
         });
 
-        for (int i = 0; i < batchArgs.size(); i += batchChunkSize) {
-            int end = Math.min(i + batchChunkSize, batchArgs.size());
-            List<Object[]> chunk = batchArgs.subList(i, end);
+        for (int i = 0; i < batchArgs.size(); i += chunk) {
+            int end = Math.min(i + chunk, batchArgs.size());
+            List<Object[]> sub = batchArgs.subList(i, end);
 
-            jdbcTemplate.batchUpdate(sql, chunk, argTypes);
+            jdbcTemplate.batchUpdate(sql, sub, argTypes);
 
             if (log.isDebugEnabled()) {
-                log.debug("bulkInsert chunk processed: {} - {}", i, end - 1);
+                log.debug("jdbc_bulk op=insert chunk={} range=[{}, {})", chunk, i, end);
             }
         }
     }
 
     @Override
-    public void bulkUpdate(List<OrderUpdate> syncList) {
+    public void bulkUpdate(List<OrderUpdate> syncList, OrderBatchOptions options) {
+        final int chunk = resolveChunk(options);
+
         String sql = """
-                update order set user_id = ?,
+                update `order` set user_id = ?,
                                    user_number = ?,
                                    order_id = ?,
                                    order_number = ?,
@@ -109,36 +124,42 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
         };
 
         List<Object[]> batchArgs = new ArrayList<>();
-
-        for (OrderUpdate sync : syncList) {
+        for (OrderUpdate s : syncList) {
             batchArgs.add(new Object[]{
-                    sync.userId(),
-                    sync.userNumber(),
-                    sync.orderId(),
-                    sync.orderNumber(),
-                    sync.orderPrice(),
-                    sync.publishedDateTime(),
-                    sync.deleteYn(),
-                    sync.createdUserId(),
-                    sync.createdUserType(),
-                    sync.createdDatetime(),
-                    sync.modifiedUserId(),
-                    sync.modifiedUserType(),
-                    sync.modifiedDatetime(),
-                    sync.orderId(),
-                    sync.publishedDateTime()
+                    s.userId(),
+                    s.userNumber(),
+                    s.orderId(),
+                    s.orderNumber(),
+                    s.orderPrice(),
+                    s.publishedDateTime(),
+                    s.deleteYn(),
+                    s.createdUserId(),
+                    s.createdUserType(),
+                    s.createdDatetime(),
+                    s.modifiedUserId(),
+                    s.modifiedUserType(),
+                    s.modifiedDatetime(),
+                    s.orderId(),
+                    s.publishedDateTime()
             });
         }
 
-        for (int i = 0; i < batchArgs.size(); i += batchChunkSize) {
-            int end = Math.min(i + batchChunkSize, batchArgs.size());
-            List<Object[]> chunk = batchArgs.subList(i, end);
+        for (int i = 0; i < batchArgs.size(); i += chunk) {
+            int end = Math.min(i + chunk, batchArgs.size());
+            List<Object[]> sub = batchArgs.subList(i, end);
 
-            jdbcTemplate.batchUpdate(sql, chunk, argTypes);
+            jdbcTemplate.batchUpdate(sql, sub, argTypes);
 
             if (log.isDebugEnabled()) {
-                log.debug("bulkUpdate chunk processed: {} - {}", i, end - 1);
+                log.debug("jdbc_bulk op=update chunk={} range=[{}, {})", chunk, i, end);
             }
         }
+    }
+
+    private int resolveChunk(OrderBatchOptions options) {
+        if (options != null && options.getBatchChunkSize() != null && options.getBatchChunkSize() > 0) {
+            return options.getBatchChunkSize();
+        }
+        return this.batchChunkSize;
     }
 }

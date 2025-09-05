@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.order.domain.order.entity.QOrderEntity;
 import org.example.order.domain.order.model.OrderView;
 import org.example.order.domain.order.repository.OrderQueryRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * OrderQueryRepository 구현체 (JPA QueryDSL)
@@ -13,6 +14,7 @@ import org.example.order.domain.order.repository.OrderQueryRepository;
  * - JpaInfraConfig 에서 jpa.enabled=true & JPAQueryFactory 존재 시 등록
  */
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OrderQueryRepositoryJpaImpl implements OrderQueryRepository {
 
     private static final QOrderEntity ORDER = QOrderEntity.orderEntity;
@@ -32,6 +34,7 @@ public class OrderQueryRepositoryJpaImpl implements OrderQueryRepository {
                 ))
                 .from(ORDER)
                 .where(ORDER.orderId.eq(orderId))
-                .fetchOne();
+                .limit(1)
+                .fetchFirst();
     }
 }
