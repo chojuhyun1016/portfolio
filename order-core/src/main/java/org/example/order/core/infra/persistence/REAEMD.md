@@ -24,8 +24,6 @@ org.example.order.core.infra.persistence.order
 ├─ impl/
 │  └─ OrderCommandRepositoryJdbcImpl.java
 ├─ jpa/
-│  ├─ adapter/
-│  │  └─ SpringDataOrderJpaRepository.java
 │  └─ impl/
 │     ├─ OrderQueryRepositoryJpaImpl.java
 │     └─ OrderRepositoryJpaImpl.java
@@ -49,8 +47,6 @@ org.example.order.core.infra.persistence.order
         - 등록 조건: JdbcTemplate, TsidFactory 빈 존재
 
 - JPA/QueryDSL (정합성 높은 읽기, 기본 저장)
-    - SpringDataOrderJpaRepository (Spring Data bridge, 인프라 내부 인터페이스)
-        - JpaRepository<OrderEntity, Long> 확장, deleteByOrderIdIn 제공
     - OrderQueryRepositoryJpaImpl (implements org.example.order.domain.order.repository.OrderQueryRepository)
         - JPAQueryFactory + QueryDSL로 조회 결과를 OrderView로 투영
     - OrderRepositoryJpaImpl (implements org.example.order.domain.order.repository.OrderRepository)
@@ -89,8 +85,6 @@ org.example.order.core.infra.persistence.order
 
 org.example.order.core.infra.persistence.payment
 ├─ jpa/
-│  ├─ adapter/
-│  │  └─ SpringDataPaymentJpaRepository.java
 │  └─ impl/
 │     ├─ PaymentQueryRepositoryJpaImpl.java           (implements PaymentQueryRepository)
 │     └─ PaymentRepositoryJpaImpl.java                (implements PaymentRepository)

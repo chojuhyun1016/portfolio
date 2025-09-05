@@ -41,7 +41,6 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
         bulkUpdate(syncList, null);
     }
 
-    // === [ADD] 옵션 오버로드 구현 ===
     @Override
     @Transactional
     public void bulkInsert(List<OrderEntity> entities, OrderBatchOptions options) {
@@ -160,6 +159,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
         if (options != null && options.getBatchChunkSize() != null && options.getBatchChunkSize() > 0) {
             return options.getBatchChunkSize();
         }
+
         return this.batchChunkSize;
     }
 }
