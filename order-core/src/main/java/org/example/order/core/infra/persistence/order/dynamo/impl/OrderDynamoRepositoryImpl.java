@@ -14,6 +14,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,18 +78,37 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
 
     @Override
     public List<OrderDynamoEntity> findAll() {
-        List<OrderDynamoEntity> items = new ArrayList<>();
-        PageIterable<OrderDynamoEntity> iterable = table.scan();
+        PageIterable<OrderDynamoEntity> pages = table.scan();
 
-        for (Page<OrderDynamoEntity> page : iterable) {
-            items.addAll(page.items());
+        if (pages == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("table.scan() returned null; return empty list.");
+            }
+
+            return Collections.emptyList();
+        }
+
+        SdkIterable<OrderDynamoEntity> items = pages.items();
+
+        if (items == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("pages.items() returned null; return empty list.");
+            }
+
+            return Collections.emptyList();
+        }
+
+        List<OrderDynamoEntity> result = new ArrayList<>();
+
+        for (OrderDynamoEntity e : items) {
+            result.add(e);
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Fetched all OrderDynamoEntity, total: {}", items.size());
+            log.debug("Fetched all OrderDynamoEntity, total: {}", result.size());
         }
 
-        return items;
+        return result;
     }
 
     @Override
@@ -97,39 +117,65 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
             try {
                 DynamoDbIndex<OrderDynamoEntity> index = table.index(userIdIndexName);
 
-                List<OrderDynamoEntity> list = new ArrayList<>();
                 SdkIterable<Page<OrderDynamoEntity>> pages = index.query(r ->
                         r.queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(userId)))
                 );
 
-                for (Page<OrderDynamoEntity> page : pages) {
-                    list.addAll(page.items());
-                }
+                if (pages != null) {
+                    List<OrderDynamoEntity> list = new ArrayList<>();
 
-                if (log.isDebugEnabled()) {
-                    log.debug("GSI query by userId={}, count={}", userId, list.size());
-                }
+                    for (Page<OrderDynamoEntity> page : pages) {
+                        List<OrderDynamoEntity> pageItems = page.items();
 
-                return list;
+                        if (pageItems != null) {
+                            list.addAll(pageItems);
+                        }
+                    }
+
+                    if (log.isDebugEnabled()) {
+                        log.debug("GSI query by userId={}, count={}", userId, list.size());
+                    }
+
+                    return list;
+                } else {
+                    log.warn("GSI [{}] query returned null pages; fallback to scan.", userIdIndexName);
+                }
             } catch (Exception e) {
                 log.warn("GSI [{}] query failed, fallback to scan. cause={}", userIdIndexName, e.toString());
             }
         }
 
-        List<OrderDynamoEntity> result = new ArrayList<>();
-        PageIterable<OrderDynamoEntity> iterable = table.scan();
+        PageIterable<OrderDynamoEntity> pages = table.scan();
+        if (pages == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("table.scan() returned null in fallback; return empty list.");
+            }
 
-        for (Page<OrderDynamoEntity> page : iterable) {
-            for (OrderDynamoEntity item : page.items()) {
-                if (userId != null && userId.equals(item.getUserId())) {
-                    result.add(item);
-                }
+            return Collections.emptyList();
+        }
+
+        SdkIterable<OrderDynamoEntity> all = pages.items();
+
+        if (all == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("pages.items() returned null in fallback; return empty list.");
+            }
+
+            return Collections.emptyList();
+        }
+
+        List<OrderDynamoEntity> result = new ArrayList<>();
+
+        for (OrderDynamoEntity item : all) {
+            if (userId != null && userId.equals(item.getUserId())) {
+                result.add(item);
             }
         }
 
         if (log.isDebugEnabled()) {
             log.debug("Fetched OrderDynamoEntity by userId={}, count: {}", userId, result.size());
         }
+
         return result;
     }
 
