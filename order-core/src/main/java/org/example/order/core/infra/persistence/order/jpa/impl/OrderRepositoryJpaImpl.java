@@ -2,7 +2,6 @@ package org.example.order.core.infra.persistence.order.jpa.impl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.entity.QOrderEntity;
@@ -25,9 +24,7 @@ public class OrderRepositoryJpaImpl implements OrderRepository {
     private static final QOrderEntity ORDER = QOrderEntity.orderEntity;
 
     private final JPAQueryFactory queryFactory;
-
-    @PersistenceContext
-    private EntityManager em;
+    private final EntityManager em;
 
     @Override
     public Optional<OrderEntity> findById(Long id) {
@@ -40,10 +37,14 @@ public class OrderRepositoryJpaImpl implements OrderRepository {
         if (orderIds == null || orderIds.isEmpty()) {
             return;
         }
+
         queryFactory
                 .delete(ORDER)
                 .where(ORDER.orderId.in(orderIds))
                 .execute();
+
+        // 대용량 삭제 후 영속성 컨텍스트 정합성 보장을 위해 필요 시 clear 고려
+        // em.clear();
     }
 
     @Override
@@ -52,7 +53,6 @@ public class OrderRepositoryJpaImpl implements OrderRepository {
         if (entity == null) {
             return;
         }
-
         if (entity.getId() == null) {
             em.persist(entity);
         } else {

@@ -37,6 +37,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
     }
 
     @Override
+    @Transactional
     public void bulkUpdate(List<OrderUpdate> syncList) {
         bulkUpdate(syncList, null);
     }
@@ -49,45 +50,43 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
         String sql = """
                 insert ignore into `order` (id, user_id, user_number, order_id, order_number, order_price,
                                             published_datetime, delete_yn, created_user_id, created_user_type,
-                                            created_datetime, modified_user_id, modified_user_type, modified_datetime)
-                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                            created_datetime, modified_user_id, modified_user_type, modified_datetime, version)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         int[] argTypes = {
                 Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR,
-                Types.BIGINT, Types.TIMESTAMP, Types.TINYINT, Types.BIGINT, Types.VARCHAR,
-                Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP
+                Types.BIGINT, Types.TIMESTAMP, Types.VARCHAR, Types.BIGINT, Types.VARCHAR,
+                Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.BIGINT
         };
 
         List<Object[]> batchArgs = new ArrayList<>();
-        entities.forEach(entity -> {
-            if (entity.getId() == null) {
-                entity.setId(tsidFactory.create().toLong());
+        for (OrderEntity e : entities) {
+            if (e.getId() == null) {
+                e.setId(tsidFactory.create().toLong());
             }
             batchArgs.add(new Object[]{
-                    entity.getId(),
-                    entity.getUserId(),
-                    entity.getUserNumber(),
-                    entity.getOrderId(),
-                    entity.getOrderNumber(),
-                    entity.getOrderPrice(),
-                    entity.getPublishedDatetime(),
-                    entity.getDeleteYn(),
-                    entity.getCreatedUserId(),
-                    entity.getCreatedUserType(),
-                    entity.getCreatedDatetime(),
-                    entity.getModifiedUserId(),
-                    entity.getModifiedUserType(),
-                    entity.getModifiedDatetime()
+                    e.getId(),
+                    e.getUserId(),
+                    e.getUserNumber(),
+                    e.getOrderId(),
+                    e.getOrderNumber(),
+                    e.getOrderPrice(),
+                    e.getPublishedDatetime(),
+                    e.getDeleteYn(),          // Boolean → VARCHAR(1) 컬럼 (드라이버가 문자열/숫자로 처리 가능)
+                    e.getCreatedUserId(),
+                    e.getCreatedUserType(),
+                    e.getCreatedDatetime(),
+                    e.getModifiedUserId(),
+                    e.getModifiedUserType(),
+                    e.getModifiedDatetime(),
+                    e.getVersion()
             });
-        });
+        }
 
         for (int i = 0; i < batchArgs.size(); i += chunk) {
             int end = Math.min(i + chunk, batchArgs.size());
-            List<Object[]> sub = batchArgs.subList(i, end);
-
-            jdbcTemplate.batchUpdate(sql, sub, argTypes);
-
+            jdbcTemplate.batchUpdate(sql, batchArgs.subList(i, end), argTypes);
             if (log.isDebugEnabled()) {
                 log.debug("jdbc_bulk op=insert chunk={} range=[{}, {})", chunk, i, end);
             }
@@ -95,6 +94,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
     }
 
     @Override
+    @Transactional
     public void bulkUpdate(List<OrderUpdate> syncList, OrderBatchOptions options) {
         final int chunk = resolveChunk(options);
 
@@ -118,7 +118,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
 
         int[] argTypes = {
                 Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT,
-                Types.TIMESTAMP, Types.TINYINT, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP,
+                Types.TIMESTAMP, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP,
                 Types.BIGINT, Types.VARCHAR, Types.TIMESTAMP, Types.BIGINT, Types.TIMESTAMP
         };
 
@@ -145,10 +145,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
 
         for (int i = 0; i < batchArgs.size(); i += chunk) {
             int end = Math.min(i + chunk, batchArgs.size());
-            List<Object[]> sub = batchArgs.subList(i, end);
-
-            jdbcTemplate.batchUpdate(sql, sub, argTypes);
-
+            jdbcTemplate.batchUpdate(sql, batchArgs.subList(i, end), argTypes);
             if (log.isDebugEnabled()) {
                 log.debug("jdbc_bulk op=update chunk={} range=[{}, {})", chunk, i, end);
             }
@@ -159,7 +156,6 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
         if (options != null && options.getBatchChunkSize() != null && options.getBatchChunkSize() > 0) {
             return options.getBatchChunkSize();
         }
-
         return this.batchChunkSize;
     }
 }

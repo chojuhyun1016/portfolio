@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * 중앙 통합 설정 (ALL-IN-ONE Import)
@@ -29,9 +28,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "org.example.order.domain",
         "org.example.order.core.domain"
 })
-@EnableJpaRepositories(basePackages = {
-        "org.example.order.core.infra.persistence.order.jpa.adapter"
-})
 @Import({
         // ====== TSID ======
         TsidInfraConfig.class,
@@ -45,7 +41,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         // ====== DynamoDB ======
         DynamoInfraConfig.class,
 
-        // ====== JPA / Querydsl ======
+        // ====== JPA / Querydsl (하위 조립 포함) ======
         JpaInfraConfig.class,
 
         // ====== 분산락 (Named Lock, Redisson Lock) ======

@@ -55,14 +55,13 @@ import org.springframework.transaction.PlatformTransactionManager;
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org\\.example\\.order\\.core\\.infra\\.jpa\\..*")
         }
 )
-public class TestBootApp {
+public class TestBoot {
     @Bean(name = "entityManagerFactory")
     @Profile("test-unit")
     public EntityManagerFactory testEntityManagerFactory() {
         EntityManagerFactory emf = Mockito.mock(EntityManagerFactory.class);
         EntityManager em = Mockito.mock(EntityManager.class);
         Mockito.when(emf.createEntityManager()).thenReturn(em);
-
         return emf;
     }
 

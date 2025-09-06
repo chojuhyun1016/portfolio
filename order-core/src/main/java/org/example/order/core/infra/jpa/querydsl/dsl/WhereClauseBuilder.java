@@ -3,10 +3,14 @@ package org.example.order.core.infra.jpa.querydsl.dsl;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Visitor;
+import org.springframework.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.function.Function;
 
+/**
+ * 가독성 좋은 Where 절 생성을 위한 헬퍼
+ * - null/boolean 조건에 따른 동적 and/or 조합 지원
+ */
 public class WhereClauseBuilder implements Predicate {
 
     private final BooleanBuilder delegate;
@@ -31,9 +35,9 @@ public class WhereClauseBuilder implements Predicate {
         return applyIfNotNull(value, this::and, lazyBooleanExpression);
     }
 
-    public <V> WhereClauseBuilder optionalAnd(boolean value, LazyBooleanExpression lazyBooleanExpression) {
+    public WhereClauseBuilder optionalAnd(boolean value, LazyBooleanExpression lazyBooleanExpression) {
         if (value) {
-            return new WhereClauseBuilder(this.and(lazyBooleanExpression.get()));
+            return this.and(lazyBooleanExpression.get());
         }
 
         return this;
@@ -59,9 +63,11 @@ public class WhereClauseBuilder implements Predicate {
         return Boolean.class;
     }
 
-    private <V> WhereClauseBuilder applyIfNotNull(final V value, final Function<Predicate, WhereClauseBuilder> func, final LazyBooleanExpression lazyBooleanExpression) {
+    private <V> WhereClauseBuilder applyIfNotNull(final V value,
+                                                  final Function<Predicate, WhereClauseBuilder> func,
+                                                  final LazyBooleanExpression lazyBooleanExpression) {
         if (value != null) {
-            return new WhereClauseBuilder(func.apply(lazyBooleanExpression.get()));
+            return func.apply(lazyBooleanExpression.get());
         }
 
         return this;

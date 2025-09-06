@@ -1,83 +1,46 @@
 package org.example.order.core.infra.jpa.config;
 
-import com.querydsl.jpa.JPQLTemplates;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.infra.persistence.order.jdbc.impl.OrderCommandRepositoryJdbcImpl;
-import org.example.order.core.infra.persistence.order.jpa.adapter.SpringDataOrderJpaRepository;
-import org.example.order.core.infra.persistence.order.jpa.impl.OrderQueryRepositoryJpaImpl;
-import org.example.order.core.infra.persistence.order.jpa.impl.OrderRepositoryJpaImpl;
-import org.example.order.domain.order.repository.OrderCommandRepository;
-import org.example.order.domain.order.repository.OrderQueryRepository;
-import org.example.order.domain.order.repository.OrderRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
-import com.github.f4b6a3.tsid.TsidFactory;
+import org.springframework.context.annotation.Import;
 
 /**
- * JPA / QueryDSL 인프라 단일 진입점 구성.
+ * JPA / QueryDSL 기본 인프라 설정 (핵심 + 하위 조립 설정 일괄 임포트)
  * <p>
  * 전역 스위치:
- * - jpa.enabled=true  일 때만 모든 빈이 조건부로 등록됩니다.
+ * - jpa.enabled=true 일 때만 조건부 등록
  * <p>
  * 등록 정책(조건부):
- * - JPAQueryFactory           : EntityManager 존재 시 등록
- * - OrderCommandRepository    : JdbcTemplate & TsidFactory 존재 시 등록
- * - OrderQueryRepository      : JPAQueryFactory 존재 시 등록
- * - OrderRepository (Adapter) : SpringDataOrderJpaRepository 존재 시 등록
+ * - JPAQueryFactory : EntityManager 존재 시 등록
+ * - 하위 설정(JpaOrder*InfraConfig)들은 @Import로 일괄 포함되어, jpa.enabled 조건 하에서만 활성화
  * <p>
  * 주의:
- * - 라이브러리 레이어에서는 @Component/@Repository를 사용하지 않고, 설정(@Bean)만으로 조립합니다.
- * - OFF(기본) 상태에서는 어떤 빈도 로딩되지 않아 다른 모듈에 영향을 주지 않습니다.
+ * - 레포지토리 조립(명령/조회/JPA 저장소)은 별도 설정 클래스로 유지하고, 여기서 한 번에 Import 합니다.
+ * - 최상위 OrderCoreConfig 에서는 JpaInfraConfig 하나만 Import 하면 됩니다.
  */
 @Slf4j
 @Configuration
 @ConditionalOnProperty(prefix = "jpa", name = "enabled", havingValue = "true", matchIfMissing = false)
+@Import({
+        JpaOrderCommandInfraConfig.class,
+        JpaOrderQueryInfraConfig.class,
+        JpaOrderRepositoryInfraConfig.class
+})
 public class JpaInfraConfig {
 
-    /* --------- QueryDSL --------- */
+    /* --------- QueryDSL (Core) --------- */
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(EntityManager.class)
     public JPAQueryFactory jpaQueryFactory(EntityManager em) {
         log.info("[JpaInfra] Register JPAQueryFactory");
 
-        return new JPAQueryFactory(JPQLTemplates.DEFAULT, em);
-    }
-
-    /* --------- Order Command (JDBC) --------- */
-    @Bean
-    @ConditionalOnMissingBean(OrderCommandRepository.class)
-    @ConditionalOnBean({JdbcTemplate.class, TsidFactory.class})
-    public OrderCommandRepository orderCommandRepositoryJdbc(JdbcTemplate jdbcTemplate, TsidFactory tsidFactory) {
-        log.info("[JpaInfra] Register OrderCommandRepositoryJdbcImpl");
-
-        return new OrderCommandRepositoryJdbcImpl(jdbcTemplate, tsidFactory);
-    }
-
-    /* --------- Order Query (QueryDSL JPA) --------- */
-    @Bean
-    @ConditionalOnMissingBean(OrderQueryRepository.class)
-    @ConditionalOnBean(JPAQueryFactory.class)
-    public OrderQueryRepository orderQueryRepositoryJpa(JPAQueryFactory queryFactory) {
-        log.info("[JpaInfra] Register OrderQueryRepositoryJpaImpl");
-
-        return new OrderQueryRepositoryJpaImpl(queryFactory);
-    }
-
-    /* --------- Order Repository (Spring Data JPA 어댑터) --------- */
-
-    @Bean
-    @ConditionalOnMissingBean(OrderRepository.class)
-    @ConditionalOnBean(SpringDataOrderJpaRepository.class)
-    public OrderRepository orderRepositoryJpa(SpringDataOrderJpaRepository jpaRepository) {
-        log.info("[JpaInfra] Register OrderRepositoryJpaImpl (adapter of SpringData)");
-
-        return new OrderRepositoryJpaImpl(jpaRepository);
+        return new JPAQueryFactory(em);
     }
 }
