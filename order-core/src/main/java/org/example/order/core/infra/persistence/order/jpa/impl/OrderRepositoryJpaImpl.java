@@ -53,6 +53,7 @@ public class OrderRepositoryJpaImpl implements OrderRepository {
         if (entity == null) {
             return;
         }
+
         if (entity.getId() == null) {
             em.persist(entity);
         } else {

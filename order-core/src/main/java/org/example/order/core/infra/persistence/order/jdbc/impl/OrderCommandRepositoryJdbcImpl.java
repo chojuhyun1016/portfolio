@@ -61,10 +61,12 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
         };
 
         List<Object[]> batchArgs = new ArrayList<>();
+
         for (OrderEntity e : entities) {
             if (e.getId() == null) {
                 e.setId(tsidFactory.create().toLong());
             }
+
             batchArgs.add(new Object[]{
                     e.getId(),
                     e.getUserId(),
@@ -86,7 +88,9 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
 
         for (int i = 0; i < batchArgs.size(); i += chunk) {
             int end = Math.min(i + chunk, batchArgs.size());
+
             jdbcTemplate.batchUpdate(sql, batchArgs.subList(i, end), argTypes);
+
             if (log.isDebugEnabled()) {
                 log.debug("jdbc_bulk op=insert chunk={} range=[{}, {})", chunk, i, end);
             }
@@ -145,7 +149,9 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
 
         for (int i = 0; i < batchArgs.size(); i += chunk) {
             int end = Math.min(i + chunk, batchArgs.size());
+
             jdbcTemplate.batchUpdate(sql, batchArgs.subList(i, end), argTypes);
+
             if (log.isDebugEnabled()) {
                 log.debug("jdbc_bulk op=update chunk={} range=[{}, {})", chunk, i, end);
             }
@@ -156,6 +162,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
         if (options != null && options.getBatchChunkSize() != null && options.getBatchChunkSize() > 0) {
             return options.getBatchChunkSize();
         }
+
         return this.batchChunkSize;
     }
 }

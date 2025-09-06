@@ -62,6 +62,7 @@ public class TestBoot {
         EntityManagerFactory emf = Mockito.mock(EntityManagerFactory.class);
         EntityManager em = Mockito.mock(EntityManager.class);
         Mockito.when(emf.createEntityManager()).thenReturn(em);
+
         return emf;
     }
 

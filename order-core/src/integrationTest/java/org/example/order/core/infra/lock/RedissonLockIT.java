@@ -1,6 +1,6 @@
 package org.example.order.core.infra.lock;
 
-import org.example.order.core.IntegrationBootApp;
+import org.example.order.core.IntegrationBoot;
 import org.example.order.core.infra.lock.config.LockInfraConfig; // ★ 단일 구성 사용
 import org.example.order.core.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * - Starter 자동구성은 제외(이 테스트는 LockInfraConfig 가 만드는 RedissonClient 를 사용)
  */
 @SpringBootTest(
-        classes = IntegrationBootApp.class,
+        classes = IntegrationBoot.class,
         properties = {
                 "spring.profiles.active=integration",
                 "lock.enabled=true",

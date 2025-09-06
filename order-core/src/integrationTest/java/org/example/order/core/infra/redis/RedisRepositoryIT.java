@@ -1,6 +1,6 @@
 package org.example.order.core.infra.redis;
 
-import org.example.order.core.IntegrationBootApp;
+import org.example.order.core.IntegrationBoot;
 import org.example.order.core.infra.redis.config.RedisTestSupport;
 import org.example.order.core.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(
-        classes = IntegrationBootApp.class,
+        classes = IntegrationBoot.class,
         properties = {
                 "spring.profiles.active=integration",
                 "lock.enabled=false",

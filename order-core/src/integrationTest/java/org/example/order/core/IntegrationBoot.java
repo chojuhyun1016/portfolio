@@ -3,7 +3,6 @@ package org.example.order.core;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.f4b6a3.tsid.TsidFactory;
 import org.example.order.core.infra.jpa.config.JpaInfraConfig;
-import org.example.order.core.infra.persistence.order.jpa.adapter.SpringDataOrderJpaRepository;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -16,16 +15,17 @@ import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.*;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
- * 통합 테스트용 부트스트랩(원본)
- * - 락/레디스 관련 스캔 유지 (기존 테스트용)
- * - JPA 관련 자동설정은 제외 (기존 동작 유지)
+ * 통합 테스트용 부트스트랩 (필요 최소 변경만 반영)
+ * - 기존 락/레디스 스캔 유지
+ * - 메인 컨텍스트에서는 JPA 자동설정 제외(기존 테스트 영향 최소화)
+ * - JPA IT는 내부 슬라이스(JpaItSlice)만 사용
  */
 @SpringBootConfiguration
-@EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableAutoConfiguration(
         exclude = {
                 HibernateJpaAutoConfiguration.class,
@@ -44,22 +44,20 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
                 @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org\\.example\\.order\\.core\\.infra\\.jpa\\..*")
         }
 )
-public class IntegrationBootApp {
+public class IntegrationBoot {
 
     /**
-     * JPA 전용 미니 컨텍스트 (내부 슬라이스)
-     * - 이 클래스는 @EnableAutoConfiguration 를 사용하지 않는다.
-     * - 필요한 자동설정만 직접 Import 해서 Redis/Redisson이 절대 로드되지 못하게 한다.
-     * - JPA 통합 테스트는 이 클래스를 ApplicationContext 루트로 사용한다.
+     * JPA 전용 슬라이스 (테스트에서 classes=IntegrationBoot.JpaItSlice.class 로 사용)
+     * - 존재하지 않는 adapter 클래스를 참조하지 않고, 패키지 문자열 스캔으로 대체
+     * - 트랜잭션매니저 커스텀 빈 생성 안 함(기존 Override 예외 방지)
+     * - 레디스/레디슨 자동설정은 가져오지 않음
      */
     @SpringBootConfiguration
     @Import({
-            // JDBC & 트랜잭션
             DataSourceAutoConfiguration.class,
             DataSourceTransactionManagerAutoConfiguration.class,
             TransactionAutoConfiguration.class,
             JdbcTemplateAutoConfiguration.class,
-            // JPA
             HibernateJpaAutoConfiguration.class
     })
     @ImportAutoConfiguration({
@@ -69,8 +67,12 @@ public class IntegrationBootApp {
             JdbcTemplateAutoConfiguration.class,
             HibernateJpaAutoConfiguration.class
     })
-    @org.springframework.boot.autoconfigure.domain.EntityScan(basePackageClasses = OrderEntity.class)
-    @EnableJpaRepositories(basePackageClasses = SpringDataOrderJpaRepository.class)
+    @EntityScan(basePackageClasses = OrderEntity.class)
+    @EnableJpaRepositories(
+            // ★ 리포지토리 인터페이스들이 들어있는 실제 패키지 루트로 맞춰 주세요.
+            //   (예: org.example.order.core.infra.persistence.order.jpa.repository 인 경우 그 경로)
+            basePackages = "org.example.order.core.infra.persistence.order.jpa"
+    )
     @ComponentScan(basePackageClasses = JpaInfraConfig.class)
     public static class JpaItSlice {
 

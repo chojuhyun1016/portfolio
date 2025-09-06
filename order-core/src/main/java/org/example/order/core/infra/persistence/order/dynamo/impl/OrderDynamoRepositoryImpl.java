@@ -171,7 +171,7 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
                         for (OrderDynamoEntity it : pageItems) {
                             list.add(it);
 
-                            if (list.size() >= opt.limit)  {
+                            if (list.size() >= opt.limit) {
                                 break;
                             }
                         }
