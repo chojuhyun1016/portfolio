@@ -9,7 +9,6 @@ import org.example.order.domain.order.model.OrderBatchOptions;
 import org.example.order.domain.order.model.OrderUpdate;
 import org.example.order.domain.order.repository.OrderCommandRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Types;
 import java.util.ArrayList;
@@ -30,20 +29,21 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
     @Setter
     private int batchChunkSize = 10000;
 
+    private static String yn(Boolean b) {
+        return (b != null && b) ? "Y" : "N";
+    }
+
     @Override
-    @Transactional
     public void bulkInsert(List<OrderEntity> entities) {
         bulkInsert(entities, null);
     }
 
     @Override
-    @Transactional
     public void bulkUpdate(List<OrderUpdate> syncList) {
         bulkUpdate(syncList, null);
     }
 
     @Override
-    @Transactional
     public void bulkInsert(List<OrderEntity> entities, OrderBatchOptions options) {
         final int chunk = resolveChunk(options);
 
@@ -75,7 +75,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
                     e.getOrderNumber(),
                     e.getOrderPrice(),
                     e.getPublishedDatetime(),
-                    e.getDeleteYn(),          // Boolean → VARCHAR(1) 컬럼 (드라이버가 문자열/숫자로 처리 가능)
+                    yn(e.getDeleteYn()),
                     e.getCreatedUserId(),
                     e.getCreatedUserType(),
                     e.getCreatedDatetime(),
@@ -98,7 +98,6 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
     }
 
     @Override
-    @Transactional
     public void bulkUpdate(List<OrderUpdate> syncList, OrderBatchOptions options) {
         final int chunk = resolveChunk(options);
 
@@ -135,7 +134,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
                     s.orderNumber(),
                     s.orderPrice(),
                     s.publishedDateTime(),
-                    s.deleteYn(),
+                    yn(s.deleteYn()),        // ★ 핵심: VARCHAR(1)로 'Y'/'N' 바인딩
                     s.createdUserId(),
                     s.createdUserType(),
                     s.createdDatetime(),

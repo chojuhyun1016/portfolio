@@ -17,14 +17,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.*;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-/**
- * 통합 테스트용 부트스트랩 (필요 최소 변경만 반영)
- * - 기존 락/레디스 스캔 유지
- * - 메인 컨텍스트에서는 JPA 자동설정 제외(기존 테스트 영향 최소화)
- * - JPA IT는 내부 슬라이스(JpaItSlice)만 사용
- */
 @SpringBootConfiguration
 @EnableAutoConfiguration(
         exclude = {
@@ -47,10 +40,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class IntegrationBoot {
 
     /**
-     * JPA 전용 슬라이스 (테스트에서 classes=IntegrationBoot.JpaItSlice.class 로 사용)
-     * - 존재하지 않는 adapter 클래스를 참조하지 않고, 패키지 문자열 스캔으로 대체
-     * - 트랜잭션매니저 커스텀 빈 생성 안 함(기존 Override 예외 방지)
-     * - 레디스/레디슨 자동설정은 가져오지 않음
+     * JPA 전용 슬라이스
+     * - 필요한 자동설정만 가져오고, 레포 조립 설정(JpaInfraConfig)을 직접 import
+     * - 다른 통합테스트 컨텍스트와 분리 (영향 없음)
      */
     @SpringBootConfiguration
     @Import({
@@ -58,7 +50,10 @@ public class IntegrationBoot {
             DataSourceTransactionManagerAutoConfiguration.class,
             TransactionAutoConfiguration.class,
             JdbcTemplateAutoConfiguration.class,
-            HibernateJpaAutoConfiguration.class
+            HibernateJpaAutoConfiguration.class,
+
+            // ★ 레포/QueryDSL/JDBC 조립 설정 직접 주입
+            JpaInfraConfig.class
     })
     @ImportAutoConfiguration({
             DataSourceAutoConfiguration.class,
@@ -68,12 +63,6 @@ public class IntegrationBoot {
             HibernateJpaAutoConfiguration.class
     })
     @EntityScan(basePackageClasses = OrderEntity.class)
-    @EnableJpaRepositories(
-            // ★ 리포지토리 인터페이스들이 들어있는 실제 패키지 루트로 맞춰 주세요.
-            //   (예: org.example.order.core.infra.persistence.order.jpa.repository 인 경우 그 경로)
-            basePackages = "org.example.order.core.infra.persistence.order.jpa"
-    )
-    @ComponentScan(basePackageClasses = JpaInfraConfig.class)
     public static class JpaItSlice {
 
         @Bean

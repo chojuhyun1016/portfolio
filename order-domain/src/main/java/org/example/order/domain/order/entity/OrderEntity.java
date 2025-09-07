@@ -1,102 +1,89 @@
 package org.example.order.domain.order.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.example.order.common.support.jpa.converter.BooleanToYNConverter;
 
 import java.time.LocalDateTime;
 
 /**
- * 주문 엔티티 - Domain 순수 모델
- * - 비즈니스 로직만 포함
- * - 생성자는 PROTECTED로 막고, 정적 팩토리 메서드 제공
+ * 주문 엔티티
+ * - delete_yn: 공용 컨버터(Boolean <-> 'Y'/'N') 적용
  */
-@Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "`order`")
+@Getter
+@Setter
+@NoArgsConstructor
 public class OrderEntity {
 
     @Id
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(columnDefinition = "bigint COMMENT '사용자ID'")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(columnDefinition = "varchar(50) COMMENT '사용자번호'")
+    @Column(name = "user_number", length = 50, nullable = false)
     private String userNumber;
 
-    @Column(columnDefinition = "bigint COMMENT '주문ID'")
+    @Column(name = "order_id", nullable = false, unique = true)
     private Long orderId;
 
-    @Column(columnDefinition = "varchar(50) COMMENT '주문번호'")
+    @Column(name = "order_number", length = 50, nullable = false)
     private String orderNumber;
 
-    @Column(columnDefinition = "bigint COMMENT '주문가격'")
+    @Column(name = "order_price", nullable = false)
     private Long orderPrice;
 
-    @Column(columnDefinition = "varchar(1) COMMENT '삭제여부'")
-    private Boolean deleteYn;
+    @Convert(converter = BooleanToYNConverter.class)
+    @Column(name = "delete_yn", columnDefinition = "varchar(1) not null")
+    private Boolean deleteYn = false;
 
-    @Column(columnDefinition = "datetime COMMENT 'kafka published datetime'")
+    @Column(name = "version", nullable = false)
+    private Long version;
+
+    @Column(name = "published_datetime", nullable = false)
     private LocalDateTime publishedDatetime;
 
-    @Column(columnDefinition = "bigint COMMENT '등록자'")
+    @Column(name = "created_user_id", nullable = false)
     private Long createdUserId;
 
-    @Column(columnDefinition = "varchar(20) COMMENT '등록자유형'")
+    @Column(name = "created_user_type", length = 50, nullable = false)
     private String createdUserType;
 
-    @Column(columnDefinition = "datetime COMMENT '등록일시'")
+    @Column(name = "created_datetime", nullable = false)
     private LocalDateTime createdDatetime;
 
-    @Column(columnDefinition = "bigint COMMENT '수정자'")
+    @Column(name = "modified_user_id", nullable = false)
     private Long modifiedUserId;
 
-    @Column(columnDefinition = "varchar(20) COMMENT '수정자유형'")
+    @Column(name = "modified_user_type", length = 50, nullable = false)
     private String modifiedUserType;
 
-    @Column(columnDefinition = "datetime COMMENT '수정일시'")
+    @Column(name = "modified_datetime", nullable = false)
     private LocalDateTime modifiedDatetime;
-
-    @Version
-    @Column(columnDefinition = "bigint COMMENT 'Data Version'")
-    private Long version;
 
     public static OrderEntity createEmpty() {
         return new OrderEntity();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    /**
-     * 전체 필드를 한 번에 업데이트 (순수 데이터만 받음)
-     */
     public void updateAll(
-            Long userId,
-            String userNumber,
-            Long orderId,
-            String orderNumber,
-            Long orderPrice,
-            Boolean deleteYn,
-            Long version,
+            Long userId, String userNumber,
+            Long orderId, String orderNumber,
+            Long orderPrice, Boolean deleteYn, Long version,
             LocalDateTime publishedDatetime,
-            Long createdUserId,
-            String createdUserType,
-            LocalDateTime createdDatetime,
-            Long modifiedUserId,
-            String modifiedUserType,
-            LocalDateTime modifiedDatetime
+            Long createdUserId, String createdUserType, LocalDateTime createdDatetime,
+            Long modifiedUserId, String modifiedUserType, LocalDateTime modifiedDatetime
     ) {
         this.userId = userId;
         this.userNumber = userNumber;
         this.orderId = orderId;
         this.orderNumber = orderNumber;
         this.orderPrice = orderPrice;
-        this.deleteYn = deleteYn;
+        this.deleteYn = (deleteYn != null ? deleteYn : Boolean.FALSE);
         this.version = version;
         this.publishedDatetime = publishedDatetime;
         this.createdUserId = createdUserId;

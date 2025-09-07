@@ -6,15 +6,16 @@ import lombok.RequiredArgsConstructor;
 import org.example.order.domain.order.entity.QOrderEntity;
 import org.example.order.domain.order.model.OrderView;
 import org.example.order.domain.order.repository.OrderQueryRepository;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 /**
  * OrderQueryRepository 구현체 (JPA QueryDSL)
  * <p>
- * - JpaInfraConfig 에서 jpa.enabled=true & JPAQueryFactory 존재 시 등록
+ * - OrderInfraTestConfig (또는 InfraConfig) 에서
+ * jpa.enabled=true && JPAQueryFactory 빈 존재 시 명시적으로 등록한다.
  */
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class OrderQueryRepositoryJpaImpl implements OrderQueryRepository {
 
     private static final QOrderEntity ORDER = QOrderEntity.orderEntity;
@@ -22,8 +23,8 @@ public class OrderQueryRepositoryJpaImpl implements OrderQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public OrderView fetchByOrderId(Long orderId) {
-        return queryFactory
+    public Optional<OrderView> fetchByOrderId(Long orderId) {
+        OrderView row = queryFactory
                 .select(Projections.constructor(
                         OrderView.class,
                         ORDER.orderId,
@@ -36,5 +37,7 @@ public class OrderQueryRepositoryJpaImpl implements OrderQueryRepository {
                 .where(ORDER.orderId.eq(orderId))
                 .limit(1)
                 .fetchFirst();
+
+        return Optional.ofNullable(row);
     }
 }

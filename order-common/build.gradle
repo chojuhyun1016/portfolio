@@ -11,11 +11,14 @@ java {
 tasks.named("jar") { enabled = true }
 
 dependencies {
-    // 공용 유틸
     api(libs.jacksonJsr310)
     api(libs.tsid)
     api(libs.guava)
 
     api(libs.springBootStarter)
     api(libs.springBootStarterWeb)
+
+    compileOnly(libs.jakartaPersistenceApi)
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
 }

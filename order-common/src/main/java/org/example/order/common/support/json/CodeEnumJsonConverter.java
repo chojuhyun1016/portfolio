@@ -41,7 +41,9 @@ public class CodeEnumJsonConverter {
                 final JsonNode node = jsonParser.getCodec().readTree(jsonParser);
                 final JsonNode valueNode = node.get("code");
 
-                if (valueNode == null) return null;
+                if (valueNode == null) {
+                    return null;
+                }
 
                 for (Enum<?> constant : target.getEnumConstants()) {
                     if (constant.toString().equals(valueNode.textValue())) {
@@ -49,6 +51,7 @@ public class CodeEnumJsonConverter {
                     }
                 }
             }
+
             return null;
         }
 
@@ -56,9 +59,11 @@ public class CodeEnumJsonConverter {
         public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
             JavaType contextualType = ctxt.getContextualType();
             Class<?> rawClass = contextualType.getRawClass();
+
             if (Enum.class.isAssignableFrom(rawClass)) {
                 @SuppressWarnings("unchecked")
                 Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) rawClass;
+
                 return new Deserializer(enumClass);
             } else {
                 throw new IllegalStateException("Expected enum type but got: " + rawClass);

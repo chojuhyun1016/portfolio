@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.entity.QOrderEntity;
 import org.example.order.domain.order.repository.OrderRepository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +17,6 @@ import java.util.Optional;
  * - Spring Data 어댑터 제거: 단일 레이어(EM/QueryDSL)로 일관 구현
  */
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class OrderRepositoryJpaImpl implements OrderRepository {
 
     private static final QOrderEntity ORDER = QOrderEntity.orderEntity;
@@ -32,7 +30,6 @@ public class OrderRepositoryJpaImpl implements OrderRepository {
     }
 
     @Override
-    @Transactional
     public void deleteByOrderIdIn(List<Long> orderIds) {
         if (orderIds == null || orderIds.isEmpty()) {
             return;
@@ -48,7 +45,6 @@ public class OrderRepositoryJpaImpl implements OrderRepository {
     }
 
     @Override
-    @Transactional
     public void save(OrderEntity entity) {
         if (entity == null) {
             return;
