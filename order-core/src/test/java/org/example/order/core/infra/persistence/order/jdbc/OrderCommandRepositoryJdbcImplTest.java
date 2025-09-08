@@ -22,8 +22,8 @@ import static org.mockito.Mockito.*;
 /**
  * 순수 단위 테스트 (스프링/DB 미사용)
  * - 실제 구현 SQL 오버로드와 파라미터 개수에 맞춤
- *   - insert: 15개
- *   - update: 13개 SET + WHERE 2개 = 15개 (version은 version+1이라 바인딩 없음)
+ * - insert: 15개
+ * - update: 13개 SET + WHERE 2개 = 15개 (version은 version+1이라 바인딩 없음)
  * - verify: batchUpdate(sql, batchArgs, argTypes) 형태로 검증
  */
 class OrderCommandRepositoryJdbcImplTest {
@@ -37,6 +37,7 @@ class OrderCommandRepositoryJdbcImplTest {
 
     private static OrderEntity sampleEntity(long orderId, long price, LocalDateTime t) {
         OrderEntity e = OrderEntity.createEmpty();
+
         e.setId(123L);
         e.updateAll(
                 1L, "U-1",
@@ -46,13 +47,13 @@ class OrderCommandRepositoryJdbcImplTest {
                 1L, "SYS", t,
                 2L, "SYS", t
         );
+
         return e;
     }
 
     @Test
     @DisplayName("bulkInsert(): JdbcTemplate.batchUpdate(sql, batchArgs, argTypes) — 파라미터 15개")
     void bulkInsert_callsBatchUpdate() {
-        // given
         when(tsidFactory.create()).thenReturn(Tsid.from(100L), Tsid.from(101L), Tsid.from(102L));
 
         LocalDateTime base = LocalDateTime.now();
@@ -63,10 +64,8 @@ class OrderCommandRepositoryJdbcImplTest {
 
         OrderBatchOptions opt = OrderBatchOptions.builder().batchChunkSize(1000).build();
 
-        // when
         newRepo().bulkInsert(batch, opt);
 
-        // then
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<Object[]>> argsCaptor = ArgumentCaptor.forClass(List.class);
         verify(jdbcTemplate, times(1)).batchUpdate(anyString(), argsCaptor.capture(), any(int[].class));
@@ -74,7 +73,6 @@ class OrderCommandRepositoryJdbcImplTest {
         List<Object[]> sent = argsCaptor.getValue();
         assertThat(sent).hasSize(3);
 
-        // INSERT는 15개 바인딩(id 포함, version 포함)
         for (Object[] row : sent) {
             assertThat(row).hasSize(15);
         }
@@ -83,7 +81,6 @@ class OrderCommandRepositoryJdbcImplTest {
     @Test
     @DisplayName("bulkUpdate(): JdbcTemplate.batchUpdate(sql, batchArgs, argTypes) — 파라미터 15개")
     void bulkUpdate_callsBatchUpdate() {
-        // given
         LocalDateTime t2 = LocalDateTime.now();
 
         List<OrderUpdate> updates = List.of(
@@ -107,10 +104,8 @@ class OrderCommandRepositoryJdbcImplTest {
 
         OrderBatchOptions opt = OrderBatchOptions.builder().batchChunkSize(1000).build();
 
-        // when
         newRepo().bulkUpdate(updates, opt);
 
-        // then
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<Object[]>> argsCaptor = ArgumentCaptor.forClass(List.class);
         verify(jdbcTemplate, times(1)).batchUpdate(anyString(), argsCaptor.capture(), any(int[].class));
@@ -118,7 +113,6 @@ class OrderCommandRepositoryJdbcImplTest {
         List<Object[]> rows = argsCaptor.getValue();
         assertThat(rows).hasSize(2);
 
-        // UPDATE는 SET 13개 + WHERE 2개 = 총 15개 바인딩
         for (Object[] row : rows) {
             assertThat(row).hasSize(15);
         }

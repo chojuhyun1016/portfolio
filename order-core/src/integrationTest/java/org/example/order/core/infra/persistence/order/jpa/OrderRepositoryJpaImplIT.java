@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * - 이 테스트 클래스 내부 TestConfiguration의 JpaTransactionManager만 사용 (다른 테스트와 분리)
  * - OrderEntity는 수동 PK(TSID) 방식이므로 persist 전 ID를 반드시 세팅해야 함
  */
-@SpringBootTest(classes = { IntegrationBoot.JpaItSlice.class, OrderInfraTestConfig.class },
+@SpringBootTest(classes = {IntegrationBoot.JpaItSlice.class, OrderInfraTestConfig.class},
         properties = {
                 "jpa.enabled=true",
                 "spring.jpa.hibernate.ddl-auto=create-drop",
@@ -66,7 +66,6 @@ class OrderRepositoryJpaImplIT {
 
     private OrderEntity newOrder(Long id, Long orderId) {
         OrderEntity e = new OrderEntity();
-        // ✅ 수동 PK: null이면 TSID 생성
         e.setId(id != null ? id : tsidFactory.create().toLong());
         e.setUserId(100L);
         e.setUserNumber("U-100");
@@ -91,14 +90,12 @@ class OrderRepositoryJpaImplIT {
     @Transactional(transactionManager = "jpaTxManager")
     @Rollback
     void save_persist_and_merge() {
-        // persist (ID는 newOrder()에서 TSID로 채워짐)
         OrderEntity e1 = newOrder(null, 1001L);
         orderRepository.save(e1);
         em.flush();
 
         assertThat(e1.getId()).isNotNull();
 
-        // merge
         e1.setOrderPrice(20_000L);
         orderRepository.save(e1);
         em.flush();
@@ -109,7 +106,6 @@ class OrderRepositoryJpaImplIT {
     @Transactional(transactionManager = "jpaTxManager")
     @Rollback
     void delete_selected_ids() {
-        // given (ID들은 newOrder()에서 자동 생성)
         OrderEntity e1 = newOrder(null, 2001L);
         OrderEntity e2 = newOrder(null, 2002L);
         OrderEntity e3 = newOrder(null, 2003L);
@@ -118,11 +114,9 @@ class OrderRepositoryJpaImplIT {
         orderRepository.save(e3);
         em.flush();
 
-        // when
         orderRepository.deleteByOrderIdIn(List.of(2001L, 2003L));
         em.flush();
 
-        // then: 남아 있어야 하는 건 2002L 하나
         Long remain = em.createQuery(
                         "select count(o) from OrderEntity o where o.orderId in (:ids)", Long.class)
                 .setParameter("ids", List.of(2001L, 2002L, 2003L))

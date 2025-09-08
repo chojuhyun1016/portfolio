@@ -134,7 +134,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
                     s.orderNumber(),
                     s.orderPrice(),
                     s.publishedDateTime(),
-                    yn(s.deleteYn()),        // ★ 핵심: VARCHAR(1)로 'Y'/'N' 바인딩
+                    yn(s.deleteYn()),
                     s.createdUserId(),
                     s.createdUserType(),
                     s.createdDatetime(),

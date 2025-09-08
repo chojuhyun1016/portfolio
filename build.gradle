@@ -15,9 +15,9 @@ version = "1.0.0"
 
 subprojects {
     // ===== 리포지토리 =====
-    repositories {
-        mavenCentral()
-    }
+//    repositories {
+//        mavenCentral()
+//    }
 
     // ===== 공통 플러그인 =====
     apply plugin: "java-library"

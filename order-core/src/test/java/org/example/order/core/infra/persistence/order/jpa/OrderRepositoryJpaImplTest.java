@@ -44,6 +44,7 @@ class OrderRepositoryJpaImplTest {
         e.setModifiedUserType("SYS");
         e.setModifiedDatetime(now);
         e.setVersion(0L);
+
         return e;
     }
 
@@ -80,23 +81,19 @@ class OrderRepositoryJpaImplTest {
     void deleteByOrderIdIn_callsFlow() {
         List<Long> ids = List.of(1L, 2L, 3L);
 
-        // delete 체인을 자기 자신 반환으로 설정
         JPADeleteClause delete = mock(JPADeleteClause.class, withSettings().defaultAnswer(Answers.RETURNS_SELF));
         when(qf.delete(any())).thenReturn(delete);
         when(delete.execute()).thenReturn(3L);
 
         repo.deleteByOrderIdIn(ids);
 
-        // 체인 호출이 실제로 있었는지 명시 검증
         verify(qf, times(1)).delete(any());
-        verify(delete, atLeastOnce()).where(any()); // where 호출 허용/검증
+        verify(delete, atLeastOnce()).where(any());
         verify(delete, times(1)).execute();
 
-        // JPA persist/merge 등은 호출되지 않아야 함
         verify(em, never()).persist(any());
         verify(em, never()).merge(any());
 
-        // delete에 대해 NoMoreInteractions 검증은 하지 않는다(체인 호출이 있기 때문)
         verifyNoMoreInteractions(em);
     }
 }

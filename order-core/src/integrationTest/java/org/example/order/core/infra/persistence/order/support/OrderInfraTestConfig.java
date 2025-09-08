@@ -17,20 +17,19 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * 인프라 통합테스트 전용 구성
- *
+ * <p>
  * 책임 분리:
  * - DataSource / Testcontainers / 동적 프로퍼티: AbstractIntegrationTest 가 담당
  * - TSID(TsidFactory): IntegrationBoot.JpaItSlice 가 담당
  * - 이 클래스는 Repository 조립과 JPAQueryFactory 만 제공
- *
- * ❗ 여기서는 트랜잭션 매니저를 등록하지 않는다.
- *    (JDBC 테스트와 충돌하므로 각 JPA IT 내부 TestConfiguration에서만 등록)
+ * <p>
+ * 여기서는 트랜잭션 매니저를 등록하지 않는다.
+ * (JDBC 테스트와 충돌하므로 각 JPA IT 내부 TestConfiguration에서만 등록)
  */
 @Configuration
 @ConditionalOnProperty(name = "jpa.enabled", havingValue = "true", matchIfMissing = false)
 public class OrderInfraTestConfig {
 
-    /* ---------- JPA / QueryDSL ---------- */
     @PersistenceContext
     private EntityManager em;
 
@@ -39,7 +38,6 @@ public class OrderInfraTestConfig {
         return new JPAQueryFactory(em);
     }
 
-    /* ---------- Repository Beans ---------- */
     @Bean
     public OrderQueryRepository orderQueryRepository(JPAQueryFactory queryFactory) {
         return new OrderQueryRepositoryJpaImpl(queryFactory);
@@ -47,7 +45,6 @@ public class OrderInfraTestConfig {
 
     @Bean
     public OrderRepository orderRepository(JPAQueryFactory queryFactory) {
-        // @PersistenceContext 필드 em 사용
         return new OrderRepositoryJpaImpl(queryFactory, em);
     }
 

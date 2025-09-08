@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import jakarta.persistence.EntityManagerFactory;
+
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -73,20 +74,17 @@ class OrderQueryRepositoryJpaImplIT extends AbstractIntegrationTest {
 
         LocalDateTime now = LocalDateTime.now();
 
-        // 한 건 insert
         OrderEntity e = OrderEntity.createEmpty();
         e.setId(tsidFactory.create().toLong());
         e.updateAll(7L, "U-7", 9999L, "O-9999", 1234L, false, 0L,
                 now, 1L, "SYS", now, 1L, "SYS", now);
 
-        // 직접 insert (조회만 검증할 것이므로 간단히 JdbcTemplate 사용)
-        // delete_yn 은 CHECK 제약('Y'/'N')이므로 문자열로 바인딩
         jdbc.update("""
-                INSERT INTO `order`(id,user_id,user_number,order_id,order_number,order_price,delete_yn,version,
-                                    published_datetime,created_user_id,created_user_type,created_datetime,
-                                    modified_user_id,modified_user_type,modified_datetime)
-                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                """,
+                        INSERT INTO `order`(id,user_id,user_number,order_id,order_number,order_price,delete_yn,version,
+                                            published_datetime,created_user_id,created_user_type,created_datetime,
+                                            modified_user_id,modified_user_type,modified_datetime)
+                        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                        """,
                 e.getId(), e.getUserId(), e.getUserNumber(),
                 e.getOrderId(), e.getOrderNumber(), e.getOrderPrice(),
                 (e.getDeleteYn() != null && e.getDeleteYn()) ? "Y" : "N",
@@ -95,10 +93,8 @@ class OrderQueryRepositoryJpaImplIT extends AbstractIntegrationTest {
                 e.getModifiedUserId(), e.getModifiedUserType(), e.getModifiedDatetime()
         );
 
-        // when
         Optional<OrderView> opt = orderQueryRepository.fetchByOrderId(9999L);
 
-        // then
         assertThat(opt).isPresent();
         OrderView p = opt.get();
         assertThat(p.orderId()).isEqualTo(9999L);

@@ -48,18 +48,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import(OrderInfraTestConfig.class)
 class OrderCommandRepositoryJdbcImplIT extends AbstractIntegrationTest {
 
-    /**
-     * 테스트 전체에서 재사용되는 MySQL 컨테이너
-     */
     @Container
     static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.3.0")
             .withDatabaseName("order_it")
             .withUsername("test")
             .withPassword("test");
 
-    /**
-     * 컨테이너 JDBC 정보를 Spring Boot에 주입 (JPA/JDBC 모두 동일 DataSource 사용)
-     */
     @DynamicPropertySource
     static void mysqlProps(DynamicPropertyRegistry r) {
         r.add("spring.datasource.url", MYSQL::getJdbcUrl);
@@ -67,11 +61,9 @@ class OrderCommandRepositoryJdbcImplIT extends AbstractIntegrationTest {
         r.add("spring.datasource.password", MYSQL::getPassword);
         r.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
 
-        // 커넥션풀/타임존 등 안정화
         r.add("spring.datasource.hikari.maximum-pool-size", () -> "5");
         r.add("spring.jpa.properties.hibernate.jdbc.time_zone", () -> "UTC");
 
-        // MySQL 방언 고정(예약어/DDL 생성 안정화)
         r.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.MySQLDialect");
     }
 
@@ -106,6 +98,7 @@ class OrderCommandRepositoryJdbcImplIT extends AbstractIntegrationTest {
         for (int i = 0; i < 5; i++) {
             OrderEntity e = OrderEntity.createEmpty();
             e.setId(tsidFactory.create().toLong());
+
             e.updateAll(
                     1L, "U-1",
                     1000L + i, "O-" + (1000 + i),
@@ -113,6 +106,7 @@ class OrderCommandRepositoryJdbcImplIT extends AbstractIntegrationTest {
                     base, 1L, "SYS", base,
                     1L, "SYS", base
             );
+
             batch.add(e);
         }
 
@@ -132,11 +126,12 @@ class OrderCommandRepositoryJdbcImplIT extends AbstractIntegrationTest {
         LocalDateTime t1 = LocalDateTime.now().minusMinutes(10);
         LocalDateTime t2 = LocalDateTime.now();
 
-        // 초기 2건 insert
         List<OrderEntity> init = new ArrayList<>();
+
         for (int i = 0; i < 2; i++) {
             OrderEntity e = OrderEntity.createEmpty();
             e.setId(tsidFactory.create().toLong());
+
             e.updateAll(
                     9L, "U-9",
                     2000L + i, "O-200" + i,
@@ -144,15 +139,16 @@ class OrderCommandRepositoryJdbcImplIT extends AbstractIntegrationTest {
                     t1, 1L, "SYS", t1,
                     1L, "SYS", t1
             );
+
             init.add(e);
         }
 
         OrderBatchOptions options = OrderBatchOptions.builder()
                 .batchChunkSize(1000)
                 .build();
+
         orderCommandRepository.bulkInsert(init, options);
 
-        // 업데이트 세트 (order_id=2000 은 매칭, 2999 는 미매칭)
         List<OrderUpdate> updates = List.of(
                 new OrderUpdate(
                         9L, "U-9", 2000L, "O-2000", 9999L,
@@ -170,7 +166,6 @@ class OrderCommandRepositoryJdbcImplIT extends AbstractIntegrationTest {
 
         orderCommandRepository.bulkUpdate(updates, options);
 
-        // 검증: 2000만 가격 변경
         Long price2000 = jdbc.queryForObject("SELECT order_price FROM `order` WHERE order_id = 2000", Long.class);
         Long price2001 = jdbc.queryForObject("SELECT order_price FROM `order` WHERE order_id = 2001", Long.class);
 

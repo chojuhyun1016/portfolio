@@ -39,9 +39,6 @@ public class OrderRepositoryJpaImpl implements OrderRepository {
                 .delete(ORDER)
                 .where(ORDER.orderId.in(orderIds))
                 .execute();
-
-        // 대용량 삭제 후 영속성 컨텍스트 정합성 보장을 위해 필요 시 clear 고려
-        // em.clear();
     }
 
     @Override

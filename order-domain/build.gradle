@@ -29,8 +29,6 @@ dependencies {
     implementation(libs.querydslJpaJakarta)
 
     // === APT (Q-타입 생성) ===
-    // ⚠️ Gradle 버전 카탈로그는 classifier를 지원하지 않음.
-    //    그래서 여기서만 jakarta classifier를 직접 붙인다.
     annotationProcessor("com.querydsl:querydsl-apt:${libs.versions.querydsl.get()}:jakarta")
 
     // JPA/어노테이션 메타
@@ -48,11 +46,4 @@ dependencies {
 
     // ===== test =====
     testImplementation(libs.springBootStarterTest)
-}
-
-// QueryDSL 생성 패키지 범위(선택)
-tasks.withType(JavaCompile).configureEach {
-    options.compilerArgs += [
-            "-Aquerydsl.packages=org.example.order.domain"
-    ]
 }

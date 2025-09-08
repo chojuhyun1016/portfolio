@@ -53,7 +53,6 @@ public class DynamoInfraConfig {
         // (1) 엔드포인트가 명시된 경우(LocalStack 등)
         if (hasEndpoint) {
             builder.endpointOverride(URI.create(props.getEndpoint()));
-            // Region 미지정 시 SDK가 요구하므로 로컬 개발 기본값 제공
             Region region = hasRegion ? Region.of(props.getRegion()) : Region.US_EAST_1;
             builder.region(region);
 

@@ -13,7 +13,6 @@ import org.example.order.batch.service.retry.OrderDeadLetterService;
 import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.core.infra.messaging.order.code.MessageCategory;
-import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +27,7 @@ import java.util.Set;
 public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
 
     private final OrderDeadLetterService orderDeadLetterService;
-    private final ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory;
+    private final ConsumerFactory<String, String> consumerFactory;
     private final KafkaTopicProperties kafkaTopicProperties;
 
     private static final String DEAD_LETTER_GROUP_ID = "order-order-dead-letter";
@@ -36,57 +35,50 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
 
     @Override
     public void retry() {
-        try {
-            // DLQ 토픽
-            String topic = kafkaTopicProperties.getName(MessageCategory.ORDER_DLQ);
+        String topic = kafkaTopicProperties.getName(MessageCategory.ORDER_DLQ);
 
-            // Consumer 생성
-            ConsumerFactory<String, String> consumerFactory =
-                    (ConsumerFactory<String, String>) kafkaListenerContainerFactory.getConsumerFactory();
-            Consumer<String, String> consumer = consumerFactory.createConsumer(DEAD_LETTER_GROUP_ID, CLIENT_SUFFIX);
+        try (Consumer<String, String> consumer =
+                     consumerFactory.createConsumer(DEAD_LETTER_GROUP_ID, CLIENT_SUFFIX)) {
 
-            // 파티션 할당
+            // 단일 파티션(0) 기준 — 필요 시 파티션 목록 조회/반복 처리로 확장
             TopicPartition partition = new TopicPartition(topic, 0);
             Set<TopicPartition> partitions = Collections.singleton(partition);
             consumer.assign(partitions);
 
-            // 시작 offset 지정
+            // 시작 offset 결정
             Map<TopicPartition, OffsetAndMetadata> committedOffsets = consumer.committed(partitions);
+
             if (committedOffsets.get(partition) == null) {
                 consumer.seekToBeginning(partitions);
             } else {
                 consumer.seek(partition, committedOffsets.get(partition).offset());
             }
 
-            // 전체 메시지 수
+            // 처리할 총 메시지 수 계산
             long endOffset = consumer.endOffsets(partitions).get(partition);
             long currentOffset = consumer.position(partition);
             long messageCount = endOffset - currentOffset;
             long consumedCount = 0L;
 
-            log.debug("number of messages : {}", messageCount);
+            log.debug("DLQ topic='{}', partition=0, remaining messages={}", topic, messageCount);
 
-            // 메시지 처리 루프
+            // Poll & 처리 루프
             while (consumedCount < messageCount) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(2000));
-
                 if (records.count() == 0) {
                     throw new CommonException(BatchExceptionCode.POLLING_FAILED);
                 }
 
                 for (ConsumerRecord<String, String> record : records.records(topic)) {
-                    log.info("{}", record);
+                    log.info("DLT record offset={}, key={}, headers={}", record.offset(), record.key(), record.headers());
                     orderDeadLetterService.retry(record.value());
                 }
 
                 consumedCount += records.count();
                 consumer.commitSync();
             }
-
-            consumer.close();
         } catch (Exception e) {
-            log.error("error : order dead letter retry failed", e);
-
+            log.error("order dead letter retry failed", e);
             throw e;
         }
     }

@@ -20,13 +20,12 @@ import static org.mockito.Mockito.*;
 /**
  * 순수 단위 테스트 (스프링/JPA 미기동)
  * - Querydsl 오버로드 모호성 회피:
- *   1) select(...) 스텁 시 Expression<OrderView>로 any 매처 캐스팅
- *   2) 체이닝(from/where/limit)은 RETURNS_SELF
- *   3) 불필요한 verifyNoMoreInteractions 제거(체인 호출도 상호작용으로 집계되기 때문)
+ * 1) select(...) 스텁 시 Expression<OrderView>로 any 매처 캐스팅
+ * 2) 체이닝(from/where/limit)은 RETURNS_SELF
+ * 3) 불필요한 verifyNoMoreInteractions 제거(체인 호출도 상호작용으로 집계되기 때문)
  */
 class OrderQueryRepositoryJpaImplTest {
 
-    // 체이닝 메서드가 자기 자신을 반환하도록 설정
     private final JPAQuery<OrderView> query =
             Mockito.mock(JPAQuery.class, withSettings().defaultAnswer(Answers.RETURNS_SELF));
 
@@ -34,7 +33,6 @@ class OrderQueryRepositoryJpaImplTest {
 
     private final OrderQueryRepositoryJpaImpl repo = new OrderQueryRepositoryJpaImpl(qf);
 
-    /** select(...) 오버로드 모호성 제거용 */
     @SuppressWarnings("unchecked")
     private static Expression<OrderView> anyOrderViewExpr() {
         return (Expression<OrderView>) any(Expression.class);
@@ -52,7 +50,6 @@ class OrderQueryRepositoryJpaImplTest {
         assertThat(opt).isEmpty();
         verify(query, times(1)).limit(1L);
         verify(query, times(1)).fetchFirst();
-        // ❌ verifyNoMoreInteractions(query) 는 제거 (from/where 도 상호작용에 포함됨)
     }
 
     @Test

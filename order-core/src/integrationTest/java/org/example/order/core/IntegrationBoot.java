@@ -52,7 +52,6 @@ public class IntegrationBoot {
             JdbcTemplateAutoConfiguration.class,
             HibernateJpaAutoConfiguration.class,
 
-            // ★ 레포/QueryDSL/JDBC 조립 설정 직접 주입
             JpaInfraConfig.class
     })
     @ImportAutoConfiguration({

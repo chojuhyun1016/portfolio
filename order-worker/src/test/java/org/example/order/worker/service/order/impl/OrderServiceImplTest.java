@@ -12,13 +12,14 @@ import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- * 분기 위임 검증:
- * - POST → bulkInsert
- * - PUT → bulkUpdate
- * - DELETE → deleteAll
- */
 class OrderServiceImplTest {
+
+    private static OrderCrudMessage msgOf(OrderDto dto) {
+        OrderCrudMessage msg = mock(OrderCrudMessage.class);
+        when(msg.getDto()).thenReturn(dto);
+
+        return msg;
+    }
 
     @Test
     @DisplayName("POST: bulkInsert 호출")
@@ -28,7 +29,7 @@ class OrderServiceImplTest {
 
         LocalOrderDto order = new LocalOrderDto();
         OrderDto dto = OrderDto.fromInternal(order);
-        OrderCrudMessage msg = OrderCrudMessage.test(MessageMethodType.POST, dto);
+        OrderCrudMessage msg = msgOf(dto);
 
         service.execute(MessageMethodType.POST, List.of(msg));
 
@@ -45,7 +46,7 @@ class OrderServiceImplTest {
 
         LocalOrderDto order = new LocalOrderDto();
         OrderDto dto = OrderDto.fromInternal(order);
-        OrderCrudMessage msg = OrderCrudMessage.test(MessageMethodType.PUT, dto);
+        OrderCrudMessage msg = msgOf(dto);
 
         service.execute(MessageMethodType.PUT, List.of(msg));
 
@@ -62,7 +63,7 @@ class OrderServiceImplTest {
 
         LocalOrderDto order = new LocalOrderDto();
         OrderDto dto = OrderDto.fromInternal(order);
-        OrderCrudMessage msg = OrderCrudMessage.test(MessageMethodType.DELETE, dto);
+        OrderCrudMessage msg = msgOf(dto);
 
         service.execute(MessageMethodType.DELETE, List.of(msg));
 
