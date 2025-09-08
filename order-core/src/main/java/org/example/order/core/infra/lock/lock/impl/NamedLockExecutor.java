@@ -45,10 +45,12 @@ public class NamedLockExecutor implements LockExecutor {
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) {
                             boolean success = rs.getBoolean(1);
+
                             if (success) {
                                 long elapsed = System.currentTimeMillis() - startTime;
                                 log.debug("[LOCK] 획득 성공 | key={} | attempt={} | elapsed={}ms", key, attempt, elapsed);
                                 locked = true;
+
                                 break;
                             }
                         }

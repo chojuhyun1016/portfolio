@@ -52,7 +52,6 @@ public class LockCoreTestSlice {
 
     @Bean
     public TransactionalOperator transactionalOperator() {
-        // 실제 트랜잭션 대신 단순 실행
         return new TransactionalOperator() {
             @Override
             public Object runWithExistingTransaction(LockCallback<Object> callback) throws Throwable {

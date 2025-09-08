@@ -20,6 +20,7 @@ public class InMemoryRedissonLockExecutor implements LockExecutor {
     public Object execute(String key, long waitTime, long leaseTime, LockCallback callback) throws Throwable {
         ReentrantLock lock = lockFor(key);
         boolean acquired = false;
+
         try {
             acquired = lock.tryLock(Math.max(0, waitTime), TimeUnit.MILLISECONDS);
 

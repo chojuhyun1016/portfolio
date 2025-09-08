@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.*;
         org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration.class,
         org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
 })
-@Import(LockInfraConfig.class) // ★ 새 구성 조립
+@Import(LockInfraConfig.class)
 class RedissonLockIT extends AbstractIntegrationTest {
 
     @Autowired
