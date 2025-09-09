@@ -59,7 +59,8 @@ public class IntegrationBoot {
             DataSourceTransactionManagerAutoConfiguration.class,
             TransactionAutoConfiguration.class,
             JdbcTemplateAutoConfiguration.class,
-            HibernateJpaAutoConfiguration.class
+            HibernateJpaAutoConfiguration.class,
+            FlywayAutoConfiguration.class
     })
     @EntityScan(basePackageClasses = OrderEntity.class)
     public static class JpaItSlice {

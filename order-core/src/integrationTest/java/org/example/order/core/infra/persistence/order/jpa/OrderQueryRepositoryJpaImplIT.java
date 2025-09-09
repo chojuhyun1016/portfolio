@@ -32,13 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         classes = {
                 IntegrationBoot.JpaItSlice.class,
                 OrderInfraTestConfig.class
-        },
-        properties = {
-                "jpa.enabled=true",
-                "spring.jpa.hibernate.ddl-auto=create-drop",
-                "spring.jpa.show-sql=false"
-        }
-)
+})
 @ImportAutoConfiguration(exclude = {
         org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
         org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,

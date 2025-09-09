@@ -130,3 +130,7 @@ argon2 = { module = "de.mkammerer:argon2-jvm", version = "2.11" }
 springSecurityTest = { module = "org.springframework.security:spring-security-test" }
 restdocsMockmvc = { module = "org.springframework.restdocs:spring-restdocs-mockmvc" }
 restdocsAsciidoctor = { module = "org.springframework.restdocs:spring-restdocs-asciidoctor" }
+
+# ===== (추가) Flyway =====
+flywayCore = { module = "org.flywaydb:flyway-core" }
+flywayMysql = { module = "org.flywaydb:flyway-mysql" }

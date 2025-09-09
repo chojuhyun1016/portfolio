@@ -1,12 +1,20 @@
 services:
   portfolio-db:
-    image: mysql/mysql-server:8.0
+    image: mysql:8.3.0
+    container_name: portfolio-db
     restart: always
     ports:
-      - "3312:3306"
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_ROOT_HOST: '%'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -proot || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     command:
       - --skip-character-set-client-handshake
       - --character-set-server=utf8mb4
@@ -16,6 +24,7 @@ services:
   localstack:
     image: localstack/localstack:latest
     container_name: localstack
+    restart: always
     ports:
       - "4566:4566"
     environment:
@@ -24,6 +33,11 @@ services:
       - DATA_DIR=/tmp/localstack/data
     volumes:
       - "./.localstack:/tmp/localstack"
+    healthcheck:
+      test: ["CMD", "awslocal", "dynamodb", "list-tables"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:7.0.5
@@ -32,3 +46,14 @@ services:
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mysql_data:
+  redis_data:

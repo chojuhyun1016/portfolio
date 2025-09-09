@@ -1,17 +1,17 @@
 spring:
   jpa:
+    hibernate:
+      ddl-auto: validate
     open-in-view: false
-    hibernate.ddl-auto: none
-    show-sql: true
     properties:
       hibernate:
+        format_sql: true
         dialect.storage_engine: innodb
         dialect: org.hibernate.dialect.MySQL8Dialect
         hbm2ddl.import_files_sql_extractor: org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor
         default_batch_fetch_size: ${chunkSize:1000}
         connection.provider_disables_autocommit: true
         jdbc.batch_size: ${chunkSize:1000}
-        format_sql: true
         highlight_sql: true
         use_sql_comments: true
         jdbc.time_zone: UTC
@@ -19,6 +19,20 @@ spring:
         order_updates: true
         order_inserts: true
         jdbc.batch_versioned_data: true
+        show-sql: true
+
+  sql:
+    init:
+      mode: never
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    out-of-order: false
+    connect-retries: 10
+    clean-disabled: false
 
   config.activate.on-profile: local
   datasource:
@@ -71,7 +85,7 @@ jpa:
 dynamodb:
   enabled: true
   endpoint: http://localhost:4566
-  region: ap-northeast-2      # endpoint만 줄 때 region 미지정이면 내부 기본값(us-east-1) 사용
+  region: ap-northeast-2
   access-key: local
   secret-key: local
   table-name: order_dynamo

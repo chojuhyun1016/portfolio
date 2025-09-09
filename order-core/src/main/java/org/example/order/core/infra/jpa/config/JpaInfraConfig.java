@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import javax.sql.DataSource; // CHANGED
+
 /**
  * JPA / QueryDSL 기본 인프라 설정 (핵심 + 하위 조립 설정 일괄 임포트)
  * <p>
@@ -27,6 +29,7 @@ import org.springframework.context.annotation.Import;
 @Slf4j
 @Configuration
 @ConditionalOnProperty(prefix = "jpa", name = "enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnBean(DataSource.class)
 @Import({
         JpaOrderCommandInfraConfig.class,
         JpaOrderQueryInfraConfig.class,

@@ -37,12 +37,21 @@ import static org.junit.jupiter.api.Assertions.*;
         classes = IntegrationBoot.class,
         properties = {
                 "spring.profiles.active=integration",
+                "jpa.enabled=false",
                 "lock.enabled=true",
                 "lock.named.enabled=false",
                 "lock.redisson.enabled=true",
                 "lock.redisson.wait-time=5000",
                 "lock.redisson.lease-time=2500",
-                "lock.redisson.retry-interval=100"
+                "lock.redisson.retry-interval=100",
+                "spring.autoconfigure.exclude="
+                        + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,"
+                        + "org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration,"
+                        + "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration,"
+                        + "org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration",
+                "spring.jpa.hibernate.ddl-auto=none",
+                "spring.flyway.enabled=false",
+                "spring.sql.init.mode=never"
         }
 )
 @ImportAutoConfiguration(exclude = {

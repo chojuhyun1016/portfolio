@@ -43,7 +43,6 @@ public abstract class AbstractIntegrationTest {
 
         r.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.MySQLDialect");
         r.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MySQLDialect");
-        r.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
 
         r.add("spring.jpa.show-sql", () -> "false");
         r.add("spring.jpa.properties.hibernate.format_sql", () -> "false");

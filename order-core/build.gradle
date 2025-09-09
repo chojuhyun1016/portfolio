@@ -81,9 +81,13 @@ dependencies {
     implementation(libs.awsDynamodb)
     implementation(libs.awsDynamodbEnhanced)
 
-    // ===== QueryDSL (Jakarta 강제) =====
+    // ===== QueryDSL (Jakarta) =====
     implementation(libs.querydslCore)
     implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
+
+    annotationProcessor("${libs.querydslApt.get().module}:${libs.querydslApt.get().version}:jakarta")
+    annotationProcessor(libs.jakartaPersistenceApi)
+    annotationProcessor(libs.jakartaAnnotationApi)
 
     // @ConfigurationProperties 메타 생성
     annotationProcessor(libs.springBootConfigProcessor)
@@ -94,6 +98,13 @@ dependencies {
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
 
+    // ==== Flyway ====
+    implementation(libs.flywayCore)
+    implementation(libs.flywayMysql)
+
+    // ==== DB 드라이버 ====
+    runtimeOnly(libs.mysqlDriver)
+
     // ==== test (unit) ====
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.h2)
@@ -102,6 +113,11 @@ dependencies {
     testImplementation(libs.springBootStarterDataRedis)
     testImplementation(libs.redisson)
 
+    testImplementation(platform(libs.testcontainersBom))
+    testImplementation(libs.testcontainers)
+    testImplementation(libs.testcontainersJunit)
+    // (별칭 없음) testcontainers-redis 는 사용하지 않고, 코어 testcontainers + GenericContainer 사용
+
     // ==== integrationTest (통합 테스트 전용) ====
     // Testcontainers (JDBC URL 방식으로 DataSource 자동 생성)
     integrationTestImplementation(platform(libs.testcontainersBom))
@@ -109,6 +125,7 @@ dependencies {
     integrationTestImplementation(libs.testcontainersJunit)
     integrationTestImplementation(libs.testcontainersMysql)
     integrationTestImplementation(libs.testcontainersJdbc)
+    // Redis용 모듈 별칭 없음 → 코어 testcontainers로 충분
 
     // MySQL 드라이버: 런타임 클래스패스 보장 (CNF 방지)
     integrationTestImplementation(libs.mysqlDriver)
@@ -135,10 +152,17 @@ configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 
+    // starter 자동구성 충돌 방지 (테스트/IT에서 수동 구성 경로 보호)
     testCompileClasspath {
         exclude group: 'org.redisson', module: 'redisson-spring-boot-starter'
     }
     testRuntimeClasspath {
+        exclude group: 'org.redisson', module: 'redisson-spring-boot-starter'
+    }
+    integrationTestCompileClasspath {
+        exclude group: 'org.redisson', module: 'redisson-spring-boot-starter'
+    }
+    integrationTestRuntimeClasspath {
         exclude group: 'org.redisson', module: 'redisson-spring-boot-starter'
     }
 }
@@ -169,12 +193,13 @@ test {
     systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "test-unit")
     systemProperty "junit.jupiter.execution.parallel.enabled", "true"
     systemProperty "junit.jupiter.execution.parallel.mode.default", "concurrent"
+    systemProperty "SKIP_TESTCONTAINERS", System.getProperty("SKIP_TESTCONTAINERS", "false")
 }
 
-// ===== integrationTest 태스크(존재 시 보강/없으면 등록) =====
+// ===== integrationTest 태스크 =====
 if (tasks.findByName('integrationTest') != null) {
     tasks.named('integrationTest', Test) {
-        description = 'Runs integration tests (Testcontainers: MySQL/LocalStack DynamoDB).'
+        description = 'Runs integration tests (Testcontainers: MySQL/LocalStack DynamoDB/Redis).'
         group = 'verification'
         testClassesDirs = sourceSets.integrationTest.output.classesDirs
         classpath = sourceSets.integrationTest.runtimeClasspath
@@ -182,6 +207,7 @@ if (tasks.findByName('integrationTest') != null) {
 
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
+        systemProperty "SKIP_TESTCONTAINERS", System.getProperty("SKIP_TESTCONTAINERS", "false")
 
         shouldRunAfter tasks.named('test')
 
@@ -192,7 +218,7 @@ if (tasks.findByName('integrationTest') != null) {
     }
 } else {
     tasks.register('integrationTest', Test) {
-        description = 'Runs integration tests (Testcontainers: MySQL/LocalStack DynamoDB).'
+        description = 'Runs integration tests (Testcontainers: MySQL/LocalStack DynamoDB/Redis).'
         group = 'verification'
         testClassesDirs = sourceSets.integrationTest.output.classesDirs
         classpath = sourceSets.integrationTest.runtimeClasspath
@@ -200,6 +226,7 @@ if (tasks.findByName('integrationTest') != null) {
 
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
+        systemProperty "SKIP_TESTCONTAINERS", System.getProperty("SKIP_TESTCONTAINERS", "false")
 
         shouldRunAfter tasks.named('test')
 

@@ -32,12 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * - 이 테스트 클래스 내부 TestConfiguration의 JpaTransactionManager만 사용 (다른 테스트와 분리)
  * - OrderEntity는 수동 PK(TSID) 방식이므로 persist 전 ID를 반드시 세팅해야 함
  */
-@SpringBootTest(classes = {IntegrationBoot.JpaItSlice.class, OrderInfraTestConfig.class},
-        properties = {
-                "jpa.enabled=true",
-                "spring.jpa.hibernate.ddl-auto=create-drop",
-                "spring.jpa.show-sql=false"
-        })
+@SpringBootTest(classes = {IntegrationBoot.JpaItSlice.class, OrderInfraTestConfig.class})
 @ImportAutoConfiguration(exclude = {
         org.redisson.spring.starter.RedissonAutoConfigurationV2.class,
         org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
