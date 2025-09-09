@@ -37,9 +37,9 @@ public abstract class AbstractIntegrationTest {
         r.add("spring.datasource.password", MYSQL::getPassword);
         r.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
 
-        r.add("spring.datasource.hikari.maximum-pool-size", () -> "5");
+        r.add("spring.datasource.hikari.maximum-pool-size", () -> "40");
         r.add("spring.datasource.hikari.minimum-idle", () -> "1");
-        r.add("spring.datasource.hikari.connection-timeout", () -> "25000");
+        r.add("spring.datasource.hikari.connection-timeout", () -> "45000");
 
         r.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.MySQLDialect");
         r.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MySQLDialect");

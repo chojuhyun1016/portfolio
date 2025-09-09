@@ -14,11 +14,6 @@ group = "org.example"
 version = "1.0.0"
 
 subprojects {
-    // ===== 리포지토리 =====
-//    repositories {
-//        mavenCentral()
-//    }
-
     // ===== 공통 플러그인 =====
     apply plugin: "java-library"
     apply plugin: libs.plugins.springDepMgmt.get().pluginId
@@ -34,6 +29,7 @@ subprojects {
     tasks.withType(JavaCompile).configureEach {
         options.encoding = "UTF-8"
         options.release = libs.versions.java.get().toInteger()
+        options.compilerArgs += ["-parameters"]
     }
 
     tasks.withType(Javadoc).configureEach {

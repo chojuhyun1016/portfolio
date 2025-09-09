@@ -26,8 +26,8 @@ sourceSets {
         java.srcDir 'src/integrationTest/java'
         resources.srcDir 'src/integrationTest/resources'
 
-        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
-        runtimeClasspath += output + compileClasspath
+        compileClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath + sourceSets.main.runtimeClasspath
     }
 }
 
@@ -121,6 +121,9 @@ dependencies {
     integrationTestImplementation(platform(libs.awsBomV2))
     integrationTestImplementation(libs.awsDynamodb)
     integrationTestImplementation(libs.awsRegions)
+
+    // Redisson 코어를 통합테스트에 직접 추가 (오토컨피그 배제 환경에서 사용)
+    integrationTestImplementation(libs.redissonCore)
 
     // Lombok 을 integrationTest에도 명시적으로 연결 (컴파일 + 어노테이션 프로세서)
     integrationTestCompileOnly(libs.lombok)

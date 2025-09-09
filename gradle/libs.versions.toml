@@ -1,7 +1,3 @@
-# =======================
-# gradle/libs.versions.toml
-# =======================
-
 [versions]
 java = "17"
 springBoot = "3.2.5"
@@ -52,6 +48,8 @@ springBootStarterDataRedis = { module = "org.springframework.boot:spring-boot-st
 springBootStarterBatch = { module = "org.springframework.boot:spring-boot-starter-batch" }
 springBatchTest = { module = "org.springframework.batch:spring-batch-test" }
 
+springBatch = { module = "org.springframework.boot:spring-boot-starter-batch" }
+
 # Kafka
 springKafka = { module = "org.springframework.kafka:spring-kafka" }
 springKafkaTest = { module = "org.springframework.kafka:spring-kafka-test" }
@@ -100,6 +98,7 @@ commonsPool2 = { module = "org.apache.commons:commons-pool2", version = "2.12.0"
 
 # Redis / Redisson
 redisson = { module = "org.redisson:redisson-spring-boot-starter", version = "3.27.2" }
+redissonCore = { module = "org.redisson:redisson", version = "3.27.2" }
 lettuce = { module = "io.lettuce:lettuce-core", version = "6.3.2.RELEASE" }
 embeddedRedis = { module = "com.github.codemonstur:embedded-redis", version.ref = "embeddedRedis" }
 
