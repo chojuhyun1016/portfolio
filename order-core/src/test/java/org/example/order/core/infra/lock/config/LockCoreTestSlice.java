@@ -11,8 +11,7 @@ import org.example.order.core.infra.lock.lock.LockExecutor;
 import org.example.order.core.infra.lock.lock.LockCallback;
 import org.example.order.core.infra.lock.support.TransactionalOperator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 
 import java.util.Map;
 
@@ -23,6 +22,7 @@ import java.util.Map;
  */
 @Configuration
 @ConditionalOnProperty(name = "lock.enabled", havingValue = "true")
+@EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true) // ★ AOP 확실히 켬
 public class LockCoreTestSlice {
 
     @Bean(name = "sha256")

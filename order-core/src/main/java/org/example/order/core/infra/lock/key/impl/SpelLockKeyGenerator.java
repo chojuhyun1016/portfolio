@@ -1,30 +1,38 @@
 package org.example.order.core.infra.lock.key.impl;
 
 import org.example.order.core.infra.lock.key.LockKeyGenerator;
+import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
-import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.lang.reflect.Method;
 
+/**
+ * SpEL 기반 키 생성기
+ * - MethodBasedEvaluationContext 를 사용해 #p0/#a0/매개변수명 바인딩 지원
+ * - Integration/Aspect 경로와 동일한 바인딩 전략을 사용하여 테스트/운영 일관성 확보
+ */
 public class SpelLockKeyGenerator implements LockKeyGenerator {
 
-    private final ExpressionParser parser = new SpelExpressionParser();
-    private final DefaultParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
+    private static final SpelExpressionParser PARSER = new SpelExpressionParser();
+    private static final DefaultParameterNameDiscoverer NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
     @Override
-    public String generate(String keyExpression, Method method, Object[] args) {
-        String[] paramNames = discoverer.getParameterNames(method);
-        EvaluationContext context = new StandardEvaluationContext();
-
-        if (paramNames != null) {
-            for (int i = 0; i < paramNames.length; i++) {
-                context.setVariable(paramNames[i], args[i]);
-            }
+    public String generate(String expr, Method method, Object[] args) {
+        if (expr == null) {
+            return null;
         }
 
-        return parser.parseExpression(keyExpression).getValue(context, String.class);
+        Expression e = PARSER.parseExpression(expr);
+
+        if (method == null) {
+            return e.getValue(String.class);
+        }
+
+        MethodBasedEvaluationContext ctx =
+                new MethodBasedEvaluationContext(null, method, args, NAME_DISCOVERER);
+
+        return e.getValue(ctx, String.class);
     }
 }
