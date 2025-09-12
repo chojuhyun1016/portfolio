@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.order.api.master.OrderApiMasterApplication;
 import org.example.order.api.master.config.OrderApiMasterConfig;
 import org.example.order.api.master.dto.order.LocalOrderRequest;
+import org.example.order.api.master.facade.order.OrderFacade;
 import org.example.order.api.master.service.common.KafkaProducerService;
 import org.example.order.client.kafka.service.KafkaProducerCluster;
 import org.example.order.common.core.messaging.code.MessageMethodType;
-import org.example.order.core.application.order.mapper.OrderMapper; // ★ 추가
+import org.example.order.core.application.order.mapper.OrderMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * ------------------------------------------------------------------------
  * 특징
  * - Redis/Redisson/Security/Actuator-Management 보안 자동설정 제외
- * - Kafka 관련 빈은 Mock 으로 대체
+ * - 외부 인프라 의존성은 Mock 으로 대체하여 HTTP 흐름만 검증
  * - kafka.producer.enabled=false, kafka.consumer.enabled=false : 테스트 시 Kafka 모듈 비활성화
  */
 @SpringBootTest(
@@ -55,6 +56,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class OrderControllerHttpIT {
 
     @MockBean
+    private OrderFacade facade;
+
+    @MockBean
     private KafkaProducerService kafkaProducerService;
 
     @MockBean
@@ -66,7 +70,7 @@ class OrderControllerHttpIT {
     @Test
     @DisplayName("HTTP 통합: /order 202 응답")
     void post_order_should_return_202(@Autowired MockMvc mvc, @Autowired ObjectMapper om) throws Exception {
-        doNothing().when(kafkaProducerService).sendToOrder(any());
+        doNothing().when(facade).sendOrderMessage(any());
 
         LocalOrderRequest req = new LocalOrderRequest(999L, MessageMethodType.POST);
 
