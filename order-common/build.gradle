@@ -17,6 +17,7 @@ dependencies {
 
     api(libs.springBootStarter)
     api(libs.springBootStarterWeb)
+    api(libs.springBootStarterAop)
 
     compileOnly(libs.jakartaPersistenceApi)
     compileOnly(libs.lombok)
