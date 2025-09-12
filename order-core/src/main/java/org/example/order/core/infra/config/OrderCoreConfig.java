@@ -8,46 +8,46 @@ import org.example.order.core.infra.jpa.config.JpaInfraConfig;
 import org.example.order.core.infra.lock.config.LockInfraConfig;
 import org.example.order.core.infra.redis.config.RedisInfraConfig;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * 중앙 통합 설정 (ALL-IN-ONE Import)
+ * OrderCoreConfig
+ * ------------------------------------------------------------------------
+ * 목적
+ * - 인프라 구성(TSID, Secrets, Crypto, Dynamo, JPA, Lock, Redis)을 한 곳에서 묶어 제공.
+ * - 각 하위 구성은 @ConditionalOnProperty 로 보호되어 프로퍼티 기반 온/오프가 가능.
  * <p>
- * - 모든 인프라 설정을 한 번에 @Import.
- * - 각 설정은 내부 @ConditionalOnProperty로 보호 → yml의 enabled=false면 Bean 미생성.
- * - 다른 모듈/앱/테스트에서는 이 클래스 하나만 Import 하면 됨.
+ * 설계 원칙
+ * - 라이브러리 모듈은 @ComponentScan 을 하지 않는다 (스캔은 애플리케이션이 결정).
+ * - @EntityScan 도 애플리케이션 루트가 org.example.order 인 경우 대개 불필요.
+ * (필요 시 개별 애플리케이션에서 선언)
  */
-@Configuration
-@ComponentScan(basePackages = {
-        "org.example.order.core",
-        "org.example.order.common"
-})
+@Configuration(proxyBeanMethods = false)
 @EntityScan(basePackages = {
-        "org.example.order.domain",
-        "org.example.order.core.domain"
+        // ===== order-domain entity =====
+        "org.example.order.domain"
 })
 @Import({
-        // ====== TSID ======
+        // ===== TSID (ID Generator) =====
         TsidInfraConfig.class,
 
-        // ====== AWS Secrets Manager (Client, Scheduler) ======
+        // ===== AWS Secrets Manager =====
         SecretsInfraConfig.class,
 
-        // ====== Crypto ======
+        // ===== Crypto (암호화) =====
         CryptoInfraConfig.class,
 
-        // ====== DynamoDB ======
+        // ===== DynamoDB =====
         DynamoInfraConfig.class,
 
-        // ====== JPA / Querydsl (하위 조립 포함) ======
+        // ===== JPA / Querydsl =====
         JpaInfraConfig.class,
 
-        // ====== 분산락 (Named Lock, Redisson Lock) ======
+        // ===== Distributed Lock (NamedLock / Redisson) =====
         LockInfraConfig.class,
 
-        // ====== Redis (Lettuce 등) ======
+        // ===== Redis =====
         RedisInfraConfig.class
 })
 public class OrderCoreConfig {

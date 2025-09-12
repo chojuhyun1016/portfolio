@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @ToString
 public class ResponseMeta {
+
     private Integer code;
     private String msg;
     private LocalDateTime timestamp;

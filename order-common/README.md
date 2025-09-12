@@ -1,130 +1,123 @@
-# 🧱 order-common
+# 📁 order-common 모듈 디렉토리 구조 설명
 
-`order-common` 모듈은 전체 시스템에서 공통적으로 사용되는 **순수 유틸리티, 코드 Enum, 공통 메시지, 예외, 날짜 포맷, 해싱/암호화 유틸** 등을 포함한 **비즈니스 무관 공통 모듈**입니다.  
-모든 서비스 모듈(`core`, `api`, `batch`, `worker`)이 이 모듈에 의존하며, 반대로 이 모듈은 어떤 비즈니스 도메인에도 의존하지 않습니다.
-
----
-
-## 🎯 모듈 목적 및 주요 기능
-
-- 시스템 전역에서 재사용 가능한 순수 Java 기반 유틸리티 제공
-- Enum 기반 코드 직렬화 및 변환 구조 표준화
-- 공통 예외 코드와 런타임 예외 처리 체계 제공
-- 인증 유저(ThreadLocal) 컨텍스트 제공
-- 날짜/시간 유틸리티 및 포맷 통일
-- SHA256, MD5, Base64, GZIP 등의 인코딩 및 해싱 유틸
-- 표준 응답 구조 및 메시지 포맷 정의
-- Jackson 기반 직렬화/역직렬화 지원 설정 포함
+`order-common` 모듈은 전역적으로 사용되는 **공통 기능, 유틸리티, 상수, 예외, JSON 직렬화/역직렬화, 로깅/트레이싱(Web + MDC)** 과 같은  
+교차 관심사(AOP) 기능을 제공합니다.  
+비즈니스 도메인이나 외부 인프라에 의존하지 않고, 모든 서브 모듈(api, batch, worker 등)에서 안전하게 사용할 수 있도록 설계되었습니다.
 
 ---
 
-## 📂 패키지 구조 및 설명
+## 📂 core
 
-### 🔹 `application`
-
-- `dto`: 공통 응답용 DTO 정의
-    - `CodeEnumDto`: 코드 Enum(text, code) 표준 전달 구조
-
-- `message`: 사용자에게 전달할 메시지 포맷 정의
-    - `CustomErrorMessage`: 에러 응답 구조 객체
-
----
-
-### 🔹 `auth`
-
-- `AccessUserInfo`: 인증된 사용자 정보 객체
-- `AccessUserManager`: `ThreadLocal` 기반 사용자 컨텍스트 관리
+- **목적**: 공통 코드, Enum, 상수, 예외, 인증 정보 등 핵심 개념 정의
+- **예시**:
+  - `CodeEnum`, `CommonException`, `CommonExceptionCode`
+  - `AccessUserInfo` (인증 컨텍스트)
+  - 날짜/시간 포맷, HTTP 상수
+- **책임**:
+  - 모든 서비스에서 공통적으로 사용하는 비즈니스 독립적인 핵심 코드 제공
+  - Enum 기반 코드 관리, 전역 예외 코드 정의
 
 ---
 
-### 🔹 `code`
+## 📂 config
 
-- `CodeEnum`, `ExceptionCodeEnum`: Enum 직렬화용 인터페이스
-- `CommonExceptionCode`: 시스템 공통 예외 코드 정의
-- 기타 코드 Enum: `DlqType`, `MessageChannel`, `MonitoringType` 등
-
----
-
-### 🔹 `constant`
-
-- `DateTimeConstant`: 표준 시간대, 기본 날짜/시간 상수
-- `FileConstant`: MIME, 확장자 등 파일 관련 상수
-- `HttpConstant`: HTTP 헤더 키, 요청 상수 등
+- **목적**: 공통 설정/레거시 호환을 위한 최소한의 빈 정의
+- **예시**:
+  - `OrderCommonConfig` (no-op, @Deprecated)  
+    → 과거 구조 호환용. 실제 빈 등록은 `autoconfigure` 경유.
+- **책임**:
+  - 불필요한 `@ComponentScan`/`@EnableAutoConfiguration`을 제거
+  - 새 코드에서는 **직접 사용하지 않고 오토컨피그만 사용**하도록 유도
 
 ---
 
-### 🔹 `event`
+## 📂 support
 
-- `DlqMessage`: DLQ(Dead Letter Queue) 전송 실패 메시지
-- `MonitoringMessage`: 시스템 모니터링용 메시지 구조
-
----
-
-### 🔹 `exception`
-
-- `CommonException`: 공통 런타임 예외 처리 클래스
-
----
-
-### 🔹 `format`
-
-- `DefaultDateTimeFormat`: 일관된 날짜 포맷 정의(`yyyy-MM-dd HH:mm:ss`, 등)
+- **목적**: 외부 라이브러리/Jackson/JPA/로깅 기반 공통 유틸 코드
+- **예시**:
+  - JSON: `ObjectMapperFactory`, `ObjectMapperUtils`, `CodeEnumJsonConverter`
+  - JPA: `BooleanToYNConverter`
+  - Logging: `@Correlate` 애노테이션, `CorrelationAspect`
+- **책임**:
+  - Jackson 기반 직렬화/역직렬화 지원
+  - Enum ↔ DTO 변환 처리
+  - JPA Boolean ↔ "Y/N" 매핑
+  - AOP 기반 MDC(traceId, domain key) 전파
 
 ---
 
-### 🔹 `jackson`
+## 📂 autoconfigure
 
-- `config/CommonObjectMapperFactory`: 날짜/Enum 포맷 포함 `ObjectMapper` 설정
-- `converter/CodeEnumJsonConverter`: Enum 직렬화/역직렬화 처리기 (`code`, `text` 필드 자동 변환)
-
----
-
-### 🔹 `utils`
-
-- `datetime/DateTimeUtils`: 날짜 변환 및 포맷 유틸 (예: `startOfDay`, `endOfMonth`)
-- `encode/Base64Utils`, `ZipBase64Utils`: 인코딩, 압축 후 인코딩 유틸
-- `exception/ExceptionUtils`: DB 예외 추출, 상세 메시지 포맷
-- `hash/SecureHashUtils`: `SHA-256`, `MD5`, `HMAC` 해싱 지원
-- `jackson/ObjectMapperUtils`: JSON 직렬화/역직렬화 및 필드 추출 유틸
+- **목적**: Spring Boot AutoConfiguration 클래스
+- **예시**:
+  - `LoggingSupportAutoConfiguration`  
+    → `TaskDecorator` / `CorrelationAspect` 자동 등록
+  - `WebCommonAutoConfiguration`  
+    → `CorrelationIdFilter` 자동 등록
+- **특징**:
+  - `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 경유 자동 인식
+  - 애플리케이션은 `@Import`/`@ComponentScan` 필요 없음
 
 ---
 
-### 🔹 `web`
+## 📂 web
 
-- `ApiResponse`: 표준 응답 데이터 구조 (`data`, `meta`)
-- `ResponseMeta`: 응답의 코드/메시지/응답시간 포함
-
----
-
-## 🛠 대표 사용 예시
-
-| 상황                           | 사용 도구                                     |
-|--------------------------------|-----------------------------------------------|
-| Enum을 JSON 응답에 포함         | `CodeEnumJsonConverter`, `CodeEnumDto`        |
-| 인증된 사용자 정보 접근         | `AccessUserManager.get()`                     |
-| 날짜 처리 및 포맷 통일         | `DateTimeUtils.startOfDay()`, `endOfMonth()` |
-| 예외 처리 표준화               | `CommonException`, `CommonExceptionCode`     |
-| 응답 메시지 전송 포맷          | `CustomErrorMessage`, `ApiResponse`          |
-| Json ObjectMapper 통합 설정     | `CommonObjectMapperFactory`                  |
-| SHA256/MD5 해싱, Base64 인코딩 | `SecureHashUtils`, `Base64Utils`             |
+- **목적**: 웹 계층 공통 응답 및 요청 처리
+- **예시**:
+  - `ApiResponse<T>`, `ResponseMeta`
+  - `AccessUserArgumentResolver`
+  - `CorrelationIdFilter`
+- **책임**:
+  - API 응답 포맷 표준화
+  - 게이트웨이 헤더 기반 사용자 정보 바인딩
+  - 요청 단위 상관관계 ID 관리 (`MDC["requestId"]`, `MDC["traceId"]`)
 
 ---
 
-## 🔗 의존성 및 설계 원칙
+## 📂 security
 
-- **단방향 순수 의존 구조**  
-  `order-common` 모듈은 **비즈니스 계층, 외부 시스템, DB**에 전혀 의존하지 않으며  
-  전 모듈(`core`, `api`, `worker`, `batch`)에서 import 하여 사용
-
-- **순수 유틸리티 중심 모듈**  
-  모든 클래스는 상태를 가지지 않으며, 스프링 빈 없이도 사용 가능
-
-- **표준화된 Enum/Exception/Response 구조**  
-  시스템 전반에 걸쳐 일관성 있는 처리 체계 제공
+- **목적**: 보안/내부 게이트웨이 전용 필터 제공
+- **예시**:
+  - `GatewayOnlyFilter`  
+    → 지정된 헤더/시크릿 값 검증, 화이트리스트 패턴 매칭 지원
+- **책임**:
+  - 내부 API 호출 보호 (잘못된 헤더 접근 차단)
+  - 게이트웨이 환경에서만 요청이 통과되도록 강제
 
 ---
 
-## ✅ 결론
+## 📂 helper
 
-이 모듈은 **시스템 품질, 유지보수성, 통합성**을 보장하기 위한 **표준 기반 유틸리티 허브**입니다.  
-비즈니스와 독립적으로 공통 관심사를 해결하고, 서비스 모듈 간 중복 구현을 방지하는 핵심 기반을 제공합니다.
+- **목적**: 경량 범용 유틸리티 제공
+- **예시**:
+  - 날짜 유틸 (`DateTimeUtils`)
+  - 해싱 유틸 (`SecureHashUtils`)
+  - Base64, GZIP 변환
+- **책임**:
+  - 반복되는 로직 최소화
+  - 외부 라이브러리를 직접 호출하지 않고 안전하게 래핑
+
+---
+
+## ✅ 정리
+
+| 디렉토리     | 설명 |
+|--------------|------|
+| `core`       | Enum, 예외, 인증 컨텍스트 등 핵심 타입 |
+| `config`     | 공통 설정(no-op, 레거시 호환) |
+| `support`    | JSON/JPA/Logging 유틸, AOP 애노테이션/Aspect |
+| `autoconfigure` | Boot AutoConfig (Filter, Aspect, TaskDecorator) |
+| `web`        | API 응답 포맷, ArgumentResolver, 필터 |
+| `security`   | 게이트웨이 전용 보안 필터 |
+| `helper`     | 날짜/암호화/Base64/GZIP 등 범용 유틸 |
+
+---
+
+## 🔑 핵심 포인트
+
+- `support` → **순수 기능 코드** (유틸, 애노테이션, Aspect)
+- `autoconfigure` → **자동 설정 코드** (빈 등록, 필터/AOP 연결)
+- `config` → **레거시 호환용 최소 no-op 설정**
+- `web` → **표준 웹 응답/필터 구조**
+- `security` → **게이트웨이 내부 전용 보안 필터**
+- 모두 **비즈니스 무관** → 모든 서비스 모듈(api, batch, worker 등)에서 안정적 재사용 가능

@@ -9,6 +9,7 @@ public class OrderBatchApplication {
 
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(OrderBatchApplication.class, args);
+
         System.exit(SpringApplication.exit(context));
     }
 }

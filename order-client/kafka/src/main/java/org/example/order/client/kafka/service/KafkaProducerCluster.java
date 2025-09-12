@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * KafkaTemplate을 이용한 Producer 서비스 (순수 POJO)
- * - 빈 등록은 설정 클래스(KafkaProducerServiceConfig)에서 조건부로 수행
+ * - 빈 등록은 설정 클래스(KafkaModuleConfig)에서 조건부로 수행
  */
 @Slf4j
 @RequiredArgsConstructor

@@ -9,6 +9,7 @@ import org.apache.kafka.common.record.CompressionType;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.example.order.client.kafka.config.properties.KafkaProducerProperties;
 import org.example.order.client.kafka.config.properties.KafkaSSLProperties;
+import org.example.order.client.kafka.interceptor.TraceIdProducerInterceptor;
 import org.example.order.common.support.json.ObjectMapperFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -27,6 +28,7 @@ import java.util.Map;
  * - VALUE: JsonSerializer(ObjectMapper) 고정 → 도메인 객체 전송 표준화
  * - 압축: LZ4, 배치 크기: 64KiB
  * - SSL/SASL: kafka.ssl.enabled=true 일 때만 주입
+ * - 인터셉터(TraceIdProducerInterceptor) 자동 등록
  */
 @Slf4j
 @Configuration
@@ -40,12 +42,16 @@ public class KafkaProducerConfig {
 
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
+
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProducerProperties.getBootstrapServers());
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         configProps.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name);
         configProps.put(ProducerConfig.BATCH_SIZE_CONFIG, 65_536);
+
+        // Producer 인터셉터 등록(FQN)
+        configProps.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, TraceIdProducerInterceptor.class.getName());
 
         // 보안 설정: 필요 시에만
         if (sslProperties.isEnabled()) {
@@ -57,6 +63,7 @@ public class KafkaProducerConfig {
 
         DefaultKafkaProducerFactory<String, Object> factory = new DefaultKafkaProducerFactory<>(configProps);
         factory.setValueSerializer(new JsonSerializer<>(ObjectMapperFactory.defaultObjectMapper()));
+
         return factory;
     }
 

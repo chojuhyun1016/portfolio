@@ -1,7 +1,6 @@
 package org.example.order.api.master.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.example.order.client.kafka.config.KafkaModuleConfig;
 import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.common.support.json.ObjectMapperFactory;
@@ -10,7 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Import({
         OrderCoreConfig.class,
         KafkaModuleConfig.class
@@ -19,7 +18,6 @@ import org.springframework.context.annotation.*;
 @ComponentScan(basePackages = {
         "org.example.order.api.master"
 })
-@RequiredArgsConstructor
 public class OrderApiMasterConfig {
 
     /**

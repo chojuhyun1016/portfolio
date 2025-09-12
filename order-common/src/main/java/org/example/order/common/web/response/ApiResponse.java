@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 public class ApiResponse<T> {
+
     private T data;
     private ResponseMeta metadata;
 

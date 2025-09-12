@@ -1,0 +1,2 @@
+org.example.order.common.autoconfigure.logging.LoggingAutoConfiguration
+org.example.order.common.autoconfigure.web.WebAutoConfiguration

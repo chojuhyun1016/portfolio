@@ -7,6 +7,7 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.example.order.client.kafka.config.properties.KafkaConsumerProperties;
 import org.example.order.client.kafka.config.properties.KafkaSSLProperties;
+import org.example.order.client.kafka.interceptor.MdcRecordInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +27,7 @@ import java.util.Map;
  * - AckMode: MANUAL_IMMEDIATE 고정(리스너 내 ack.acknowledge() 호출 전제)
  * - 재처리 기본 없음(DefaultErrorHandler + FixedBackOff(0,0))
  * - SSL/SASL: kafka.ssl.enabled=true 일 때만 주입
+ * - RecordInterceptor: Kafka 헤더 traceId → MDC 복원
  */
 @Configuration
 @EnableConfigurationProperties({KafkaConsumerProperties.class, KafkaSSLProperties.class})
@@ -39,6 +41,7 @@ public class KafkaConsumerConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
+
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
 
@@ -52,11 +55,15 @@ public class KafkaConsumerConfig {
         // 표준 설정
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(getDefaultConfigProps()));
 
+        // traceId 복원 인터셉터 주입
+        factory.setRecordInterceptor(new MdcRecordInterceptor());
+
         return factory;
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaBatchListenerContainerFactory() {
+
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
 
@@ -79,12 +86,15 @@ public class KafkaConsumerConfig {
         if (option.getMaxPollRecords() != null) {
             configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, option.getMaxPollRecords());
         }
+
         if (option.getFetchMaxWaitMs() != null) {
             configProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, option.getFetchMaxWaitMs());
         }
+
         if (option.getFetchMaxBytes() != null) {
             configProps.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, option.getFetchMaxBytes());
         }
+
         if (option.getMaxPollIntervalMs() != null) {
             configProps.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, option.getMaxPollIntervalMs());
         }
@@ -93,10 +103,14 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(configProps));
         factory.setBatchListener(true);
 
+        // 배치 리스너에도 동일 인터셉터 주입
+        factory.setRecordInterceptor(new MdcRecordInterceptor());
+
         return factory;
     }
 
     private Map<String, Object> getDefaultConfigProps() {
+
         Map<String, Object> propsMap = new HashMap<>();
 
         // 필수
