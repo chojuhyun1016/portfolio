@@ -10,7 +10,7 @@ import org.springframework.core.task.TaskDecorator;
 import java.util.Map;
 
 /**
- * LoggingSupportAutoConfiguration
+ * LoggingAutoConfiguration
  * ------------------------------------------------------------------------
  * 목적
  * - @Async/스레드풀 경계에서 MDC(ThreadLocal)를 복제/복원하여 traceId 등 컨텍스트 전파.
@@ -18,9 +18,12 @@ import java.util.Map;
  * - Boot 기본 실행기(TaskExecutorCustomizer)는 TaskDecorator 빈을 감지해 적용한다.
  * - 커스텀 ThreadPoolTaskExecutor/TaskScheduler에는 setTaskDecorator(...)로 직접 적용 필요.
  * - CorrelationAspect를 오토컨피그로 등록해 컴포넌트 스캔에 의존하지 않도록 한다.
+ * <p>
+ * (추가)
+ * - 클래스명을 AutoConfiguration.imports 와 일치하도록 표준명으로 교정.
  */
 @AutoConfiguration
-public class LoggingSupportAutoConfiguration {
+public class LoggingAutoConfiguration {
 
     /**
      * MDC 컨텍스트 전파용 TaskDecorator

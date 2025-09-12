@@ -9,28 +9,36 @@ Spring Boot 애플리케이션에 **MDC(Logback/Slf4j) 컨텍스트 전파**와
 
 | 구성 요소 | 설명 |
 |---|---|
-| **`org.example.order.common.autoconfigure.logging.LoggingSupportAutoConfiguration`** | MDC 컨텍스트 전파용 `TaskDecorator` 와 `CorrelationAspect`(for `@Correlate`) 자동 등록 |
+| **`org.example.order.common.autoconfigure.logging.LoggingAutoConfiguration`** | MDC 컨텍스트 전파용 `TaskDecorator` 와 `CorrelationAspect`(for `@Correlate`) 자동 등록 |
 | `TaskDecorator` (빈 이름: `mdcTaskDecorator`) | @Async/스레드풀 실행 경계에서 MDC(ThreadLocal) 값을 복제/복원 |
-| `CorrelationAspect` | `@Correlate(key="...")` 값(SpEL)을 MDC에 주입, 필요 시 `traceId`를 덮어씀 |
-| **`org.example.order.common.autoconfigure.web.WebCommonAutoConfiguration`** | `CorrelationIdFilter`를 `FilterRegistrationBean`으로 자동 등록 (가장 앞단에 가까운 order) |
+| `CorrelationAspect` | `@Correlate(key="...")` 값(SpEL)을 MDC에 주입, 필요 시 `traceId`를 덮어씀 (SpEL 캐시 및 MethodBasedEvaluationContext 기반 보강) |
+| **`org.example.order.common.autoconfigure.web.WebAutoConfiguration`** | `CorrelationIdFilter`를 `FilterRegistrationBean`으로 자동 등록 (가장 앞단에 가까운 order) |
 | `CorrelationIdFilter` | X-Request-Id → MDC["requestId"]; MDC["traceId"] 비어있으면 같은 값으로 브리지; 응답 헤더도 설정 |
 
 > 원칙: **라이브러리 모듈**은 `@Component` 대신 **오토컨피그(@AutoConfiguration)** 로 제공 →  
 > 애플리케이션은 스캔 범위에 의존하지 않고 **자동 조립**됩니다.  
 > (필요 시 `spring.autoconfigure.exclude` 로 손쉽게 끌 수 있음)
 
+> **파일명/구성 변경(권장 반영)**
+> - `LoggingSupportAutoConfiguration` → **`LoggingAutoConfiguration`** (이름 변경)
+> - `WebCommonAutoConfiguration` → **`WebAutoConfiguration`** (이름 변경)
+> - API 모듈의 `TraceIdFilter`는 **삭제**하고 `CorrelationIdFilter`만 사용 (필터 단일화)
+
 ---
 
 ## 2) 동작 모드
 
-### 2.1 LoggingSupportAutoConfiguration
+### 2.1 LoggingAutoConfiguration
 - 항상 후보가 되지만, 아래 조건으로 **중복을 회피**합니다.
-    - `@ConditionalOnMissingBean(name = "mdcTaskDecorator")` → 동일 이름 빈이 있으면 등록 안 함
-    - `@ConditionalOnMissingBean(CorrelationAspect.class)` → 이미 존재하면 등록 안 함
+  - `@ConditionalOnMissingBean(name = "mdcTaskDecorator")` → 동일 이름 빈이 있으면 등록 안 함
+  - `@ConditionalOnMissingBean(CorrelationAspect.class)` → 이미 존재하면 등록 안 함
+- `CorrelationAspect`는 **SpEL 캐시 + MethodBasedEvaluationContext** 기반으로 안정/성능 보강
 
-### 2.2 WebCommonAutoConfiguration
+### 2.2 WebAutoConfiguration
 - 항상 후보가 되지만, `@ConditionalOnMissingBean` 으로 **필터 등록 중복을 회피**합니다.
-    - 커스텀 `FilterRegistrationBean<CorrelationIdFilter>` 가 이미 있으면 건너뜀
+  - `@ConditionalOnMissingBean(CorrelationIdFilter.class)` → 동일 타입 필터가 있으면 건너뜀
+  - `@ConditionalOnMissingBean(name = "correlationIdFilterRegistration")` → 사용자 정의 레지스트레이션이 있으면 건너뜀
+- `FilterRegistrationBean` 으로 **가장 앞단(Ordered.HIGHEST_PRECEDENCE)** 에 가깝게 등록
 
 ---
 
@@ -53,8 +61,8 @@ dependencies {
 
 - 내용
 ~~~text
-org.example.order.common.autoconfigure.logging.LoggingSupportAutoConfiguration
-org.example.order.common.autoconfigure.web.WebCommonAutoConfiguration
+org.example.order.common.autoconfigure.logging.LoggingAutoConfiguration
+org.example.order.common.autoconfigure.web.WebAutoConfiguration
 ~~~
 
 > 이 파일이 없으면 Boot이 오토컨피그 클래스를 **자동으로 로딩하지 않습니다.**  
@@ -170,7 +178,7 @@ public class CustomLoggingConfig {
 ~~~java
 @Configuration
 public class CustomFilterConfig {
-  @Bean
+  @Bean(name = "correlationIdFilterRegistration")
   public FilterRegistrationBean<CorrelationIdFilter> correlationIdFilterRegistration() {
     var reg = new FilterRegistrationBean<>(new CorrelationIdFilter());
     reg.setOrder(-10);         // 더 앞쪽으로
@@ -185,8 +193,8 @@ public class CustomFilterConfig {
 spring:
   autoconfigure:
     exclude:
-      - org.example.order.common.autoconfigure.logging.LoggingSupportAutoConfiguration
-      - org.example.order.common.autoconfigure.web.WebCommonAutoConfiguration
+      - org.example.order.common.autoconfigure.logging.LoggingAutoConfiguration
+      - org.example.order.common.autoconfigure.web.WebAutoConfiguration
 ~~~
 
 ---
@@ -194,30 +202,30 @@ spring:
 ## 6) 트러블슈팅
 
 - **`@Correlate` 적용이 안 되는 경우**
-    - AOP 의존성(`spring-boot-starter-aop`)이 누락되지 않았는지 확인
-    - 동일 타입의 `CorrelationAspect` 를 앱이 또 등록하고 있지 않은지 확인(중복이면 한쪽만 활성)
+  - AOP 의존성(`spring-boot-starter-aop`)이 누락되지 않았는지 확인
+  - 동일 타입의 `CorrelationAspect` 를 앱이 또 등록하고 있지 않은지 확인(중복이면 한쪽만 활성)
 
 - **MDC 값이 비동기 경계에서 끊기는 경우**
-    - 커스텀 `ThreadPoolTaskExecutor` 에 `setTaskDecorator(mdcTaskDecorator)` 설정 필수
-    - 스케줄러(`TaskScheduler`)도 동일하게 데코레이터 지정
+  - 커스텀 `ThreadPoolTaskExecutor` 에 `setTaskDecorator(mdcTaskDecorator)` 설정 필수
+  - 스케줄러(`TaskScheduler`)도 동일하게 데코레이터 지정
 
 - **필터가 동작하지 않는 경우**
-    - 이미 사용자 정의 `FilterRegistrationBean<CorrelationIdFilter>` 가 등록되어 있는지 확인
-    - 순서가 너무 뒤라면 `setOrder(...)` 값 조정
+  - 이미 사용자 정의 `FilterRegistrationBean<CorrelationIdFilter>` 가 등록되어 있는지 확인
+  - 순서가 너무 뒤라면 `setOrder(...)` 값 조정
 
 - **로그에 traceId/requestId가 안 보임**
-    - Logback 패턴에 `%X{traceId}` / `%X{requestId}` 가 포함되어 있는지 확인
+  - Logback 패턴에 `%X{traceId}` / `%X{requestId}` 가 포함되어 있는지 확인
 
 ---
 
 ## 7) 클래스 다이어그램(개념)
 
 ~~~text
-LoggingSupportAutoConfiguration
+LoggingAutoConfiguration
  ├─(if missing)────────────→ TaskDecorator bean ("mdcTaskDecorator")
  └─(if missing)────────────→ CorrelationAspect bean (@Correlate 처리)
 
-WebCommonAutoConfiguration
+WebAutoConfiguration
  └─(if missing)────────────→ FilterRegistrationBean<CorrelationIdFilter>
                                  ↳ CorrelationIdFilter: 
                                     - X-Request-Id → MDC["requestId"]

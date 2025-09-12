@@ -36,7 +36,7 @@
 - **내용 예시**:
   - JSON: `ObjectMapperFactory`, `ObjectMapperUtils`, `CodeEnumJsonConverter`
   - JPA: `BooleanToYNConverter`
-  - Logging: `@Correlate` 애노테이션, `CorrelationAspect`
+  - Logging: `@Correlate` 애노테이션, `CorrelationAspect` *(SpEL 캐시 + MethodBasedEvaluationContext 기반)*
 - **책임**:
   - Jackson 기반 JSON 처리 및 Enum 변환 지원
   - JPA AttributeConverter 등 ORM 유틸
@@ -48,14 +48,17 @@
 
 - **목적**: Spring Boot 오토컨피그 클래스 제공
 - **내용 예시**:
-  - `LoggingSupportAutoConfiguration`
-  - `WebCommonAutoConfiguration`
+  - **`LoggingAutoConfiguration`** *(이전: `LoggingSupportAutoConfiguration`, 파일명 변경 반영)*
+  - **`WebAutoConfiguration`** *(이전: `WebCommonAutoConfiguration`, 파일명 변경 반영)*
 - **책임**:
   - `TaskDecorator`/`CorrelationAspect` 자동 등록
-  - `CorrelationIdFilter` 자동 등록
+  - `CorrelationIdFilter` 자동 등록(가장 앞단에 가깝게 배치)
 - **특징**:
   - `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`를 통해 자동 인식
   - 애플리케이션에서 `@ComponentScan`/직접 등록 필요 없음
+  - `@ConditionalOnMissingBean`으로 **중복 등록 방지**
+- **참고**:
+  - API 모듈의 `TraceIdFilter`는 **삭제(권장)** 하고 공통 `CorrelationIdFilter`로 **단일화**
 
 ---
 
@@ -93,7 +96,7 @@
 | `core`   | Enum, 공통 예외, 상수, 인증 컨텍스트 등 핵심 타입 |
 | `config` | 외부 설정 바인딩(`@ConfigurationProperties`) |
 | `support`| JSON/JPA/Logging 유틸, AOP 애노테이션/Aspect |
-| `autoconfigure` | Boot 자동 구성 (필터, Aspect, TaskDecorator) |
+| `autoconfigure` | Boot 자동 구성 (필터, Aspect, TaskDecorator) — *`LoggingAutoConfiguration`, `WebAutoConfiguration`로 파일명 변경 반영* |
 | `web`    | API 응답 표준, 필터, ArgumentResolver 등 |
 | `helper` | 날짜/암호화/Base64/GZIP 등 범용 유틸 |
 
@@ -102,7 +105,6 @@
 ## 🔑 핵심 포인트
 
 - `support`는 **순수 기능 코드** (유틸, 애노테이션, Aspect)
-- `autoconfigure`는 **자동 설정 코드** (빈 등록, 필터/AOP 연결)
+- `autoconfigure`는 **자동 설정 코드** (빈 등록, 필터/AOP 연결) — *imports와 클래스명 정합성 유지*
 - `web`은 **표준 웹 응답/필터 구조**
 - 모두 **비즈니스 무관** → 모든 서비스 모듈(api, batch, worker 등)에서 안전하게 재사용 가능
-- 

@@ -1,4 +1,3 @@
-// order-api/order-api-master/src/main/java/org/example/order/api/master/config/OrderApiMasterConfig.java
 package org.example.order.api.master.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

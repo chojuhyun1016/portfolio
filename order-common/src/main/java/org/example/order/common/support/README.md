@@ -204,8 +204,8 @@ dependencies {
 - 경로: `order-common/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
 - 내용 예: (로깅/웹 자동구성 사용 시)
 ~~~text
-org.example.order.common.autoconfigure.logging.LoggingSupportAutoConfiguration
-org.example.order.common.autoconfigure.web.WebCommonAutoConfiguration
+org.example.order.common.autoconfigure.logging.LoggingAutoConfiguration
+org.example.order.common.autoconfigure.web.WebAutoConfiguration
 ~~~
 > `CodeEnumJsonConverter`는 `@JsonComponent`로 자동 등록되므로 별도 오토컨피그가 필요 없습니다.  
 > (특별히 ObjectMapper 전체를 교체하는 정책이 있다면 별도 구성 클래스를 추가하세요.)
