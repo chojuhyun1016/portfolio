@@ -6,15 +6,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.api.master.dto.order.LocalOrderRequest;
 import org.example.order.api.master.dto.order.LocalOrderResponse;
 import org.example.order.api.master.facade.order.OrderFacade;
+import org.example.order.common.support.logging.Correlate; // (추가) @Correlate 사용
 import org.example.order.common.web.response.ApiResponse;
-import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
+/**
+ * 목적
+ * - 주문 메시지를 수신하여 내부로 전달한다.
+ * <p>
+ * MDC/trace 전략 (권장)
+ * 1) 요청 초입에서는 CorrelationIdFilter가 requestId를 생성/브리지(MDC["traceId"]=requestId)한다.
+ * 2) 컨트롤러 메서드에서 @Correlate로 도메인 키(orderId)를 추출해 traceId를 덮어쓴다.
+ * - @Correlate는 실행 전 MDC 백업 → 주입 → 실행 후 복원하므로, 메서드 실행 중(파사드/서비스/카프카) 전 구간에 traceId=orderId가 유지된다.
+ * 3) 애플리케이션 코드에서 MDC.clear()를 호출하지 않는다(필터가 요청 종료 시점에 복원 처리).
+ * <p>
+ * 로그 패턴 예시 (logback):
+ * [%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread][%level][traceId:%X{traceId:-NA}][line:%L][%logger][%M] : %msg%n
+ */
 @Slf4j
 @Validated
 @RestController
@@ -26,41 +37,22 @@ public class OrderController {
 
     /**
      * 주문 메시지를 수신하여 내부로 전달한다.
-     * <p>
-     * MDC(traceId) 사용 전략:
-     * 1) 요청 시작 시 항상 UUID 기반 traceId를 먼저 세팅한다.
-     * - 이유: 검증 전에라도 로그 추적이 바로 가능하도록 보장하기 위해서다.
-     * 2) 요청 본문 검증이 끝난 뒤, 메시지 추적에 더 적합한 키(여기서는 orderId)가 있으면
-     * traceId 값을 그 키로 교체한다. (도메인 친화적 키로 재설정)
-     * 3) 처리 완료 후에는 반드시 MDC.clear()로 정리한다. (ThreadLocal 누수 방지)
-     * <p>
-     * 로그 패턴 예시 (logback):
-     * [%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread][%level][traceId:%X{traceId:-NA}][line:%L][%logger][%M] : %msg%n
+     *
+     * @Correlate: 컨트롤러 진입 시점부터 orderId를 traceId로 사용하고, 보조 MDC 키 "orderId"도 함께 저장.
+     * - key: 메서드 파라미터명(LocalOrderRequest request)의 필드 접근 → "#request.orderId"
+     * - overrideTraceId=true: traceId를 도메인 키로 덮어씀
+     * - mdcKey="orderId": 보조키 저장
      */
     @PostMapping
+    @Correlate(key = "#request.orderId", mdcKey = "orderId", overrideTraceId = true)
     public ResponseEntity<ApiResponse<LocalOrderResponse>> sendOrderMasterMessage(
             @RequestBody @Valid LocalOrderRequest request
     ) {
-        // 1) 항상 기본 traceId를 먼저 설정해 둔다 (요청 시작 지점부터 추적 가능)
-        String initialTraceId = UUID.randomUUID().toString();
-        MDC.put("traceId", initialTraceId);
+        log.info("[OrderController][sendOrderMasterMessage] orderId={}, methodType={}",
+                request.orderId(), request.methodType());
 
-        // 2) 검증 통과 후, 도메인 키가 추적에 더 유리하다면 traceId를 교체
-        if (request.orderId() != null && request.orderId() > 0) {
-            MDC.put("traceId", String.valueOf(request.orderId()));
-        }
+        facade.sendOrderMessage(request);
 
-        try {
-            // 로그에는 메시지 본문만 남기고, 메타데이터(traceId)는 패턴에서 자동 출력
-            log.info("[OrderController][sendOrderMasterMessage] orderId={}, methodType={}",
-                    request.orderId(), request.methodType());
-
-            facade.sendOrderMessage(request);
-
-            return ApiResponse.accepted(new LocalOrderResponse(request.orderId(), HttpStatus.ACCEPTED.name()));
-        } finally {
-            // 4) ThreadLocal 기반의 MDC는 반드시 정리
-            MDC.clear();
-        }
+        return ApiResponse.accepted(new LocalOrderResponse(request.orderId(), HttpStatus.ACCEPTED.name()));
     }
 }

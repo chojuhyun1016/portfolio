@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <configuration>
     <timestamp key="BY_DATE" datePattern="yyyy-MM-dd"/>
     <property name="LOG_PARENT_PATH" value="./log"/>
@@ -7,13 +6,20 @@
     <property name="LOG_CHILD_ERROR" value="error"/>
     <property name="LOG_BACKUP" value="./log/backup"/>
     <property name="MAX_HISTORY" value="30"/>
+
+    <!--
+      LOG_PATTERN 규칙:
+      - 모든 항목을 []로 감싸고, 항목 간 공백 없음
+      - 마지막만 ": %msg%n"
+    -->
     <property name="LOG_PATTERN"
-              value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative] %green([%thread]) %highlight(%-5level) [line:%L] %logger %M : %msg%n"/>
+              value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread][%level][trace:%X{traceId:-NA}][req:%X{requestId:-NA}][order:%X{orderId:-NA}][line:%L][%logger][%M]: %msg%n"/>
 
     <springProfile name="local, dev, beta, prod">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
                 <pattern>${LOG_PATTERN}</pattern>
+                <!-- <charset>UTF-8</charset> -->
             </encoder>
         </appender>
 
@@ -21,5 +27,4 @@
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
-
 </configuration>

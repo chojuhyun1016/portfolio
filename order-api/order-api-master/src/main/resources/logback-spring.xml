@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <configuration>
     <timestamp key="BY_DATE" datePattern="yyyy-MM-dd"/>
     <property name="LOG_PARENT_PATH" value="./log"/>
@@ -7,13 +6,24 @@
     <property name="LOG_CHILD_ERROR" value="error"/>
     <property name="LOG_BACKUP" value="./log/backup"/>
     <property name="MAX_HISTORY" value="30"/>
+    <!--
+      LOG_PATTERN 권장:
+      - trace: 최종 추적 키(필터 초기값 또는 @Correlate로 오버라이드된 값)
+      - req  : HTTP 초입에서 받은/생성한 요청 키(브리지 기준)
+      - order: @Correlate(mdcKey="orderId")로 저장되는 도메인 키(선택)
+      - 기본값 -NA로 누락 시도 가독성 유지
+      - %L/%M은 콜러 데이터 수집 비용이 있으니 성능 민감 환경에서는 제거 고려
+    -->
     <property name="LOG_PATTERN"
-              value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread][%level][traceId:%X{traceId:-NA}][line:%L][%logger][%M] : %msg%n"/>
+              value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread][%level][trace:%X{traceId:-NA}][req:%X{requestId:-NA}][order:%X{orderId:-NA}][line:%L][%logger][%M] : %msg%n"/>
 
     <springProfile name="local, dev, beta, prod">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
                 <pattern>${LOG_PATTERN}</pattern>
+                <!-- 필요 시 인코딩 지정
+                <charset>UTF-8</charset>
+                -->
             </encoder>
         </appender>
 
@@ -21,5 +31,4 @@
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
-
 </configuration>

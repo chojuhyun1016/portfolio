@@ -12,6 +12,16 @@ import org.example.order.worker.service.common.OrderWebClientService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.example.order.common.support.logging.Correlate;
+
+/**
+ * OrderApiMessageFacadeImpl
+ * ------------------------------------------------------------------------
+ * 목적
+ * - API 호출 → DTO 조합 → CRUD 발행.
+ * MDC 전략
+ * - 리스너에서 이미 @Correlate 적용되지만, 파사드에서도 도메인 키 기반 추적을 한 번 더 보강(방어적).
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -22,17 +32,22 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
 
     @Transactional
     @Override
+    @Correlate(
+            key = "T(org.example.order.common.support.json.ObjectMapperUtils)" +
+                    ".valueToObject(#record, T(org.example.order.core.infra.messaging.order.message.OrderApiMessage)).id",
+            mdcKey = "orderId",
+            overrideTraceId = true
+    )
     public void requestApi(Object record) {
+
         OrderApiMessage message = null;
 
         try {
             message = ObjectMapperUtils.valueToObject(record, OrderApiMessage.class);
 
-            // API 호출
             OrderDto dto = webClientService.findOrderListByOrderId(message.getId());
             dto.updatePublishedTimestamp(message.getPublishedTimestamp());
 
-            // 메세지 발행
             kafkaProducerService.sendToOrderCrud(OrderCrudMessage.toMessage(message, dto));
         } catch (Exception e) {
             log.error("error : order api record : {}", record);

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <configuration>
     <property name="POD_ID" value="${HOSTNAME:-unknown}"/>
     <springProperty name="DEFAULT_LOG_DIR" source="logging.file.path" defaultValue="logs"/>
@@ -11,8 +10,14 @@
     <property name="SYNCHRONIZE_LOG_FILE" value="synchronize"/>
     <property name="MAX_SIZE" value="100MB"/>
     <property name="MAX_HISTORY" value="7"/>
-    <property name="LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative] %green([%thread]) %highlight(%-5level) [line:%L] %logger %M : %msg%n"/>
-    <property name="DATA_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}] %msg%n"/>
+
+    <!-- 텍스트 로그 패턴: 모든 항목 [] 감싸기 + 항목 간 공백 없음 -->
+    <property name="LOG_PATTERN"
+              value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread][%level][trace:%X{traceId:-NA}][req:%X{requestId:-NA}][order:%X{orderId:-NA}][line:%L][%logger][%M]: %msg%n"/>
+
+    <!-- 데이터 로그(API/CRUD 전용 파일): 최소 필드 + 동일한 [] 규칙 -->
+    <property name="DATA_PATTERN"
+              value="[%d{yyyy-MM-dd HH:mm:ss}][trace:%X{traceId:-NA}][req:%X{requestId:-NA}][order:%X{orderId:-NA}]: %msg%n"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -59,6 +64,7 @@
         </rollingPolicy>
     </appender>
 
+    <!-- JSON(Local) 로그: MDC 키(traceId/requestId/orderId) 포함 -->
     <appender name="LOCAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
@@ -81,6 +87,9 @@
                 <mdc>
                     <keys>
                         <key>category</key>
+                        <key>traceId</key>
+                        <key>requestId</key>
+                        <key>orderId</key>
                     </keys>
                 </mdc>
             </providers>
@@ -143,7 +152,8 @@
             <charset>UTF-8</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${DEFAULT_LOG_DIR}/${SYNCHRONIZE_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log</fileNamePattern>
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${SYNCHRONIZE_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log
+            </fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>${MAX_SIZE}</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
@@ -152,28 +162,30 @@
     </appender>
 
     <springProfile name="dev, beta, prod">
-        <logger name="org.example.order.worker.listener.order.impl.OrderLocalMessageListenerImpl" level="INFO" additivity="false">
-            <appender-ref ref="LOCAL" />
+        <logger name="org.example.order.worker.listener.order.impl.OrderLocalMessageListenerImpl" level="INFO"
+                additivity="false">
+            <appender-ref ref="LOCAL"/>
             <appender-ref ref="ERROR"/>
         </logger>
 
-        <logger name="org.example.order.worker.service.common.impl.OrderWebClientServiceImpl" level="INFO" additivity="false">
-            <appender-ref ref="API" />
+        <logger name="org.example.order.worker.service.common.impl.OrderWebClientServiceImpl" level="INFO"
+                additivity="false">
+            <appender-ref ref="API"/>
             <appender-ref ref="ERROR"/>
         </logger>
 
         <logger name="org.example.order.worker.service.order" level="INFO" additivity="false">
-            <appender-ref ref="CRUD" />
+            <appender-ref ref="CRUD"/>
             <appender-ref ref="ERROR"/>
         </logger>
 
         <logger name="org.example.order.worker.listener.synchronize" level="INFO" additivity="false">
-            <appender-ref ref="SYNCHRONIZE" />
+            <appender-ref ref="SYNCHRONIZE"/>
             <appender-ref ref="ERROR"/>
         </logger>
 
         <logger name="org.example.order.worker.service.synchronize" level="INFO" additivity="false">
-            <appender-ref ref="SYNCHRONIZE" />
+            <appender-ref ref="SYNCHRONIZE"/>
             <appender-ref ref="ERROR"/>
         </logger>
     </springProfile>
@@ -185,8 +197,7 @@
     <springProfile name="dev, beta, prod">
         <root level="info">
             <appender-ref ref="DEFAULT"/>
-            <appender-ref ref="ERROR" />
+            <appender-ref ref="ERROR"/>
         </root>
     </springProfile>
-
 </configuration>

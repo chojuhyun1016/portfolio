@@ -13,6 +13,7 @@ import org.example.order.core.infra.messaging.order.message.OrderCloseMessage;
 import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
 import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
 import org.example.order.worker.service.common.KafkaProducerService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -23,6 +24,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @EnableConfigurationProperties({KafkaTopicProperties.class})
+@ConditionalOnBean(KafkaProducerCluster.class)
 public class KafkaProducerServiceImpl implements KafkaProducerService {
 
     private final KafkaProducerCluster cluster;
@@ -53,6 +55,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         if (ObjectUtils.isEmpty(messages)) {
             return;
         }
+
         for (T message : messages) {
             sendToDlq(message, currentException);
         }
@@ -63,6 +66,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         if (ObjectUtils.isEmpty(message)) {
             return;
         }
+
         try {
             if (currentException instanceof CommonException commonException) {
                 message.fail(CustomErrorMessage.toMessage(commonException.getCode(), commonException));

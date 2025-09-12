@@ -10,7 +10,7 @@ import org.springframework.test.context.DynamicPropertySource;
  * - bootstrap-servers 프로퍼티를 런타임에 주입
  */
 @EmbeddedKafka(
-        topics = {"ORDER_LOCAL"},
+        topics = {"ORDER_API", "ORDER_LOCAL", "ORDER_CRUD"},
         partitions = 1,
         brokerProperties = {"listeners=PLAINTEXT://localhost:0", "port=0"}
 )
