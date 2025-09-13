@@ -21,6 +21,7 @@ public class OrderCrudMessageListenerImpl implements OrderCrudMessageListener {
     @Override
     @KafkaListener(topics = "#{@orderCrudTopic}", groupId = "order-order-crud", containerFactory = "kafkaBatchListenerContainerFactory", concurrency = "10")
     public void executeOrderCrud(List<ConsumerRecord<String, Object>> records, Acknowledgment acknowledgment) {
+
         log.debug("order-crud records size : {}", records.size());
 
         try {

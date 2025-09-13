@@ -19,6 +19,7 @@ dependencies {
     api(libs.springBootStarterWeb)
     api(libs.springBootStarterAop)
 
+    compileOnly(libs.kafkaClients)
     compileOnly(libs.jakartaPersistenceApi)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)

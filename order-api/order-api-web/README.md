@@ -18,10 +18,9 @@ DTO | `OrderRequest`(검증용), `OrderResponse`(API 응답) | 요청/응답 구
 파사드 | `OrderFacade`, `OrderFacadeImpl` | Service 호출 및 응답 매핑
 매퍼 | `OrderResponseMapper` | Application DTO → API 응답 DTO 변환
 서비스 | `OrderService`, `OrderServiceImpl` | 트랜잭션 조회, 예외 처리, 도메인→애플리케이션 DTO 변환
-공통 | `KafkaProducerService`, `KafkaProducerServiceImpl` | (필요 시) Kafka 발행 추상화 골격
+공통 | `KafkaProducerService`, `KafkaProducerServiceImpl` | (옵션) Kafka 발행 추상화 골격
 예외/웹 | `WebApiExceptionHandler` | 웹 모듈 전용 전역 예외 처리 (표준 응답 변환)
-설정 | `application.yml` | JPA 로그, 보안/로깅/포맷 등 모듈 설정
-빌드 | `build.gradle` | REST Docs 파이프라인(`rest` 태스크), Asciidoctor, 부트 JAR에 문서 포함
+MDC/Kafka | (자동) `MdcToHeaderProducerInterceptor` · `CommonKafkaProducerAutoConfiguration` | **Producer 발행 시 MDC(traceId/orderId) → Kafka 헤더 자동 주입**(웹 모듈이 프로듀싱을 사용할 경우 자동 적용)
 
 > 의존 방향: `adapter(api-web) → application(core) → domain` 을 엄격히 유지합니다.  
 > API 레이어에서는 **애플리케이션 DTO만 참조**하며, 도메인 엔티티 직접 노출을 금지합니다.
@@ -148,6 +147,11 @@ DTO | `OrderRequest`(검증용), `OrderResponse`(API 응답) | 요청/응답 구
         }
     }
 
+> ⚙️ **MDC → Kafka 헤더 자동 주입(Producer)**  
+> 웹 모듈이 Kafka **프로듀싱을 사용하는 경우**, `order-common` 의 `MdcToHeaderProducerInterceptor` 와 `order-api-common` 의 `CommonKafkaProducerAutoConfiguration`(AutoConfiguration) 에 의해  
+> **발행 시 MDC의 `traceId`/`orderId`가 Kafka 헤더에 자동 주입**됩니다.  
+> 현재 `order-api-web` 은 기본적으로 **조회 전용**이지만, 추후 이벤트 발행을 추가해도 **서비스 코드는 별도 수정 없이** 자동 적용됩니다.
+
 --------------------------------------------------------------------------------
 
 ## 3) 설정(Setup)
@@ -172,6 +176,12 @@ DTO | `OrderRequest`(검증용), `OrderResponse`(API 응답) | 요청/응답 구
             format_sql: true
             highlight_sql: true
             use_sql_comments: true
+      kafka:
+        bootstrap-servers: localhost:9092
+        # (선택) 인터셉터를 직접 지정해도 AutoConfiguration이 중복 없이 병합 처리
+        # producer:
+        #   properties:
+        #     interceptor.classes: org.example.order.common.kafka.MdcToHeaderProducerInterceptor
 
     order:
       api:
@@ -295,6 +305,11 @@ DTO | `OrderRequest`(검증용), `OrderResponse`(API 응답) | 요청/응답 구
 ### 5.3 ObjectMapper
 - 공용 `ObjectMapper` 빈은 `@ConditionalOnMissingBean` 으로 제공되며, 외부에서 다른 빈을 주입하면 자동 대체됩니다.
 
+### 5.4 (옵션) Kafka 프로듀싱 추가 시 MDC 연계
+- 웹 모듈에서 이벤트 발행을 추가할 때, **별도 코드 변경 없이** 발행 시점에 MDC(`traceId`/`orderId`)가 Kafka 헤더로 **자동 주입**됩니다.  
+  이는 공통 인터셉터(`MdcToHeaderProducerInterceptor`)와 자동 구성(`CommonKafkaProducerAutoConfiguration`) 덕분이며,  
+  수신측(예: `order-worker`)에서는 컨슈머 인터셉터로 헤더를 읽어 MDC 복원 → **엔드-투-엔드 추적성**을 유지합니다.
+
 --------------------------------------------------------------------------------
 
 ## 6) 확장(Extend)
@@ -368,16 +383,16 @@ DTO | `OrderRequest`(검증용), `OrderResponse`(API 응답) | 요청/응답 구
 ### 8.1 스니펫 생성 → Asciidoctor 변환 → 부트 JAR 포함
 
 1) REST Docs 전용 테스트 실행
-  - `./gradlew :order-api:order-api-web:rest`
-  - 산출물: `order-api-web/build/generated-snippets/**`
+- `./gradlew :order-api:order-api-web:rest`
+- 산출물: `order-api-web/build/generated-snippets/**`
 
 2) Asciidoctor HTML 생성
-  - `./gradlew :order-api:order-api-web:asciidoctor`
-  - 산출물: `order-api-web/build/docs/asciidoc/**.html`
+- `./gradlew :order-api:order-api-web:asciidoctor`
+- 산출물: `order-api-web/build/docs/asciidoc/**.html`
 
 3) 부트 JAR 생성(문서 포함)
-  - `./gradlew :order-api:order-api-web:bootJar`
-  - JAR 내 정적 문서 위치: `/static/docs/`
+- `./gradlew :order-api:order-api-web:bootJar`
+- JAR 내 정적 문서 위치: `/static/docs/`
 
 ### 8.2 문서 스켈레톤(예시 · AsciiDoc)
 
@@ -411,7 +426,7 @@ DTO | `OrderRequest`(검증용), `OrderResponse`(API 응답) | 요청/응답 구
 Redis 접속 오류 | 테스트 컨텍스트에 Redis 오토컨피그 개입 | 슬라이스/Standalone 사용 또는 테스트에서 Redis 오토컨피그 제외
 보안 관련 403/필터 예외 | Security 오토컨피그 활성 | `@AutoConfigureMockMvc(addFilters=false)` + 보안 오토컨피그 제외
 JPA/Repository 주입 실패 | 전체 컨텍스트 로딩 + DB 미설정 | 슬라이스 테스트 또는 JPA 오토컨피그 제외
-`rest` 태스크 없음 | Gradle 스크립트에 미정의 | `tasks.register("rest", Test)` 추가(본 모듈은 이미 포함)
+Kafka 헤더에 traceId/orderId 미포함 | 웹 모듈에서 프로듀싱 추가했으나 인터셉터 미적용 | `order-common`·`order-api-common` 의존성 포함 여부 및 `CommonKafkaProducerAutoConfiguration` 활성 여부 확인
 
 --------------------------------------------------------------------------------
 
@@ -431,4 +446,5 @@ JPA/Repository 주입 실패 | 전체 컨텍스트 로딩 + DB 미설정 | 슬�
 
 **주문 단건 조회 API**를 제공하는 웹 어댑터 모듈입니다.  
 컨트롤러·파사드·서비스·매퍼로 역할을 분리하여 유지보수성을 높였고, 테스트는 **불필요한 오토컨피그를 차단**해 안정적으로 수행합니다.  
-REST Docs 파이프라인(`rest` → `asciidoctor` → `bootJar`)으로 **운영 문서 자동화**를 지원합니다.
+추후 이벤트 발행을 추가해도 **Producer 인터셉터(자동 구성)** 로 MDC(`traceId`/`orderId`)를 Kafka 헤더에 싱크해,  
+수신측(예: 워커)이 이를 복원하여 **엔드-투-엔드 추적성**을 보장합니다.

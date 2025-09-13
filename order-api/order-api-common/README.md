@@ -21,6 +21,10 @@ order-api 모듈의 `common` 디렉토리는 공통적으로 사용되는 **설�
 - **포맷 바인딩 지원**: Enum, DateTime, Jackson 설정
 - **로깅 필터**: MDC 기반 Correlation ID 자동 처리
 - **보안 설정**: 서버 간 API Key 인증 구조 지원
+- **Kafka MDC 연동**
+  - **ProducerInterceptor**: MDC의 traceId/orderId → Kafka 메시지 헤더 자동 주입
+  - **AutoConfiguration**: 모든 ProducerFactory에 공통 인터셉터 추가
+  - **Consumer Interceptor/Config(order-worker)**: 메시지 수신 시 헤더/페이로드 기반 traceId 복원
 
 ---
 
@@ -49,11 +53,13 @@ order-api 모듈의 `common` 디렉토리는 공통적으로 사용되는 **설�
   - `CommonLoggingAutoConfiguration`
   - `CommonSecurityAutoConfiguration`
   - `CommonFormatAutoConfiguration`
+  - `CommonKafkaProducerAutoConfiguration`
 - 설명:
   - WebMvc 설정 (바인더, 인터셉터, 메시지 컨버터)
   - Correlation ID 기반 로깅 필터 등록
   - Security 기본 정책 및 필터 설정
   - Jackson, 포맷 바인딩 등록
+  - Kafka Producer 자동구성: 모든 ProducerFactory에 MDC → Header 인터셉터 적용
 
 ### filter
 - 목적: 요청별 Correlation ID 로깅
@@ -83,6 +89,16 @@ order-api 모듈의 `common` 디렉토리는 공통적으로 사용되는 **설�
 - 핵심 클래스: `WebMvcCommonConfig`
 - 설명:
   - 리소스 매핑, 메시지 컨버터, 포맷터, 리졸버 등록
+
+### kafka (공통 + 확장)
+- 목적: Kafka MDC 전파 보장
+- 핵심 클래스:
+  - `MdcToHeaderProducerInterceptor` (order-common) → traceId/orderId를 ProducerRecord 헤더에 주입
+  - `CommonKafkaProducerAutoConfiguration` (order-api-common) → ProducerFactory에 자동 적용
+  - `KafkaMdcInterceptorConfig` (order-worker) → Consumer 측에서 RecordInterceptor/BatchInterceptor로 traceId 복원
+- 설명:
+  - API 모듈에서 발행 시 traceId/orderId가 헤더에 들어감
+  - Worker 모듈에서 수신 시 헤더/페이로드 기반으로 traceId 복원 → 로그 상관관계 유지
 
 ---
 
@@ -116,7 +132,8 @@ order-api 모듈의 `common` 디렉토리는 공통적으로 사용되는 **설�
 3. **AutoConfiguration 동작 방식**
 - Spring Boot가 자동으로 `Common*AutoConfiguration` 클래스들을 로드
 - `@ConfigurationProperties`를 통해 설정 값 주입
-- 각 서비스 모듈에서 최소한의 설정으로 통합된 환경 제공
+- Kafka Producer의 경우 → `CommonKafkaProducerAutoConfiguration`이 자동으로 ProducerFactory에 인터셉터 추가
+- Kafka Consumer의 경우 → order-worker에서 `KafkaMdcInterceptorConfig`를 통해 MDC 복원
 
 ---
 
@@ -125,15 +142,19 @@ order-api 모듈의 `common` 디렉토리는 공통적으로 사용되는 **설�
 |----------|------|
 | advice | API 전역 예외 처리 |
 | auth | API 인증 관련 상수/프로퍼티 |
-| config | WebMvc, Logging, Security, Format 공통 설정 |
+| config | WebMvc, Logging, Security, Format 공통 설정 + Kafka Producer MDC |
 | filter | 요청별 MDC 로깅 필터 |
 | binder | DateTime/Enum 바인딩 |
 | support | Jackson 및 포맷 설정 |
 | config.mvc | MVC 전역 설정 |
+| kafka | Kafka Producer/Consumer MDC 전파 보장 |
 
 ---
 
 ## 권장 구성 방식
 - 공통 모듈: AutoConfiguration + @ConfigurationProperties 기본값 제공
 - 서비스 모듈: application.yml로 환경별 값만 오버라이딩
-- 장점: 공통 로직 유지보수 용이, 서비스 모듈의 설정 최소화, 재사용성 극대화
+- Kafka Producer: 공통 모듈에서 MDC → 헤더 자동 주입
+- Kafka Consumer: Worker 모듈에서 MDC 복원 인터셉터 적용
+- 장점: 전 구간 traceId/orderId 일관성 보장, 로그 추적 용이, 서비스 코드 수정 최소화
+- 

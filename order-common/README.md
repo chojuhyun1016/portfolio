@@ -50,9 +50,9 @@
 
 - **목적**: Spring Boot AutoConfiguration 클래스
 - **예시**:
-  - `LoggingSupportAutoConfiguration`  
+  - `LoggingAutoConfiguration`  
     → `TaskDecorator` / `CorrelationAspect` 자동 등록
-  - `WebCommonAutoConfiguration`  
+  - `WebAutoConfiguration`  
     → `CorrelationIdFilter` 자동 등록
 - **특징**:
   - `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 경유 자동 인식
@@ -99,6 +99,22 @@
 
 ---
 
+## 📂 kafka  _(신규 · 프로듀서 MDC 연계)_
+
+- **목적**: Kafka 연동 시 **MDC → Kafka 헤더** 동기화(프로듀서 측)
+- **예시**:
+  - `MdcToHeaderProducerInterceptor`  
+    → 프로듀서 발행 시 `MDC["traceId"]`, `MDC["orderId"]` 를 Kafka 헤더로 주입(기존 헤더가 있으면 덮어쓰기 정책)
+- **책임**:
+  - API 계열 모듈에서 메시지 발행 시, 별도 코드 변경 없이 **엔드-투-엔드 추적성** 확보
+  - 적용 방식은 `order-api-common` 모듈의 `CommonKafkaProducerAutoConfiguration`(AutoConfiguration)이 부트 스트랩 시 자동 주입
+    - 기존에 사용자가 정의한 `interceptor.classes` 가 있어도 **중복 없이 병합** 처리
+- **비고(컨슈머 측)**:
+  - 컨슈머에서는 **워커 모듈(order-worker)** 이 `RecordInterceptor`/`BatchInterceptor` 를 통해 헤더 → MDC 복원(또는 payload 기반 강제 세팅)을 담당  
+    → 프로듀서/컨슈머 양단에서 MDC 전파가 보장되어 **테스트/운영 모두 동일한 트레이싱** 유지
+
+---
+
 ## ✅ 정리
 
 | 디렉토리     | 설명 |
@@ -110,6 +126,7 @@
 | `web`        | API 응답 포맷, ArgumentResolver, 필터 |
 | `security`   | 게이트웨이 전용 보안 필터 |
 | `helper`     | 날짜/암호화/Base64/GZIP 등 범용 유틸 |
+| `kafka`      | **프로듀서 MDC → Kafka 헤더 인터셉터**(엔드-투-엔드 추적 보조) |
 
 ---
 
@@ -120,4 +137,5 @@
 - `config` → **레거시 호환용 최소 no-op 설정**
 - `web` → **표준 웹 응답/필터 구조**
 - `security` → **게이트웨이 내부 전용 보안 필터**
+- `kafka` → **프로듀서 인터셉터로 MDC 동기화**, 수신측은 워커의 컨슈머 인터셉터로 복원
 - 모두 **비즈니스 무관** → 모든 서비스 모듈(api, batch, worker 등)에서 안정적 재사용 가능

@@ -2,7 +2,8 @@
 
 Spring Boot 기반 **Kafka 워커**입니다.  
 Local → Api → Crud → Remote로 이어지는 메시지 흐름을 **리스너(Listener)**, **파사드(Facade)**, **서비스(Service)** 로 분리했고, 공통 오류 처리(DLQ), S3 로그 동기화, 스케줄링(ThreadPoolTaskScheduler), SmartLifecycle 기반 기동/종료 훅을 포함합니다.  
-설정은 모두 **YAML 중심**이며, 토픽명은 `MessageCategory` 기반으로 `KafkaTopicProperties` 에서 타입 세이프하게 주입합니다.
+설정은 모두 **YAML 중심**이며, 토픽명은 `MessageCategory` 기반으로 `KafkaTopicProperties` 에서 타입 세이프하게 주입합니다.  
+또한 **MDC(traceId/orderId) → Kafka 헤더/역방향 복원**이 자동으로 동작하여 **엔드-투-엔드 추적성**을 보장합니다.
 
 ---
 
@@ -12,8 +13,9 @@ Local → Api → Crud → Remote로 이어지는 메시지 흐름을 **리스�
 |---|---|---|
 | 부트스트랩/조립 | OrderWorkerApplication, OrderWorkerConfig | 앱 구동, 코어·클라이언트 모듈 Import, 워커 패키지 스캔, ObjectMapper 기본 제공 |
 | 설정 | CustomSchedulerConfig, KafkaListenerTopicConfig | 스케줄러 스레드풀, MessageCategory → 토픽명 Bean 주입 |
+| **카프카(MDC)** | **KafkaMdcInterceptorConfig** | **컨슈머 인터셉터(Record/Batch)로 헤더 또는 payload.id → MDC(traceId/orderId) 복원/강제 세팅** |
 | 리스너 | OrderLocalMessageListenerImpl, OrderApiMessageListenerImpl, OrderCrudMessageListenerImpl | Kafka 수신, 수동 Ack, 오류 로그 |
-| 파사드 | OrderLocalMessageFacadeImpl, OrderApiMessageFacadeImpl, OrderCrudMessageFacadeImpl | 메시지 검증·변환·그룹핑·외부콜·원격발행·DLQ 분기 |
+| 파사드 | OrderLocalMessageFacadeImpl, OrderApiMessageFacadeImpl, OrderCrudMessageFacadeImpl | 메시지 검증·변환·오케스트레이션·DLQ 분기 |
 | 서비스 | KafkaProducerServiceImpl, OrderWebClientServiceImpl, OrderCrudServiceImpl, OrderServiceImpl | Kafka 발행, WebClient 연동, DB 벌크, 메서드 타입 분기 |
 | S3 동기화 | S3LogSyncServiceImpl, ApplicationStartupHandlerImpl, ApplicationShutdownHandlerImpl, S3LogSyncSchedulerImpl | Pod 로그 S3 업로드, 기동/종료/주기 처리 (!local 프로파일) |
 | 예외/코드 | WorkerExceptionCode, DatabaseExecuteException | 표준 오류 코드, 실패 시나리오 표현 |
@@ -24,6 +26,10 @@ Local → Api → Crud → Remote로 이어지는 메시지 흐름을 **리스�
 - ORDER_CRUD
 - ORDER_REMOTE
 - ORDER_DLQ
+
+> **MDC 트레이싱 한눈에 보기**
+> - **프로듀서측(API 계열 모듈)**: `order-api-common` 의 `CommonKafkaProducerAutoConfiguration` 이 `MdcToHeaderProducerInterceptor` 를 자동 주입 → **MDC(traceId/orderId) → Kafka 헤더** 주입
+> - **컨슈머측(워커)**: 본 모듈의 `KafkaMdcInterceptorConfig` 가 `RecordInterceptor/BatchInterceptor` 를 모든 리스너 컨테이너 팩토리에 적용 → **Kafka 헤더 또는 ORDER_API payload.id → MDC 복원/강제 세팅**
 
 ---
 
@@ -38,6 +44,7 @@ Local → Api → Crud → Remote로 이어지는 메시지 흐름을 **리스�
 - Listener: try-catch-logging-finally-acknowledge (수동 Ack로 at-least-once)
 - Facade: 예외 시 즉시 DLQ 전송 후 재던짐
 - Service: 도메인/외부 시스템 예외 로깅 후 상위 전파
+- **MDC 보장**: 수신 직전 `Record/BatchInterceptor` 가 **traceId/orderId** 를 MDC에 세팅 → 파사드/서비스 로그에 동일 추적키 노출
 
 ---
 
@@ -115,6 +122,17 @@ CustomSchedulerConfig (스케줄링 스레드풀)
         }
     }
 
+**KafkaMdcInterceptorConfig (컨슈머측 MDC 복원/강제 세팅)**
+
+- 위치: `org.example.order.worker.config.KafkaMdcInterceptorConfig`
+- 역할: 모든 `ConcurrentKafkaListenerContainerFactory` 에 아래 인터셉터를 부착
+  - **RecordInterceptor**
+    - `ORDER_API` 토픽이면 **payload(JSON)의 `id` 값을 읽어 `MDC["traceId"]`/`MDC["orderId"]` 강제 세팅**
+    - 그 외 토픽은 **Kafka 헤더 `traceId`를 MDC로 복원**(payload 파싱 실패 시에도 헤더 fallback)
+  - **BatchInterceptor**
+    - 배치(예: CRUD)에서 **첫 레코드 헤더의 `traceId`를 MDC로 복원**
+- 버전 호환: 일부 Spring Kafka 버전에는 `getRecordInterceptor/getBatchInterceptor` 게터가 없어 **존재 여부 확인 없이 `set*Interceptor` 를 직접 적용**해도 무해
+
 ---
 
 ## 4) 리스너 → 파사드 → 서비스
@@ -141,6 +159,8 @@ Facade
         message.validation();
         kafkaProducerService.sendToOrderApi(OrderApiMessage.toMessage(message));
     }
+
+> **MDC 포인트**: 이 시점에서 `KafkaMdcInterceptorConfig` 가 이미 `MDC["traceId"]` 를 복원했으므로, 이후 파사드/서비스/프로듀서 로그에서 같은 traceId가 유지됩니다.
 
 4.2 Api → Crud
 
@@ -267,15 +287,15 @@ KafkaProducerService (DLQ 오버로드)
 컴포넌트 활성 조건: 프로파일 `!local`
 
 - S3LogSyncServiceImpl
-    - HOSTNAME 환경변수를 파일명에 포함한 로그만 업로드 (자신 Pod 로그만)
-    - 로컬 파일 MD5 vs S3 객체 MD5 비교 → 동일 시 스킵
-    - S3 404(NoSuchKey)는 빈 체크섬으로 처리하여 업로드 유도
+  - HOSTNAME 환경변수를 파일명에 포함한 로그만 업로드 (자신 Pod 로그만)
+  - 로컬 파일 MD5 vs S3 객체 MD5 비교 → 동일 시 스킵
+  - S3 404(NoSuchKey)는 빈 체크섬으로 처리하여 업로드 유도
 - ApplicationStartupHandlerImpl (SmartLifecycle)
-    - start 시 onStartup → 로그 폴더 순회 업로드
+  - start 시 onStartup → 로그 폴더 순회 업로드
 - ApplicationShutdownHandlerImpl (SmartLifecycle)
-    - stop 시 onShutdown → 동일 처리
+  - stop 시 onShutdown → 동일 처리
 - S3LogSyncSchedulerImpl
-    - fixedDelay 10초, initialDelay 10초
+  - fixedDelay 10초, initialDelay 10초
 
 ---
 
@@ -361,9 +381,9 @@ KafkaProducerService (DLQ 오버로드)
 - KafkaTopicProperties에 매핑 추가
 - KafkaListenerTopicConfig에 String Bean 추가
 - 새 Listener/Facade/Service 구현
-    - Listener: @KafkaListener(topics = "#{@newTopic}", groupId, concurrency 지정)
-    - Facade: 변환·검증·DLQ 정책 재사용
-    - Service: 도메인 로직 캡슐화
+  - Listener: @KafkaListener(topics = "#{@newTopic}", groupId, concurrency 지정)
+  - Facade: 변환·검증·DLQ 정책 재사용
+  - Service: 도메인 로직 캡슐화
 
 7.2 DLQ 정책 커스터마이징
 - KafkaProducerServiceImpl의 단건/목록 오버로드 유지
@@ -456,7 +476,7 @@ Boot 파일(테스트 전용, 외부 의존 스캔 차단)
         }
     }
 
-주의: 통합 테스트에서 컴포넌트 스캔을 크게 열면 `KafkaProducerCluster` 와 같은 외부 빈을 요구해 `NoSuchBeanDefinitionException` 이 발생할 수 있습니다. 위처럼 **오토컨피그만 사용하고 컴포넌트 스캔을 비우는 Boot** 구성으로 해결하세요.
+> 주의: 통합 테스트에서 컴포넌트 스캔을 크게 열면 `KafkaProducerCluster` 와 같은 외부 빈을 요구해 `NoSuchBeanDefinitionException` 이 발생할 수 있습니다. 위처럼 **오토컨피그만 사용하고 컴포넌트 스캔을 비우는 Boot** 구성으로 해결하세요.
 
 ---
 
@@ -466,6 +486,7 @@ Boot 파일(테스트 전용, 외부 의존 스캔 차단)
 - 모니터링: DLQ 토픽, 실패율, 처리 지연, 스케줄러 상태 점검.
 - 로그: 성공/실패 이벤트 구조적 로깅. S3 업로드 키 로그로 추적성 확보.
 - 프로파일: `!local` 에서만 S3 동기화/라이프사이클 훅 활성.
+- **MDC 일관성**: API 계열 모듈의 프로듀서 인터셉터(`MdcToHeaderProducerInterceptor`)와 워커의 컨슈머 인터셉터(`KafkaMdcInterceptorConfig`)가 **쌍으로 동작**해야 가장 깔끔한 추적 값을 남깁니다.
 
 ---
 
@@ -478,5 +499,6 @@ Boot 파일(테스트 전용, 외부 의존 스캔 차단)
 
 ## 11) 한 줄 요약
 
-카테고리 기반 토픽 주입, 파사드 중심 오류 격리, 일관된 DLQ, S3 로그 동기화까지 갖춘 **Kafka 워커**입니다.  
+카테고리 기반 토픽 주입, 파사드 중심 오류 격리, 일관된 DLQ, S3 로그 동기화에 더해  
+**프로듀서/컨슈머 인터셉터로 강화된 MDC 추적성**까지 갖춘 **Kafka 워커**입니다.  
 YAML 설정만으로 환경 전환이 가능하며, Listener · Facade · Service 레이어로 안전하게 확장하세요.

@@ -19,6 +19,7 @@ DTO | `LocalOrderRequest`, `LocalOrderResponse` | 요청/응답 구조 정의 (`
 매퍼 | `OrderRequestMapper` | API DTO → Application Command 변환
 서비스 | `OrderService`, `OrderServiceImpl`, `KafkaProducerService`, `KafkaProducerServiceImpl` | Command 검증, Kafka 발행, 토픽 라우팅
 예외/웹 | `MasterApiExceptionHandler` | API 모듈 전용 예외 로깅 및 표준 응답
+MDC/Kafka | (자동) `MdcToHeaderProducerInterceptor` · `CommonKafkaProducerAutoConfiguration` | **Producer 발행 시 MDC(traceId/orderId) → Kafka 헤더 자동 주입**
 
 메시지 메서드 타입:
 - `POST`
@@ -170,6 +171,11 @@ DTO | `LocalOrderRequest`, `LocalOrderResponse` | 요청/응답 구조 정의 (`
         }
     }
 
+> ⚙️ **MDC → Kafka 헤더 자동 주입(Producer)**  
+> 이 모듈은 `order-common` 의 `MdcToHeaderProducerInterceptor` 와 `order-api-common` 의 `CommonKafkaProducerAutoConfiguration`(AutoConfiguration) 적용으로,  
+> **Kafka Producer 발행 시 MDC의 `traceId`/`orderId`를 Kafka 헤더에 자동 주입**합니다(코드 수정 불필요).  
+> 서비스 코드에서는 그대로 `KafkaProducerCluster#sendMessage(...)` 만 호출하면 됩니다.
+
 --------------------------------------------------------------------------------
 
 ## 3) 설정(Setup)
@@ -207,6 +213,10 @@ DTO | `LocalOrderRequest`, `LocalOrderResponse` | 요청/응답 구조 정의 (`
         timezone: UTC
       kafka:
         bootstrap-servers: localhost:9092
+        # (선택) 인터셉터를 직접 지정한 경우에도 AutoConfiguration이 중복 없이 병합 처리
+        # producer:
+        #   properties:
+        #     interceptor.classes: org.example.order.common.kafka.MdcToHeaderProducerInterceptor
 
     logging:
       level:
@@ -266,6 +276,10 @@ DTO | `LocalOrderRequest`, `LocalOrderResponse` | 요청/응답 구조 정의 (`
         → Service(OrderLocalMessage 변환/validation)
           → KafkaProducerService(ORDER_LOCAL 토픽으로 발행)
 
+> 🧭 **MDC 흐름(요약)**  
+> 컨트롤러~서비스 구간에서 설정된 MDC(`traceId`/`orderId`)는 **프로듀서 발행 시 자동으로 Kafka 헤더에 포함**됩니다.  
+> 수신측(예: `order-worker`)에서는 Record/BatchInterceptor로 헤더를 읽어 MDC를 복원하여 **로그 상관관계를 유지**합니다.
+
 --------------------------------------------------------------------------------
 
 ## 5) 개발(Dev)
@@ -284,6 +298,8 @@ DTO | `LocalOrderRequest`, `LocalOrderResponse` | 요청/응답 구조 정의 (`
 
 - `KafkaProducerServiceImpl#sendToOrder` 는 `KafkaTopicProperties` 에 정의된 `MessageCategory.ORDER_LOCAL` 의 토픽명으로 발행합니다.
 - 실제 발행은 `KafkaProducerCluster#sendMessage(Object, String)` 로 위임합니다.
+- **MDC → 헤더 자동 주입**은 AutoConfiguration(`order-api-common`)과 공통 인터셉터(`order-common`)에 의해 적용됩니다.  
+  서비스/파사드/컨트롤러 코드는 **별도 수정이 필요 없습니다.**
 
 --------------------------------------------------------------------------------
 
@@ -429,8 +445,8 @@ Kafka 클러스터 의존 빈(`KafkaProducerCluster`)과 프로듀서 서비스(
 
 2) **스니펫만 실행/생성**  
    `./gradlew :order-api:order-api-master:rest`
-  - 실행 후 스니펫이 `order-api-master/build/generated-snippets/` 에 생성되어야 합니다.
-  - 생성 여부는 해당 디렉터리와 하위 폴더(예: `order-accepted/http-request.adoc`)로 확인합니다.
+- 실행 후 스니펫이 `order-api-master/build/generated-snippets/` 에 생성되어야 합니다.
+- 생성 여부는 해당 디렉터리와 하위 폴더(예: `order-accepted/http-request.adoc`)로 확인합니다.
 
 ### 7.3 Asciidoctor 변환
 
@@ -485,6 +501,10 @@ Kafka 클러스터 의존 빈(`KafkaProducerCluster`)과 프로듀서 서비스(
 - 로그 레벨: 기능 검증 단계에서는 `org.example.order=DEBUG` 로 상세 추적, 운영은 `INFO` 권장
 - 장애 전파: Service 레이어에서 도메인/외부 연동 예외를 던지고, Advice 가 표준 응답으로 변환
 - 토픽 관리: 환경별 토픽명은 `KafkaTopicProperties` 를 통해 프로파일 별 YAML 로 분리 관리
+- **MDC/Trace 운영 팁**
+  - API 모듈에서는 **발행 시 자동으로 `traceId`/`orderId` 헤더 주입**(코드 수정 불필요)
+  - 워커 모듈에서는 **수신 시 헤더/페이로드로 MDC 복원**(Record/BatchInterceptor)
+  - 로그 패턴에 `%X{traceId}`·`%X{orderId}` 포함 권장
 
 --------------------------------------------------------------------------------
 
@@ -498,6 +518,7 @@ Kafka 클러스터 의존 빈(`KafkaProducerCluster`)과 프로듀서 서비스(
 `integrationTest` 가 build 와 함께 실행됨 | Gradle 스크립트에서 `check.dependsOn(integrationTest)` | 빌드에서 분리하려면 의존 제거 또는 `-PincludeIT=true` 같은 조건부 실행
 REST Docs 실패(`SnippetException`) | 응답의 모든 필드를 문서화하지 않음 | `responseFields` 에 누락된 필드(`success`, `metadata.*` 등) 추가
 Asciidoctor 결과 없음 | 스니펫 미생성 또는 `onlyIf` 조건 미충족 | 먼저 `rest` 실행 후 `asciidoctor` 실행, `snippetsDir` 경로 확인
+MDC 헤더가 수신측 로그에 없음 | 수신 서비스에서 MDC 복원 미구성 | 수신 서비스(order-worker)에 Record/BatchInterceptor(`KafkaMdcInterceptorConfig`) 적용 확인
 
 --------------------------------------------------------------------------------
 
@@ -526,5 +547,6 @@ Asciidoctor 결과 없음 | 스니펫 미생성 또는 `onlyIf` 조건 미충족
 ## 12) 한 줄 요약
 
 API 요청을 안전하게 Kafka 메시지로 변환하는 **주문 API 게이트웨이**입니다.  
-컨트롤러·파사드·서비스·프로듀서로 역할을 분리해 유지보수성과 확장성을 확보했고, 테스트에서는 오토컨피그 제외와 MockBean 으로 외부 인프라 의존을 최소화합니다.  
-REST Docs(스니펫 → Asciidoctor) 파이프라인으로 운영 문서까지 자동화할 수 있습니다.
+컨트롤러·파사드·서비스·프로듀서로 역할을 분리해 유지보수성과 확장성을 확보했고,  
+**Producer 인터셉터(자동 구성)** 로 MDC(`traceId`/`orderId`)를 Kafka 헤더에 싱크하고,  
+수신측(워커)은 인터셉터로 이를 복원해 **엔드-투-엔드 추적성**을 보장합니다.

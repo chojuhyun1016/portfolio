@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.example.order.worker.facade.order.OrderLocalMessageFacade;
 import org.example.order.worker.listener.order.OrderLocalMessageListener;
-import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -20,6 +19,7 @@ public class OrderLocalMessageListenerImpl implements OrderLocalMessageListener 
     @Override
     @KafkaListener(topics = "#{@orderLocalTopic}", groupId = "order-order-local", concurrency = "2")
     public void orderLocal(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+
         log.info("{}", record.value());
 
         try {

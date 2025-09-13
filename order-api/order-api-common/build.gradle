@@ -6,11 +6,7 @@
 //  - 설정 프로퍼티 메타데이터 생성을 위해 configuration-processor 추가(컴파일 전용)
 // ======================================================================
 
-// 이 모듈은 루트에서 java-library / dependency-management 를 이미 적용받음
-// (Spring Boot 플러그인은 적용하지 않음)
-
-//// Jar 출력 설정
-tasks.matching { it.name == "bootJar" }.configureEach { enabled = false } // 안전 가드: 존재 시 비활성
+tasks.matching { it.name == "bootJar" }.configureEach { enabled = false }
 tasks.named("jar") { it.enabled = true }
 
 dependencies {
@@ -25,7 +21,6 @@ dependencies {
     implementation(libs.springBootStarterDataJpa)
 
     // --- Auto-Configuration (@AutoConfiguration 사용 모듈) ---
-    //   * 이 모듈은 자동구성 빈을 제공하므로 'spring-boot-autoconfigure' 필요
     implementation(libs.springBootAutoconfigure)
 
     // --- Jackson (java time 포맷 커스터마이즈 시 JSR-310 모듈 확실히 포함) ---
@@ -40,6 +35,9 @@ dependencies {
     annotationProcessor(libs.lombok)
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
+
+    // --- spring-kafka 컴파일 전용 ---
+    compileOnly(libs.springKafka)
 
     // --- 테스트 ---
     testImplementation(libs.springBootStarterTest)

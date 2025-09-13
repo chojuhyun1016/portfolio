@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
-
 import org.example.order.common.support.logging.Correlate;
 
 /**
@@ -33,12 +32,13 @@ public class OrderApiMessageListenerImpl implements OrderApiMessageListener {
     @Override
     @KafkaListener(topics = "#{@orderApiTopic}", groupId = "order-order-api", concurrency = "2")
     @Correlate(
-            key = "T(org.example.order.common.support.json.ObjectMapperUtils)" +
-                    ".valueToObject(#record.value(), T(org.example.order.core.infra.messaging.order.message.OrderApiMessage)).id",
+            key = "T(org.example.order.common.support.json.ObjectMapperUtils)"
+                    + ".valueToObject(#p0.value(), T(org.example.order.core.infra.messaging.order.message.OrderApiMessage)).id",
             mdcKey = "orderId",
             overrideTraceId = true
     )
     public void orderApi(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
+
         log.debug("API - order-api record received: {}", record);
 
         try {

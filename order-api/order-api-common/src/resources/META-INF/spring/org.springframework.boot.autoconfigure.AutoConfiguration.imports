@@ -1,0 +1,5 @@
+org.example.order.api.common.autoconfigure.CommonFormatAutoConfiguration
+org.example.order.api.common.autoconfigure.CommonLoggingAutoConfiguration
+org.example.order.api.common.autoconfigure.CommonSecurityAutoConfiguration
+org.example.order.api.common.autoconfigure.CommonWebAutoConfiguration
+org.example.order.api.common.autoconfigure.CommonKafkaProducerAutoConfiguration
