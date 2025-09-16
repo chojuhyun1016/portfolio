@@ -33,19 +33,16 @@ public class S3ClientConfig {
         validateRequiredWhenEnabled();
 
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
-                .enablePathStyleAccess(); // LocalStack 호환
+                .enablePathStyleAccess();
 
-        // endpoint 지정 시 → endpoint + region(호환용)
         if (isNotBlank(props.getEndpoint())) {
             builder.withEndpointConfiguration(
                     new AwsClientBuilder.EndpointConfiguration(props.getEndpoint(), coalesce(props.getRegion(), "us-east-1"))
             );
         } else {
-            // endpoint 미지정 → 실제 AWS: region 필수
             builder.withRegion(props.getRegion());
         }
 
-        // credential.enabled=true → AccessKey/SecretKey 사용
         if (props.getCredential() != null && props.getCredential().isEnabled()) {
             String ak = props.getCredential().getAccessKey();
             String sk = props.getCredential().getSecretKey();
@@ -57,8 +54,6 @@ public class S3ClientConfig {
             builder.withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(ak, sk)));
         }
 
-        // credential.enabled=false → 기본 자격증명 체인 사용(IAM Role 등)
-
         return builder.build();
     }
 
@@ -67,14 +62,11 @@ public class S3ClientConfig {
         return new S3Client(amazonS3);
     }
 
-    // ---- helpers ----
     private void validateRequiredWhenEnabled() {
-        // 버킷/폴더는 enabled=true 시 필수
         if (props.getS3() == null || !isNotBlank(props.getS3().getBucket()) || !isNotBlank(props.getS3().getDefaultFolder())) {
             throw new IllegalStateException("aws.s3.enabled=true requires aws.s3.bucket and aws.s3.default-folder.");
         }
 
-        // endpoint 미지정이면 region 필수
         if (!isNotBlank(props.getEndpoint()) && !isNotBlank(props.getRegion())) {
             throw new IllegalStateException("aws.s3.enabled=true without 'aws.endpoint' requires 'aws.region'.");
         }

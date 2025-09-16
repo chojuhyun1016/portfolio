@@ -34,14 +34,18 @@ kafka:
   #    예) regionCode: AP_NORTHEAST_2
   # ------------------------------------------------------------------
   topic:
-    - category: order-local
-      name: "beta-order-local"
-    - category: order-api
-      name: "beta-order-api"
-    - category: order-crud
-      name: "beta-order-crud"
-    - category: order-remote
-      name: "beta-order-remote"
+    - category: ORDER_LOCAL
+      name: "local-order-local"
+    - category: ORDER_API
+      name: "local-order-api"
+    - category: ORDER_CRUD
+      name: "local-order-crud"
+    - category: ORDER_REMOTE
+      name: "local-order-remote"
+    - category: ORDER_DLQ
+      name: "local-order-dead-letter"
+    - category: ORDER_ALARM
+      name: "local-order-alarm"
 
   # ------------------------------------------------------------------
   # 컨슈머

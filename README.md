@@ -3,151 +3,199 @@
 
 ## Local 환경 구축
 
-1) **docker-compose 실행**
+### 1) 스크립트 권한 설정(최초 1회)
 ```bash
-# docker 디렉토리로 이동
-cd docker
-
-# docker-compose 실행 
-docker compose up -d
-
-# docker-compose 종료 
-docker compose down
+cd docker/local
+chmod 755 start.sh
+chmod 755 stop.sh
 ```
 
-2) **Local DB 스키마 반영 (Flyway 권장)**
+### 2) docker compose 실행/종료(일괄 또는 선택)
+> **실행 경로**는 `docker/local` 입니다. 이 경로에는 `./aws`, `./kafka`, `./mysql`, `./redis` 하위 디렉토리가 있고, 각 디렉토리 안에 `docker-compose.yml` 가 있습니다.
 
-> 일반적으로 **운영 외 환경(로컬/개발/베타)** 에서는 **Flyway가 자동으로 마이그레이션**을 수행하도록 구성합니다.  
-> 필요 시 수동으로 적용하는 방법(아래 Option B)도 함께 제공합니다.
-
-**Option A) 자동 (권장: 로컬/개발/베타)**  
-`application-local.yml`(또는 해당 프로필)에 다음 설정이 있어야 합니다.
-```yaml
-spring:
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-  jpa:
-    hibernate:
-      ddl-auto: validate
-```
-애플리케이션 기동 시 Flyway가 `order-core/src/main/resources/db/migration` 내 `V__*.sql` 을 순서대로 적용합니다.
 ```bash
-# 예: 로컬 프로필로 애플리케이션 실행 시 자동 마이그레이션 수행
-./gradlew :order-core:bootRun -Dspring.profiles.active=local
+# 모든 스택 기동(aws, kafka, mysql, redis)
+./start.sh
+
+# 특정 스택만 기동(예: kafka, mysql)
+./start.sh kafka mysql
+
+# (옵션) 재빌드
+./start.sh --build           # 모든 스택
+./start.sh kafka --build     # 선택 스택만
+
+# (옵션) 재생성(skip)
+./start.sh --no-recreate
+
+# 모든 스택 종료(데이터 유지)
+./stop.sh
+
+# 특정 스택만 종료
+./stop.sh kafka mysql
+
+# (옵션) 볼륨까지 삭제(데이터 삭제 주의)
+./stop.sh --volumes          # 전체
+./stop.sh mysql --volumes    # 선택 스택만
 ```
 
-**Option B) 수동 (mysql 콘솔에서 직접 실행)**
-```bash
-# core 모듈 하위 db 디렉토리로 이동 
-cd ../order-core/src/main/resources/db/migration
+**동작 개요**
+- `start.sh`
+  - 각 하위 디렉토리(aws/kafka/mysql/redis)의 `docker-compose.yml` 를 **독립 프로젝트**로 실행합니다.
+  - 기본은 **재생성 모드**(stop → rm → up)로 컨테이너 이름 충돌을 예방합니다.
+  - 컨테이너별 **healthcheck** 를 감지해 “wait health…” 단계에서 **최대 N초** 대기합니다(정상화 확인).
 
-# mysql 접속  
-mysql -h 127.0.0.1 -P 3306 -u root -proot
-```
-```sql
--- mysql 콘솔에서 db 디렉토리의 스키마 파일을 순서대로 로드
-source V1_create_order_table.sql;
-source V2_add_index_order.sql;
-```
 
-3) **설계도**
-```bash
-# image
-open ./architecture.png
-```
+- `stop.sh`
+  - 선택한 스택만 **stop + rm -f** 하며, `--volumes` 옵션 시 명명된 볼륨까지 삭제합니다(데이터 소거).
 
-4) **기타 docker 유틸 커맨드**
-```bash
-# 백그라운드 실행
-docker compose up -d
-
-# 로그 보기 (전체/특정 서비스)
-docker compose logs -f
-docker compose logs -f redis
-
-# 상태 확인 / 종료
-docker compose ps
-docker compose down          # 컨테이너만 제거
-docker compose down -v       # + 볼륨(데이터)도 제거 (주의!)
-docker compose restart redis # 특정 서비스만 재시작
-
-# 쉘 진입
-docker compose exec redis sh
-```
+> 참고: **healthcheck 지연**은 특히 Kafka(Zookeeper) 초기화나 LocalStack 서비스 준비에 따라 시간이 늘어날 수 있습니다. 신뢰성(충돌/레이스 방지)이 중요하다면 현재 방식 유지가 권장됩니다. 속도가 더 중요하다면 `start.sh` 에서 헬스 대기 타임아웃을 줄일 수 있습니다.
 
 ---
 
-## 도커 컴포즈 구성 (참고)
+## 도커 컴포즈 구성(요약)
 
-현재 `docker/docker-compose.yml` 은 다음 서비스를 기동합니다.
+각 스택은 **독립 디렉토리**에서 돌아갑니다.
 
-- `portfolio-db` (MySQL 8.3.0) – 포트 3306, 루트 비밀번호 `root`
-- `localstack` (DynamoDB) – 포트 4566, 로컬 데이터 `.localstack/`
-- `redis` (7.0.5) – 포트 6379, AOF 활성화
+- **MySQL (`./mysql/docker-compose.yml`)**
+  - 이미지: `mysql:8.3`
+  - 컨테이너: `mysql-local`
+  - 포트: `3306:3306`
+  - 환경: `root/root`, DB `order_local`, 유저 `order/order1234`, TZ `Asia/Seoul`
+  - 볼륨: `mysql_data` (데이터 유지)
+  - 헬스체크: `mysqladmin ping` 기반
+  - 권장: 애플리케이션 `spring.datasource.url` 은 `jdbc:mysql://localhost:3306/order_local...`
 
-헬스체크가 설정되어 있어 컨테이너 준비 후 애플리케이션을 기동하면 안정적입니다.
+
+- **Redis (`./redis/docker-compose.yml`)**
+  - 이미지: `redis:${REDIS_VERSION}` (예: 7.2)
+  - 컨테이너: `redis-local`
+  - 포트: `${REDIS_PORT}:6379` (예: 6379)
+  - 볼륨: `./data:/data` (AOF/스냅샷 데이터 유지)
+  - 비밀번호: `REDIS_PASSWORD` 환경변수 사용 시 `--requirepass` 자동 적용
+  - 헬스체크: `redis-cli ping`
+
+
+- **LocalStack (`./aws/docker-compose.yml`)**
+  - 이미지: `localstack/localstack:3`
+  - 컨테이너: `localstack-aws`
+  - 포트: `4566:4566` (Edge)
+  - 서비스: `s3,dynamodb,secretsmanager`
+  - 볼륨: `localstack_data` (데이터 유지), 초기 스크립트 `./localstack/init/ready.d/`
+
+
+- **Kafka (`./kafka/docker-compose.yml`)**
+  - Zookeeper: `confluentinc/cp-zookeeper:7.6.1`, 포트 `2181:2181`
+  - Kafka: `confluentinc/cp-kafka:7.6.1`, 포트 `9092:9092`, `29092:29092`
+    - `ADVERTISED_LISTENERS`: `PLAINTEXT://kafka:9092, PLAINTEXT_HOST://localhost:29092`
+  - Kafka UI: `provectuslabs/kafka-ui:latest`, 포트 `8080:8080`
+  - 헬스체크: Kafka/UI는 healthy, Zookeeper는 일부 OS에서 **UNHEALTHY 로 보이나 동작엔 문제 없음**(로그로 확인).
+
+> **컨테이너명 충돌 방지**: 각 compose 파일에서 **명시 컨테이너명** 또는 디폴트 네이밍을 일관되게 사용했고, `start.sh` 가 **stop → rm → up** 순으로 처리하여 충돌을 최소화했습니다. 수동으로 띄운 컨테이너가 남아 있다면 `docker rm -f <name>` 로 정리하세요.
+
+---
+
+## 애플리케이션 설정(핵심 발췌)
+
+### 1) 데이터소스/JPA/Flyway(로컬 예시)
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/order_local?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false
+    username: order
+    password: order1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+```
+
+### 2) Redis(필요 시)
+```yaml
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    database: 0           # 기본 캐시용은 0번을 보편적으로 사용
+    # password: your-pass
+```
+
+### 3) AWS(LocalStack) + SecretsManager
+```yaml
+aws:
+  region: ap-northeast-2
+  endpoint: http://localhost:4566
+  credential:
+    enabled: true
+    access-key: local
+    secret-key: local
+  s3:
+    enabled: true
+    bucket: my-local-bucket
+    default-folder: logs            # ✅ 버킷 내 prefix (시스템 경로가 아님)
+  secrets-manager:
+    enabled: true
+    secret-name: myapp/secret-key
+    scheduler-enabled: true
+    refresh-interval-millis: 300000
+    fail-fast: true
+```
+
+> **주의(경로 의미)**: `aws.s3.default-folder` 는 **S3 버킷 내부 프리픽스** 입니다. `/app/logs` 같은 **호스트/컨테이너 파일시스템 경로가 아닙니다**.  
+> 애플리케이션 로그 파일 경로는 별도로 `logging.file.path: /app/logs` 등으로 설정하세요.
 
 ---
 
 ## 빌드/테스트
 
-### 기본
+### 전체 빌드
 ```bash
-# 전체 빌드(단위 테스트 포함)
 ./gradlew clean build
 ```
 
-### 통합 테스트
+### 통합 테스트(예: order-worker)
 ```bash
-# 통합 테스트 태스크가 구성된 모듈에서 실행(예: order-worker)
 ./gradlew :order-worker:integrationTest
 ```
 
-### 자주 쓰는 테스트 팁
-- 보안/Redis 등 외부 인프라가 필요한 오토컨피그는 **테스트 컨텍스트에서만 제외**하세요.  
-  예: `@SpringBootTest` + `@TestPropertySource(properties = "spring.autoconfigure.exclude=...RedisAutoConfiguration,...SecurityAutoConfiguration,...")`
-- **Embedded Kafka** 테스트 시, **수동 Producer/Consumer** 를 생성해 라운드트립 검증을 권장합니다.  
-  (테스트 스코프에서만 `spring-kafka-test` 사용)
+**테스트 팁**
+- 외부 인프라가 필요 없는 테스트는 `spring.autoconfigure.exclude` 로 관련 오토컨피그를 제외하거나 슬라이스 테스트(`@DataJpaTest` 등)를 사용하세요.
+- Embedded Kafka 테스트는 `spring-kafka-test` 로 **수동 Producer/Consumer 라운드트립**을 권장합니다.
 
 ---
 
-## Gradle 버전 카탈로그(요약)
+## 트러블슈팅
 
-- Java 17, Spring Boot 3.2.x
-- Kafka 관련
-  - 런타임: `org.springframework.kafka:spring-kafka`
-  - 테스트: `org.springframework.kafka:spring-kafka-test` (테스트 스코프)
-- 공통 모듈 의존 예시
-  - `order-common` → 비즈니스 무관한 공통 코드 제공
-  - `order-api-common` → 오토컨피그 모듈로, `spring-boot-autoconfigure` 포함
+**1) `no configuration file provided: not found`**
+- `start.sh`/`stop.sh` 는 **`docker/local`** 에서 실행해야 합니다.  
+  해당 경로에 `./aws/docker-compose.yml` 등 compose 파일이 있어야 합니다.
 
----
+**2) 컨테이너 이름 충돌(Conflict. name is already in use)**
+- 기존 수동 실행 컨테이너가 남아있을 수 있습니다.
+```bash
+docker ps -a | grep zookeeper
+docker rm -f zookeeper    # 예시
+```
+- 또는 `./stop.sh` 로 먼저 정리 후 `./start.sh` 를 실행하세요.
 
-## 트러블슈팅(흔한 오류와 원인/해결)
+**3) `wait health...` 가 오래 걸림**
+- Kafka/Zookeeper 초기화, LocalStack 서비스 준비에 따라 수십 초가 필요할 수 있습니다.
+- 신뢰성이 우선이면 **현 상태 유지** 권장.
+- 속도가 더 중요하면 `start.sh` 의 헬스 대기 타임아웃을 줄이거나 특정 서비스 헬스 대기 자체를 비활성화할 수 있습니다.
 
-증상
-- DB 마이그레이션 오류
-
-원인
-- Flyway 설정 누락 또는 SQL 스크립트 버전 충돌
-
-해결
-- `spring.flyway.*` 프로퍼티 확인
-- SQL 스크립트 파일명(`V1__`, `V2__`) 버전 순서 점검
-
-증상
-- 테스트에서 Redis/보안 관련 예외 발생
-
-원인
-- 테스트 컨텍스트가 불필요한 오토컨피그를 포함
-
-해결
-- `spring.autoconfigure.exclude` 프로퍼티로 제외
-- 또는 슬라이스 테스트 사용(`@WebMvcTest`, `@DataJpaTest` 등)
+**4) 데이터 보존/삭제**
+- `./stop.sh` 만 실행 → **데이터 유지** (볼륨 보존)
+- `./stop.sh --volumes` → **데이터 삭제** (명명된 볼륨 제거)
 
 ---
 
 ## 한 줄 요약
 
-도커 컴포즈로 인프라를 손쉽게 띄우고, Flyway로 스키마를 관리하며, Gradle 태스크로 빌드/문서를 자동화할 수 있는 **멀티 모듈 프로젝트**입니다.
+**`docker/local`** 에서 `start.sh` / `stop.sh` 로 **aws, kafka, mysql, redis** 를 일괄/선택 기동·종료하고,  
+애플리케이션은 **Flyway + 헬스체크 기반**으로 안정적으로 개발/테스트할 수 있습니다.

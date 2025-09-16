@@ -134,8 +134,10 @@ public class DynamoQuerySupport {
                 .build();
 
         var req = ScanEnhancedRequest.builder().filterExpression(expr).build();
+
         @SuppressWarnings("unchecked")
         List<T> items = (List<T>) scan(table(client, clazz, tableName), req);
+
         return items;
     }
 
@@ -150,6 +152,7 @@ public class DynamoQuerySupport {
             @SuppressWarnings("unchecked")
             List<T> items = (List<T>) scan(table(client, clazz, tableName),
                     ScanEnhancedRequest.builder().build());
+
             return items;
         }
 
@@ -158,10 +161,15 @@ public class DynamoQuerySupport {
         StringBuilder expr = new StringBuilder();
 
         int i = 0;
+
         for (var e : stringConditions.entrySet()) {
             String nk = "#k" + i;
             String vk = ":v" + i;
-            if (i > 0) expr.append(" AND ");
+
+            if (i > 0) {
+                expr.append(" AND ");
+            }
+
             expr.append(nk).append(" = ").append(vk);
             names.put(nk, e.getKey());
             values.put(vk, AttributeValue.builder().s(e.getValue()).build());

@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 @Component
 @RequiredArgsConstructor
 @EnableConfigurationProperties(S3Properties.class)
-@Profile({"!local"})
+@Profile({ "local", "dev", "beta", "prod" })
 public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler, SmartLifecycle {
 
     private final S3Properties s3Properties;

@@ -23,6 +23,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * AWS Secrets Manager 에서 키 셋을 조회하여 Resolver 에 반영하는 구성요소.
  * aws.secrets-manager.enabled 가 true 일 때만 빈으로 등록된다.
  * scheduler 옵션이 켜져 있고 TaskScheduler 가 주입되면 주기 갱신을 등록한다.
+ * <p>
+ * ★ 변경 요약:
+ * - SecretsManagerProperties 이너 블록(secretsManager) 게터 사용으로 변경
+ * (failFast, schedulerEnabled, refreshIntervalMillis, secretName)
  */
 @Slf4j
 public class SecretsLoader {
@@ -74,13 +78,13 @@ public class SecretsLoader {
         } catch (Exception e) {
             log.error("SecretsLoader 초기 로드 실패", e);
 
-            if (properties.isFailFast()) {
+            if (properties.getSecretsManager().isFailFast()) {
                 throw new IllegalStateException("SecretsLoader 초기 로드 실패", e);
             }
         }
 
-        if (properties.isSchedulerEnabled() && taskScheduler != null && scheduled.compareAndSet(false, true)) {
-            long delay = Math.max(1_000L, properties.getRefreshIntervalMillis());
+        if (properties.getSecretsManager().isSchedulerEnabled() && taskScheduler != null && scheduled.compareAndSet(false, true)) {
+            long delay = Math.max(1_000L, properties.getSecretsManager().getRefreshIntervalMillis());
 
             scheduledFuture = taskScheduler.scheduleWithFixedDelay(this::safeRefresh, Duration.ofMillis(delay));
 
@@ -117,10 +121,12 @@ public class SecretsLoader {
      * 실제 1회 로드 로직.
      * AWS Secrets Manager 에서 JSON 을 가져와 파싱하고 키 길이를 검증한 뒤 Resolver 에 반영한다.
      * 리스너가 있다면 알림을 보낸다.
+     * <p>
+     * ★ 변경: secretName 접근을 properties.getSecretsManager().getSecretName()으로 변경
      */
     private void refreshOnce() throws Exception {
         var request = GetSecretValueRequest.builder()
-                .secretId(properties.getSecretName())
+                .secretId(properties.getSecretsManager().getSecretName())
                 .build();
 
         var response = secretsManagerClient.getSecretValue(request);

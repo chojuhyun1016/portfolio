@@ -19,7 +19,7 @@ public class OrderCrudMessageListenerImpl implements OrderCrudMessageListener {
     private final OrderCrudMessageFacade facade;
 
     @Override
-    @KafkaListener(topics = "#{@orderCrudTopic}", groupId = "order-order-crud", containerFactory = "kafkaBatchListenerContainerFactory", concurrency = "10")
+    @KafkaListener(topics = "#{@orderCrudTopic}", groupId = "group-order-crud", containerFactory = "kafkaBatchListenerContainerFactory", concurrency = "10")
     public void executeOrderCrud(List<ConsumerRecord<String, Object>> records, Acknowledgment acknowledgment) {
 
         log.debug("order-crud records size : {}", records.size());

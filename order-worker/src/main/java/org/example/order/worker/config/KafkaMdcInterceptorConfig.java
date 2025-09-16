@@ -110,7 +110,7 @@ public class KafkaMdcInterceptorConfig {
 
     /**
      * 컨텍스트가 올라온 뒤, 등록된 모든 ConcurrentKafkaListenerContainerFactory에
-     * 우리 MDC 인터셉터를 **직접 세팅**한다. (게터가 없으므로 존재 여부 확인 없이 세팅)
+     * 우리 MDC 인터셉터를 **타입 안전하게** 세팅.
      * <p>
      * - 단건 팩토리: RecordInterceptor 설정
      * - 배치 팩토리: RecordInterceptor + BatchInterceptor 설정
@@ -121,21 +121,32 @@ public class KafkaMdcInterceptorConfig {
             RecordInterceptor<Object, Object> mdcRecordInterceptor,
             BatchInterceptor<Object, Object> mdcBatchInterceptor
     ) {
-        return () -> factories.values().forEach(factory -> {
-            @SuppressWarnings({"rawtypes", "unchecked"})
-            var raw = (ConcurrentKafkaListenerContainerFactory) factory;
+        return () -> factories.values().forEach(factory ->
+                attachFactory(factory, mdcRecordInterceptor, mdcBatchInterceptor)
+        );
+    }
 
-            // 공통: 단건 인터셉터
-            raw.setRecordInterceptor(mdcRecordInterceptor);
+    /**
+     * 제네릭 헬퍼: 한 지점에서만 안전하게 캐스팅을 수행하고,
+     * 나머지는 K/V 제네릭에 맞춰 타입을 보존.
+     */
+    private static <K, V> void attachFactory(
+            ConcurrentKafkaListenerContainerFactory<K, V> factory,
+            RecordInterceptor<Object, Object> recordInterceptorObj,
+            BatchInterceptor<Object, Object> batchInterceptorObj
+    ) {
+        @SuppressWarnings("unchecked")
+        RecordInterceptor<K, V> recordInterceptor =
+                (RecordInterceptor<K, V>) (RecordInterceptor<?, ?>) recordInterceptorObj;
 
-            // 배치 리스너에만 배치 인터셉터를 세팅 (불필요한 세팅을 피함)
-            try {
-                if (factory.isBatchListener()) {
-                    raw.setBatchInterceptor(mdcBatchInterceptor);
-                }
-            } catch (Throwable ignore) {
-                // 구버전일 가능성까지 고려해 방어적으로 무시
-            }
-        });
+        factory.setRecordInterceptor(recordInterceptor);
+
+        if (factory.isBatchListener()) {
+            @SuppressWarnings("unchecked")
+            BatchInterceptor<K, V> batchInterceptor =
+                    (BatchInterceptor<K, V>) (BatchInterceptor<?, ?>) batchInterceptorObj;
+
+            factory.setBatchInterceptor(batchInterceptor);
+        }
     }
 }

@@ -25,10 +25,9 @@ import java.util.concurrent.ScheduledFuture;
  * 목적
  * - 스케줄러/비동기 경계에서 MDC(ThreadLocal) 전파 보장.
  * <p>
- * 권장/개선:
- * - ThreadPoolTaskScheduler 를 상속한 MdcThreadPoolTaskScheduler 로 모든 schedule* 지점을 단일하게 데코레이트.
- * - 외부 오토컨피그(TaskDecorator "mdcTaskDecorator")가 없으면 로컬 기본 MDC 데코레이터 사용.
- * - ScheduledTaskRegistrar 에 이 스케줄러 한 번만 주입 → 간결/견고.
+ * 구현
+ * - ThreadPoolTaskScheduler 를 확장해 모든 schedule* 지점에서 Runnable 을 데코레이트(MDC 전파)
+ * - Spring 6에서 deprecated 된 Date/long 기반 schedule* 오버라이드엔 @SuppressWarnings("deprecation")로 경고 억제
  */
 @Configuration
 @RequiredArgsConstructor
@@ -51,6 +50,7 @@ public class CustomSchedulerConfig implements SchedulingConfigurer {
         scheduler.setPoolSize(2);
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
         scheduler.setRemoveOnCancelPolicy(true);
+        scheduler.setThreadNamePrefix("sched-");
         scheduler.initialize();
 
         return scheduler;
@@ -68,7 +68,6 @@ public class CustomSchedulerConfig implements SchedulingConfigurer {
     private TaskDecorator defaultMdcTaskDecorator() {
         return runnable -> {
             Map<String, String> context = MDC.getCopyOfContextMap();
-
             return () -> {
                 Map<String, String> prev = MDC.getCopyOfContextMap();
 
@@ -77,7 +76,6 @@ public class CustomSchedulerConfig implements SchedulingConfigurer {
                 } else {
                     MDC.clear();
                 }
-
                 try {
                     runnable.run();
                 } finally {
@@ -93,7 +91,8 @@ public class CustomSchedulerConfig implements SchedulingConfigurer {
 
     /**
      * ThreadPoolTaskScheduler 확장: 모든 schedule* 지점에서 Runnable 데코레이션 적용
-     * - Spring 버전별 오버로드(Instant/Duration 포함) 전부 안전하게 커버
+     * - Spring 6에서 deprecate 된 Date/long 기반 시그니처는 경고 억제
+     * - Instant/Duration 오버로드도 지원(프로젝트 Spring 버전에 따라 자동 연결)
      */
     static final class MdcThreadPoolTaskScheduler extends ThreadPoolTaskScheduler {
         private final TaskDecorator decorator;
@@ -106,43 +105,49 @@ public class CustomSchedulerConfig implements SchedulingConfigurer {
             return (decorator != null) ? decorator.decorate(task) : task;
         }
 
-        // ---- TaskScheduler 표준 오버로드 ----
+        // ---- 공통 오버로드 ----
         @Override
         public ScheduledFuture<?> schedule(Runnable task, Trigger trigger) {
             return super.schedule(decorate(task), trigger);
         }
 
+        // ---- Spring 6에서 deprecated 된 Date/long 기반 시그니처 (경고 억제) ----
+        @SuppressWarnings("deprecation")
         @Override
         public ScheduledFuture<?> schedule(Runnable task, Date startTime) {
             return super.schedule(decorate(task), startTime);
         }
 
-        @Override
-        public ScheduledFuture<?> schedule(Runnable task, Instant startTime) {
-            return super.schedule(decorate(task), startTime);
-        }
-
+        @SuppressWarnings("deprecation")
         @Override
         public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, Date startTime, long period) {
             return super.scheduleAtFixedRate(decorate(task), startTime, period);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, long period) {
             return super.scheduleAtFixedRate(decorate(task), period);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, Date startTime, long delay) {
             return super.scheduleWithFixedDelay(decorate(task), startTime, delay);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, long delay) {
             return super.scheduleWithFixedDelay(decorate(task), delay);
         }
 
-        // ---- Spring 6.x 오버로드 (Instant/Duration) ----
+        // ---- Spring 6.x Instant/Duration 오버로드 (존재하면 컴파일 시 자동 바인딩) ----
+        @Override
+        public ScheduledFuture<?> schedule(Runnable task, Instant startTime) {
+            return super.schedule(decorate(task), startTime);
+        }
+
         @Override
         public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, Instant startTime, Duration period) {
             return super.scheduleAtFixedRate(decorate(task), startTime, period);

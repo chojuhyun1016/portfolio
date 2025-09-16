@@ -6,23 +6,40 @@ server:
 spring:
   config:
     activate:
-      on-profile: prod
+      on-profile: local
     import:
-      - application-core-beta.yml
-      - application-kafka-beta.yml
+      - application-core-local.yml
+      - application-kafka-local.yml
+
   lifecycle:
     timeout-per-shutdown-phase: 30s
 
-# ===== Feature Toggles (use only: jpa, kafka, s3, web-client) =====
+  # === MySQL DataSource (로컬 고정값) ===
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/order_beta?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false
+    username: order
+    password: order1234
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc.time_zone: Asia/Seoul
+
+# ===== Feature Toggles =====
 jpa:
   enabled: true
 
 kafka:
   enabled: true
-  bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+  bootstrap-servers: localhost:29092
   consumer:
-    group-id: ${KAFKA_GROUP_ID:order-worker}
-    auto-offset-reset: ${KAFKA_AUTO_OFFSET_RESET:latest}
+    group-id: order-worker
+    auto-offset-reset: latest
 
 s3:
   enabled: true
@@ -30,7 +47,7 @@ s3:
 web-client:
   enabled: true
   url:
-    order: ${ORDER_API_URL:http://localhost:8080/orders}
+    order: http://localhost:8080/orders
 
 # ===== Unused Modules (explicit OFF) =====
 dynamodb:
@@ -46,12 +63,12 @@ lock:
 aws:
   credential:
     enabled: false
-    accessKey: ${AWS_ACCESS_KEY:}
-    secretKey: ${AWS_SECRET_KEY:}
-  region: ${AWS_REGION:ap-northeast-2}
+    accessKey:
+    secretKey:
+  region: ap-northeast-2
   s3:
-    bucket: ${BUCKET:}
-    default-folder: ${DEFAULT_FOLDER:}
+    bucket:
+    default-folder:
 
 # ===== Logging =====
 logging:
@@ -59,3 +76,4 @@ logging:
     path: /app/logs
   level:
     org.example: debug
+    org.hibernate.orm.jdbc.bind: debug

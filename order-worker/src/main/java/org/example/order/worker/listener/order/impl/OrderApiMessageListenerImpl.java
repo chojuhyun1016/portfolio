@@ -30,7 +30,7 @@ public class OrderApiMessageListenerImpl implements OrderApiMessageListener {
     private final OrderApiMessageFacade facade;
 
     @Override
-    @KafkaListener(topics = "#{@orderApiTopic}", groupId = "order-order-api", concurrency = "2")
+    @KafkaListener(topics = "#{@orderApiTopic}", groupId = "group-order-api", concurrency = "2")
     @Correlate(
             key = "T(org.example.order.common.support.json.ObjectMapperUtils)"
                     + ".valueToObject(#p0.value(), T(org.example.order.core.infra.messaging.order.message.OrderApiMessage)).id",

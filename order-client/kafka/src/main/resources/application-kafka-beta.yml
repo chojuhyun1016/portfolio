@@ -26,7 +26,7 @@ kafka:
   # ------------------------------------------------------------------------
   producer:
     enabled: true
-    bootstrap-servers: "${BOOTSTRAP_SERVERS}"    # 예) b-1.msk.dev:9098,b-2.msk.dev:9098
+    bootstrap-servers: 127.0.0.1:29092
 
   # ------------------------------------------------------------------------
   # 토픽 매핑
@@ -34,14 +34,18 @@ kafka:
   #  - region 세분화가 필요하면 항목에 regionCode 필드 추가 가능
   # ------------------------------------------------------------------------
   topic:
-    - category: order-local
-      name: "beta-order-local"
-    - category: order-api
-      name: "beta-order-api"
-    - category: order-crud
-      name: "beta-order-crud"
-    - category: order-remote
-      name: "beta-order-remote"
+    - category: ORDER_LOCAL
+      name: "local-order-local"
+    - category: ORDER_API
+      name: "local-order-api"
+    - category: ORDER_CRUD
+      name: "local-order-crud"
+    - category: ORDER_REMOTE
+      name: "local-order-remote"
+    - category: ORDER_DLQ
+      name: "local-order-dead-letter"
+    - category: ORDER_ALARM
+      name: "local-order-alarm"
 
   # ------------------------------------------------------------------------
   # 컨슈머
@@ -52,7 +56,7 @@ kafka:
   # ------------------------------------------------------------------------
   consumer:
     enabled: true
-    bootstrap-servers: "${BOOTSTRAP_SERVERS}"
+    bootstrap-servers: 127.0.0.1:29092
 
     option:
       max-fail-count: 1

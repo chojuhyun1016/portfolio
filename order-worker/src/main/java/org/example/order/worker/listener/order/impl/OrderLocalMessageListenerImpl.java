@@ -17,7 +17,7 @@ public class OrderLocalMessageListenerImpl implements OrderLocalMessageListener 
     private final OrderLocalMessageFacade facade;
 
     @Override
-    @KafkaListener(topics = "#{@orderLocalTopic}", groupId = "order-order-local", concurrency = "2")
+    @KafkaListener(topics = "#{@orderLocalTopic}", groupId = "group-order-local", concurrency = "2")
     public void orderLocal(ConsumerRecord<String, Object> record, Acknowledgment acknowledgment) {
 
         log.info("{}", record.value());

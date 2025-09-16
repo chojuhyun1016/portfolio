@@ -66,7 +66,7 @@ class SecretsModuleIT {
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
         r.add("aws.secrets-manager.enabled", () -> "true");
-        r.add("aws.secrets-manager.region", () -> "ap-northeast-2");
+        r.add("aws.region", () -> "ap-northeast-2"); // ★ 변경: 최상위 aws.region으로 설정
         r.add("aws.secrets-manager.secret-name", () -> "dummy/secret-keyset");
         r.add("aws.secrets-manager.fail-fast", () -> "false");
         r.add("aws.secrets-manager.scheduler-enabled", () -> "false");
@@ -151,7 +151,7 @@ class SecretsModuleIT {
         new ApplicationContextRunner()
                 .withPropertyValues(
                         "aws.secrets-manager.enabled=true",
-                        "aws.secrets-manager.region=ap-northeast-2",
+                        "aws.region=ap-northeast-2", // ★ 변경: 최상위 aws.region
                         "aws.secrets-manager.secret-name=myapp/secret-keyset",
                         "aws.secrets-manager.fail-fast=false",
                         "aws.secrets-manager.scheduler-enabled=false",

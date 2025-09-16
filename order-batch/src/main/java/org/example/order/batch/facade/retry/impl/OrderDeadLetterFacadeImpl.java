@@ -30,7 +30,7 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
     private final ConsumerFactory<String, String> consumerFactory;
     private final KafkaTopicProperties kafkaTopicProperties;
 
-    private static final String DEAD_LETTER_GROUP_ID = "order-order-dead-letter";
+    private static final String DEAD_LETTER_GROUP_ID = "group-order-dead-letter";
     private static final String CLIENT_SUFFIX = "dlt-client";
 
     @Override
