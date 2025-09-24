@@ -168,7 +168,7 @@
             <appender-ref ref="ERROR"/>
         </logger>
 
-        <logger name="org.example.order.worker.service.common.impl.OrderWebClientServiceImpl" level="INFO"
+        <logger name="org.example.order.worker.service.common.impl.WebClientServiceImpl" level="INFO"
                 additivity="false">
             <appender-ref ref="API"/>
             <appender-ref ref="ERROR"/>

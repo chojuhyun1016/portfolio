@@ -6,7 +6,7 @@ import org.example.order.core.application.order.dto.internal.OrderDto;
 import org.example.order.core.infra.messaging.order.message.OrderApiMessage;
 import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
 import org.example.order.worker.service.common.KafkaProducerService;
-import org.example.order.worker.service.common.OrderWebClientService;
+import org.example.order.worker.service.common.WebClientService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,7 +26,7 @@ class OrderApiMessageFacadeImplTest {
     @DisplayName("성공: API 조회 후 CRUD 발행, DLQ 미호출")
     void requestApi_success() {
         KafkaProducerService producer = mock(KafkaProducerService.class);
-        OrderWebClientService web = mock(OrderWebClientService.class);
+        WebClientService web = mock(WebClientService.class);
         OrderApiMessageFacadeImpl facade = new OrderApiMessageFacadeImpl(producer, web);
 
         OrderApiMessage msg = mock(OrderApiMessage.class);
@@ -51,7 +51,7 @@ class OrderApiMessageFacadeImplTest {
     @DisplayName("실패: API 예외 → 단건 DLQ 전송")
     void requestApi_fail_then_dlq() {
         KafkaProducerService producer = mock(KafkaProducerService.class);
-        OrderWebClientService web = mock(OrderWebClientService.class);
+        WebClientService web = mock(WebClientService.class);
         OrderApiMessageFacadeImpl facade = new OrderApiMessageFacadeImpl(producer, web);
 
         OrderApiMessage msg = mock(OrderApiMessage.class);

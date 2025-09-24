@@ -26,7 +26,9 @@ import org.springframework.context.annotation.Import;
 @Configuration(proxyBeanMethods = false)
 @EntityScan(basePackages = {
         // ===== order-domain entity =====
-        "org.example.order.domain"
+        "org.example.order.domain",
+        // ===== infra-persistence converter =====
+        "org.example.order.core.infra.jpa.converter"
 })
 @Import({
         // ===== TSID (ID Generator) =====

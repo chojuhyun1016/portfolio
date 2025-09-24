@@ -1,0 +1,21 @@
+# DynamoDB 로컬 설정 (local 프로파일 전용)
+# - dynamodb.enabled=true 일 때만 모듈 동작
+# - endpoint 지정 시: LocalStack 등 로컬 엔드포인트 사용
+# - region: 수동/자동 모두에서 사용 가능. 로컬은 아무 리전이어도 무방
+# - accessKey/secretKey: LocalStack이면 dummy 값으로 사용해도 됨
+# - tableName: 사용할 테이블 이름 (존재하지 않으면 local 프로파일에서만 자동 생성)
+# - auto-create: 로컬 + true일 때만 테이블 생성/시드
+# - migration-location: 마이그레이션 리소스 위치(테이블 생성)
+# - seed-location: 시드 리소스 위치(데이터 생성)
+# - create-missing-gsi: 기존 테이블이 있을 경우, 누락된 GSI만 UpdateTable로 추가(LSI는 생성 시점에만 가능)
+dynamodb:
+  enabled: true
+  endpoint: "http://localhost:4566"
+  region: "ap-northeast-2"
+  access-key: "local"
+  secret-key: "local"
+  table-name: "order_dynamo"
+  auto-create: true
+  migration-location: classpath:dynamodb/migration
+  seed-location: classpath:dynamodb/seed
+  create-missing-gsi: true

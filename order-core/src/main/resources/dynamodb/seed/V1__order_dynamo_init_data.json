@@ -1,0 +1,17 @@
+{
+  "table": "order_dynamo",
+  "items": [
+    {
+      "id": "ORD-0001",
+      "orderId": 1,
+      "userId": 101,
+      "orderPrice": 15000
+    },
+    {
+      "id": "ORD-0002",
+      "orderId": 2,
+      "userId": 102,
+      "orderPrice": 23000
+    }
+  ]
+}

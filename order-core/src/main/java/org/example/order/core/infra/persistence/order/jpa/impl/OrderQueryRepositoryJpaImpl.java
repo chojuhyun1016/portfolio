@@ -6,14 +6,13 @@ import lombok.RequiredArgsConstructor;
 import org.example.order.domain.order.entity.QOrderEntity;
 import org.example.order.domain.order.model.OrderView;
 import org.example.order.domain.order.repository.OrderQueryRepository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
  * OrderQueryRepository 구현체 (JPA QueryDSL)
- * <p>
- * - OrderInfraTestConfig (또는 InfraConfig) 에서
- * jpa.enabled=true && JPAQueryFactory 빈 존재 시 명시적으로 등록한다.
  */
 @RequiredArgsConstructor
 public class OrderQueryRepositoryJpaImpl implements OrderQueryRepository {
@@ -39,5 +38,33 @@ public class OrderQueryRepositoryJpaImpl implements OrderQueryRepository {
                 .fetchFirst();
 
         return Optional.ofNullable(row);
+    }
+
+    @Override
+    @Transactional
+    public int updateByOrderId(Long orderId,
+                               String orderNumber,
+                               Long userId,
+                               String userNumber,
+                               Long orderPrice,
+                               Boolean deleteYn,
+                               Long modifiedUserId,
+                               String modifiedUserType,
+                               LocalDateTime modifiedDatetime) {
+
+        long affected = queryFactory
+                .update(ORDER)
+                .set(ORDER.userId, userId)
+                .set(ORDER.userNumber, userNumber)
+                .set(ORDER.orderPrice, orderPrice)
+                .set(ORDER.deleteYn, deleteYn)
+                .set(ORDER.modifiedUserId, modifiedUserId)
+                .set(ORDER.modifiedUserType, modifiedUserType)
+                .set(ORDER.modifiedDatetime, modifiedDatetime)
+                .set(ORDER.orderNumber, orderNumber)
+                .where(ORDER.orderId.eq(orderId))
+                .execute();
+
+        return (int) affected;
     }
 }

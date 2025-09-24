@@ -20,6 +20,8 @@ import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Random;
 
+import org.example.order.domain.common.id.IdGenerator;
+
 /**
  * TSID 설정 클래스 (내부)
  * - tsid.enabled=true 일 때만 동작(조건부)
@@ -52,6 +54,11 @@ public class TsidConfig {
         TsidFactoryHolder.set(factory);
 
         return factory;
+    }
+
+    @Bean
+    public IdGenerator idGenerator(TsidFactory factory) {
+        return () -> factory.create().toLong();
     }
 
     /**

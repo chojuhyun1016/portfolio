@@ -5,13 +5,14 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.example.order.client.kafka.config.KafkaModuleConfig;
+import org.example.order.client.kafka.autoconfig.KafkaAutoConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
@@ -30,16 +31,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * EmbeddedKafka 기반 통합 테스트
- * - ModuleConfig 단일 구성 사용
+ * - 자동구성(KafkaAutoConfiguration)만 로드
  * - producer.enabled=true + 동적 bootstrap-servers 주입
  */
 @SpringBootTest(
-        classes = KafkaModuleConfig.class,
         properties = {
                 "kafka.producer.enabled=true",
                 "kafka.ssl.enabled=false"
         }
 )
+@ImportAutoConfiguration(KafkaAutoConfiguration.class)
 @EmbeddedKafka(partitions = 1, controlledShutdown = false, topics = {KafkaProducerIT.TOPIC})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @ExtendWith(SpringExtension.class)
@@ -58,12 +59,12 @@ class KafkaProducerIT {
 
     private static String resolveBrokers() {
         String brokers = System.getProperty("spring.embedded.kafka.brokers");
-
         return (brokers == null || brokers.isBlank()) ? "127.0.0.1:9092" : brokers;
     }
 
     @DynamicPropertySource
     static void registerKafkaBootstrap(DynamicPropertyRegistry registry) {
+        // 자동구성의 조건을 만족시키는 프로퍼티 주입
         registry.add("kafka.producer.bootstrap-servers", KafkaProducerIT::resolveBrokers);
     }
 
@@ -72,6 +73,7 @@ class KafkaProducerIT {
     void sendAndConsume() {
         String key = "it-key";
         String value = "hello-kafka-" + UUID.randomUUID();
+        // JsonSerializer 사용 시 문자열은 따옴표가 감싸질 수 있어서 둘 다 허용
         String jsonEncodedValue = "\"" + value + "\"";
 
         kafkaTemplate.send(TOPIC, key, value).join();

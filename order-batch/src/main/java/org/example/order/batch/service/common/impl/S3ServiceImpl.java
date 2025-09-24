@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.batch.service.common.S3Service;
-import org.example.order.client.s3.config.property.S3Properties;
+import org.example.order.client.s3.properties.S3Properties;
 import org.example.order.client.s3.service.S3Client;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
 import org.example.order.common.core.exception.core.CommonException;

@@ -24,6 +24,10 @@ public interface OrderDynamoRepository {
 
     void deleteById(String id);
 
+    void deleteByIdAndOrderNumber(String id, String orderNumber);
+
+    void deleteAllByPartition(String id);
+
     default Optional<OrderDynamoEntity> findById(String id, OrderDynamoQueryOptions options) {
         return findById(id);
     }

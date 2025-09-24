@@ -2,8 +2,8 @@ package org.example.order.client.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
-import org.example.order.client.s3.config.S3ModuleConfig;
-import org.example.order.client.s3.config.property.S3Properties;
+import org.example.order.client.s3.autoconfig.S3AutoConfiguration;
+import org.example.order.client.s3.properties.S3Properties;
 import org.example.order.client.s3.service.S3Client;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -34,11 +35,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * S3ClientIT (통합 테스트)
  * <p>
- * - 대표 모듈 S3ModuleConfig 만 로드
+ * - 자동구성(S3AutoConfiguration)만 로드
  * - LocalStack 컨테이너는 static 블록에서 선기동
  * - @DynamicPropertySource에서는 컨테이너 API를 다시 호출하지 않고, 캐시된 상수만 사용
  */
-@SpringBootTest(classes = S3ModuleConfig.class)
+@SpringBootTest
+@ImportAutoConfiguration(S3AutoConfiguration.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
@@ -73,9 +75,8 @@ class S3ClientIT {
 
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
-        // 스위치 ON (미설정이면 모듈이 비활성화되어 빈이 생성되지 않음)
+
         r.add("aws.s3.enabled", () -> "true");
-        // Supplier 내부에서 컨테이너 API를 호출하지 않고, 캐싱된 상수만 사용
         r.add("aws.region", () -> REGION);
         r.add("aws.endpoint", () -> ENDPOINT);
         r.add("aws.credential.enabled", () -> "true");

@@ -1,9 +1,10 @@
 package org.example.order.client.kafka;
 
-import org.example.order.client.kafka.config.KafkaModuleConfig;
+import org.example.order.client.kafka.autoconfig.KafkaAutoConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
@@ -14,10 +15,11 @@ import static org.junit.jupiter.api.Assertions.*;
  * - KafkaTemplate 미생성
  * - KafkaProducerCluster 미생성
  */
-@SpringBootTest(classes = KafkaModuleConfig.class)
+@SpringBootTest // [CHANGED] classes 지정 제거
+@ImportAutoConfiguration(KafkaAutoConfiguration.class)
 @TestPropertySource(properties = {
-        "kafka.producer.enabled=false",   // 프로듀서 비활성화
-        "kafka.ssl.enabled=false"         // (선택) 보안도 비활성화
+        "kafka.producer.enabled=false",
+        "kafka.ssl.enabled=false"
 })
 class KafkaProducerConfigDisabledTest {
 

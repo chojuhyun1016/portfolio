@@ -68,6 +68,7 @@ public class CustomSchedulerConfig implements SchedulingConfigurer {
     private TaskDecorator defaultMdcTaskDecorator() {
         return runnable -> {
             Map<String, String> context = MDC.getCopyOfContextMap();
+
             return () -> {
                 Map<String, String> prev = MDC.getCopyOfContextMap();
 
@@ -76,6 +77,7 @@ public class CustomSchedulerConfig implements SchedulingConfigurer {
                 } else {
                     MDC.clear();
                 }
+
                 try {
                     runnable.run();
                 } finally {

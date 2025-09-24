@@ -5,33 +5,27 @@ import org.slf4j.MDC;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.task.TaskDecorator;
 
 import java.util.Map;
 
 /**
- * LoggingAutoConfiguration
- * ------------------------------------------------------------------------
- * 목적
- * - @Async/스레드풀 경계에서 MDC(ThreadLocal)를 복제/복원하여 traceId 등 컨텍스트 전파.
- * 특징
- * - Boot 기본 실행기(TaskExecutorCustomizer)는 TaskDecorator 빈을 감지해 적용한다.
- * - 커스텀 ThreadPoolTaskExecutor/TaskScheduler에는 setTaskDecorator(...)로 직접 적용 필요.
- * - CorrelationAspect를 오토컨피그로 등록해 컴포넌트 스캔에 의존하지 않도록 한다.
- * <p>
- * (추가)
- * - 클래스명을 AutoConfiguration.imports 와 일치하도록 표준명으로 교정.
+ * LoggingAutoConfiguration (최종본)
+ * - MDC TaskDecorator 전파(기존 기능 유지)
+ * - @Correlate AOP 자동 등록 + AspectJ 프록시 활성화
  */
 @AutoConfiguration
+@EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = false)
 public class LoggingAutoConfiguration {
 
     /**
-     * MDC 컨텍스트 전파용 TaskDecorator
+     * MDC 컨텍스트 전파용 TaskDecorator (기존 유지)
      */
     @Bean
     @ConditionalOnMissingBean(name = "mdcTaskDecorator")
     public TaskDecorator mdcTaskDecorator() {
-        return (Runnable runnable) -> {
+        return runnable -> {
             Map<String, String> context = MDC.getCopyOfContextMap();
 
             return () -> {
@@ -55,7 +49,7 @@ public class LoggingAutoConfiguration {
     }
 
     /**
-     * @Correlate AOP Aspect 등록(@Component 스캔에 의존하지 않음)
+     * @Correlate AOP Aspect 등록
      */
     @Bean
     @ConditionalOnMissingBean(CorrelationAspect.class)

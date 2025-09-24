@@ -1,3 +1,4 @@
+// src/main/java/org/example/order/worker/service/common/impl/KafkaProducerServiceImpl.java
 package org.example.order.worker.service.common.impl;
 
 import lombok.RequiredArgsConstructor;
@@ -8,12 +9,8 @@ import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.common.core.exception.message.CustomErrorMessage;
 import org.example.order.common.core.messaging.message.DlqMessage;
 import org.example.order.core.infra.messaging.order.code.MessageCategory;
-import org.example.order.core.infra.messaging.order.message.OrderApiMessage;
-import org.example.order.core.infra.messaging.order.message.OrderCloseMessage;
-import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
-import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
+import org.example.order.core.infra.messaging.order.message.*;
 import org.example.order.worker.service.common.KafkaProducerService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -24,7 +21,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @EnableConfigurationProperties({KafkaTopicProperties.class})
-@ConditionalOnBean(KafkaProducerCluster.class)
 public class KafkaProducerServiceImpl implements KafkaProducerService {
 
     private final KafkaProducerCluster cluster;
@@ -68,14 +64,21 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         }
 
         try {
-            if (currentException instanceof CommonException commonException) {
-                message.fail(CustomErrorMessage.toMessage(commonException.getCode(), commonException));
+            if (currentException instanceof CommonException ce) {
+                message.fail(CustomErrorMessage.toMessage(ce.getCode(), ce));
             } else {
                 message.fail(CustomErrorMessage.toMessage(currentException));
             }
 
             String dlqTopic = kafkaTopicProperties.getName(MessageCategory.ORDER_DLQ);
-            log.info("Sending message to dead-letter topic: {}", dlqTopic);
+
+            if (ObjectUtils.isEmpty(dlqTopic)) {
+                log.error("DLQ topic name is empty. message={}", message);
+
+                return;
+            }
+
+            log.info("Sending message to DLQ: {}", dlqTopic);
 
             send(message, dlqTopic);
         } catch (Exception e) {
@@ -84,6 +87,12 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     }
 
     private void send(Object message, String topic) {
+        if (ObjectUtils.isEmpty(topic)) {
+            log.error("Kafka topic is empty. skip sending. message={}", message);
+
+            return;
+        }
+
         cluster.sendMessage(message, topic);
     }
 }

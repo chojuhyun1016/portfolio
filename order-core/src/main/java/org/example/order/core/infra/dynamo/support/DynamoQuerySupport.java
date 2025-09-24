@@ -27,6 +27,7 @@ public class DynamoQuerySupport {
 
     private static List<?> scan(DynamoDbTable<?> table, ScanEnhancedRequest request) {
         PageIterable<?> pages = table.scan(request);
+
         return pages.items().stream().collect(Collectors.toList());
     }
 
@@ -48,6 +49,7 @@ public class DynamoQuerySupport {
 
         @SuppressWarnings("unchecked")
         List<T> items = (List<T>) scan(table(client, clazz, tableName), req);
+
         return items;
     }
 
@@ -61,6 +63,7 @@ public class DynamoQuerySupport {
 
         @SuppressWarnings("unchecked")
         List<T> items = (List<T>) scan(table(client, clazz, tableName), req);
+
         return items;
     }
 
@@ -148,6 +151,7 @@ public class DynamoQuerySupport {
     public static <T> List<T> scanWithAndConditions(DynamoDbEnhancedClient client, Class<T> clazz, String tableName,
                                                     Map<String, String> stringConditions) {
         if (stringConditions == null || stringConditions.isEmpty()) {
+
             // 조건 없으면 전체 스캔
             @SuppressWarnings("unchecked")
             List<T> items = (List<T>) scan(table(client, clazz, tableName),
@@ -173,6 +177,7 @@ public class DynamoQuerySupport {
             expr.append(nk).append(" = ").append(vk);
             names.put(nk, e.getKey());
             values.put(vk, AttributeValue.builder().s(e.getValue()).build());
+
             i++;
         }
 

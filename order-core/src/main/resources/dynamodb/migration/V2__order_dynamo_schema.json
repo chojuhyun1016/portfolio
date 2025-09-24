@@ -1,0 +1,61 @@
+{
+  "tables": [
+    {
+      "name": "order_dynamo",
+      "hashKey": "id",
+      "rangeKey": "orderNumber",
+      "readCapacity": 5,
+      "writeCapacity": 5,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "S"
+        },
+        {
+          "name": "orderNumber",
+          "type": "S"
+        },
+        {
+          "name": "userId",
+          "type": "N"
+        },
+        {
+          "name": "userNumber",
+          "type": "S"
+        },
+        {
+          "name": "orderPrice",
+          "type": "N"
+        }
+      ],
+      "globalSecondaryIndexes": [
+        {
+          "name": "gsi_user_id",
+          "hashKey": "userId",
+          "projection": "ALL",
+          "readCapacity": 5,
+          "writeCapacity": 5
+        },
+        {
+          "name": "gsi_user_number_order_price",
+          "hashKey": "userNumber",
+          "rangeKey": "orderPrice",
+          "projection": "INCLUDE",
+          "nonKeyAttributes": [
+            "orderNumber",
+            "deleteYn"
+          ],
+          "readCapacity": 5,
+          "writeCapacity": 5
+        }
+      ],
+      "localSecondaryIndexes": [
+        {
+          "name": "lsi_order_price",
+          "rangeKey": "orderPrice",
+          "projection": "KEYS_ONLY"
+        }
+      ]
+    }
+  ]
+}

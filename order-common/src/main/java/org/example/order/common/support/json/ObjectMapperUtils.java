@@ -31,10 +31,12 @@ public class ObjectMapperUtils {
     public static <T> T getFieldValueFromString(String json, String fieldName, Class<T> clz) {
         try {
             JsonNode fieldNode = objectMapper.readTree(json).get(fieldName);
+
             return objectMapper.treeToValue(fieldNode, clz);
         } catch (Exception e) {
             String msg = String.format("Failed to extract field [%s] from JSON", fieldName);
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_PARSING_ERROR, msg);
         }
     }
@@ -55,6 +57,7 @@ public class ObjectMapperUtils {
         } catch (Exception e) {
             String msg = "Failed to serialize object to JSON string";
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_PARSING_ERROR, msg);
         }
     }
@@ -68,6 +71,7 @@ public class ObjectMapperUtils {
         } catch (Exception e) {
             String msg = String.format("Failed to deserialize JSON to [%s]", clz.getSimpleName());
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_PARSING_ERROR, msg);
         }
     }
@@ -81,6 +85,7 @@ public class ObjectMapperUtils {
         } catch (Exception e) {
             String msg = "Failed to deserialize JSON to TypeReference";
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_PARSING_ERROR, msg);
         }
     }
@@ -103,6 +108,7 @@ public class ObjectMapperUtils {
         } catch (Exception e) {
             String msg = String.format("Failed to convert JSON to List<%s>", clz.getSimpleName());
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_PARSING_ERROR, msg);
         }
     }
@@ -116,6 +122,7 @@ public class ObjectMapperUtils {
         } catch (Exception e) {
             String msg = String.format("Failed to convert object to [%s]", clz.getSimpleName());
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_PARSING_ERROR, msg);
         }
     }
@@ -129,6 +136,7 @@ public class ObjectMapperUtils {
         } catch (Exception e) {
             String msg = "Failed to convert value using TypeReference";
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_PARSING_ERROR, msg);
         }
     }
@@ -144,6 +152,7 @@ public class ObjectMapperUtils {
         } catch (Exception e) {
             String msg = String.format("Failed to convert tree to [%s]", clz.getSimpleName());
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_PARSING_ERROR, msg);
         }
     }
@@ -162,6 +171,7 @@ public class ObjectMapperUtils {
         } catch (Exception e) {
             String msg = String.format("Failed to convert Object[] to List<%s>", clz.getSimpleName());
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_PARSING_ERROR, msg);
         }
     }
@@ -175,6 +185,7 @@ public class ObjectMapperUtils {
         } catch (Exception e) {
             String msg = "Failed to write JSON to output stream";
             log.error(msg, e);
+
             throw new CommonException(CommonExceptionCode.DATA_WRITE_ERROR, msg);
         }
     }

@@ -1,7 +1,5 @@
 package org.example.order.core.infra.persistence.order.jdbc;
 
-import com.github.f4b6a3.tsid.Tsid;
-import com.github.f4b6a3.tsid.TsidFactory;
 import org.example.order.core.infra.persistence.order.jdbc.impl.OrderCommandRepositoryJdbcImpl;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderBatchOptions;
@@ -29,10 +27,9 @@ import static org.mockito.Mockito.*;
 class OrderCommandRepositoryJdbcImplTest {
 
     private final JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
-    private final TsidFactory tsidFactory = mock(TsidFactory.class);
 
     private OrderCommandRepository newRepo() {
-        return new OrderCommandRepositoryJdbcImpl(jdbcTemplate, tsidFactory);
+        return new OrderCommandRepositoryJdbcImpl(jdbcTemplate);
     }
 
     private static OrderEntity sampleEntity(long orderId, long price, LocalDateTime t) {
@@ -54,8 +51,6 @@ class OrderCommandRepositoryJdbcImplTest {
     @Test
     @DisplayName("bulkInsert(): JdbcTemplate.batchUpdate(sql, batchArgs, argTypes) — 파라미터 15개")
     void bulkInsert_callsBatchUpdate() {
-        when(tsidFactory.create()).thenReturn(Tsid.from(100L), Tsid.from(101L), Tsid.from(102L));
-
         LocalDateTime base = LocalDateTime.now();
         List<OrderEntity> batch = new ArrayList<>();
         batch.add(sampleEntity(2000L, 1111L, base));

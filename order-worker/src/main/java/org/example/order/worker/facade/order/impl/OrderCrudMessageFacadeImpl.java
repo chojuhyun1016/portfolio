@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.common.core.messaging.code.MessageMethodType;
-import org.example.order.common.support.json.ObjectMapperUtils;
 import org.example.order.core.application.order.dto.internal.LocalOrderDto;
 import org.example.order.core.infra.messaging.order.message.OrderCloseMessage;
 import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
@@ -23,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.example.order.common.support.logging.Correlate; // ★ 유지
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
 
     @Transactional
     @Override
-    public void executeOrderCrud(List<ConsumerRecord<String, Object>> records) {
+    public void executeOrderCrud(List<ConsumerRecord<String, OrderCrudMessage>> records) {
         if (ObjectUtils.isEmpty(records)) {
             return;
         }
@@ -46,7 +47,6 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
         try {
             messages = records.stream()
                     .map(ConsumerRecord::value)
-                    .map(value -> ObjectMapperUtils.valueToObject(value, OrderCrudMessage.class))
                     .toList();
 
             Map<MessageMethodType, List<OrderCrudMessage>> map = groupingMessages(messages);

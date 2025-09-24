@@ -73,7 +73,10 @@ public class DynamoInfraConfig {
 
         // (2) 엔드포인트는 없지만 access/secret 지정된 경우
         if (hasAccess && hasSecret) {
-            if (hasRegion) builder.region(Region.of(props.getRegion()));
+            if (hasRegion) {
+                builder.region(Region.of(props.getRegion()));
+            }
+
             builder.credentialsProvider(
                     StaticCredentialsProvider.create(
                             AwsBasicCredentials.create(props.getAccessKey(), props.getSecretKey())

@@ -4,13 +4,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.order.common.support.jpa.converter.BooleanToYNConverter;
 
 import java.time.LocalDateTime;
 
 /**
  * 주문 엔티티
- * - delete_yn: 공용 컨버터(Boolean <-> 'Y'/'N') 적용
  */
 @Entity
 @Table(name = "`order`")
@@ -38,12 +36,8 @@ public class OrderEntity {
     @Column(name = "order_price", nullable = false)
     private Long orderPrice;
 
-    @Convert(converter = BooleanToYNConverter.class)
     @Column(name = "delete_yn", columnDefinition = "varchar(1) not null")
     private Boolean deleteYn = false;
-
-    @Column(name = "version", nullable = false)
-    private Long version;
 
     @Column(name = "published_datetime", nullable = false)
     private LocalDateTime publishedDatetime;
@@ -66,6 +60,24 @@ public class OrderEntity {
     @Column(name = "modified_datetime", nullable = false)
     private LocalDateTime modifiedDatetime;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+
+    /**
+     * INSERT 직전 null 방어 — 일부 환경에서 null 바인딩을 제거하기 위해 0L로 보정
+     */
+    @PrePersist
+    protected void prePersist() {
+        if (this.version == null) {
+            this.version = 0L;
+        }
+
+        if (this.deleteYn == null) {
+            this.deleteYn = Boolean.FALSE;
+        }
+    }
+
     public static OrderEntity createEmpty() {
         return new OrderEntity();
     }
@@ -84,7 +96,7 @@ public class OrderEntity {
         this.orderNumber = orderNumber;
         this.orderPrice = orderPrice;
         this.deleteYn = (deleteYn != null ? deleteYn : Boolean.FALSE);
-        this.version = version;
+        this.version = (version != null ? version : this.version);
         this.publishedDatetime = publishedDatetime;
         this.createdUserId = createdUserId;
         this.createdUserType = createdUserType;

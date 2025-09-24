@@ -1,7 +1,7 @@
 package org.example.order.worker.facade.order;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
 
 public interface OrderLocalMessageFacade {
-    void sendOrderApiTopic(ConsumerRecord<String, Object> record);
+    void sendOrderApiTopic(OrderLocalMessage message);
 }

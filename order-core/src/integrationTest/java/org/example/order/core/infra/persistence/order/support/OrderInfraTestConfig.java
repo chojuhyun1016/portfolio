@@ -1,6 +1,5 @@
 package org.example.order.core.infra.persistence.order.support;
 
-import com.github.f4b6a3.tsid.TsidFactory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -10,13 +9,13 @@ import org.example.order.core.infra.persistence.order.jpa.impl.OrderRepositoryJp
 import org.example.order.domain.order.repository.OrderCommandRepository;
 import org.example.order.domain.order.repository.OrderQueryRepository;
 import org.example.order.domain.order.repository.OrderRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean; // CHANGED
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource; // CHANGED
+import javax.sql.DataSource;
 
 /**
  * 인프라 통합테스트 전용 구성
@@ -53,7 +52,7 @@ public class OrderInfraTestConfig {
     }
 
     @Bean
-    public OrderCommandRepository orderCommandRepository(JdbcTemplate jdbcTemplate, TsidFactory tsidFactory) {
-        return new OrderCommandRepositoryJdbcImpl(jdbcTemplate, tsidFactory);
+    public OrderCommandRepository orderCommandRepository(JdbcTemplate jdbcTemplate) {
+        return new OrderCommandRepositoryJdbcImpl(jdbcTemplate);
     }
 }

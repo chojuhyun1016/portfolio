@@ -1,0 +1,37 @@
+{
+  "table": "order_dynamo",
+  "items": [
+    {
+      "id": "1001",
+      "orderId": 1001,
+      "orderNumber": "O-2024-0001",
+      "userId": 2001,
+      "userNumber": "U-7771",
+      "orderPrice": 39900,
+      "deleteYn": "N",
+      "createdUserId": 9001,
+      "createdUserType": "SYSTEM",
+      "createdDatetime": "2024-09-01T10:20:30",
+      "modifiedUserId": 9001,
+      "modifiedUserType": "SYSTEM",
+      "modifiedDatetime": "2024-09-01T10:20:30",
+      "publishedTimestamp": 1725172830000
+    },
+    {
+      "id": "1002",
+      "orderId": 1002,
+      "orderNumber": "O-2024-0002",
+      "userId": 2002,
+      "userNumber": "U-7772",
+      "orderPrice": 12500,
+      "deleteYn": "N",
+      "createdUserId": 9002,
+      "createdUserType": "SYSTEM",
+      "createdDatetime": "2024-09-02T11:00:00",
+      "modifiedUserId": 9002,
+      "modifiedUserType": "SYSTEM",
+      "modifiedDatetime": "2024-09-02T11:00:00",
+      "publishedTimestamp": 1725255600000
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+services:
+  redis:
+    image: redis:${REDIS_VERSION:-7.2}
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - ./conf/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - data:/data
+    command: >
+      sh -c '
+      if [ -n "$${REDIS_PASSWORD}" ]; then
+        exec redis-server /usr/local/etc/redis/redis.conf --requirepass "$${REDIS_PASSWORD}";
+      else
+        exec redis-server /usr/local/etc/redis/redis.conf;
+      fi
+      '
+    healthcheck:
+      test: [ "CMD-SHELL", "if [ -n \"$${REDIS_PASSWORD}\" ]; then redis-cli -a \"$${REDIS_PASSWORD}\" ping; else redis-cli ping; fi" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    environment:
+      - TZ=Asia/Seoul
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+volumes:
+  data:

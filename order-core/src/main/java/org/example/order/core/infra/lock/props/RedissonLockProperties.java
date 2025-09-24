@@ -8,7 +8,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 @ConfigurationProperties(prefix = "lock.redisson")
 public class RedissonLockProperties {
-    private String address;
+    private String host;
+    private Integer port;
     private String password;
     private int database = 0;
     private long waitTime = 3000;       // ms

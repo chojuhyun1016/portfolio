@@ -1,0 +1,15 @@
+crypto:
+  enabled: false
+  props:
+    seed: false
+
+encrypt:
+  enabled: false
+  aes128:
+    key: dGhpc2lzMTZieXRla2V5IQ==                       # 16B
+  aes256:
+    key: bXlTZWNyZXRLZXlTMjU2MjU2MjU2MjU2MjU2MjU2MjU=   # 32B
+  aesgcm:
+    key: bXlTMzJiYnl0ZXNnY21rZXlzdXBlcnNlY3JldGtleTE=   # 32B
+  hmac:
+    key: test-hmac-secret

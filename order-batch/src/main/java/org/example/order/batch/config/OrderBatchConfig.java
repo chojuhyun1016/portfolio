@@ -1,8 +1,6 @@
 package org.example.order.batch.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.order.client.kafka.config.KafkaModuleConfig;
-import org.example.order.client.s3.config.S3ModuleConfig;
 import org.example.order.common.support.json.ObjectMapperFactory;
 import org.example.order.core.infra.config.OrderCoreConfig;
 import org.springframework.boot.autoconfigure.batch.BatchProperties;
@@ -15,15 +13,14 @@ import org.springframework.context.annotation.Import;
 
 /**
  * Order Batch 구성 루트
- * - core/infra, client(kafka/s3) 모듈은 설정 기반(@Configuration) Import
+ * - core/infra만 @Import
+ * - kafka/s3는 각 모듈의 AutoConfiguration에 맡김(프로퍼티 스위치로 on/off)
  * - Batch 모듈 자체 패키지만 ComponentScan (외부 모듈은 스캔하지 않음)
  * - BatchProperties 바인딩 활성화
  */
 @Configuration
 @Import({
-        OrderCoreConfig.class,
-        KafkaModuleConfig.class,
-        S3ModuleConfig.class
+        OrderCoreConfig.class
 })
 @EnableConfigurationProperties(BatchProperties.class)
 @ComponentScan(basePackages = {

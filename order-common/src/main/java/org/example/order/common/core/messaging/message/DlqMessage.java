@@ -3,6 +3,8 @@ package org.example.order.common.core.messaging.message;
 import lombok.*;
 import org.example.order.common.core.exception.message.CustomErrorMessage;
 import org.example.order.common.core.messaging.code.DlqType;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.example.order.common.support.json.DlqTypeStringDeserializer;
 
 /**
  * 공통 Dead Letter Queue 메시지 구조체
@@ -12,7 +14,10 @@ import org.example.order.common.core.messaging.code.DlqType;
 @AllArgsConstructor
 @ToString
 public class DlqMessage {
+
+    @JsonDeserialize(using = DlqTypeStringDeserializer.class)
     private DlqType type;
+
     private int failedCount = 0;
     private CustomErrorMessage error;
 

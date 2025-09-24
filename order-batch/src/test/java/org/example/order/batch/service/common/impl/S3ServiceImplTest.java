@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import java.io.File;
 
 import org.example.order.batch.service.common.S3Service;
-import org.example.order.client.s3.config.property.S3Properties;
+import org.example.order.client.s3.properties.S3Properties;
 import org.example.order.client.s3.service.S3Client;
 import org.example.order.common.core.exception.core.CommonException;
 import org.junit.jupiter.api.DisplayName;

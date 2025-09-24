@@ -1,9 +1,7 @@
 package org.example.order.core.infra.persistence.order.jdbc.impl;
 
-import com.github.f4b6a3.tsid.TsidFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderBatchOptions;
 import org.example.order.domain.order.model.OrderUpdate;
@@ -19,12 +17,10 @@ import java.util.List;
  * <p>
  * - JpaInfraConfig 에서 jpa.enabled=true 일 때에만 조건부 등록
  */
-@Slf4j
 @RequiredArgsConstructor
 public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
 
     private final JdbcTemplate jdbcTemplate;
-    private final TsidFactory tsidFactory;
 
     @Setter
     private int batchChunkSize = 10000;
@@ -64,7 +60,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
 
         for (OrderEntity e : entities) {
             if (e.getId() == null) {
-                e.setId(tsidFactory.create().toLong());
+                throw new IllegalArgumentException("OrderEntity.id must be assigned before bulkInsert");
             }
 
             batchArgs.add(new Object[]{
@@ -90,10 +86,6 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
             int end = Math.min(i + chunk, batchArgs.size());
 
             jdbcTemplate.batchUpdate(sql, batchArgs.subList(i, end), argTypes);
-
-            if (log.isDebugEnabled()) {
-                log.debug("jdbc_bulk op=insert chunk={} range=[{}, {})", chunk, i, end);
-            }
         }
     }
 
@@ -150,10 +142,6 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
             int end = Math.min(i + chunk, batchArgs.size());
 
             jdbcTemplate.batchUpdate(sql, batchArgs.subList(i, end), argTypes);
-
-            if (log.isDebugEnabled()) {
-                log.debug("jdbc_bulk op=update chunk={} range=[{}, {})", chunk, i, end);
-            }
         }
     }
 

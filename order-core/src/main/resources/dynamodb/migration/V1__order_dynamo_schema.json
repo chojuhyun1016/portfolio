@@ -1,0 +1,28 @@
+{
+  "tables": [
+    {
+      "name": "order_dynamo",
+      "hashKey": "id",
+      "readCapacity": 5,
+      "writeCapacity": 5,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "S"
+        },
+        {
+          "name": "orderId",
+          "type": "N"
+        },
+        {
+          "name": "userId",
+          "type": "N"
+        },
+        {
+          "name": "orderPrice",
+          "type": "N"
+        }
+      ]
+    }
+  ]
+}

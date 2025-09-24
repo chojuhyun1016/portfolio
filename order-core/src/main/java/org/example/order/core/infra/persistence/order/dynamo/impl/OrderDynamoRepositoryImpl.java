@@ -6,17 +6,11 @@ import org.example.order.domain.order.entity.OrderDynamoEntity;
 import org.example.order.domain.order.model.OrderDynamoQueryOptions;
 import org.example.order.domain.order.repository.OrderDynamoRepository;
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.Page;
-import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.*;
+import software.amazon.awssdk.enhanced.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughputExceededException;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +26,11 @@ import java.util.Optional;
 @Slf4j
 public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
 
+    /**
+     * BatchWriteItemEnhanced 를 사용하기 위해 EnhancedClient 보관
+     */
+    private final DynamoDbEnhancedClient enhancedClient;
+
     private final DynamoDbTable<OrderDynamoEntity> table;
     private final String userIdIndexName;
 
@@ -39,10 +38,6 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
     private final boolean consistentReadGet;
     private final boolean allowScanFallback;
 
-    /**
-     * @param enhancedClient DynamoDbEnhancedClient
-     * @param tableName      사용할 DynamoDB 테이블명 (설정으로 주입)
-     */
     public OrderDynamoRepositoryImpl(DynamoDbEnhancedClient enhancedClient, String tableName) {
         this(enhancedClient, tableName, null);
     }
@@ -52,7 +47,7 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
      *
      * @param enhancedClient  DynamoDbEnhancedClient
      * @param tableName       테이블명
-     * @param userIdIndexName userId 파티션키를 사용하는 GSI 이름 (예: "idx_user_id"), null이면 scan() fallback
+     * @param userIdIndexName userId 파티션키를 사용하는 GSI 이름 (예: "gsi_user_id"), null이면 scan() fallback
      */
     public OrderDynamoRepositoryImpl(DynamoDbEnhancedClient enhancedClient, String tableName, String userIdIndexName) {
         this(enhancedClient, tableName, userIdIndexName, 1000, false, true);
@@ -66,6 +61,7 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
             boolean consistentReadGet,
             boolean allowScanFallback
     ) {
+        this.enhancedClient = enhancedClient;
         this.table = enhancedClient.table(tableName, TableSchema.fromBean(OrderDynamoEntity.class));
         this.userIdIndexName = userIdIndexName;
         this.defaultQueryLimit = (defaultQueryLimit == null || defaultQueryLimit <= 0) ? 1000 : defaultQueryLimit;
@@ -82,9 +78,6 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
     @Override
     public void save(OrderDynamoEntity entity) {
         table.putItem(entity);
-        if (log.isDebugEnabled()) {
-            log.debug("Saved OrderDynamoEntity: {}", entity);
-        }
     }
 
     // === 기본 시그니처(호환) ===
@@ -115,11 +108,6 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
 
         OrderDynamoEntity item = table.getItem(req);
 
-        if (log.isDebugEnabled()) {
-            log.debug("dynamo_get op=findById id={} consistentRead={} hit={}",
-                    id, opt.consistentReadGet, item != null);
-        }
-
         return Optional.ofNullable(item);
     }
 
@@ -142,10 +130,6 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
             }
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("dynamo_scan op=findAll limit={} count={}", opt.limit, result.size());
-        }
-
         return result;
     }
 
@@ -156,7 +140,6 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
         if (userIdIndexName != null && !userIdIndexName.isBlank()) {
             try {
                 DynamoDbIndex<OrderDynamoEntity> index = table.index(userIdIndexName);
-
                 SdkIterable<Page<OrderDynamoEntity>> pages = index.query(r ->
                         r.queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(userId)))
                                 .limit(opt.limit)
@@ -165,10 +148,8 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
                 List<OrderDynamoEntity> list = new ArrayList<>();
 
                 for (Page<OrderDynamoEntity> page : pages) {
-                    List<OrderDynamoEntity> pageItems = page.items();
-
-                    if (pageItems != null) {
-                        for (OrderDynamoEntity it : pageItems) {
+                    if (page.items() != null) {
+                        for (OrderDynamoEntity it : page.items()) {
                             list.add(it);
 
                             if (list.size() >= opt.limit) {
@@ -177,12 +158,9 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
                         }
                     }
 
-                    if (list.size() >= opt.limit) break;
-                }
-
-                if (log.isDebugEnabled()) {
-                    log.debug("dynamo_gsi_query op=findByUserId userId={} index={} limit={} count={}",
-                            userId, userIdIndexName, opt.limit, list.size());
+                    if (list.size() >= opt.limit) {
+                        break;
+                    }
                 }
 
                 return list;
@@ -203,6 +181,7 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
         );
 
         List<OrderDynamoEntity> result = new ArrayList<>();
+
         for (OrderDynamoEntity item : pages.items()) {
             if (userId != null && userId.equals(item.getUserId())) {
                 result.add(item);
@@ -211,11 +190,6 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
                     break;
                 }
             }
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("dynamo_scan_fallback op=findByUserId userId={} limit={} count={}",
-                    userId, opt.limit, result.size());
         }
 
         return result;
@@ -239,10 +213,143 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
 
     @Override
     public void deleteById(String id) {
-        table.deleteItem(r -> r.key(k -> k.partitionValue(id)));
+        // PK+SK 테이블에서 PK-only 삭제는 지원하지 않는다.
+        throw new UnsupportedOperationException("Composite PK table requires orderNumber. Use deleteByIdAndOrderNumber(id, orderNumber). id=" + id);
+    }
 
-        if (log.isDebugEnabled()) {
-            log.debug("dynamo_delete op=deleteById id={}", id);
+    /**
+     * PK+SK 삭제 (테이블이 Sort Key를 **요구**하므로 폴백 없이 정확히 삭제)
+     */
+    @Override
+    public void deleteByIdAndOrderNumber(String id, String orderNumber) {
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("id(partition key) is required");
         }
+
+        if (orderNumber == null || orderNumber.isBlank()) {
+            throw new IllegalArgumentException("orderNumber(sort key) is required for deletion");
+        }
+
+        table.deleteItem(r -> r.key(k -> k.partitionValue(id).sortValue(orderNumber)));
+    }
+
+    /**
+     * 동일 PK에 속한 모든 아이템 삭제 (PK만 알고 있을 때 사용)
+     * - 내부적으로 Query 후 배치 삭제(BatchWriteItemEnhanced) 25개 단위
+     * - 미처리 항목은 지수 백오프로 재시도
+     */
+    @Override
+    public void deleteAllByPartition(String id) {
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("id(partition key) is required");
+        }
+
+        final int CHUNK = 25;
+        int totalDeleted = 0;
+        List<Key> buffer = new ArrayList<>(CHUNK);
+
+        PageIterable<OrderDynamoEntity> pages = table.query(r ->
+                r.queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(id)))
+        );
+
+        for (OrderDynamoEntity item : pages.items()) {
+            String sk = item.getOrderNumber();
+
+            if (sk == null || sk.isBlank()) {
+                log.warn("Skip delete: found item without sort key. id={} item={}", id, item);
+
+                continue;
+            }
+
+            buffer.add(Key.builder().partitionValue(id).sortValue(sk).build());
+
+            if (buffer.size() == CHUNK) {
+                totalDeleted += batchDeleteKeys(buffer);
+                buffer.clear();
+            }
+        }
+
+        if (!buffer.isEmpty()) {
+            totalDeleted += batchDeleteKeys(buffer);
+        }
+    }
+
+    /**
+     * BatchWriteItemEnhanced 로 25개 키를 한 번에 삭제
+     * - 미처리(unprocessed) 항목은 최대 5회 지수 백오프 재시도
+     */
+    private int batchDeleteKeys(List<Key> keys) {
+        if (keys == null || keys.isEmpty()) {
+            return 0;
+        }
+
+        List<Key> remaining = new ArrayList<>(keys);
+        int deleted = 0;
+
+        int attempt = 0;
+        int maxAttempts = 5;
+        long backoffMillis = 100L;
+
+        while (!remaining.isEmpty() && attempt < maxAttempts) {
+            attempt++;
+
+            WriteBatch.Builder<OrderDynamoEntity> wb = WriteBatch.builder(OrderDynamoEntity.class)
+                    .mappedTableResource(table);
+
+            for (Key k : remaining) {
+                wb.addDeleteItem(k);
+            }
+
+            BatchWriteItemEnhancedRequest req = BatchWriteItemEnhancedRequest.builder()
+                    .addWriteBatch(wb.build())
+                    .build();
+
+            try {
+                BatchWriteResult result = enhancedClient.batchWriteItem(req);
+
+                // 미처리 항목 확인
+                List<Key> unprocessed = result.unprocessedDeleteItemsForTable(table);
+                int processed = remaining.size() - (unprocessed == null ? 0 : unprocessed.size());
+                deleted += processed;
+
+                if (unprocessed == null || unprocessed.isEmpty()) {
+                    remaining.clear();
+                } else {
+                    remaining = new ArrayList<>(unprocessed);
+
+                    // 지수 백오프
+                    try {
+                        Thread.sleep(backoffMillis);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+
+                    backoffMillis = Math.min((long) (backoffMillis * 2), Duration.ofSeconds(3).toMillis());
+                }
+            } catch (ProvisionedThroughputExceededException pte) {
+                // 쓰로틀링 -> 대기 후 재시도
+                log.warn("Batch delete throttled. attempt={} size={} cause={}", attempt, remaining.size(), pte.toString());
+
+                try {
+                    Thread.sleep(backoffMillis);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+
+                backoffMillis = Math.min((long) (backoffMillis * 2), Duration.ofSeconds(3).toMillis());
+            } catch (Throwable t) {
+                log.warn("Batch delete failed. attempt={} size={} cause={}", attempt, remaining.size(), t.toString());
+
+                break;
+            }
+        }
+
+        if (!remaining.isEmpty()) {
+            log.warn("Batch delete finished with unprocessed items. remaining={}", remaining.size());
+        }
+
+        return deleted;
     }
 }

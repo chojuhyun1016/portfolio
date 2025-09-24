@@ -22,7 +22,6 @@ import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
 import java.util.Map;
@@ -30,19 +29,18 @@ import java.util.Map;
 /**
  * 락 인프라 구성(설정 기반 + @Import 조립)
  * <p>
- * 전역 스위치: lock.enabled=true
+ * 전역 스위치 제거 → 기능별 스위치로만 제어:
  * - NamedLock   : lock.named.enabled=true  && DataSource 빈 존재
  * - RedissonLock: lock.redisson.enabled=true && RedissonClient 빈 존재
  * <p>
- * 변경사항:
- * - RedissonClient @Bean 에 @ConditionalOnProperty(lock.redisson.enabled=true) 추가
- * - 엔드포인트 미제공 시 즉시 예외(테스트에서는 redisson 비활성 또는 주소 제공)
+ * 변경점(분리):
+ * - RedissonClient는 오직 lock.redisson.*(host/port/password/database) 만 사용합니다.
+ * (spring.redis.* 등 다른 키는 읽지 않음)
  */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties({NamedLockProperties.class, RedissonLockProperties.class})
-@ConditionalOnProperty(name = "lock.enabled", havingValue = "true", matchIfMissing = false)
 public class LockInfraConfig {
 
     /* ---------- Key Generators ---------- */
@@ -111,27 +109,23 @@ public class LockInfraConfig {
         return new RedissonLockExecutor(props, client);
     }
 
-    /* ---------- Redisson Client (조건 강화) ---------- */
+    /* ---------- Redisson Client ---------- */
     @Bean(destroyMethod = "shutdown")
     @ConditionalOnClass(Redisson.class)
     @ConditionalOnMissingBean(RedissonClient.class)
     @ConditionalOnProperty(name = "lock.redisson.enabled", havingValue = "true", matchIfMissing = false)
-    public RedissonClient redissonClient(Environment env, RedissonLockProperties props) {
-        String endpoint = firstNonBlank(
-                props.getAddress(),
-                env.getProperty("lock.redisson.uri"),
-                buildFromHostPort(env.getProperty("spring.data.redis.host"), env.getProperty("spring.data.redis.port", Integer.class))
-        );
+    public RedissonClient redissonClient(RedissonLockProperties props) {
+        String endpoint = buildFromHostPort(props.getHost(), props.getPort());
 
-        if (isBlank(endpoint)) {
-            // 테스트 환경에서 lock.redisson.enabled=false 이면 이 메서드 자체가 호출되지 않음.
+        if (endpoint == null || endpoint.isBlank()) {
             throw new IllegalStateException(
                     "Redisson is enabled but no Redis endpoint provided. " +
-                            "Set one of: lock.redisson.address, lock.redisson.uri, or spring.data.redis.host/port."
+                            "Please set both 'lock.redisson.host' and 'lock.redisson.port'."
             );
         }
 
         String normalized = normalize(endpoint);
+
         Config config = new Config();
         config.useSingleServer()
                 .setAddress(normalized)
@@ -145,42 +139,19 @@ public class LockInfraConfig {
 
     // ---------------- helpers ----------------
     private static String buildFromHostPort(String host, Integer port) {
-        if (isBlank(host) || port == null) {
-            return null;
-        }
-
+        if (host == null || host.isBlank() || port == null) return null;
         return "redis://" + host.trim() + ":" + port;
     }
 
     private static String normalize(String addr) {
         String v = addr.trim();
-
         if (!v.startsWith("redis://") && !v.startsWith("rediss://")) {
             return "redis://" + v;
         }
-
         return v;
     }
 
-    private static String firstNonBlank(String... vals) {
-        if (vals == null) {
-            return null;
-        }
-
-        for (String v : vals) {
-            if (!isBlank(v)) {
-                return v;
-            }
-        }
-
-        return null;
-    }
-
-    private static boolean isBlank(String v) {
-        return v == null || v.isBlank();
-    }
-
     private static String blankToNull(String v) {
-        return isBlank(v) ? null : v;
+        return (v == null || v.isBlank()) ? null : v;
     }
 }

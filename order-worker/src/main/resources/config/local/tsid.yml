@@ -1,0 +1,5 @@
+tsid:
+  enabled: true          # 반드시 true 여야 TsidFactory 빈 생성 + Holder 세팅
+  node-bits: 10          # 0~1023
+  zone-id: Asia/Seoul    # 필요 시 조정 (미설정 시 시스템 기본)
+  prefer-ec2-meta: false # 로컬에선 false 권장, EC2에선 true 권장

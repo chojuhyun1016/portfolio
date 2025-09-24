@@ -15,6 +15,11 @@ java {
     targetCompatibility = '17'
 }
 
+// ★ MapStruct가 생성자 파라미터명을 읽을 수 있도록 javac -parameters 활성화
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['-parameters']
+}
+
 // ===== 소스셋 =====
 sourceSets {
     test {
@@ -68,6 +73,9 @@ dependencies {
     implementation(libs.commonsPool2)
     implementation(libs.redisson)
 
+    implementation(libs.jacksonDatabind)
+    implementation(libs.jacksonJsr310)
+
     // Argon2 해싱
     implementation(libs.argon2)
 
@@ -105,6 +113,12 @@ dependencies {
     // ==== DB 드라이버 ====
     runtimeOnly(libs.mysqlDriver)
 
+    // ==== MapStruct (OrderMapper 생성용) ====
+    compileOnly(libs.mapstruct)
+    annotationProcessor(libs.mapstructProcessor)
+    testCompileOnly(libs.mapstruct)
+    testAnnotationProcessor(libs.mapstructProcessor)
+
     // ==== test (unit) ====
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.h2)
@@ -116,33 +130,28 @@ dependencies {
     testImplementation(platform(libs.testcontainersBom))
     testImplementation(libs.testcontainers)
     testImplementation(libs.testcontainersJunit)
-    // (별칭 없음) testcontainers-redis 는 사용하지 않고, 코어 testcontainers + GenericContainer 사용
 
     // ==== integrationTest (통합 테스트 전용) ====
-    // Testcontainers (JDBC URL 방식으로 DataSource 자동 생성)
     integrationTestImplementation(platform(libs.testcontainersBom))
     integrationTestImplementation(libs.testcontainers)
     integrationTestImplementation(libs.testcontainersJunit)
     integrationTestImplementation(libs.testcontainersMysql)
     integrationTestImplementation(libs.testcontainersJdbc)
-    // Redis용 모듈 별칭 없음 → 코어 testcontainers로 충분
 
-    // MySQL 드라이버: 런타임 클래스패스 보장 (CNF 방지)
+    // MySQL 드라이버
     integrationTestImplementation(libs.mysqlDriver)
     integrationTestRuntimeOnly(libs.mysqlDriver)
 
     // LocalStack (DynamoDB)
     integrationTestImplementation(libs.testcontainersLocalstack)
-
-    // LocalStack + DynamoDB SDK v2
     integrationTestImplementation(platform(libs.awsBomV2))
     integrationTestImplementation(libs.awsDynamodb)
     integrationTestImplementation(libs.awsRegions)
 
-    // Redisson 코어를 통합테스트에 직접 추가 (오토컨피그 배제 환경에서 사용)
+    // Redisson 코어
     integrationTestImplementation(libs.redissonCore)
 
-    // Lombok 을 integrationTest에도 명시적으로 연결 (컴파일 + 어노테이션 프로세서)
+    // Lombok IT
     integrationTestCompileOnly(libs.lombok)
     integrationTestAnnotationProcessor(libs.lombok)
 }
@@ -152,7 +161,6 @@ configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 
-    // starter 자동구성 충돌 방지 (테스트/IT에서 수동 구성 경로 보호)
     testCompileClasspath {
         exclude group: 'org.redisson', module: 'redisson-spring-boot-starter'
     }
