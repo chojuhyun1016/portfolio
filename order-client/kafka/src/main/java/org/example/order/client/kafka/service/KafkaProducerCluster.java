@@ -2,6 +2,7 @@ package org.example.order.client.kafka.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.order.common.support.logging.MdcPropagation;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -30,14 +31,14 @@ public class KafkaProducerCluster implements SmartLifecycle {
 
         CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(message);
 
-        future.whenComplete((result, ex) -> {
+        future.whenComplete(MdcPropagation.wrap((result, ex) -> {
             if (ex == null) {
                 log.info("Sending kafka message - topic: {}, message: {}, offset: {}",
                         topic, result.getProducerRecord().value(), result.getRecordMetadata().offset());
             } else {
                 log.error("error : Sending kafka message failed - topic: {}, message: {}", topic, ex.getMessage(), ex);
             }
-        });
+        }));
     }
 
     @Override

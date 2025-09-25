@@ -9,10 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * Producer 인터셉터
- * - MDC의 traceId/orderId를 Kafka 헤더에 주입한다.
- * - 기존 헤더가 있으면 덮어쓴다(정책 변경 원하면 if-null일 때만 주입하도록 수정 가능).
+ * (Deprecated) Producer 인터셉터
+ * - PostProcessor 기반 구조가 메인입니다.
+ * - 하위 호환을 위해 남겨두되 신규 코드에선 사용하지 마세요.
  */
+@Deprecated
 public class MdcToHeaderProducerInterceptor implements ProducerInterceptor<Object, Object> {
 
     private static final String TRACE_ID = "traceId";
@@ -22,7 +23,6 @@ public class MdcToHeaderProducerInterceptor implements ProducerInterceptor<Objec
     public ProducerRecord<Object, Object> onSend(ProducerRecord<Object, Object> record) {
         try {
             var headers = record.headers();
-
             String traceId = MDC.get(TRACE_ID);
 
             if (traceId != null) {
@@ -37,10 +37,8 @@ public class MdcToHeaderProducerInterceptor implements ProducerInterceptor<Objec
                 headers.add(ORDER_ID, orderId.getBytes(StandardCharsets.UTF_8));
             }
 
-            // 기존 레코드 그대로 반환(헤더는 mutable)
             return record;
         } catch (Throwable ignore) {
-            // 인터셉터에서 예외 던지면 발행 자체가 막히므로 안전하게 무시
             return record;
         }
     }

@@ -1,6 +1,7 @@
 package org.example.order.client.kafka.config.consumer;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
@@ -19,6 +20,7 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.util.StringUtils;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
@@ -28,11 +30,12 @@ import java.util.Map;
  * consumer.enabled=true 일 때만 활성화되는 Consumer 구성 (공용 팩토리).
  * - AckMode: MANUAL_IMMEDIATE
  * - ErrorHandlingDeserializer(delegate=JsonDeserializer) → 역직렬화 실패도 루프 없이 처리
- * - JsonDeserializer.TRUSTED_PACKAGES 등록
+ * - JsonDeserializer.TRUSTED_PACKAGES: (변경) 코드 하드코드 → 프로퍼티(kafka.consumer.trusted-packages, 필수)에서 주입
  * - JsonDeserializer.USE_TYPE_INFO_HEADERS=false (타입 헤더 무시)
  * - VALUE_DEFAULT_TYPE 은 전역에서 설정하지 않음(리스너별 @KafkaListener.properties 로 지정)
- * - RecordInterceptor: Kafka 헤더 traceId → MDC 복원(+ key → orderId)
+ * - RecordInterceptor: Kafka 헤더 traceId/orderId → MDC 복원 (+ key → traceId 보정)
  */
+@Slf4j
 @Configuration
 @EnableConfigurationProperties({KafkaConsumerProperties.class, KafkaSSLProperties.class})
 @RequiredArgsConstructor
@@ -55,7 +58,7 @@ public class KafkaConsumerConfig {
         // 에러 핸들러: 재시도 없음
         factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(0L, 0L)));
 
-        // ★ 프로퍼티 기반으로만 deserializer 구성 (new 하지 않음)
+        // 프로퍼티 기반으로만 deserializer 구성 (new 하지 않음)
         Map<String, Object> props = getDefaultConfigProps();
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
@@ -63,8 +66,10 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
 
-        // JsonDeserializer 공통 설정
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "org.example.order.*");
+        // 필수: 신뢰 패키지 (누락 시 fail-fast)
+        String trusted = requireTrustedPackages();
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, trusted);
+
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
         DefaultKafkaConsumerFactory<String, Object> consumerFactory =
@@ -95,7 +100,10 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
 
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "org.example.order.*");
+        // 필수: 신뢰 패키지 (누락 시 fail-fast)
+        String trusted = requireTrustedPackages();
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, trusted);
+
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
 
         DefaultKafkaConsumerFactory<String, Object> consumerFactory =
@@ -119,6 +127,7 @@ public class KafkaConsumerConfig {
             if (properties.getOption().getEnableAutoCommit() != null) {
                 propsMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.getOption().getEnableAutoCommit());
             }
+
             if (properties.getOption().getAutoOffsetReset() != null) {
                 propsMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.getOption().getAutoOffsetReset());
             }
@@ -133,5 +142,25 @@ public class KafkaConsumerConfig {
         }
 
         return propsMap;
+    }
+
+    /**
+     * trusted-packages 누락 시 즉시 실패 (명시적 메시지/로그)
+     */
+    private String requireTrustedPackages() {
+        String trusted = properties.getTrustedPackages();
+        if (!StringUtils.hasText(trusted)) {
+            String msg = """
+                    Missing required property: 'kafka.consumer.trusted-packages'
+                    - 이유: JsonDeserializer의 보안 정책상 신뢰 가능한 패키지를 명시해야 역직렬화가 허용됩니다.
+                    - 예시) kafka.consumer.trusted-packages: "org.example.order.*,org.example.common.*"
+                    - 주의) "*" 전체 허용은 테스트/로컬 한정으로만 사용하세요.
+                    """;
+            log.error(msg);
+
+            throw new IllegalStateException("kafka.consumer.trusted-packages is required but not set");
+        }
+
+        return trusted;
     }
 }

@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotBlank;
  * - enabled=true 일 때 bootstrapServers는 반드시 지정되어야 하며(@NotBlank).
  * - 하위 option 클래스에는 poll 관련 상세 설정(maxPollRecords 등)을 담아
  * 컨테이너 팩토리에서 활용할 수 있다.
+ * - (추가) trustedPackages: JsonDeserializer 신뢰 패키지(필수). 기본값 없음.
  */
 @Getter
 @Setter
@@ -31,6 +32,15 @@ public class KafkaConsumerProperties {
      */
     @NotBlank(message = "kafka.consumer.bootstrap-servers must not be blank when consumer is enabled")
     private String bootstrapServers;
+
+    /**
+     * JsonDeserializer 신뢰 패키지(콤마 구분)
+     * 예: "org.example.order.*,org.example.common.*"
+     * 주의: "*" 전체 허용은 테스트/로컬 한정 권장
+     * <p>
+     * 기본값을 코드에 하드코딩하지 않습니다(재사용성/보안성 관점). 미설정 시 구성 단계에서 fail-fast.
+     */
+    private String trustedPackages;
 
     /**
      * poll, commit 등 상세 옵션

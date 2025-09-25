@@ -31,4 +31,14 @@ public class KafkaListenerTopicConfig {
     public String orderRemoteTopic(KafkaTopicProperties props) {
         return props.getName(MessageCategory.ORDER_REMOTE);
     }
+
+    @Bean
+    public String orderDlqTopic(KafkaTopicProperties props) {
+        return props.getName(MessageCategory.ORDER_DLQ);
+    }
+
+    @Bean
+    public String orderAlarmTopic(KafkaTopicProperties props) {
+        return props.getName(MessageCategory.ORDER_ALARM);
+    }
 }
