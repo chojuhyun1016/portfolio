@@ -5,8 +5,8 @@ services:
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
+      - redis_data:/data
       - ./conf/redis.conf:/usr/local/etc/redis/redis.conf:ro
-      - data:/data
     command: >
       sh -c '
       if [ -n "$${REDIS_PASSWORD}" ]; then
@@ -24,5 +24,12 @@ services:
     environment:
       - TZ=Asia/Seoul
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+
 volumes:
-  data:
+  redis_data:
+    name: redis_data
+
+networks:
+  default:
+    name: redis_default
+    driver: bridge

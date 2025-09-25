@@ -1,6 +1,6 @@
 # 🚀 Local Infra Control — `start.sh` & `stop.sh`
 
-> AWS(LocalStack) · Kafka · MySQL · Redis를 **한 번에** 또는 **선택적으로** 실행/중지하는 통합 스크립트 세트
+> AWS(LocalStack) · Kafka · MySQL · Redis · UI를 **한 번에** 또는 **선택적으로** 실행/중지하는 통합 스크립트 세트
 
 ---
 
@@ -19,7 +19,7 @@ chmod 755 stop.sh
 
 - Docker Desktop / Docker Engine
 - Docker Compose v2
-    - 자동 감지: `docker compose` 우선, 없으면 `docker-compose` 사용
+  - 자동 감지: `docker compose` 우선, 없으면 `docker-compose` 사용
 
 ---
 
@@ -35,7 +35,7 @@ chmod 755 stop.sh
 ./stop.sh
 ```
 
-> 기본 대상 서비스: `aws kafka mysql redis` (docker-compose.yml의 서비스명과 일치)
+> 기본 대상 서비스: `aws kafka mysql redis ui` (각 스택 디렉터리의 `docker-compose.yml` 서비스명과 일치)
 
 ---
 
@@ -58,8 +58,10 @@ chmod 755 stop.sh
 - `--recreate` : **정지+삭제 후 재기동** (기본값, 안전)
 - `--no-recreate` : 기존 컨테이너 유지(빠름)
 - `--build` : 이미지 빌드 포함
-- `-p, --project <NAME>` : compose 프로젝트명 지정
-- 인자 미지정 시: `aws kafka mysql redis` 전부 기동
+- `-p, --project-prefix <NAME>` : compose 프로젝트명 접두사 지정 (예: `dev_` → 실제 프로젝트명은 `dev_aws`, `dev_kafka` 등)
+- `-n, --file-name <FILE>` : 사용할 compose 파일 이름 (기본: `docker-compose.yml`)
+- `--no-wait` : 헬스체크 대기 스킵
+- 인자 미지정 시: `aws kafka mysql redis ui` 전부 기동
 
 ### 예시
 
@@ -83,9 +85,10 @@ chmod 755 stop.sh
 ## 6) `stop.sh` 옵션
 
 - `--volumes` : **네임드 볼륨까지 삭제** (데이터 초기화 — 주의)
-- `-p, --project <NAME>` : compose 프로젝트명 지정
-- 인자 미지정 시: `aws kafka mysql redis` 전부 종료
-    - **전부**가 선택되고 `--volumes`를 쓰면 내부적으로 `docker compose down --volumes --remove-orphans` 수행
+- `-p, --project-prefix <NAME>` : compose 프로젝트명 접두사 지정
+- `-n, --file-name <FILE>` : 사용할 compose 파일 이름 (기본: `docker-compose.yml`)
+- 인자 미지정 시: `aws kafka mysql redis ui` 전부 종료
+  - **전부**가 선택되고 `--volumes`를 쓰면 내부적으로 `docker compose down --volumes --remove-orphans` 수행
 
 ### 예시
 
@@ -103,10 +106,12 @@ chmod 755 stop.sh
 
 ## 7) 헬스체크(Healthcheck)
 
-`start.sh`는 기동 직후 각 서비스의 Health 상태를 **최대 180초** 대기하며 확인합니다.
+`start.sh`는 기동 직후 각 서비스의 Health 상태를 **최대 60초**(기본) 대기하며 확인합니다.
 
 - Healthcheck가 정의된 서비스 → `healthy` 확인
 - Healthcheck가 **없으면** → 즉시 Ready 처리(스킵)
+- 특정 서비스는 `SKIP_WAIT`에 등록되어 기본적으로 스킵됩니다  
+  (예: `aws/localstack`, `kafka/zookeeper`, `ui/adminer`, `ui/redisinsight`, `ui/dynamodb-admin`)
 
 현재 상태 보기:
 ```bash
@@ -135,6 +140,8 @@ docker compose config --services
 - 방화벽/보안 제품 차단 여부 확인
 - `docker compose logs -f <service>` 로 초기화/마이그레이션 에러 확인
 - MySQL은 초기화에 수십 초가 걸릴 수 있음 (볼륨 최초 생성 시)
+- **LocalStack DynamoDB**: 데이터 유지가 필요하면 반드시 **`PERSISTENCE=1`** 환경변수를 설정하고, **네임드 볼륨**을 `/var/lib/localstack`에 마운트하세요.  
+  `stop.sh`에 **`--volumes`**를 사용하면 네임드 볼륨까지 삭제되어 데이터가 사라집니다.
 
 ---
 
@@ -165,12 +172,13 @@ docker compose logs -f mysql
 
 ## 10) 서비스 이름 표
 
-| 논리 이름 | Compose 서비스명 | 비고 |
-|---|---|---|
-| AWS(LocalStack) | `aws` | S3/SecretsManager/DynamoDB 등 |
-| Kafka | `kafka` | External: `localhost:29092` |
-| MySQL | `mysql` | External: `localhost:3306` |
-| Redis | `redis` | External: `localhost:6379` |
+| 논리 이름        | Compose 서비스명 | 외부 접속(기본)              | 비고 |
+|------------------|------------------|------------------------------|------|
+| AWS(LocalStack)  | `aws`            | `localhost:4566`             | `PERSISTENCE=1` + 네임드 볼륨으로 데이터 유지 |
+| Kafka            | `kafka`          | `localhost:29092`            | 브로커 내부: `kafka:9092` |
+| MySQL            | `mysql`          | `localhost:3306`             | DB 볼륨으로 데이터 유지 |
+| Redis            | `redis`          | `localhost:6379`             | 볼륨으로 데이터 유지 |
+| UI 도구 모음     | `ui`             | 스택별 포트 상이              | Adminer, RedisInsight, DynamoDB-Admin 등 |
 
 ---
 
@@ -206,6 +214,29 @@ docker compose logs -f mysql
 
 ---
 
-## 12) 한 줄 요약
+## 12) 디렉터리 구조 (기본 기대값)
+
+각 스택별 compose 파일은 다음 경로를 가정합니다:
+
+```
+./aws/docker-compose.yml
+./kafka/docker-compose.yml
+./mysql/docker-compose.yml
+./redis/docker-compose.yml
+./ui/docker-compose.yml
+```
+
+> 파일명이 다르면 `-n, --file-name` 옵션으로 지정하세요.
+
+---
+
+## 13) 환경변수
+
+- `HEALTH_WAIT_TIMEOUT` : 헬스체크 대기 시간(초), 기본 `60`  
+  예) `HEALTH_WAIT_TIMEOUT=120 ./start.sh`
+
+---
+
+## 14) 한 줄 요약
 
 **“`start.sh`로 서비스 기동, `stop.sh`로 종료 — 가장 먼저 `chmod 755`로 권한부터 설정하세요!”**

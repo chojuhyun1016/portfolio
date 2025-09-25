@@ -16,10 +16,16 @@ services:
       retries: 30
       start_period: 10s
     volumes:
-      - data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
       - ./conf/my.cnf:/etc/mysql/conf.d/my.cnf:ro
       - ./init:/docker-entrypoint-initdb.d:ro
     restart: unless-stopped
 
 volumes:
-  data:
+  mysql_data:
+    name: mysql_data
+
+networks:
+  default:
+    name: mysql_default
+    driver: bridge

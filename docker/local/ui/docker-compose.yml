@@ -1,0 +1,73 @@
+networks:
+  # 이미 존재하는 외부 네트워크에 연결
+  kafka_net:
+    external: true
+    name: kafka_default
+  mysql_net:
+    external: true
+    name: mysql_default
+  redis_net:
+    external: true
+    name: redis_default
+  aws_net:
+    external: true
+    name: aws_default
+
+services:
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: unless-stopped
+    networks:
+      - kafka_net
+    ports:
+      - "${KAFKA_UI_PORT}:8080"   # 컨테이너 내부 포트는 8080
+    environment:
+      TZ: ${TZ}
+      KAFKA_CLUSTERS_0_NAME: local
+      # 같은 네트워크이므로 내부 리스너(kafka:9092)로 바로 접속
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      KAFKA_CLUSTERS_0_ZOOKEEPER: ${ZOOKEEPER_CONNECT}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    networks:
+      - mysql_net
+    ports:
+      - "${ADMINER_PORT}:8080"   # 컨테이너 내부 포트는 8080
+    environment:
+      TZ: ${TZ}
+      ADMINER_DEFAULT_SERVER: ${MYSQL_HOST}
+
+  redisinsight:
+    image: redis/redisinsight:latest   # v2
+    container_name: redisinsight
+    restart: unless-stopped
+    networks:
+      - redis_net
+    ports:
+      - "${REDISINSIGHT_PORT}:5540"  # 컨테이너 내부 포트는 5540
+    environment:
+      TZ: ${TZ}
+
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:latest
+    container_name: dynamodb-admin
+    restart: unless-stopped
+    networks:
+      - aws_net
+    ports:
+      - "${DYNAMODB_ADMIN_PORT}:8001"  # 컨테이너 내부 포트는 8001
+    environment:
+      TZ: ${TZ}
+      DYNAMO_ENDPOINT: ${DYNAMODB_ENDPOINT}
+      AWS_REGION: ${AWS_REGION}
+    healthcheck:
+      disable: true

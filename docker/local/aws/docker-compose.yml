@@ -1,27 +1,19 @@
-# docker/local/aws/docker-compose.yml
 services:
   localstack:
     image: localstack/localstack:3
-    # container_name 제거 → 프로젝트 네임스페이스 기반 이름 자동부여(충돌 방지)
     restart: unless-stopped
     ports:
-      - "${LOCALSTACK_PORT:-4566}:4566"   # Edge endpoint
+      - "${LOCALSTACK_PORT:-4566}:4566"
     environment:
-      # 활성화할 서비스 목록(미설정 시 s3,dynamodb,secretsmanager)
       - SERVICES=${LOCALSTACK_SERVICES:-s3,dynamodb,secretsmanager}
-      # 기본 리전
       - AWS_DEFAULT_REGION=${AWS_REGION:-ap-northeast-2}
-      # 디버그 로그 (0/1)
       - DEBUG=${LOCALSTACK_DEBUG:-1}
-      # (옵션) 임시 디렉토리 경로
+      - PERSISTENCE=1
       - LS_TMP=/tmp/localstack
     volumes:
-      # 준비 완료 시 실행되는 초기화 스크립트(옵션). 없으면 라인 삭제 가능
+      - localstack_data:/var/lib/localstack
       - ./localstack/init/ready.d:/etc/localstack/init/ready.d:ro
-      # 프로젝트 스코프 named volume 사용(디렉토리 충돌/권한 이슈 감소)
-      - data:/var/lib/localstack
     healthcheck:
-      # LocalStack의 헬스 엔드포인트에 접근해 초기화 완료 여부 확인
       test: [ "CMD-SHELL", "curl -fsS http://localhost:4566/_localstack/health | grep -q '\"initialized\": true'" ]
       interval: 5s
       timeout: 3s
@@ -29,4 +21,10 @@ services:
       start_period: 10s
 
 volumes:
-  data:
+  localstack_data:
+    name: localstack_data
+
+networks:
+  default:
+    name: aws_default
+    driver: bridge

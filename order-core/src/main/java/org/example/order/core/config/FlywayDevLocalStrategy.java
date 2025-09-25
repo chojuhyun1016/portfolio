@@ -28,7 +28,7 @@ public class FlywayDevLocalStrategy {
                 flyway.migrate();
 
                 log.info("[Flyway] dev/local: migrate success");
-            } catch (FlywayValidateException ve) { // ⬅️ 검증 실패일 때만 repair
+            } catch (FlywayValidateException ve) {
                 log.warn("[Flyway] dev/local: validation failed → repair once: {}", ve.getMessage());
 
                 flyway.repair();

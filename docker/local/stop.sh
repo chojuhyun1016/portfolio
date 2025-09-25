@@ -11,7 +11,8 @@ else
   exit 1
 fi
 
-STACKS=(aws kafka mysql redis)
+# ★ ui 추가
+STACKS=(aws kafka mysql redis ui)
 
 usage() {
   cat <<'EOF'
@@ -31,6 +32,7 @@ Notes:
       ./kafka/docker-compose.yml
       ./mysql/docker-compose.yml
       ./redis/docker-compose.yml
+      ./ui/docker-compose.yml
   * Project name is set per stack as: <prefix><stack>, e.g. "dev_mysql"
 EOF
 }
@@ -66,7 +68,7 @@ fi
 # validate names
 for s in "${SELECTS[@]}"; do
   case "$s" in
-    aws|kafka|mysql|redis) : ;;
+    aws|kafka|mysql|redis|ui) : ;;
     *) echo "Unknown stack: $s" >&2; exit 1;;
   esac
 done
@@ -74,23 +76,37 @@ done
 compose_cmd() {
   # usage: compose_cmd <stack> <extra args...>
   local stack="$1"; shift
-  local file="./${stack}/${FILE_NAME}"
+  local file="$FILE_NAME"
   local proj="${PROJECT_PREFIX}${stack}"
 
-  if [ ! -f "$file" ]; then
-    echo "ERROR: compose file not found: $file" >&2
+  if [ ! -f "./${stack}/${file}" ]; then
+    echo "ERROR: compose file not found: ./${stack}/${file}" >&2
     return 2
   fi
 
-  "${COMPOSE_BIN[@]}" -f "$file" -p "$proj" "$@"
+  (
+    cd "./${stack}"
+    "${COMPOSE_BIN[@]}" -f "$file" -p "$proj" "$@"
+  )
+}
+
+stack_has_containers() {
+  local stack="$1"
+  local ids
+  ids="$(compose_cmd "$stack" ps -q 2>/dev/null || true)"
+  [ -n "$ids" ]
 }
 
 for stack in "${SELECTS[@]}"; do
   echo "==> [$stack] down"
-  if [ $VOLUMES -eq 1 ]; then
-    compose_cmd "$stack" down --volumes --remove-orphans || true
+  if stack_has_containers "$stack"; then
+    if [ $VOLUMES -eq 1 ]; then
+      compose_cmd "$stack" down --volumes --remove-orphans || true
+    else
+      compose_cmd "$stack" down --remove-orphans || true
+    fi
   else
-    compose_cmd "$stack" down --remove-orphans || true
+    echo "   [$stack] no containers (skip)"
   fi
 done
 

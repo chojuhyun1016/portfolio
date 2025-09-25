@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
@@ -11,44 +13,62 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    volumes:
+      - zk_data:/var/lib/zookeeper/data
+      - zk_datalog:/var/lib/zookeeper/log
 
   kafka:
     image: confluentinc/cp-kafka:7.6.1
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"   # internal/container listener
-      - "29092:29092" # host listener
+      - "9092:9092"    # 내부 네트워크용(INTERNAL) - 필요 시 컨테이너 간 접근
+      - "29092:29092"  # 외부(호스트)용(EXTERNAL)
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+
+      # 리스너 이름/프로토콜 매핑
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+
+      # 바인드 포트
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092
+
+      # 광고 주소: 내부 컨테이너는 kafka:9092, 호스트 앱은 localhost:29092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+
+      # 브로커 간 통신은 INTERNAL로 고정
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      # 운영 비권장 옵션들 - 로컬 단일 브로커에서만
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+
     healthcheck:
-      test: [ "CMD", "bash", "-lc", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
+      test: [ "CMD", "bash", "-lc", "kafka-topics --bootstrap-server localhost:29092 --list >/dev/null 2>&1" ]
       interval: 5s
       timeout: 5s
       retries: 20
 
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    depends_on:
-      - kafka
-    ports:
-      - "8080:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
-    healthcheck:
-      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
-      interval: 5s
-      timeout: 3s
-      retries: 30
+    # 호스트 이름 해석이 필요한 경우(다른 컨테이너에서)만 사용
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+volumes:
+  zk_data:
+    name: zk_data
+  zk_datalog:
+    name: zk_datalog
+  kafka_data:
+    name: kafka_data
+
+networks:
+  default:
+    name: kafka_default
+    driver: bridge
