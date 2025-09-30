@@ -19,6 +19,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
 
+import java.util.List;
+
 /**
  * Crypto 인프라 통합 구성 (단일 진입점)
  * <p>
@@ -90,7 +92,7 @@ public class CryptoInfraConfig {
      */
     @Bean
     @ConditionalOnMissingBean
-    public EncryptorFactory encryptorFactory(java.util.List<Encryptor> encryptors, java.util.List<Hasher> hashers, java.util.List<Signer> signers) {
+    public EncryptorFactory encryptorFactory(List<Encryptor> encryptors, List<Hasher> hashers, List<Signer> signers) {
         return new EncryptorFactory(encryptors, hashers, signers);
     }
 

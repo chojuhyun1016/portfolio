@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * DynamoMigrationLoader
  * ------------------------------------------------------------------------
  * - /resources/dynamodb/migration(Vn), /resources/dynamodb/seed(Vn) 구조 지원
- * - "최신 버전(Vn)만" 스캔하여 같은 버전 내 모든 파일을 병합 로드한다.
+ * - "최신 버전(Vn)만" 스캔하여 같은 버전 내 모든 파일을 병합 로드
  * - (예) V2__*.json 파일이 여러 개면 모두 읽어 tables/items를 합친다.
  */
 @Slf4j
@@ -38,7 +38,6 @@ public class DynamoMigrationLoader {
 
         try {
             MigrationFile merged = new MigrationFile();
-
             for (Resource r : latest) {
                 MigrationFile mf = objectMapper.readValue(r.getInputStream(), MigrationFile.class);
 
@@ -46,7 +45,7 @@ public class DynamoMigrationLoader {
                     merged.getTables().addAll(mf.getTables());
                 }
 
-                log.info("[DynamoMigration] Loaded latest migration {}", r.getFilename());
+                log.info("[DynamoMigration] Loaded latest migration {}", safeName(r));
             }
 
             return Optional.of(merged);
@@ -69,7 +68,7 @@ public class DynamoMigrationLoader {
                 SeedFile sf = objectMapper.readValue(r.getInputStream(), SeedFile.class);
                 list.add(sf);
 
-                log.info("[DynamoSeed] Loaded latest seed {}", r.getFilename());
+                log.info("[DynamoSeed] Loaded latest seed {}", safeName(r));
             }
 
             return Optional.of(list);
@@ -92,10 +91,7 @@ public class DynamoMigrationLoader {
             int max = -1;
 
             for (Resource r : resources) {
-                if (!r.isReadable()) {
-                    continue;
-                }
-
+                if (!r.isReadable()) continue;
                 int v = versionOf(r);
                 max = Math.max(max, v);
                 byVer.computeIfAbsent(v, k -> new ArrayList<>()).add(r);
@@ -117,7 +113,14 @@ public class DynamoMigrationLoader {
             }
         } catch (Exception ignored) {
         }
-
         return -1;
+    }
+
+    private static String safeName(Resource r) {
+        try {
+            return r.getFilename();
+        } catch (Exception e) {
+            return String.valueOf(r);
+        }
     }
 }

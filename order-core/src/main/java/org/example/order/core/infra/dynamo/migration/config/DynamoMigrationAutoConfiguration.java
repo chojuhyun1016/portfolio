@@ -27,7 +27,8 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
  * <p>
  * 기능:
  * - 애플리케이션 기동 시 "최신 버전(Vn)만" 병합 적용
- * - 테이블/인덱스(GSI/LSI) 생성 + 최신 시드 적용
+ * - 테이블/인덱스(GSI/LSI) 생성 + (신규 생성 시) 시드 적용
+ * - 추가로, Initializer 내부에서 로컬/Dev 한정 스키마 드리프트를 감지/조정한다.
  */
 @Slf4j
 @AutoConfiguration
@@ -42,10 +43,6 @@ public class DynamoMigrationAutoConfiguration {
      * Migration/Seed 로더
      * - classpath 경로에서 V*__*.json 스캔
      * - 최신 버전만 병합 적용
-     * <p>
-     * 주의:
-     * - 로더의 생성자는 ResourcePatternResolver "1개"만 받는다.
-     * - @Component 로 이미 등록되어 있으면 이 Bean은 생략됨(@ConditionalOnMissingBean).
      */
     @Bean
     @ConditionalOnMissingBean
@@ -54,7 +51,7 @@ public class DynamoMigrationAutoConfiguration {
     }
 
     /**
-     * 초기화(테이블/인덱스 생성 + 시드)
+     * 초기화(테이블/인덱스 생성 + 시드 + 드리프트 조정)
      */
     @Bean
     @ConditionalOnBean(DynamoDbClient.class)

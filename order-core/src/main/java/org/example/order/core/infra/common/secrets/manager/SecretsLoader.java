@@ -5,7 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.support.json.ObjectMapperUtils;
 import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
 import org.example.order.core.infra.common.secrets.model.CryptoKeySpec;
-import org.example.order.core.infra.common.secrets.props.SecretsManagerProperties;
+import org.example.order.core.infra.common.secrets.model.CryptoKeySpecEntry;
+import org.example.order.core.infra.common.secrets.config.properties.SecretsManagerProperties;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.lang.Nullable;
@@ -21,36 +22,42 @@ import software.amazon.awssdk.services.secretsmanager.model.ResourceNotFoundExce
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * [요약]
+ * - SecretsManager에서 JSON을 읽어 alias -> (객체/배열) 모두 수용.
+ * - 각 항목을 CryptoKeySpecEntry로 정규화하여 Resolver에 스냅샷 반영.
+ * - 로딩 후 SecretKeyRefreshListener들에게 통지(Initializer가 핀 정책 적용).
+ * <p>
+ * [핵심 포인트]
+ * - LocalStack 엔드포인트일 때 Secret 없으면 "{}"로 부트스트랩.
+ * - 실패 처리: 운영은 fail-fast, 로컬은 완화.
+ */
 @Slf4j
 public class SecretsLoader {
 
-    private final SecretsManagerProperties properties;
-    private final SecretsKeyResolver secretsKeyResolver;
-    private final SecretsManagerClient secretsManagerClient;
-    private final List<SecretKeyRefreshListener> refreshListeners;
+    private final SecretsManagerProperties props;
+    private final SecretsKeyResolver resolver;
+    private final SecretsManagerClient client;
+    private final List<SecretKeyRefreshListener> listeners;
 
     @Nullable
-    private final TaskScheduler taskScheduler;
+    private final TaskScheduler scheduler;
 
     private final AtomicBoolean scheduled = new AtomicBoolean(false);
-    private volatile ScheduledFuture<?> scheduledFuture;
+    private volatile ScheduledFuture<?> future;
 
-    public SecretsLoader(SecretsManagerProperties properties,
-                         SecretsKeyResolver secretsKeyResolver,
-                         SecretsManagerClient secretsManagerClient,
-                         List<SecretKeyRefreshListener> refreshListeners,
-                         @Nullable TaskScheduler taskScheduler) {
-        this.properties = properties;
-        this.secretsKeyResolver = secretsKeyResolver;
-        this.secretsManagerClient = secretsManagerClient;
-        this.refreshListeners = refreshListeners;
-        this.taskScheduler = taskScheduler;
+    public SecretsLoader(SecretsManagerProperties props, SecretsKeyResolver resolver,
+                         SecretsManagerClient client, List<SecretKeyRefreshListener> listeners,
+                         @Nullable TaskScheduler scheduler) {
+        this.props = props;
+        this.resolver = resolver;
+        this.client = client;
+        this.listeners = listeners;
+        this.scheduler = scheduler;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -62,21 +69,19 @@ public class SecretsLoader {
         } catch (Exception e) {
             log.error("SecretsLoader 초기 로드 실패", e);
 
-            if (properties.getSecretsManager().isFailFast() && !isLocalstackEndpoint()) {
+            if (props.getSecretsManager().isFailFast() && !isLocalstack()) {
                 throw new IllegalStateException("SecretsLoader 초기 로드 실패", e);
             } else {
-                log.warn("SecretsLoader 초기 로드 실패했지만 LocalStack 환경으로 간주하여 기동을 계속합니다.");
+                log.warn("LocalStack으로 간주, 기동 지속");
             }
         }
 
-        if (properties.getSecretsManager().isSchedulerEnabled() && taskScheduler != null && scheduled.compareAndSet(false, true)) {
-            long delay = Math.max(1_000L, properties.getSecretsManager().getRefreshIntervalMillis());
+        if (props.getSecretsManager().isSchedulerEnabled() && scheduler != null && scheduled.compareAndSet(false, true)) {
+            long d = Math.max(1_000L, props.getSecretsManager().getRefreshIntervalMillis());
 
-            scheduledFuture = taskScheduler.scheduleWithFixedDelay(this::safeRefresh, Duration.ofMillis(delay));
+            future = scheduler.scheduleWithFixedDelay(this::safeRefresh, Duration.ofMillis(d));
 
-            log.info("SecretsLoader 주기 갱신 등록됨. 지연 밀리초={}", delay);
-        } else {
-            log.info("SecretsLoader 주기 갱신 미등록. scheduler 비활성 또는 스케줄러 미제공");
+            log.info("SecretsLoader 주기 갱신 등록: {} ms", d);
         }
     }
 
@@ -84,7 +89,7 @@ public class SecretsLoader {
         try {
             refreshOnce();
         } catch (Exception e) {
-            throw new IllegalStateException("SecretsLoader 수동 갱신 실패", e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -92,26 +97,21 @@ public class SecretsLoader {
         try {
             refreshOnce();
         } catch (Exception e) {
-            log.error("SecretsLoader 주기 갱신 실패", e);
+            log.error("주기 갱신 실패", e);
         }
     }
 
-    /**
-     * 실제 1회 로드 로직.
-     * - LocalStack(엔드포인트 지정)에서 Secret이 없으면 자동 생성 후 빈 JSON("{}")으로 초기화
-     * - 실제 AWS에서는 기존 동작 유지(없으면 예외 → fail-fast 설정에 따름)
-     */
     private void refreshOnce() throws Exception {
-        final String secretName = properties.getSecretsManager().getSecretName();
+        final String secretName = props.getSecretsManager().getSecretName();
 
         if (secretName == null || secretName.isBlank()) {
-            String msg = "aws.secrets-manager.secret-name 이 비었습니다.";
+            String msg = "aws.secrets-manager.secret-name 비어있음";
 
-            if (properties.getSecretsManager().isFailFast() && !isLocalstackEndpoint()) {
+            if (props.getSecretsManager().isFailFast() && !isLocalstack()) {
                 throw new IllegalStateException(msg);
             }
 
-            log.warn("{} LocalStack 환경으로 간주하여 건너뜁니다.", msg);
+            log.warn("{} -> 건너뜀", msg);
 
             return;
         }
@@ -119,132 +119,115 @@ public class SecretsLoader {
         String secretJson;
 
         try {
-            GetSecretValueResponse response = secretsManagerClient.getSecretValue(
-                    GetSecretValueRequest.builder().secretId(secretName).build()
-            );
-
-            secretJson = response.secretString();
+            GetSecretValueResponse r = client.getSecretValue(GetSecretValueRequest.builder().secretId(secretName).build());
+            secretJson = r.secretString();
         } catch (ResourceNotFoundException rnfe) {
-
-            if (isLocalstackEndpoint()) {
-                log.warn("Secret [{}] 이(가) 존재하지 않습니다. LocalStack으로 판단되어 자동 생성합니다.", secretName);
-
+            if (isLocalstack()) {
                 bootstrapSecretIfMissing(secretName);
-
-                GetSecretValueResponse response = secretsManagerClient.getSecretValue(
-                        GetSecretValueRequest.builder().secretId(secretName).build()
-                );
-
-                secretJson = response.secretString();
+                secretJson = client.getSecretValue(GetSecretValueRequest.builder().secretId(secretName).build()).secretString();
             } else {
                 throw rnfe;
             }
         }
 
         if (secretJson == null || secretJson.isBlank()) {
-            log.warn("Secret [{}] 내용이 비어 있습니다. 파싱을 건너뜁니다.", secretName);
+            log.warn("Secret 빈 문자열 -> 파싱 생략");
 
             return;
         }
 
-        Map<String, CryptoKeySpec> parsedKeys = parseSecretJson(secretJson);
-
-        parsedKeys.forEach((keyName, spec) -> {
-            byte[] decoded = spec.decodeKey();
-            int expectedBytes = spec.getKeySize() / 8;
-
-            if (decoded.length != expectedBytes) {
-                throw new IllegalArgumentException(
-                        String.format("키 길이 오류. 이름=%s 기대바이트=%d 실제바이트=%d",
-                                keyName, expectedBytes, decoded.length)
-                );
-            }
-
-            secretsKeyResolver.updateKey(keyName, spec);
+        // 1) JSON -> Map<String, Object> (alias → object|array)
+        Map<String, Object> raw = ObjectMapperUtils.readValue(secretJson, new TypeReference<>() {
         });
 
-        if (refreshListeners != null) {
-            for (SecretKeyRefreshListener listener : refreshListeners) {
-                try {
-                    listener.onSecretKeyRefreshed();
+        for (Map.Entry<String, Object> e : raw.entrySet()) {
+            String alias = e.getKey();
+            Object val = e.getValue();
 
-                    log.info("SecretsLoader 리스너 알림 완료. 리스너={}", listener.getClass().getSimpleName());
+            // 객체/배열 모두 수용
+            List<CryptoKeySpec> specs;
+
+            if (val instanceof Map) {
+                specs = List.of(ObjectMapperUtils.valueToObject(val, CryptoKeySpec.class));
+            } else if (val instanceof List) {
+                specs = new ArrayList<>();
+
+                for (Object o : (List<?>) val) {
+                    specs.add(ObjectMapperUtils.valueToObject(o, CryptoKeySpec.class));
+                }
+            } else {
+                log.warn("알 수 없는 secret value 타입: alias={}, type={}", alias, val == null ? "null" : val.getClass());
+
+                continue;
+            }
+
+            // 2) 정규화
+            List<CryptoKeySpecEntry> entries = new ArrayList<>();
+
+            for (CryptoKeySpec s : specs) {
+                entries.add(new CryptoKeySpecEntry(
+                        alias,
+                        s.getKid(),
+                        s.getVersion(),
+                        s.getAlgorithm(),
+                        s.decodeKey()
+                ));
+            }
+
+            // 3) 스냅샷 적용
+            resolver.setSnapshot(alias, entries);
+        }
+
+        // 4) 리스너 통지 -> Initializer가 핀 정책 적용
+        if (listeners != null) {
+            for (SecretKeyRefreshListener l : listeners) {
+                try {
+                    l.onSecretKeyRefreshed();
                 } catch (Exception ex) {
-                    log.error("SecretsLoader 리스너 알림 실패. 리스너={}", listener.getClass().getSimpleName(), ex);
+                    log.error("리스너 실패: {}", l.getClass().getSimpleName(), ex);
                 }
             }
         }
 
-        log.info("SecretsLoader 로드 성공. 총 개수={}", parsedKeys.size());
+        log.info("SecretsLoader 로드 성공: alias 수={}", raw.size());
     }
 
-    private Map<String, CryptoKeySpec> parseSecretJson(String secretJson) throws Exception {
-        try {
-            return ObjectMapperUtils.readValue(secretJson, new TypeReference<Map<String, CryptoKeySpec>>() {
-            });
-        } catch (Exception e) {
-            if (isLocalstackEndpoint() && !properties.getSecretsManager().isFailFast()) {
-                log.warn("Secret JSON 파싱 실패(완화). 내용: {}", secretJson, e);
-
-                return Collections.emptyMap();
-            }
-
-            throw e;
-        }
-    }
-
-    /**
-     * LocalStack 환경으로 간주되면, 존재하지 않는 Secret을 "{}"로 자동 생성한다.
-     */
     private void bootstrapSecretIfMissing(String secretName) {
         final String initial = "{}";
 
         try {
-            // 먼저 create 시도
-            secretsManagerClient.createSecret(
-                    CreateSecretRequest.builder()
-                            .name(secretName)
-                            .secretString(initial)
-                            .build()
-            );
+            client.createSecret(CreateSecretRequest.builder().name(secretName).secretString(initial).build());
 
-            log.info("Secret [{}] 생성 완료(LocalStack).", secretName);
+            log.info("Secret 생성(LocalStack): {}", secretName);
         } catch (ResourceExistsException exists) {
-            secretsManagerClient.putSecretValue(
-                    PutSecretValueRequest.builder()
-                            .secretId(secretName)
-                            .secretString(initial)
-                            .build()
-            );
+            client.putSecretValue(PutSecretValueRequest.builder().secretId(secretName).secretString(initial).build());
 
-            log.info("Secret [{}] 이미 존재. 초기값으로 put 갱신(LocalStack).", secretName);
+            log.info("Secret 초기화(LocalStack put): {}", secretName);
         } catch (SdkServiceException sse) {
-            log.warn("Secret [{}] 생성 중 경고(LocalStack): {}", secretName, sse.getMessage());
+            log.warn("Secret 생성 경고(LocalStack): {}", sse.getMessage());
         }
     }
 
-    private boolean isLocalstackEndpoint() {
-        String ep = properties.getEndpoint();
+    private boolean isLocalstack() {
+        String ep = props.getEndpoint();
 
         if (ep == null || ep.isBlank()) {
             return false;
         }
 
         try {
-            URI uri = URI.create(ep);
-            String host = uri.getHost() != null ? uri.getHost() : "";
+            URI u = URI.create(ep);
+            String h = u.getHost() == null ? "" : u.getHost();
 
-            return host.equals("localhost") || host.equals("127.0.0.1");
+            return h.equals("localhost") || h.equals("127.0.0.1");
         } catch (Exception ignore) {
             return false;
         }
     }
 
     public void cancelSchedule() {
-        ScheduledFuture<?> f = this.scheduledFuture;
-
-        if (f != null) {
-            f.cancel(false);
+        if (future != null) {
+            future.cancel(false);
         }
     }
 }

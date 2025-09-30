@@ -30,6 +30,7 @@ public class OrderDynamoEntity {
     private String orderNumber;       // 주문 번호
     private Long userId;              // 사용자 ID
     private String userNumber;        // 사용자 번호
+    private String userName;        // 사용자 번호
     private Long orderPrice;          // 주문 금액
     private String deleteYn;          // 삭제 여부 (Y/N)
     private Long createdUserId;

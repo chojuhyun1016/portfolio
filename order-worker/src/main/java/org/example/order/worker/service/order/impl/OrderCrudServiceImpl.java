@@ -293,6 +293,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         e.setOrderNumber(d.getOrderNumber());
         e.setUserId(d.getUserId());
         e.setUserNumber(d.getUserNumber());
+        e.setUserName(d.getUserNumber());
         e.setOrderPrice(d.getOrderPrice());
         e.setDeleteYn(Boolean.TRUE.equals(d.getDeleteYn()) ? "Y" : "N");
         e.setCreatedUserId(d.getCreatedUserId());

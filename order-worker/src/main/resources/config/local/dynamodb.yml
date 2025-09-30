@@ -15,7 +15,16 @@ dynamodb:
   access-key: "local"
   secret-key: "local"
   table-name: "order_dynamo"
+
   auto-create: true
   migration-location: classpath:dynamodb/migration
   seed-location: classpath:dynamodb/seed
   create-missing-gsi: true
+
+  schema-reconcile:
+    enabled: true
+    dry-run: true           # 기본 DRY-RUN(위험 변경 로그만)
+    allow-destructive: false
+    delete-extra-gsi: false # 필요 시 true
+    copy-data: false        # 재생성 시 데이터 보존 필요 시 true
+    max-item-count: 10000

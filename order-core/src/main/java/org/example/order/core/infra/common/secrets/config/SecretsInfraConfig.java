@@ -4,7 +4,7 @@ import org.example.order.core.infra.common.secrets.client.SecretsKeyClient;
 import org.example.order.core.infra.common.secrets.listener.SecretKeyRefreshListener;
 import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.common.secrets.manager.SecretsLoader;
-import org.example.order.core.infra.common.secrets.props.SecretsManagerProperties;
+import org.example.order.core.infra.common.secrets.config.properties.SecretsManagerProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,25 +25,23 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Secrets 인프라 통합 구성
- * - aws.secrets-manager.enabled=true 일 때만 활성
- * - region/endpoint/credential 은 aws 최상위에서 가져오고,
- * secrets 전용 옵션은 aws.secrets-manager.* 블록에서 읽는다.
+ * [요약]
+ * - aws.secrets-manager.enabled=true 일 때만 활성화되는 시크릿 인프라 구성.
+ * - AWS SDK 클라이언트, 로더, 리졸버, 클라이언트 래퍼를 빈으로 제공.
+ * - 스케줄러는 옵션(주기 갱신), LocalStack일 때 부트스트랩 허용.
+ * <p>
+ * [핵심 포인트]
+ * - 운영선 자동 최신 반영을 피하려면 Initializer 쪽에서 allowLatest=false로 선택 정책만 갱신.
+ * - 본 구성파일은 부팅/로딩 파이프라인만 담당하고, 실제 키 선택은 Resolver/Initializer가 담당.
  */
 @Configuration(proxyBeanMethods = false)
 @Import({SecretsInfraConfig.Core.class, SecretsInfraConfig.AwsLoader.class})
 public class SecretsInfraConfig {
 
-    /**
-     * Core 레이어:
-     * - 전체 게이트: aws.secrets-manager.enabled=true
-     * - 프로퍼티 자동 바인딩 + Resolver/Client 등록
-     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(name = "aws.secrets-manager.enabled", havingValue = "true")
     @EnableConfigurationProperties(SecretsManagerProperties.class)
     public static class Core {
-
         @Bean
         @ConditionalOnMissingBean
         public SecretsKeyResolver secretsKeyResolver() {
@@ -57,11 +55,6 @@ public class SecretsInfraConfig {
         }
     }
 
-    /**
-     * AWS 로더 레이어:
-     * - AWS SDK 클래스가 존재할 때만 활성
-     * - Core에서 이미 enabled 조건이 걸려 있음
-     */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(name = "aws.secrets-manager.enabled", havingValue = "true")
     @ConditionalOnClass(SecretsManagerClient.class)
@@ -71,65 +64,47 @@ public class SecretsInfraConfig {
         @ConditionalOnMissingBean
         public SecretsManagerClient secretsManagerClient(SecretsManagerProperties props) {
             String regionStr = Optional.ofNullable(props.getRegion())
-                    .filter(s -> !s.isBlank())
-                    .orElse("ap-northeast-2");
+                    .filter(s -> !s.isBlank()).orElse("ap-northeast-2");
+            SecretsManagerClientBuilder b = SecretsManagerClient.builder().region(Region.of(regionStr));
 
-            SecretsManagerClientBuilder builder = SecretsManagerClient.builder()
-                    .region(Region.of(regionStr));
-
+            // LocalStack 등 엔드포인트 오버라이드
             if (props.getEndpoint() != null && !props.getEndpoint().isBlank()) {
-                builder = builder.endpointOverride(URI.create(props.getEndpoint()));
+                b = b.endpointOverride(URI.create(props.getEndpoint()));
             }
 
+            // 정적 크리덴셜(로컬/테스트) vs 기본 프로바이더(운영)
             if (props.getCredential() != null && props.getCredential().isEnabled()) {
-                builder = builder.credentialsProvider(
-                        StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(
-                                        props.getCredential().getAccessKey(),
-                                        props.getCredential().getSecretKey()
-                                )
-                        )
-                );
+                b = b.credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(props.getCredential().getAccessKey(), props.getCredential().getSecretKey())));
             } else {
-                builder = builder.credentialsProvider(DefaultCredentialsProvider.create());
+                b = b.credentialsProvider(DefaultCredentialsProvider.create());
             }
 
-            return builder.build();
+            return b.build();
         }
 
-        /**
-         * 로더 전용 스케줄러
-         * - "aws.secrets-manager.scheduler-enabled=true" 일 때만 생성
-         * - 이미 다른 TaskScheduler 빈이 있으면 그것을 사용, 없을 때만 1-스레드 생성
-         */
         @Bean
         @ConditionalOnProperty(name = "aws.secrets-manager.scheduler-enabled", havingValue = "true")
         @ConditionalOnMissingBean(TaskScheduler.class)
         public TaskScheduler secretsTaskScheduler() {
-            ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-            scheduler.setPoolSize(1);
-            scheduler.setThreadNamePrefix("secrets-");
-            scheduler.initialize();
+            ThreadPoolTaskScheduler s = new ThreadPoolTaskScheduler();
+            s.setPoolSize(1);
+            s.setThreadNamePrefix("secrets-");
+            s.initialize();
 
-            return scheduler;
+            return s;
         }
 
         @Bean
         @ConditionalOnMissingBean
         public SecretsLoader secretsLoader(
                 SecretsManagerProperties props,
-                SecretsKeyResolver secretsKeyResolver,
-                SecretsManagerClient secretsManagerClient,
-                List<SecretKeyRefreshListener> refreshListeners,
-                ObjectProvider<TaskScheduler> taskSchedulerProvider
+                SecretsKeyResolver resolver,
+                SecretsManagerClient client,
+                List<SecretKeyRefreshListener> listeners,
+                ObjectProvider<TaskScheduler> scheduler
         ) {
-            return new SecretsLoader(
-                    props,
-                    secretsKeyResolver,
-                    secretsManagerClient,
-                    refreshListeners,
-                    taskSchedulerProvider.getIfAvailable()
-            );
+            return new SecretsLoader(props, resolver, client, listeners, scheduler.getIfAvailable());
         }
     }
 }

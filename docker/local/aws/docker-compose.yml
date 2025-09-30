@@ -1,6 +1,7 @@
 services:
   localstack:
     image: localstack/localstack:3
+    container_name: aws-localstack-1
     restart: unless-stopped
     ports:
       - "${LOCALSTACK_PORT:-4566}:4566"
@@ -13,6 +14,7 @@ services:
     volumes:
       - localstack_data:/var/lib/localstack
       - ./localstack/init/ready.d:/etc/localstack/init/ready.d:ro
+      - /var/run/docker.sock:/var/run/docker.sock  # fix: enable Docker SDK client (Lambda/ECS, etc.)
     healthcheck:
       test: [ "CMD-SHELL", "curl -fsS http://localhost:4566/_localstack/health | grep -q '\"initialized\": true'" ]
       interval: 5s
