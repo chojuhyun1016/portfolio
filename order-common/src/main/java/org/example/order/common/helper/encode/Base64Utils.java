@@ -40,6 +40,34 @@ public class Base64Utils {
         return URL_ENCODER.encodeToString(input);
     }
 
+    // Base64/URL-safe + 패딩 자동 보정
+    public static byte[] decodeFlexible(String s) {
+        if (s == null) {
+            return null;
+        }
+
+        String t = s.trim();
+
+        // URL-safe면 표준 문자로 치환
+        if (t.indexOf('_') >= 0 || t.indexOf('-') >= 0) {
+            t = t.replace('-', '+').replace('_', '/');
+        }
+
+        // 패딩 보정 (길이를 4의 배수로)
+        int mod = t.length() % 4;
+
+        if (mod == 2) {
+            t += "==";
+        } else if (mod == 3) {
+            t += "=";
+        } else if (mod != 0 && mod != 2 && mod != 3) {
+            // (mod==1 같은 비정상 길이)
+            throw new IllegalArgumentException("Invalid base64 length: " + t.length());
+        }
+
+        return Base64.getDecoder().decode(t);
+    }
+
     public static byte[] decodeUrlSafe(String base64Url) {
         return URL_DECODER.decode(base64Url);
     }

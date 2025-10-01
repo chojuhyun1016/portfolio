@@ -23,7 +23,6 @@ sourceSets {
         java.srcDir 'src/integrationTest/java'
         resources.srcDir 'src/integrationTest/resources'
 
-        // [변경] classpath 정렬: main + runtimeClasspath + testRuntimeClasspath
         compileClasspath += sourceSets.main.output + configurations.runtimeClasspath + configurations.testRuntimeClasspath
         runtimeClasspath += output + compileClasspath
     }
@@ -67,26 +66,28 @@ dependencies {
     implementation(libs.awsS3v1)
     runtimeOnly(libs.awsMysqlJdbc)
 
+    // AWS SDK v2 BOM + Secrets Manager
+    implementation(platform(libs.awsBomV2))
+    implementation(libs.awsSecretsManager)
+
     // Lombok / Config Processor
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.springBootConfigProcessor)
 
-    // ===== Unit Test =====
+    // Unit Test
     testImplementation(libs.springBootStarterTest)   // JUnit/Assertions/Mockito 포함
     testImplementation(libs.springKafkaTest)         // EmbeddedKafka 등
     testRuntimeOnly(libs.h2)
 
-    // ===== Integration Test =====
-    // [변경] 일부 환경에서 configurations.* 접근 시점 경고가 있을 수 있으나, 기존 작성 방식을 유지합니다.
+    // Integration Test
     configurations.integrationTestImplementation.extendsFrom configurations.testImplementation
     configurations.integrationTestRuntimeOnly.extendsFrom configurations.testRuntimeOnly
 
-    // [추가] 통합 테스트에서도 Spring Test/JUnit/Kafka Test를 명시적으로 보장
     integrationTestImplementation(libs.springBootStarterTest)
     integrationTestImplementation(libs.springKafkaTest)
 
-    // (옵션) Testcontainers — 필요 시만 사용
+    // [옵션] Testcontainers — 필요 시만 사용
     integrationTestImplementation(platform(libs.testcontainersBom))
     integrationTestImplementation(libs.testcontainers)
     integrationTestImplementation(libs.testcontainersJunit)
@@ -122,8 +123,7 @@ test {
     systemProperty "junit.jupiter.execution.parallel.mode.default", "concurrent"
 }
 
-// ===== integrationTest 태스크 =====
-// [변경] 루트에서 이미 만들었을 수 있으므로, 있으면 설정만(named), 없으면 새로 등록(register)
+// integrationTest 태스크
 def hasIntegrationTask = tasks.findByName('integrationTest') != null
 
 if (hasIntegrationTask) {

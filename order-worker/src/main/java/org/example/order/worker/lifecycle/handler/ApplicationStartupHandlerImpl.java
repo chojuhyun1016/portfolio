@@ -60,43 +60,51 @@ public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler,
             final String folder = s3Properties.getS3().getDefaultFolder();
             final Path logDir = Paths.get(LOG_DIRECTORY);
 
-            // 1-1) 로그 디렉터리 보장
+            // 1-1) 로그 디렉터리 보장 (설정 경로만 사용, 폴백 없음)
             try {
                 if (Files.notExists(logDir)) {
                     Files.createDirectories(logDir);
-
                     log.info("[Startup] 로그 디렉터리 생성: {}", logDir.toAbsolutePath());
                 } else if (!Files.isDirectory(logDir)) {
                     log.warn("[Startup] 지정 경로가 디렉터리가 아님. 스킵. path: {}", logDir.toAbsolutePath());
-                } else {
-                    // 1-2) 기존 파일 업로드
-                    AtomicLong success = new AtomicLong();
-                    AtomicLong failed = new AtomicLong();
 
-                    try (Stream<Path> paths = Files.walk(logDir)) {
-                        paths.filter(Files::isRegularFile).forEach(path -> {
-                            try {
-                                s3LogSyncEventService.syncFileToS3(bucket, folder, path);
-                                success.incrementAndGet();
-                            } catch (Exception ex) {
-                                failed.incrementAndGet();
-
-                                log.error("[Startup] 업로드 실패. path:{}, bucket:{}, folder:{}", path, bucket, folder, ex);
-                            }
-                        });
-
-                        log.info("[Startup] S3 초기 동기화 완료. 성공:{}건, 실패:{}건, 디렉터리:{}",
-                                success.get(), failed.get(), logDir.toAbsolutePath());
-                    } catch (IOException e) {
-                        log.error("[Startup] 파일 순회 실패. file_path:{}, bucket:{}, folder:{}",
-                                LOG_DIRECTORY, bucket, folder, e);
-                    } catch (Exception e) {
-                        log.error("[Startup] 알 수 없는 실패. file_path:{}, bucket:{}, folder:{}",
-                                LOG_DIRECTORY, bucket, folder, e);
-                    }
+                    return;
                 }
+            } catch (FileSystemException fse) {
+                log.warn("[Startup] 로그 디렉터리 생성 불가(읽기 전용/권한 등). 업로드 스킵. path:{}, cause={}",
+                        logDir.toAbsolutePath(), fse.toString());
+
+                return;
+            } catch (IOException ioe) {
+                log.warn("[Startup] 로그 디렉터리 준비 실패. 업로드 스킵. path:{}, cause={}",
+                        logDir.toAbsolutePath(), ioe.toString());
+
+                return;
+            }
+
+            // 1-2) 기존 파일 업로드
+            AtomicLong success = new AtomicLong();
+            AtomicLong failed = new AtomicLong();
+
+            try (Stream<Path> paths = Files.walk(logDir)) {
+                paths.filter(Files::isRegularFile).forEach(path -> {
+                    try {
+                        s3LogSyncEventService.syncFileToS3(bucket, folder, path);
+                        success.incrementAndGet();
+                    } catch (Exception ex) {
+                        failed.incrementAndGet();
+                        log.error("[Startup] 업로드 실패. path:{}, bucket:{}, folder:{}", path, bucket, folder, ex);
+                    }
+                });
+
+                log.info("[Startup] S3 초기 동기화 완료. 성공:{}건, 실패:{}건, 디렉터리:{}",
+                        success.get(), failed.get(), logDir.toAbsolutePath());
             } catch (IOException e) {
-                log.error("[Startup] 로그 디렉터리 준비 실패. file_path:{}", LOG_DIRECTORY, e);
+                log.error("[Startup] 파일 순회 실패. file_path:{}, bucket:{}, folder:{}",
+                        logDir.toAbsolutePath(), bucket, folder, e);
+            } catch (Exception e) {
+                log.error("[Startup] 알 수 없는 실패. file_path:{}, bucket:{}, folder:{}",
+                        logDir.toAbsolutePath(), bucket, folder, e);
             }
         }
 
@@ -109,7 +117,7 @@ public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler,
 
                 log.info("[Startup] 암호화 키 시딩 완료(allowLatest=false).");
             } else {
-                log.info("[Startup] CryptoKeySelectionApplier 미제공 → 키 시딩 스킵");
+                log.info("[Startup] CryptoKeySelectionApplier 미제공 -> 키 시딩 스킵");
             }
         } catch (Exception e) {
             log.error("[Startup] 암호화 키 시딩 실패(부팅 계속).", e);

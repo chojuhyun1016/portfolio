@@ -1,6 +1,5 @@
 package org.example.order.core.infra.crypto.algorithm.encryptor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.helper.encode.Base64Utils;
 import org.example.order.core.infra.crypto.constant.CryptoAlgorithmType;
@@ -10,33 +9,31 @@ import org.example.order.core.infra.crypto.exception.EncryptException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * AES-256 CBC Encryptor
  * - 키는 외부에서 setKey(base64)로 주입
  * - SecretsKeyResolver 등 외부 키 매니저에 의존하지 않음
+ * - 포맷: "v1:" + Base64( IV(16B) || CIPHER )
  */
 @Slf4j
 public class Aes256Encryptor implements Encryptor {
 
     private static final int KEY_LENGTH = 32;  // 256-bit
     private static final int IV_LENGTH = 16;
-    private static final byte VERSION = 0x01;
+    private static final String PREFIX = "v1:";
 
     private final SecureRandom random = new SecureRandom();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private byte[] key;
 
     /**
-     * 외부에서 Base64(URL-safe) 키를 주입
+     * 외부에서 Base64(표준) 키를 주입
      */
     @Override
     public void setKey(String base64Key) {
         try {
-            byte[] k = Base64Utils.decodeUrlSafe(base64Key);
+            byte[] k = Base64Utils.decode(base64Key);
 
             if (k == null || k.length != KEY_LENGTH) {
                 throw new IllegalArgumentException("AES-256 key must be exactly 32 bytes.");
@@ -54,7 +51,7 @@ public class Aes256Encryptor implements Encryptor {
      * AES-256 CBC 방식으로 평문 암호화
      *
      * @param plainText 평문
-     * @return JSON 형식의 암호화 결과
+     * @return 콤팩트 형식의 암호화 결과: "v1:" + Base64(IV||CIPHER)
      */
     @Override
     public String encrypt(String plainText) {
@@ -66,38 +63,43 @@ public class Aes256Encryptor implements Encryptor {
 
             byte[] cipher = Aes256Engine.encrypt(plainText.getBytes(StandardCharsets.UTF_8), key, iv);
 
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("alg", "AES-CBC");
-            payload.put("ver", VERSION);
-            payload.put("iv", Base64Utils.encodeUrlSafe(iv));
-            payload.put("cipher", Base64Utils.encodeUrlSafe(cipher));
+            byte[] pack = new byte[IV_LENGTH + cipher.length];
+            System.arraycopy(iv, 0, pack, 0, IV_LENGTH);
+            System.arraycopy(cipher, 0, pack, IV_LENGTH, cipher.length);
 
-            return objectMapper.writeValueAsString(payload);
+            return PREFIX + Base64Utils.encode(pack);
         } catch (Exception e) {
             throw new EncryptException("AES-256 encryption failed", e);
         }
     }
 
     /**
-     * JSON 형식의 암호화 데이터를 복호화
+     * 콤팩트 형식의 암호화 데이터를 복호화
      *
-     * @param json 암호화된 JSON 문자열
+     * @param token "v1:" + Base64(IV||CIPHER)
      * @return 복호화된 평문
      */
     @Override
-    public String decrypt(String json) {
+    public String decrypt(String token) {
         ensureReady();
 
         try {
-            Map<String, Object> payload = objectMapper.readValue(json, Map.class);
-            byte version = Byte.parseByte(String.valueOf(payload.get("ver")));
-
-            if (version != VERSION) {
-                throw new DecryptException("Unsupported AES-256 encryption version: " + version);
+            if (token == null || !token.startsWith(PREFIX)) {
+                throw new DecryptException("Unknown/unsupported token format");
             }
 
-            byte[] iv = Base64Utils.decodeUrlSafe(String.valueOf(payload.get("iv")));
-            byte[] cipher = Base64Utils.decodeUrlSafe(String.valueOf(payload.get("cipher")));
+            String b64 = token.substring(PREFIX.length());
+            byte[] pack = Base64Utils.decode(b64);
+
+            if (pack.length <= IV_LENGTH) {
+                throw new DecryptException("invalid token length");
+            }
+
+            byte[] iv = new byte[IV_LENGTH];
+            byte[] cipher = new byte[pack.length - IV_LENGTH];
+            System.arraycopy(pack, 0, iv, 0, IV_LENGTH);
+            System.arraycopy(pack, IV_LENGTH, cipher, 0, cipher.length);
+
             byte[] plain = Aes256Engine.decrypt(cipher, key, iv);
 
             return new String(plain, StandardCharsets.UTF_8);

@@ -23,6 +23,6 @@ public class CryptoKeySpec {
     private String key;        // 필수: Base64(또는 URL-safe)
 
     public byte[] decodeKey() {
-        return Base64Utils.decode(key);
+        return Base64Utils.decodeFlexible(key);
     }
 }

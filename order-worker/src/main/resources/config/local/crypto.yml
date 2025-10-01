@@ -8,15 +8,15 @@ app:
     keys:
       orderAesGcm:
         alias: "order.aesgcm"
-        encryptor: "AESGCM"
+        encryptor: "AES-GCM"
         kid: "key-2025-09-27"   # Secrets JSON에서 kid=key-2025-09-27 사용
       orderAes256:
         alias: "order.aes256"
-        encryptor: "AES256"
+        encryptor: "AES-256"
         version: 3              # kid 대신 version=3 사용
       orderAes128:
         alias: "order.aes128"
-        encryptor: "AES128"
+        encryptor: "AES-128"
         version: 2              # 최신 버전 2 사용
       orderHmac:
         alias: "order.hmac"

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.application.order.dto.internal.LocalOrderDto;
 import org.example.order.core.application.order.mapper.OrderMapper;
+import org.example.order.core.infra.crypto.algorithm.encryptor.AesGcmEncryptor;
 import org.example.order.core.infra.persistence.order.redis.RedisRepository;
 import org.example.order.domain.common.id.IdGenerator;
 import org.example.order.domain.order.entity.OrderDynamoEntity;
@@ -44,6 +45,8 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     private static final long ORDER_ID_OFFSET = 1_000_000_000_000L;
     private static final long ORDER_PRICE_DELTA = 5_000L;
     private static final String ORDER_NUMBER_SUFFIX = "-JPA";
+
+    private final AesGcmEncryptor aesGcmEncryptor;
 
     @Override
     public List<OrderEntity> bulkInsert(List<LocalOrderDto> dtoList) {
@@ -171,7 +174,26 @@ public class OrderCrudServiceImpl implements OrderCrudService {
                     continue;
                 }
 
-                orderDynamoRepository.save(toDynamo(d));
+                OrderDynamoEntity e = toDynamo(d);
+
+                if (d.getOrderPrice() != null) {
+                    String enc = aesGcmEncryptor.encrypt(String.valueOf(d.getOrderPrice())); // "v1:BASE64(...)"
+                    e.setOrderPriceEnc(enc);
+
+                    String prefix = enc.substring(0, Math.min(18, enc.length()));
+                    String rest = enc.length() > 18 ? enc.substring(18) : "";
+
+                    log.info("[DYNAMO][PRICE][ENC] orderId={} enc.prefix={} enc.rest={}", safeId(d), prefix, rest);
+                }
+
+                orderDynamoRepository.save(e);
+
+                if (e.getOrderPriceEnc() != null) {
+                    String decStr = aesGcmEncryptor.decrypt(e.getOrderPriceEnc());
+                    long dec = Long.parseLong(decStr);
+
+                    log.info("[DYNAMO][PRICE][DEC] orderId={} price.dec={}", safeId(d), dec);
+                }
             } catch (Throwable t) {
                 log.error("[DYNAMO][UPSERT][SKIP] orderId={} cause={}", safeId(d), t.toString());
             }
@@ -284,7 +306,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     /**
-     * LocalOrderDto → Dynamo 저장용 매핑
+     * LocalOrderDto -> Dynamo 저장용 매핑
      */
     private static OrderDynamoEntity toDynamo(LocalOrderDto d) {
         OrderDynamoEntity e = new OrderDynamoEntity();

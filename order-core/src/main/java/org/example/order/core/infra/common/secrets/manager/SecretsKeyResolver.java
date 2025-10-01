@@ -1,5 +1,7 @@
 package org.example.order.core.infra.common.secrets.manager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.infra.common.secrets.model.CryptoKeySpecEntry;
 
@@ -22,10 +24,10 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class SecretsKeyResolver {
 
-    // alias → 전체 키 스냅샷(여러 버전/여러 kid 가능)
+    // alias -> 전체 키 스냅샷(여러 버전/여러 kid 가능)
     private final Map<String, List<CryptoKeySpecEntry>> store = new ConcurrentHashMap<>();
 
-    // alias → 현재 선택된 키(운영 정책에 따라 kid 또는 version으로 핀)
+    // alias -> 현재 선택된 키(운영 정책에 따라 kid 또는 version으로 핀)
     private final Map<String, AtomicReference<CryptoKeySpecEntry>> pointer = new ConcurrentHashMap<>();
 
     /**
@@ -40,7 +42,22 @@ public class SecretsKeyResolver {
         store.put(alias, entries);
         pointer.putIfAbsent(alias, new AtomicReference<>());
 
-        log.info("[Secrets] snapshot set: alias={}, size={}", alias, entries.size());
+        try {
+            // [보안] 키 바이트는 절대 로그에 남기지 않음: 메타 정보만 출력
+            var meta = entries.stream()
+                    .map(e -> Map.of(
+                            "kid", e.getKid(),
+                            "version", e.getVersion(),
+                            "algorithm", e.getAlgorithm()
+                    ))
+                    .toList();
+
+            log.info("[Secrets] snapshot set: alias={}, size={}, meta={}",
+                    alias, entries.size(), new ObjectMapper().writeValueAsString(meta));
+        } catch (JsonProcessingException e) {
+            log.warn("[Secrets] snapshot set: alias={}, size={}, meta=<<json serialization failed>>",
+                    alias, entries.size(), e);
+        }
     }
 
     /**

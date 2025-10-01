@@ -3,7 +3,6 @@ set -euo pipefail
 
 echo "[bootstrap] start"
 
-# -------- util: retry --------
 retry() {
   local tries=${1:-20}; shift
   local i=0
@@ -17,71 +16,69 @@ retry() {
   return 0
 }
 
-# -------- S3 --------
 BUCKET="my-local-bucket"
 PREFIX="logs"
 awslocal s3 mb "s3://${BUCKET}" >/dev/null 2>&1 || true
 echo "" | awslocal s3 cp - "s3://${BUCKET}/${PREFIX}/__init" >/dev/null 2>&1 || true
 echo "[bootstrap] S3 ready: s3://${BUCKET}/${PREFIX}/"
 
-# -------- Secrets Manager --------
 SECRET_NAME="myapp/secret-key"
 
+# 표준 Base64만 사용(+,/ 포함, = 패딩 포함) / 길이 규약 충족
 SECRET_JSON=$(cat <<'JSON'
 {
   "order.aesgcm": [
     {
-      "kid": "key-2025-09-27",
-      "version": 2,
-      "algorithm": "AES-256-GCM",
-      "key": "qC8y3g7b6cJ1nJcL2mJY8j2jvQbqJp2J0J2bqQzq3rA"
-    },
-    {
       "kid": "key-2024-12-01",
       "version": 1,
-      "algorithm": "AES-256-GCM",
-      "key": "r9QbVgYg0rYd8mQ0XvJqf1mGxw2nQy7jJbJ3Wz6u1hE"
+      "algorithm": "AES-GCM",
+      "key": "FyT8ax5/8VsXcHMOO7cIgJ5deAAODozcxBsF5FTqwFc="
+    },
+    {
+      "kid": "key-2025-09-27",
+      "version": 2,
+      "algorithm": "AES-GCM",
+      "key": "qqZJlZZKrHErb5pzzERMfOWCDBtAY8PGLegiv77oTVE="
     }
   ],
   "order.aes256": {
     "kid": "key-2025-07-01",
     "version": 3,
     "algorithm": "AES-256",
-    "key": "Zl1u0dUu3UeOe9oS6u4xSx1m3mK6jvKfJ2oJ8sWc0nQ"
+    "key": "wKcFnY/2rCzOj2u9TUdVRc7rWhjWvXjJUpkbSC0sVng="
   },
   "order.aes128": [
-    {
-      "kid": "key-2025-03-15",
-      "version": 2,
-      "algorithm": "AES-128",
-      "key": "m3Qe7fK0dU9pWc2Lx4q7n0sVg9bJ2rQ5"
-    },
     {
       "kid": "key-2024-10-01",
       "version": 1,
       "algorithm": "AES-128",
-      "key": "b1N8wL3pQ7rT2yF5k9H0sD4u"
+      "key": "omfKYUPHyx37KLCLnUI41Q=="
+    },
+    {
+      "kid": "key-2025-03-15",
+      "version": 2,
+      "algorithm": "AES-128",
+      "key": "fsiw3PLOHd7wTeOr/+0BFg=="
     }
   ],
   "order.hmac": [
     {
-      "kid": "key-2025-01-10",
-      "version": 5,
-      "algorithm": "HMAC-SHA256",
-      "key": "Q0uN8yJk3wT1sV7rM2pL6aX4hE9cB5dF0gR2kL8m"
-    },
-    {
       "kid": "key-2024-05-20",
       "version": 4,
-      "algorithm": "HMAC-SHA256",
-      "key": "hD3kL8pQ1rS7uV2wM6nX4eC9bF5dG0tR2yK8mL1a"
+      "algorithm": "HMAC_SHA256",
+      "key": "SSxjtbndxbEgbV/F69+YeNFP9RNik5Lp2NLhSqTuxaA="
+    },
+    {
+      "kid": "key-2025-01-10",
+      "version": 5,
+      "algorithm": "HMAC_SHA256",
+      "key": "8kHG7TfGbAvQjg4n90c8mFMDA30gYgzZ+BstB5Bwp+c="
     }
   ]
 }
 JSON
 )
 
-# 서비스 준비 대기(최대 20초)
 if retry 20 awslocal secretsmanager list-secrets >/dev/null 2>&1; then
   if awslocal secretsmanager describe-secret --secret-id "${SECRET_NAME}" >/dev/null 2>&1; then
     awslocal secretsmanager put-secret-value \

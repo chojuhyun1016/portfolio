@@ -16,6 +16,8 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -40,7 +42,7 @@ public class ApplicationShutdownHandlerImpl implements ApplicationShutdownHandle
 
     // === 암호화/시크릿 정리용 의존성 (선택 주입) ===
     private final ObjectProvider<SecretsLoader> secretsLoaderProvider;
-    private final ObjectProvider<AutoCloseable> secretsManagerClientProvider;
+    private final ObjectProvider<SecretsManagerClient> secretsManagerClientProvider;
     private final ObjectProvider<SecretsKeyResolver> secretsKeyResolverProvider;
 
     private Boolean isRunning = false;
@@ -114,8 +116,7 @@ public class ApplicationShutdownHandlerImpl implements ApplicationShutdownHandle
         }
 
         try {
-            AutoCloseable client = secretsManagerClientProvider.getIfAvailable();
-
+            SecretsManagerClient client = secretsManagerClientProvider.getIfAvailable();
             if (client != null) {
                 client.close();
 
@@ -160,6 +161,6 @@ public class ApplicationShutdownHandlerImpl implements ApplicationShutdownHandle
 
     @Override
     public int getPhase() {
-        return Integer.MIN_VALUE;
+        return Integer.MAX_VALUE;
     }
 }

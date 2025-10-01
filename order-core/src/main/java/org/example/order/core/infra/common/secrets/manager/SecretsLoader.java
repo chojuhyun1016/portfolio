@@ -219,7 +219,10 @@ public class SecretsLoader {
             URI u = URI.create(ep);
             String h = u.getHost() == null ? "" : u.getHost();
 
-            return h.equals("localhost") || h.equals("127.0.0.1");
+            return "localhost".equals(h)
+                    || "127.0.0.1".equals(h)
+                    || "localstack".equals(h)
+                    || h.endsWith(".localstack.cloud");
         } catch (Exception ignore) {
             return false;
         }

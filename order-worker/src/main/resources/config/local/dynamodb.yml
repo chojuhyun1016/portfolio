@@ -8,23 +8,34 @@
 # - migration-location: 마이그레이션 리소스 위치(테이블 생성)
 # - seed-location: 시드 리소스 위치(데이터 생성)
 # - create-missing-gsi: 기존 테이블이 있을 경우, 누락된 GSI만 UpdateTable로 추가(LSI는 생성 시점에만 가능)
+# - 권장: 로컬에서는 안전 변경(누락 GSI 추가)만 자동 반영, 위험 변경(PK/LSI/GSI 키·프로젝션 변경)은 DRY-RUN 유지
 dynamodb:
   enabled: true
   endpoint: "http://localhost:4566"
-  region: "ap-northeast-2"
+  region: "ap-northeast-2"   # 로컬은 임의 리전 가능(예: us-east-1 / ap-northeast-2)
   access-key: "local"
   secret-key: "local"
   table-name: "order_dynamo"
 
-  auto-create: true
+  auto-create: true                          # 로컬에서만 테이블/인덱스 생성 + 시드
   migration-location: classpath:dynamodb/migration
   seed-location: classpath:dynamodb/seed
-  create-missing-gsi: true
+  create-missing-gsi: true                   # 누락된 GSI는 안전 변경으로 자동 추가
 
   schema-reconcile:
-    enabled: true
-    dry-run: true           # 기본 DRY-RUN(위험 변경 로그만)
-    allow-destructive: false
-    delete-extra-gsi: false # 필요 시 true
-    copy-data: false        # 재생성 시 데이터 보존 필요 시 true
-    max-item-count: 10000
+    enabled: true                            # 드리프트 감지/조정 사용(로컬 전용 권장)
+    dry-run: true                            # 기본 DRY-RUN(위험 변경은 로그만 출력)
+    allow-destructive: false                 # 파괴적 재생성(드롭&리크리에이트) 금지
+    delete-extra-gsi: false                  # 마이그레이션에 없는 GSI 자동 삭제 금지(명시적 전환 권장)
+    copy-data: false                         # 재생성 시 데이터 복사 비활성(실험 시에만 켜기)
+    max-item-count: 10000                    # copy-data=true일 때 복사 허용 상한
+
+  # ===== [선택] 로컬 실험용 토글(필요 시 주석 해제 후 사용) =====
+  #  - 위험 변경을 실제 반영해야 하는 실험에서만 잠시 켜고, 테스트 후 반드시 되돌리세요.
+  # schema-reconcile:
+  #   enabled: true
+  #   dry-run: false                          # 실제 변경 수행
+  #   allow-destructive: true                 # 테이블 재빌드 허용(데이터 유실 주의)
+  #   copy-data: true                         # 재빌드시 임시 테이블 경유 데이터 복사
+  #   max-item-count: 100000                  # 복사 상한 증설(테스트 용량에 맞게)
+  #   delete-extra-gsi: true                  # 여분 GSI 제거(실험에서만 권장)
