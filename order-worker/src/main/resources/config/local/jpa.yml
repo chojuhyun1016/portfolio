@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: update      # local
+      ddl-auto: none      # local
       # ddl-auto: validate  # dev, beta, prod
     open-in-view: false
     properties:

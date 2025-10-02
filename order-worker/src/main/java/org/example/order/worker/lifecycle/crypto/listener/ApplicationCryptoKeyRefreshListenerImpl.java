@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@Profile({"local", "dev", "beta", "prod"})
 @RequiredArgsConstructor
 public class ApplicationCryptoKeyRefreshListenerImpl implements SecretKeyRefreshListener {
 
@@ -27,6 +26,7 @@ public class ApplicationCryptoKeyRefreshListenerImpl implements SecretKeyRefresh
     public void onSecretKeyRefreshed() {
         // 자동 반영 금지(운영 안정성)
          applier.applyAll(false);
+
         log.info("[Secrets] 키 리프레시 이벤트 수신(자동 적용 금지). 운영 승인 시 별도 경로에서 applyAll(true) 호출 권장.");
     }
 }

@@ -6,7 +6,7 @@ services:
       MYSQL_DATABASE: order_local
       MYSQL_USER: order
       MYSQL_PASSWORD: order1234
-      TZ: Asia/Seoul
+      TZ: UTC
     ports:
       - "3306:3306"
     healthcheck:

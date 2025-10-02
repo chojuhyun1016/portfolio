@@ -113,9 +113,7 @@ public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler,
             CryptoKeySelectionApplier applier = cryptoKeySelectionApplierProvider.getIfAvailable();
 
             if (applier != null) {
-                applier.applyAll(false);
-
-                log.info("[Startup] 암호화 키 시딩 완료(allowLatest=false).");
+                log.info("[Startup] 암호화 키 시딩은 리스너 경유로 처리(allowLatest=false).");
             } else {
                 log.info("[Startup] CryptoKeySelectionApplier 미제공 -> 키 시딩 스킵");
             }
