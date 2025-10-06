@@ -51,6 +51,12 @@ dependencies {
     // AWS S3 SDK v1
     implementation(libs.awsS3v1)
 
+    // Spring Boot AutoConfiguration
+    compileOnly(libs.springBootAutoconfigure)
+
+    // Config Processor(애노테이션 프로세서)
+    annotationProcessor(libs.springBootConfigProcessor)
+
     // Bean Validation
     implementation(libs.springBootStarterValidation)
 

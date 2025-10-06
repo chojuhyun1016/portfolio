@@ -1,6 +1,8 @@
 package org.example.order.core.support.mapping.config;
 
 import org.example.order.common.helper.datetime.DateTimeUtils;
+import org.example.order.core.support.mapping.TimeMapper;
+import org.example.order.core.support.mapping.TimeProvider;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.MapperConfig;
 import org.mapstruct.NullValueCheckStrategy;
@@ -20,7 +22,8 @@ import java.time.LocalDateTime;
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
         injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        imports = {DateTimeUtils.class, LocalDateTime.class}
+        imports = {DateTimeUtils.class, LocalDateTime.class},
+        uses = {TimeMapper.class, TimeProvider.class}
 )
 public interface AppMappingConfig {
 }

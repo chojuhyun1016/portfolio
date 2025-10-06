@@ -7,18 +7,28 @@ Local → Api → Crud → Remote로 이어지는 메시지 흐름을 **리스�
 
 ---
 
+## 변경 요약(본 문서 반영)
+
+- **Mapper 자동 구성(오토컨피그)**: `order-core`에 `ApplicationAutoConfiguration`(application/config)을 추가하고, 서비스별 매퍼 구성(예: `application/order/mapper/config/OrderMapperConfig`)을 **통합 임포트**하여 **앱 모듈에서 별도 스캔/임포트 없이 자동 등록**됩니다.
+- **OrderWorkerConfig 정리**: 외부 모듈 패키지 직접 스캔 제거. **S3/Kafka/Mapper 오토컨피그를 @ImportAutoConfiguration 라인업에서 명시**합니다.
+- **MapStruct 시간 의존성 개선**: `TimeProvider` 도입. `OrderMapper.toOrderLocalMessage(command)`는 **하위 호환 오버로드 유지**, 테스트에서는 `(command, timeProvider)`로 고정 시각 주입 가능.
+- **Kafka MDC 배치 대응**: 배치 리스너에 **BatchInterceptor** 적용(레코드/배치 모두 MDC 일관성 보장).
+
+---
+
 ## 1) 전체 구조
 
 | 레이어 | 주요 클래스 | 핵심 역할 |
 |---|---|---|
-| 부트스트랩/조립 | OrderWorkerApplication, OrderWorkerConfig | 앱 구동, 코어·클라이언트 모듈 Import, 워커 패키지 스캔, ObjectMapper 기본 제공 |
+| 부트스트랩/조립 | OrderWorkerApplication, **OrderWorkerConfig** | 앱 구동, 코어·클라이언트 모듈 Import, 워커 패키지 스캔, ObjectMapper 기본 제공 |
 | 설정 | CustomSchedulerConfig, KafkaListenerTopicConfig | 스케줄러 스레드풀, MessageCategory → 토픽명 Bean 주입 |
 | **카프카(MDC)** | **KafkaMdcInterceptorConfig** | **컨슈머 인터셉터(Record/Batch)로 헤더 또는 payload.id → MDC(traceId/orderId) 복원/강제 세팅** |
 | 리스너 | OrderLocalMessageListenerImpl, OrderApiMessageListenerImpl, OrderCrudMessageListenerImpl | Kafka 수신, 수동 Ack, 오류 로그 |
 | 파사드 | OrderLocalMessageFacadeImpl, OrderApiMessageFacadeImpl, OrderCrudMessageFacadeImpl | 메시지 검증·변환·오케스트레이션·DLQ 분기 |
 | 서비스 | KafkaProducerServiceImpl, OrderWebClientServiceImpl, OrderCrudServiceImpl, OrderServiceImpl | Kafka 발행, WebClient 연동, DB 벌크, 메서드 타입 분기 |
-| S3 동기화 | S3LogSyncServiceImpl, ApplicationStartupHandlerImpl, ApplicationShutdownHandlerImpl, S3LogSyncSchedulerImpl | Pod 로그 S3 업로드, 기동/종료/주기 처리 (!local 프로파일) |
+| S3 동기화 | S3LogSyncServiceImpl, ApplicationStartupHandlerImpl, ApplicationShutdownHandlerImpl, S3LogSyncSchedulerImpl | Pod 로그 S3 업로드, 기동/종료/주기 처리(!local 프로파일) |
 | 예외/코드 | WorkerExceptionCode, DatabaseExecuteException | 표준 오류 코드, 실패 시나리오 표현 |
+| **매퍼 자동 구성** | **ApplicationAutoConfiguration(order-core)** | **Order 매퍼 자동 등록(AutoConfiguration.imports 기반)** |
 
 메시지 카테고리:
 - ORDER_LOCAL
@@ -28,8 +38,8 @@ Local → Api → Crud → Remote로 이어지는 메시지 흐름을 **리스�
 - ORDER_DLQ
 
 > **MDC 트레이싱 한눈에 보기**
-> - **프로듀서측(API 계열 모듈)**: `order-api-common` 의 `CommonKafkaProducerAutoConfiguration` 이 `MdcToHeaderProducerInterceptor` 를 자동 주입 → **MDC(traceId/orderId) → Kafka 헤더** 주입
-> - **컨슈머측(워커)**: 본 모듈의 `KafkaMdcInterceptorConfig` 가 `RecordInterceptor/BatchInterceptor` 를 모든 리스너 컨테이너 팩토리에 적용 → **Kafka 헤더 또는 ORDER_API payload.id → MDC 복원/강제 세팅**
+> - 프로듀서측(API 계열 모듈): `MdcToHeaderProducerInterceptor` 가 **MDC(traceId/orderId) → Kafka 헤더** 주입
+> - 컨슈머측(워커): `KafkaMdcInterceptorConfig` 가 `RecordInterceptor`/`BatchInterceptor` 를 모든 리스너 컨테이너 팩토리에 적용 → **Kafka 헤더 또는 payload.id → MDC 복원/강제 세팅**
 
 ---
 
@@ -66,14 +76,18 @@ OrderWorkerApplication
         }
     }
 
-OrderWorkerConfig
+OrderWorkerConfig  (오토컨피그 라인업 명시: S3/Kafka/매퍼)
 
     @Configuration
     @Import({
-        OrderCoreConfig.class,         // 코어 인프라(도메인/JPA/락/레디스 등)
-        KafkaModuleConfig.class,       // Kafka 클라이언트 모듈
-        S3ModuleConfig.class,          // S3 클라이언트 모듈
-        WebClientModuleConfig.class    // WebClient 모듈
+        OrderCoreConfig.class,        // 코어 인프라(도메인/JPA/락/레디스 등)
+        WebAutoConfiguration.class,   // WebClient 오토컨피그
+        TsidInfraConfig.class         // TSID
+    })
+    @ImportAutoConfiguration({
+        S3AutoConfiguration.class,            // S3 오토컨피그
+        KafkaAutoConfiguration.class,         // Kafka 오토컨피그
+        ApplicationAutoConfiguration.class    // order-core의 매퍼 통합 오토컨피그(자동 등록)
     })
     @ComponentScan(basePackages = {
         "org.example.order.worker.config",
@@ -81,7 +95,8 @@ OrderWorkerConfig
         "org.example.order.worker.facade",
         "org.example.order.worker.controller",
         "org.example.order.worker.listener",
-        "org.example.order.worker.lifecycle"
+        "org.example.order.worker.lifecycle",
+        "org.example.order.worker.crypto"
     })
     public class OrderWorkerConfig {
         @Bean
@@ -122,16 +137,23 @@ CustomSchedulerConfig (스케줄링 스레드풀)
         }
     }
 
-**KafkaMdcInterceptorConfig (컨슈머측 MDC 복원/강제 세팅)**
+KafkaMdcInterceptorConfig (컨슈머측 MDC 복원/강제 세팅)
 
-- 위치: `org.example.order.worker.config.KafkaMdcInterceptorConfig`
-- 역할: 모든 `ConcurrentKafkaListenerContainerFactory` 에 아래 인터셉터를 부착
-  - **RecordInterceptor**
-    - `ORDER_API` 토픽이면 **payload(JSON)의 `id` 값을 읽어 `MDC["traceId"]`/`MDC["orderId"]` 강제 세팅**
-    - 그 외 토픽은 **Kafka 헤더 `traceId`를 MDC로 복원**(payload 파싱 실패 시에도 헤더 fallback)
-  - **BatchInterceptor**
-    - 배치(예: CRUD)에서 **첫 레코드 헤더의 `traceId`를 MDC로 복원**
-- 버전 호환: 일부 Spring Kafka 버전에는 `getRecordInterceptor/getBatchInterceptor` 게터가 없어 **존재 여부 확인 없이 `set*Interceptor` 를 직접 적용**해도 무해
+- 위치: org.example.order.worker.config.KafkaMdcInterceptorConfig
+- 역할: 모든 ConcurrentKafkaListenerContainerFactory 에 아래 인터셉터를 부착
+  - RecordInterceptor
+    - ORDER_API 토픽이면 payload(JSON)의 id 값을 읽어 MDC["traceId"]/MDC["orderId"] 강제 세팅
+    - 그 외 토픽은 Kafka 헤더 traceId를 MDC로 복원(payload 파싱 실패 시에도 헤더 fallback)
+  - BatchInterceptor
+    - 배치(예: CRUD)에서 첫 레코드 헤더의 traceId를 MDC로 복원(배치 리스너 전용)
+- 버전 호환: 일부 Spring Kafka 버전에는 getRecordInterceptor/getBatchInterceptor 게터가 없어 존재 여부 확인 없이 set*Interceptor 를 직접 적용해도 무해
+
+매퍼 자동 구성(ApplicationAutoConfiguration, order-core)
+
+- 위치: org.example.order.core.application.config.ApplicationAutoConfiguration
+- 역할: 서비스별 매퍼 Config(예: application/order/mapper/config/OrderMapperConfig)를 통합 임포트
+- 등록 방식: META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports 에 ApplicationAutoConfiguration 명시 → 클래스패스 존재만으로 자동 활성화
+- 장점: 앱 모듈에서 매퍼 패키지를 직접 스캔하거나 별도 @Import 할 필요 없음
 
 ---
 
@@ -398,8 +420,13 @@ KafkaProducerService (DLQ 오버로드)
 - OrderWorkerConfig의 @ConditionalOnMissingBean 덕에 외부에서 Bean 제공 시 자동 교체
 
 7.5 WebClient 타임아웃/리트라이
-- WebClientModuleConfig에서 공통 정책 정의
+- WebAutoConfiguration/WebClient 모듈에서 공통 정책 정의
 - Facade 레벨에서 실패 시 즉시 DLQ 전환 유지
+
+7.6 매퍼 확장(신규)
+- 서비스별 매퍼는 각 서비스 패키지 하위(`application/<service>/mapper/config`)에 `*MapperConfig` 생성
+- 상위 `order-core: application/config/ApplicationAutoConfiguration` 에 해당 Config를 `@Import` 추가
+- 앱 모듈은 **오토컨피그만 의존**하면 자동 등록(별도 `@Import` 불필요)
 
 ---
 
@@ -500,5 +527,5 @@ Boot 파일(테스트 전용, 외부 의존 스캔 차단)
 ## 11) 한 줄 요약
 
 카테고리 기반 토픽 주입, 파사드 중심 오류 격리, 일관된 DLQ, S3 로그 동기화에 더해  
-**프로듀서/컨슈머 인터셉터로 강화된 MDC 추적성**까지 갖춘 **Kafka 워커**입니다.  
+**프로듀서/컨슈머 인터셉터로 강화된 MDC 추적성**과 **오토컨피그 기반 매퍼 자동 등록**까지 갖춘 **Kafka 워커**입니다.  
 YAML 설정만으로 환경 전환이 가능하며, Listener · Facade · Service 레이어로 안전하게 확장하세요.

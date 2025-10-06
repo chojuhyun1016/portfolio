@@ -10,7 +10,7 @@ import org.example.order.core.infra.common.secrets.manager.SecretsKeyResolver;
 import org.example.order.core.infra.common.secrets.manager.SecretsLoader;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.context.annotation.Profile;
@@ -35,69 +35,86 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @EnableConfigurationProperties(S3Properties.class)
 @Profile({"local", "dev", "beta", "prod"})
+@ConditionalOnProperty(prefix = "aws.s3", name = "enabled", havingValue = "true")
 public class ApplicationShutdownHandlerImpl implements ApplicationShutdownHandler, SmartLifecycle {
 
     private final S3Properties s3Properties;
-    private final S3LogSyncService s3LogSyncEventService;
+    private final ObjectProvider<S3LogSyncService> s3LogSyncServiceProvider;
 
-    // === 암호화/시크릿 정리용 의존성 (선택 주입) ===
     private final ObjectProvider<SecretsLoader> secretsLoaderProvider;
     private final ObjectProvider<SecretsManagerClient> secretsManagerClientProvider;
     private final ObjectProvider<SecretsKeyResolver> secretsKeyResolverProvider;
 
     private Boolean isRunning = false;
 
-    @Value("${logging.file.path:logs}")
-    private String LOG_DIRECTORY;
+    @Override
+    public void start() {
+        this.isRunning = true;
+    }
+
+    @Override
+    public void stop() {
+        onShutdown();
+        this.isRunning = false;
+    }
+
+    @Override
+    public boolean isRunning() {
+        return this.isRunning;
+    }
+
+    @Override
+    public int getPhase() {
+        return Integer.MIN_VALUE;
+    }
 
     /**
      * 애플리케이션 종료 시 S3로 로그 업로드 후 Crypto/Secrets 정리
-     * - S3 기능 비활성 시 업로드 건너뜀
+     * - S3 미구성 상태면 업로드는 스킵(빈 미존재 허용)
      * - 디렉터리 미존재 시 예외 없이 스킵
      * - 파일 단위 예외는 잡고 계속 진행
      */
     public void onShutdown() {
-        // 1) S3: 디렉터리 존재 시 업로드
-        if (s3Properties.getS3() == null || !s3Properties.getS3().isEnabled()) {
-            log.info("application shutdown handler -> S3 비활성 상태로 동기화를 건너뜁니다.");
+        final String bucket = s3Properties.getS3().getBucket();
+        final String folder = s3Properties.getS3().getDefaultFolder();
+        final Path logDir = Paths.get(System.getProperty("logging.file.path", "logs"));
+
+        S3LogSyncService s3LogSyncService = s3LogSyncServiceProvider.getIfAvailable();
+
+        if (s3LogSyncService == null) {
+            log.info("application shutdown handler -> S3LogSyncService 미존재. 업로드 단계 스킵.");
+        } else if (!Files.exists(logDir)) {
+            log.warn("application shutdown handler -> 로그 디렉터리가 없어 업로드를 스킵합니다. file_path:{}, bucket_name:{}, bucket_path:{}",
+                    logDir, bucket, folder);
+        } else if (!Files.isDirectory(logDir)) {
+            log.warn("application shutdown handler -> 지정 경로가 디렉터리가 아니어서 스킵합니다. file_path:{}, bucket_name:{}, bucket_path:{}",
+                    logDir, bucket, folder);
         } else {
-            final String bucket = s3Properties.getS3().getBucket();
-            final String folder = s3Properties.getS3().getDefaultFolder();
-            final Path logDir = Paths.get(LOG_DIRECTORY);
+            AtomicLong success = new AtomicLong();
+            AtomicLong failed = new AtomicLong();
 
-            if (!Files.exists(logDir)) {
-                log.warn("application shutdown handler -> 로그 디렉터리가 없어 업로드를 스킵합니다. file_path:{}, bucket_name:{}, bucket_path:{}",
-                        LOG_DIRECTORY, bucket, folder);
-            } else if (!Files.isDirectory(logDir)) {
-                log.warn("application shutdown handler -> 지정 경로가 디렉터리가 아니어서 스킵합니다. file_path:{}, bucket_name:{}, bucket_path:{}",
-                        LOG_DIRECTORY, bucket, folder);
-            } else {
-                AtomicLong success = new AtomicLong();
-                AtomicLong failed = new AtomicLong();
+            try (Stream<Path> paths = Files.walk(logDir)) {
+                paths.filter(Files::isRegularFile).forEach(path -> {
+                    try {
+                        s3LogSyncService.syncFileToS3(bucket, folder, path);
+                        success.incrementAndGet();
+                    } catch (Exception ex) {
+                        failed.incrementAndGet();
 
-                try (Stream<Path> paths = Files.walk(logDir)) {
-                    paths.filter(Files::isRegularFile).forEach(path -> {
-                        try {
-                            s3LogSyncEventService.syncFileToS3(bucket, folder, path);
-                            success.incrementAndGet();
-                        } catch (Exception ex) {
-                            failed.incrementAndGet();
-
-                            log.error("application shutdown handler -> 업로드 실패. path:{}, bucket:{}, folder:{}",
-                                    path, bucket, folder, ex);
-                        }
-                    });
-                } catch (IOException e) {
-                    log.error("error : application shutdown handler -> 파일 순회 실패. file_path:{}, bucket_name:{}, bucket_path:{}",
-                            LOG_DIRECTORY, bucket, folder, e);
-                } catch (Exception e) {
-                    log.error("error : application shutdown handler -> 알 수 없는 실패. file_path:{}, bucket_name:{}, bucket_path:{}",
-                            LOG_DIRECTORY, bucket, folder, e);
-                }
-
-                log.info("application shutdown handler -> S3 동기화 완료. 성공:{}건, 실패:{}건, 디렉터리:{}",
-                        success.get(), failed.get(), logDir.toAbsolutePath());
+                        log.error("application shutdown handler -> 업로드 실패. path:{}, bucket:{}, folder:{}",
+                                path, bucket, folder, ex);
+                    }
+                });
+            } catch (IOException e) {
+                log.error("error : application shutdown handler -> 파일 순회 실패. file_path:{}, bucket_name:{}, bucket_path:{}",
+                        logDir, bucket, folder, e);
+            } catch (Exception e) {
+                log.error("error : application shutdown handler -> 알 수 없는 실패. file_path:{}, bucket_name:{}, bucket_path:{}",
+                        logDir, bucket, folder, e);
             }
+
+            log.info("application shutdown handler -> S3 동기화 완료. 성공:{}건, 실패:{}건, 디렉터리:{}",
+                    success.get(), failed.get(), logDir.toAbsolutePath());
         }
 
         // 2) Crypto/Secrets 정리 (빈이 있을 때만 수행)
@@ -117,6 +134,7 @@ public class ApplicationShutdownHandlerImpl implements ApplicationShutdownHandle
 
         try {
             SecretsManagerClient client = secretsManagerClientProvider.getIfAvailable();
+
             if (client != null) {
                 client.close();
 
@@ -141,26 +159,5 @@ public class ApplicationShutdownHandlerImpl implements ApplicationShutdownHandle
         } catch (Throwable t) {
             log.warn("[Shutdown][Crypto] key wipe 실패/스킵: {}", t.toString());
         }
-    }
-
-    @Override
-    public void start() {
-        this.isRunning = true;
-    }
-
-    @Override
-    public void stop() {
-        onShutdown();
-        this.isRunning = false;
-    }
-
-    @Override
-    public boolean isRunning() {
-        return this.isRunning;
-    }
-
-    @Override
-    public int getPhase() {
-        return Integer.MAX_VALUE;
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * - aws.s3.enabled=true 일 때 S3 빈 생성
  * - aws.endpoint: LocalStack/프록시 환경에서만 지정 (미지정 시 실제 AWS 사용)
  * - aws.credential.enabled=true 일 때 AccessKey/SecretKey 를 명시적으로 사용
+ * - 로컬/테스트 부트스트랩: autoCreate, createPrefixPlaceholder 옵션 지원
  */
 @Getter
 @Setter
@@ -56,5 +57,15 @@ public class S3Properties {
          */
         private String bucket;
         private String defaultFolder;
+
+        /**
+         * 로컬/테스트 부트스트랩: 버킷 자동 생성
+         */
+        private boolean autoCreate = false;
+
+        /**
+         * prefix 플레이스홀더(__init) 생성 여부
+         */
+        private boolean createPrefixPlaceholder = true;
     }
 }

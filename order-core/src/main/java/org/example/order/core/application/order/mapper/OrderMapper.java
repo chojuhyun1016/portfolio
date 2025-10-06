@@ -8,6 +8,7 @@ import org.example.order.domain.order.model.OrderUpdate;
 
 import org.example.order.core.support.mapping.config.AppMappingConfig;
 import org.example.order.core.support.mapping.TimeMapper;
+import org.example.order.core.support.mapping.TimeProvider;
 
 import org.mapstruct.*;
 
@@ -20,15 +21,19 @@ import java.util.List;
  */
 @Mapper(
         config = AppMappingConfig.class,
-        uses = {TimeMapper.class}
+        uses = {TimeMapper.class, TimeProvider.class}
 )
 public interface OrderMapper {
 
     // ========= LocalOrderCommand -> OrderLocalMessage =========
     @Mapping(target = "id", source = "orderId")
     @Mapping(target = "publishedTimestamp",
-            expression = "java(DateTimeUtils.localDateTimeToLong(LocalDateTime.now()))")
-    OrderLocalMessage toOrderLocalMessage(LocalOrderCommand command);
+            expression = "java(DateTimeUtils.localDateTimeToLong(timeProvider.now()))")
+    OrderLocalMessage toOrderLocalMessage(LocalOrderCommand command, @Context TimeProvider timeProvider);
+
+    default OrderLocalMessage toOrderLocalMessage(LocalOrderCommand command) {
+        return toOrderLocalMessage(command, new TimeProvider());
+    }
 
     // ========= OrderEntity -> LocalOrderDto =========
     LocalOrderDto toDto(OrderEntity entity);
@@ -45,6 +50,7 @@ public interface OrderMapper {
     default OrderEntity newOrderEntity(LocalOrderDto dto) {
         OrderEntity e = OrderEntity.createEmpty();
         e.setId(dto.getId());
+
         return e;
     }
 

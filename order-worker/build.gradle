@@ -44,6 +44,12 @@ dependencies {
     implementation(project(':order-client:kafka'))
     implementation(project(':order-client:s3'))
 
+    // Spring Boot AutoConfiguration
+    compileOnly(libs.springBootAutoconfigure)
+
+    // Config Processor(애노테이션 프로세서)
+    annotationProcessor(libs.springBootConfigProcessor)
+
     // main
     implementation(libs.springKafka)
     implementation(libs.springBootStarterWeb)
@@ -69,6 +75,9 @@ dependencies {
     // AWS SDK v2 BOM + Secrets Manager
     implementation(platform(libs.awsBomV2))
     implementation(libs.awsSecretsManager)
+
+    // JAXB
+    implementation(libs.jaxbApi)
 
     // Lombok / Config Processor
     compileOnly(libs.lombok)
@@ -97,6 +106,10 @@ dependencies {
 
     integrationTestCompileOnly(libs.lombok)
     integrationTestAnnotationProcessor(libs.lombok)
+
+    // ===== Netty macOS 네이티브 DNS (Apple Silicon/x86) =====
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:${libs.versions.netty.get()}:osx-aarch_64")
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:${libs.versions.netty.get()}:osx-x86_64")
 }
 
 tasks.withType(ProcessResources).configureEach {

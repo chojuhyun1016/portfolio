@@ -28,6 +28,12 @@ dependencies {
     // 공통 모듈
     api project(':order-common')
 
+    // Spring Boot AutoConfiguration
+    compileOnly(libs.springBootAutoconfigure)
+
+    // Config Processor(애노테이션 프로세서)
+    annotationProcessor(libs.springBootConfigProcessor)
+
     // WebClient 제공 (Spring WebFlux)
     implementation(libs.springBootStarterWebflux)
 

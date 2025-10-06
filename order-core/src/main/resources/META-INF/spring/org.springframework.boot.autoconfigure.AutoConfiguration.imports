@@ -1,1 +1,2 @@
 org.example.order.core.infra.dynamo.migration.config.DynamoMigrationAutoConfiguration
+org.example.order.core.application.config.ApplicationAutoConfiguration

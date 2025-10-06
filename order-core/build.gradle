@@ -50,6 +50,12 @@ dependencies {
     implementation(project(':order-common'))
     implementation(project(':order-domain'))
 
+    // ==== Spring Boot AutoConfiguration ====
+    compileOnly(libs.springBootAutoconfigure)
+
+    // ==== Config Processor(애노테이션 프로세서) ====
+    annotationProcessor(libs.springBootConfigProcessor)
+
     // ==== main ====
     implementation(libs.springBootStarter)
     implementation(libs.springBootStarterAop)

@@ -14,6 +14,12 @@ dependencies {
     implementation project(":order-common")
     implementation project(":order-core")
 
+    // --- Spring Boot AutoConfiguration ---
+    compileOnly(libs.springBootAutoconfigure)
+
+    // --- Config Processor(애노테이션 프로세서) ---
+    annotationProcessor(libs.springBootConfigProcessor)
+
     // --- Spring Boot 스타터 (웹/시큐리티/검증/JPA) ---
     implementation(libs.springBootStarterWeb)
     implementation(libs.springBootStarterSecurity)

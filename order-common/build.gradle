@@ -11,6 +11,7 @@ java {
 tasks.named("jar") { enabled = true }
 
 dependencies {
+
     api(libs.jacksonJsr310)
     api(libs.tsid)
     api(libs.guava)
@@ -18,6 +19,9 @@ dependencies {
     api(libs.springBootStarter)
     api(libs.springBootStarterWeb)
     api(libs.springBootStarterAop)
+
+    compileOnly(libs.springBootAutoconfigure)
+    annotationProcessor(libs.springBootConfigProcessor)
 
     compileOnly(libs.kafkaClients)
     compileOnly(libs.jakartaPersistenceApi)

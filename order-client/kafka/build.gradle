@@ -60,6 +60,12 @@ dependencies {
     implementation project(':order-common')
     implementation project(':order-core')
 
+    // Spring Boot AutoConfiguration
+    compileOnly(libs.springBootAutoconfigure)
+
+    // Config Processor(애노테이션 프로세서)
+    annotationProcessor(libs.springBootConfigProcessor)
+
     // Kafka
     implementation(libs.springKafka)
 

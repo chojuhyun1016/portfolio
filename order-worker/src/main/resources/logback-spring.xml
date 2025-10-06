@@ -194,6 +194,14 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
+    <springProfile name="local">
+        <root level="info">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="DEFAULT"/>
+            <appender-ref ref="ERROR"/>
+        </root>
+    </springProfile>
+
     <springProfile name="dev, beta, prod">
         <root level="info">
             <appender-ref ref="DEFAULT"/>

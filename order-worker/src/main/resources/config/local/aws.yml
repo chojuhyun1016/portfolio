@@ -11,6 +11,8 @@ aws:
     enabled: true
     bucket: my-local-bucket
     default-folder: logs
+    auto-create: true
+    create-prefix-placeholder: true
 
   secrets-manager:
     enabled: true

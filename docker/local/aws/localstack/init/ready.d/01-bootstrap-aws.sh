@@ -18,7 +18,7 @@ retry() {
 
 BUCKET="my-local-bucket"
 PREFIX="logs"
-awslocal s3 mb "s3://${BUCKET}" >/dev/null 2>&1 || true
+awslocal s3 mb "s3://${BUCKET}" >/ddocker exec -it aws-localstack-1 shev/null 2>&1 || true
 echo "" | awslocal s3 cp - "s3://${BUCKET}/${PREFIX}/__init" >/dev/null 2>&1 || true
 echo "[bootstrap] S3 ready: s3://${BUCKET}/${PREFIX}/"
 
