@@ -8,18 +8,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "order.api.infra")
 public class ApiInfraProperties {
 
+    @Getter
+    @Setter
+    public static class Logging {
+        private int mdcFilterOrder = 5;
+    }
+
     private final Logging logging = new Logging();
     private final Security security = new Security();
-    private final Format format = new Format();
-
-    @Setter
-    @Getter
-    public static class Logging {
-        private int filterOrder = 10;
-        private int mdcFilterOrder = 5;
-        private String incomingHeader = "X-Request-Id";
-        private String responseHeader = "X-Request-Id";
-    }
 
     @Getter
     public static class Security {
@@ -31,7 +27,6 @@ public class ApiInfraProperties {
 
         private final Gateway gateway = new Gateway();
 
-        // 세터에서 null 방지
         public void setPermitAllPatterns(String[] v) {
             this.permitAllPatterns = (v == null) ? new String[0] : v;
         }
@@ -40,7 +35,6 @@ public class ApiInfraProperties {
             this.authenticatedPatterns = (v == null) ? new String[0] : v;
         }
 
-        // 커스텀 접근자(코드 가독성 용도)
         public String[] permitAllPatterns() {
             return permitAllPatterns;
         }
@@ -73,11 +67,5 @@ public class ApiInfraProperties {
                 this.secret = secret;
             }
         }
-    }
-
-    @Setter
-    @Getter
-    public static class Format {
-        private boolean writeDatesAsTimestamps = false;
     }
 }

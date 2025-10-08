@@ -1,0 +1,22 @@
+spring:
+  redis:
+    # Redis 사용 여부 토글
+    # true  → Redis 연결을 활성화 (host/port 반드시 설정 필요)
+    # false → Redis 자동 구성 비활성화 (client-type=none 권장)
+    enabled: false
+    host: localhost
+    port: 6379
+    database: 0
+    password: order1234
+    trusted-package: org.example.order
+    command-timeout-seconds: 3
+    shutdown-timeout-seconds: 3
+    pool-max-active: 32
+    pool-max-idle: 16
+    pool-min-idle: 8
+    pool-max-wait: 2000
+
+management:
+  health:
+    redis:
+      enabled: false

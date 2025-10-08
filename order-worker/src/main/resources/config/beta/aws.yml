@@ -1,0 +1,22 @@
+aws:
+  region: ap-northeast-2
+  endpoint: http://localhost:4566
+
+  credential:
+    enabled: false
+    access-key: beta
+    secret-key: beta
+
+  s3:
+    enabled: false
+    bucket: my-local-bucket
+    default-folder: logs
+    auto-create: false
+    create-prefix-placeholder: false
+
+  secrets-manager:
+    enabled: false
+    secret-name: myapp/secret-key
+    scheduler-enabled: false
+    refresh-interval-millis: 300000
+    fail-fast: false

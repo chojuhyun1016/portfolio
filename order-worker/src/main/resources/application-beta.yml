@@ -1,79 +1,20 @@
-# ===== Server =====
-server:
-  shutdown: graceful
-
-# ===== Spring =====
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: beta
     import:
-      - application-core-local.yml
-      - application-kafka-local.yml
+      - classpath:config/local/server.yml
+      - classpath:config/local/datasource.yml
+      - classpath:config/local/jpa.yml
+      - classpath:config/local/flyway.yml
+      - classpath:config/local/redis.yml
+      - classpath:config/local/web.yml
+      - classpath:config/local/aws.yml
+      - classpath:config/local/dynamodb.yml
+      - classpath:config/local/lock.yml
+      - classpath:config/local/crypto.yml
+      - classpath:config/local/kafka.yml
+      - classpath:config/local/logging.yml
 
-  lifecycle:
-    timeout-per-shutdown-phase: 30s
-
-  # === MySQL DataSource (로컬 고정값) ===
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/order_beta?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false
-    username: order
-    password: order1234
-
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        format_sql: true
-        jdbc.time_zone: Asia/Seoul
-
-# ===== Feature Toggles =====
-jpa:
-  enabled: true
-
-kafka:
-  enabled: true
-  bootstrap-servers: localhost:29092
-  consumer:
-    group-id: order-worker
-    auto-offset-reset: latest
-
-s3:
-  enabled: true
-
-web-client:
-  enabled: true
-  url:
-    order: http://localhost:8080/orders
-
-# ===== Unused Modules (explicit OFF) =====
-dynamodb:
-  enabled: false
-
-redis:
-  enabled: false
-
-lock:
-  enabled: false
-
-# ===== AWS =====
-aws:
-  credential:
-    enabled: false
-    accessKey:
-    secretKey:
-  region: ap-northeast-2
-  s3:
-    bucket:
-    default-folder:
-
-# ===== Logging =====
-logging:
-  file:
-    path: /app/logs
-  level:
-    org.example: debug
-    org.hibernate.orm.jdbc.bind: debug
+server:
+  port: 38080

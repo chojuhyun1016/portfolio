@@ -39,8 +39,8 @@ dependencies {
 
     // --- Querydsl (Jakarta) ---
     implementation(libs.querydslCore)
-    implementation(libs.querydslJpaJakarta)
-    annotationProcessor(libs.querydslApt)
+    implementation("com.querydsl:querydsl-jpa:${libs.versions.querydsl.get()}:jakarta")
+    annotationProcessor("com.querydsl:querydsl-apt:${libs.versions.querydsl.get()}:jakarta")
 
     // --- 로깅 / Jackson ---
     implementation(libs.logbackJsonClassic)

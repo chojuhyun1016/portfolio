@@ -1,0 +1,59 @@
+# ============================================================================
+# config/local/kafka.yml
+#  - 로컬 개발/테스트용 카프카 설정
+# ============================================================================
+
+spring:
+  kafka:
+    bootstrap-servers: 127.0.0.1:29092
+
+    admin:
+      auto-create: false
+
+# ------------------------------------------------------------------------
+# 애플리케이션 커스텀 토글
+# ------------------------------------------------------------------------
+app:
+  kafka:
+    auto-create-topics: false    # @Configuration 활성
+    ensure-at-startup: true      # 기동 후 AdminClient 보장 활성
+
+kafka:
+  # ------------------------------------------------------------------------
+  # SSL/SASL : 로컬에선 일반적으로 필요 없음 → 끔
+  # ------------------------------------------------------------------------
+  ssl:
+    enabled: false
+    security-protocol: SASL_SSL
+    sasl-mechanism: AWS_MSK_IAM
+    sasl-jaas-config: software.amazon.msk.auth.iam.IAMLoginModule required;
+    sasl-client-callback-handler-class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+
+  # ------------------------------------------------------------------------
+  # 프로듀서/컨슈머 부트스트랩(참고: spring.kafka.bootstrap-servers 사용)
+  #  - 아래 값은 애플 내부 팩토리 바인딩용으로 남겨두되, 실제 공통 값과 동일하게 유지
+  # ------------------------------------------------------------------------
+  producer:
+    enabled: true
+    bootstrap-servers: 127.0.0.1:29092
+
+  consumer:
+    enabled: false
+    bootstrap-servers: 127.0.0.1:29092
+    trusted-packages: "org.example.order.*,org.example.common.*"
+    option:
+      max-fail-count: 1
+      max-poll-records: 1000
+      fetch-max-wait-ms: 500
+      fetch-max-bytes: 52428800
+      max-poll-interval-ms: 300000
+      idle-between-polls: 0
+      auto-offset-reset: "earliest"
+      enable-auto-commit: false
+
+  # ------------------------------------------------------------------------
+  # 토픽 매핑
+  # ------------------------------------------------------------------------
+  topic:
+    - category: ORDER_LOCAL
+      name: "local-order-local"

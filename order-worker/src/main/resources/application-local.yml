@@ -17,4 +17,4 @@ spring:
       - classpath:config/local/logging.yml
 
 server:
-  port: 18080
+  port: 38080

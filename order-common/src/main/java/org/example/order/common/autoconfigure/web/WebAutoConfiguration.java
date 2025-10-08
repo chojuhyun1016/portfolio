@@ -34,7 +34,7 @@ public class WebAutoConfiguration {
         FilterRegistrationBean<CorrelationIdFilter> reg = new FilterRegistrationBean<>();
         reg.setName("correlationIdFilterRegistration");
         reg.setFilter(filter);
-        reg.setOrder(Ordered.HIGHEST_PRECEDENCE); // 가장 먼저 동작
+        reg.setOrder(Ordered.HIGHEST_PRECEDENCE);
         reg.addUrlPatterns("/*");
 
         return reg;

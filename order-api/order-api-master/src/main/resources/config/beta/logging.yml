@@ -1,0 +1,6 @@
+logging:
+  file:
+    path: ./logs
+  level:
+    org.example: debug
+    org.hibernate.orm.jdbc.bind: debug

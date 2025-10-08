@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/order_local?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+    username: order
+    password: order1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 3000         # ms
+      max-lifetime: 58000              # ms (테스트 환경 짧게)
+      maximum-pool-size: 16
+      auto-commit: false
+      data-source-properties:
+        connectTimeout: 3000           # ms
+        socketTimeout: 60000           # ms
+        useUnicode: true
+        characterEncoding: utf-8
+        rewriteBatchedStatements: true # JDBC 대량 insert 최적화
+
+  sql:
+    init:
+      mode: never

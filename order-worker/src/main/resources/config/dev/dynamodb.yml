@@ -1,0 +1,20 @@
+dynamodb:
+  enabled: false
+  endpoint: "http://localhost:4566"
+  region: "ap-northeast-2"
+  access-key: "local"
+  secret-key: "local"
+  table-name: "order_dynamo"
+
+  auto-create: false
+  migration-location: classpath:dynamodb/migration
+  seed-location: classpath:dynamodb/seed
+  create-missing-gsi: false
+
+  schema-reconcile:
+    enabled: false
+    dry-run: false
+    allow-destructive: false
+    delete-extra-gsi: false
+    copy-data: false
+    max-item-count: 10000

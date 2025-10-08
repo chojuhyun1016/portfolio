@@ -1,0 +1,11 @@
+web:
+  enabled: false
+  client:
+    clientId: order-api-master
+    url:
+      order: http://localhost:18081
+  timeout:
+    connectMs: 3000
+    readMs: 10000
+  codec:
+    maxBytes: 2097152

@@ -1,38 +1,20 @@
-server:
-  port: 8080
-
 spring:
   config:
     activate:
       on-profile: prod
     import:
-      - application-core-prod.yml
-      - application-kafka-prod.yml
-  jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        highlight_sql: true
-        use_sql_comments: true
+      - classpath:config/local/server.yml
+      - classpath:config/local/datasource.yml
+      - classpath:config/local/jpa.yml
+      - classpath:config/local/flyway.yml
+      - classpath:config/local/redis.yml
+      - classpath:config/local/web.yml
+      - classpath:config/local/aws.yml
+      - classpath:config/local/dynamodb.yml
+      - classpath:config/local/lock.yml
+      - classpath:config/local/crypto.yml
+      - classpath:config/local/kafka.yml
+      - classpath:config/local/logging.yml
 
-order:
-  api:
-    infra:
-      logging:
-        filter-order: 10
-        mdc-filter-order: 5
-        incoming-header: X-Request-Id
-        response-header: X-Request-Id
-      security:
-        enabled: true
-        gateway:
-          header: X-Internal-Auth
-          secret: ${INTERNAL_GATEWAY_SECRET}
-        permit-all-patterns:
-          - /actuator/health
-          - /actuator/info
-        authenticated-patterns:
-          - /order/**
-      format:
-        write-dates-as-timestamps: false
+server:
+  port: 8081

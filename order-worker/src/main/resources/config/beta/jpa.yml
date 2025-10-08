@@ -1,0 +1,26 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        highlight_sql: false
+        use_sql_comments: false
+        show_sql: false
+
+        default_batch_fetch_size: ${chunkSize:1000}
+        jdbc.batch_size: ${chunkSize:1000}
+        jdbc.batch_versioned_data: false
+        order_inserts: false
+        order_updates: false
+
+        connection.provider_disables_autocommit: false
+        jdbc.time_zone: UTC
+        timezone.default_storage: NORMALIZE
+
+        hbm2ddl.import_files_sql_extractor: org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor
+        dialect.storage_engine: innodb
+
+jpa:
+  enabled: false
