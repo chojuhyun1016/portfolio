@@ -41,7 +41,7 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
                 throw new IllegalArgumentException("OrderApiMessage is null");
             }
 
-//            OrderDto dto = webClientService.findOrderListByOrderId(message.getId());
+            OrderDto dto = webClientService.findOrderListByOrderId(message.getId());
 //            dto.updatePublishedTimestamp(message.getPublishedTimestamp());
 
 //            kafkaProducerService.sendToOrderCrud(OrderCrudMessage.toMessage(message, dto));

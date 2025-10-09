@@ -3,18 +3,18 @@ spring:
     activate:
       on-profile: beta
     import:
-      - classpath:config/local/server.yml
-      - classpath:config/local/datasource.yml
-      - classpath:config/local/jpa.yml
-      - classpath:config/local/flyway.yml
-      - classpath:config/local/redis.yml
-      - classpath:config/local/web.yml
-      - classpath:config/local/aws.yml
-      - classpath:config/local/dynamodb.yml
-      - classpath:config/local/lock.yml
-      - classpath:config/local/crypto.yml
-      - classpath:config/local/kafka.yml
-      - classpath:config/local/logging.yml
+      - classpath:config/beta/server.yml
+      - classpath:config/beta/datasource.yml
+      - classpath:config/beta/jpa.yml
+      - classpath:config/beta/flyway.yml
+      - classpath:config/beta/redis.yml
+      - classpath:config/beta/web.yml
+      - classpath:config/beta/aws.yml
+      - classpath:config/beta/dynamodb.yml
+      - classpath:config/beta/lock.yml
+      - classpath:config/beta/crypto.yml
+      - classpath:config/beta/kafka.yml
+      - classpath:config/beta/logging.yml
 
 server:
   port: 8081
