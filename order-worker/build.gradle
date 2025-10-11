@@ -40,6 +40,7 @@ dependencies {
     implementation(project(':order-common'))
     implementation(project(':order-core'))
     implementation(project(':order-domain'))
+    implementation(project(':order-contract'))
     implementation(project(':order-client:web'))
     implementation(project(':order-client:kafka'))
     implementation(project(':order-client:s3'))

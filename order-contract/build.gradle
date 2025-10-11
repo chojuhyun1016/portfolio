@@ -1,0 +1,26 @@
+plugins {
+    id "java-library"
+}
+
+group = "org.example"
+version = "1.0.0"
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.named("jar") { enabled = true }
+
+dependencies {
+    // 검증 어노테이션
+    compileOnly(libs.springBootStarterValidation)
+
+    // Lombok
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    // ===== test =====
+    testImplementation(libs.springBootStarterTest)
+}

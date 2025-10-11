@@ -41,7 +41,7 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-    // 검증 어노테이션이 필요하면
+    // 검증 어노테이션
     compileOnly(libs.springBootStarterValidation)
 
     // ===== test =====

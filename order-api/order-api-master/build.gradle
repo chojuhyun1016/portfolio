@@ -20,6 +20,7 @@ dependencies {
     implementation project(":order-common")
     implementation project(":order-core")
     implementation project(":order-domain")
+    implementation project(":order-contract")
     implementation project(":order-api:order-api-common")
     implementation project(":order-client:kafka")
 
