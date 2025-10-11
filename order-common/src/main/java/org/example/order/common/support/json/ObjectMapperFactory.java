@@ -25,11 +25,9 @@ import static org.example.order.common.helper.datetime.DateTimeFormat.*;
 /**
  * ObjectMapperFactory
  * ------------------------------------------------------------------------
- * - 모듈(레이어) 오염 방지: core 타입(CodeEnum, DlqType) 직접 참조/등록하지 않음.
- * - enum 직렬화/역직렬화는
- * 1) @JsonComponent(CodeEnumJsonConverter) 의 자동 등록(Serializer) +
- * 2) 각 enum 개별 @JsonDeserialize(using=...) 로 처리(Deserializer)
- * - DlqType 역직렬화는 필드에 붙인 @JsonDeserialize(DlqTypeStringDeserializer) 로 처리.
+ * - 공통 ObjectMapper 빌더.
+ * - 계약 모듈(order-contract)과의 충돌을 피하기 위해 커스텀 enum 역/직렬화는 여기서 등록하지 않음.
+ * - 날짜/시간은 고정 포맷(문자열)로 직렬화.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectMapperFactory {
@@ -38,7 +36,7 @@ public class ObjectMapperFactory {
         return new Jackson2ObjectMapperBuilder()
                 .failOnUnknownProperties(false)
                 .featuresToDisable(MapperFeature.DEFAULT_VIEW_INCLUSION)
-                .featuresToEnable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .serializerByType(LocalDate.class, new LocalDateSerializer(DATE_FORMAT))
                 .deserializerByType(LocalDate.class, new LocalDateDeserializer(DATE_FORMAT))
                 .serializerByType(LocalDateTime.class, new LocalDateTimeSerializer(DATE_TIME_FORMAT))
