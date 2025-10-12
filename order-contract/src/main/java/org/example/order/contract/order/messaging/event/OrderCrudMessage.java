@@ -1,7 +1,7 @@
 package org.example.order.contract.order.messaging.event;
 
 import org.example.order.contract.order.messaging.payload.OrderPayload;
-import org.example.order.contract.order.messaging.type.DlqOrderType;
+import org.example.order.contract.order.messaging.type.MessageOrderType;
 import org.example.order.contract.order.messaging.type.MessageMethodType;
 
 /**
@@ -9,11 +9,11 @@ import org.example.order.contract.order.messaging.type.MessageMethodType;
  * - CRUD 처리 서비스(consumer)로 넘길 때 표준 형태
  */
 public record OrderCrudMessage(
-        DlqOrderType category,
+        MessageOrderType category,
         MessageMethodType methodType,
         OrderPayload payload
 ) {
     public static OrderCrudMessage of(MessageMethodType methodType, OrderPayload payload) {
-        return new OrderCrudMessage(DlqOrderType.ORDER_CRUD, methodType, payload);
+        return new OrderCrudMessage(MessageOrderType.ORDER_CRUD, methodType, payload);
     }
 }

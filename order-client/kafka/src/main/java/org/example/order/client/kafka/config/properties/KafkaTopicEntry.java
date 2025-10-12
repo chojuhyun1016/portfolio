@@ -3,26 +3,28 @@ package org.example.order.client.kafka.config.properties;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.order.common.core.code.type.RegionCode;
-import org.example.order.core.infra.messaging.order.code.MessageCategory;
 
 /**
- * 큰 맥락
- * - Kafka 토픽 엔트리를 표현하는 단순 DTO 클래스.
- * - 카테고리(MessageCategory), 지역 코드(RegionCode), 토픽명(name)을 조합하여
- * 프로듀서/컨슈머 설정에서 사용한다.
- * - 외부 설정(application.yml 등)에 리스트 형태로 바인딩되어, 지역/카테고리별 토픽 구성을 유연하게 할 수 있다.
+ * Kafka 토픽 엔트리 (인프라 모듈 독립 유지)
+ * - category: 문자열 키 (예: "ORDER_LOCAL", "ORDER_API" ...)
+ * - regionCode: 선택(지역 구분 필요시)
+ * - name: 실제 토픽명
+ * <p>
+ * 계약/도메인 enum에 절대 의존하지 않는다.
  */
 @Getter
 @Setter
 public class KafkaTopicEntry {
 
     /**
-     * 메시지 카테고리 (예: ORDER_CREATED, PAYMENT_COMPLETED 등)
+     * 메시지 카테고리(문자열)
+     * - 예) "ORDER_LOCAL", "PAYMENT_COMPLETED"
+     * - 각 서비스 모듈에서 enum↔string 매핑을 담당한다.
      */
-    private MessageCategory category;
+    private String category;
 
     /**
-     * 지역 코드 (예: KR, US, JP 등)
+     * 지역 코드 (예: KR, US, JP 등) — 선택적
      */
     private RegionCode regionCode;
 

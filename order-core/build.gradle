@@ -49,6 +49,7 @@ dependencies {
     // ==== 프로젝트 모듈 ====
     implementation(project(':order-common'))
     implementation(project(':order-domain'))
+    implementation(project(':order-contract'))
 
     // ==== Spring Boot AutoConfiguration ====
     compileOnly(libs.springBootAutoconfigure)

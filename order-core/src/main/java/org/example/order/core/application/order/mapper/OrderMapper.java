@@ -1,8 +1,9 @@
 package org.example.order.core.application.order.mapper;
 
+import org.example.order.contract.order.messaging.event.OrderLocalMessage;
+import org.example.order.contract.order.messaging.type.MessageOrderType;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.dto.internal.LocalOrderDto;
-import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderUpdate;
 
@@ -12,40 +13,39 @@ import org.example.order.core.support.mapping.TimeProvider;
 
 import org.mapstruct.*;
 
-import java.util.List;
-
-/**
- * Order 스키마 전용 매퍼 (MapStruct)
- * - 공통 설정은 AppMappingConfig 에서 상속
- * - 시간 변환은 TimeMapper(@Named) 재사용
- */
 @Mapper(
         config = AppMappingConfig.class,
-        uses = {TimeMapper.class, TimeProvider.class}
+        uses = {TimeMapper.class, TimeProvider.class},
+        imports = {MessageOrderType.class}
 )
 public interface OrderMapper {
 
-    // ========= LocalOrderCommand -> OrderLocalMessage =========
+    // LocalOrderCommand -> OrderLocalMessage
     @Mapping(target = "id", source = "orderId")
-    @Mapping(target = "publishedTimestamp",
-            expression = "java(DateTimeUtils.localDateTimeToLong(timeProvider.now()))")
+    @Mapping(target = "category", expression = "java(MessageOrderType.ORDER_LOCAL)")
+    @Mapping(
+            target = "publishedTimestamp",
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.localDateTimeToEpochMillis(timeProvider.now()))"
+    )
     OrderLocalMessage toOrderLocalMessage(LocalOrderCommand command, @Context TimeProvider timeProvider);
 
     default OrderLocalMessage toOrderLocalMessage(LocalOrderCommand command) {
         return toOrderLocalMessage(command, new TimeProvider());
     }
 
-    // ========= OrderEntity -> LocalOrderDto =========
+    // Entity -> DTO
     LocalOrderDto toDto(OrderEntity entity);
 
     @AfterMapping
     default void setPublishedTimestamp(@MappingTarget LocalOrderDto dto, OrderEntity entity) {
         if (entity != null && entity.getPublishedDatetime() != null) {
-            dto.updatePublishedTimestamp(TimeMapper.toEpochMillis(entity.getPublishedDatetime()));
+            dto.updatePublishedTimestamp(
+                    org.example.order.core.support.mapping.TimeMapper.localDateTimeToEpochMillis(entity.getPublishedDatetime())
+            );
         }
     }
 
-    // ========= LocalOrderDto -> OrderEntity =========
+    // DTO -> Entity
     @ObjectFactory
     default OrderEntity newOrderEntity(LocalOrderDto dto) {
         OrderEntity e = OrderEntity.createEmpty();
@@ -68,7 +68,7 @@ public interface OrderMapper {
                 dto.getOrderPrice(),
                 dto.getDeleteYn(),
                 dto.getVersion(),
-                TimeMapper.toLocalDateTime(dto.getPublishedTimestamp()),
+                org.example.order.core.support.mapping.TimeMapper.epochMillisToLocalDateTime(dto.getPublishedTimestamp()),
                 dto.getCreatedUserId(),
                 dto.getCreatedUserType(),
                 dto.getCreatedDatetime(),
@@ -78,12 +78,11 @@ public interface OrderMapper {
         );
     }
 
-    // ========= LocalOrderDto -> OrderUpdate =========
-    @Mapping(target = "publishedDateTime",
-            source = "publishedTimestamp", qualifiedByName = "toLocalDateTime")
+    // DTO -> Update(Command)
+    @Mapping(
+            target = "publishedDateTime",
+            source = "publishedTimestamp",
+            qualifiedByName = "epochMillisToLocalDateTime"
+    )
     OrderUpdate toUpdate(LocalOrderDto dto);
-
-    // ========= List<LocalOrderDto> -> List<OrderUpdate> =========
-    @IterableMapping(qualifiedByName = {})
-    List<OrderUpdate> toUpdateCommands(List<LocalOrderDto> dtoList);
 }

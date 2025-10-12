@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.order.common.core.messaging.code.MessageMethodType;
-import org.example.order.core.infra.messaging.order.message.OrderCloseMessage;
+import org.example.order.contract.order.messaging.type.MessageMethodType;
+import org.example.order.contract.order.messaging.event.OrderCloseMessage;
 
 @Data
 @NoArgsConstructor
@@ -18,6 +18,6 @@ public class OrderApiOutgoingDto {
     private MessageMethodType methodType;
 
     public OrderCloseMessage toMessage() {
-        return OrderCloseMessage.toMessage(this.orderId, this.methodType);
+        return OrderCloseMessage.of(this.orderId, this.methodType);
     }
 }

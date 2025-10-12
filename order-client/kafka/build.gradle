@@ -58,7 +58,6 @@ if (!hasItImplConf || !hasItRtConf) {
 dependencies {
     // 공통 모듈
     implementation project(':order-common')
-    implementation project(':order-core')
 
     // Spring Boot AutoConfiguration
     compileOnly(libs.springBootAutoconfigure)
