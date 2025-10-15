@@ -3,17 +3,23 @@ package org.example.order.worker.listener.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
+import org.example.order.common.messaging.ConsumerEnvelope;
+import org.example.order.contract.order.messaging.event.OrderCrudMessage;
+import org.example.order.worker.dto.consumer.OrderCrudConsumerDto;
 import org.example.order.worker.facade.order.OrderCrudMessageFacade;
 import org.example.order.worker.listener.order.OrderCrudMessageListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import org.example.order.common.support.logging.Correlate;
 
 import java.util.List;
 
-import org.example.order.common.support.logging.Correlate;
-
+/**
+ * OrderCrudMessageListenerImpl
+ * - CRUD 메시지 배치 수신
+ * - 각 레코드를 Envelope로 감싸 파사드에 전달
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -22,7 +28,7 @@ public class OrderCrudMessageListenerImpl implements OrderCrudMessageListener {
     private final OrderCrudMessageFacade facade;
 
     private static final String DEFAULT_TYPE =
-            "org.example.order.core.infra.messaging.order.message.OrderCrudMessage";
+            "org.example.order.contract.order.messaging.event.OrderCrudMessage";
 
     @Override
     @KafkaListener(
@@ -35,20 +41,21 @@ public class OrderCrudMessageListenerImpl implements OrderCrudMessageListener {
             }
     )
     @Correlate(
-            key = "#records != null && #records.size() == 1 ? #records[0].value?.dto?.order?.orderId : T(java.util.UUID).randomUUID().toString()",
+            key = "#records != null && #records.size() == 1 ? #records[0]?.value()?.payload()?.orderId() : T(java.util.UUID).randomUUID().toString()",
             mdcKey = "orderId",
             overrideTraceId = true
     )
     public void executeOrderCrud(List<ConsumerRecord<String, OrderCrudMessage>> records, Acknowledgment acknowledgment) {
-
-        log.info("order-crud records size : {}", records.size());
+        log.info("order-crud records size: {}", records.size());
 
         try {
-            records.stream().map(ConsumerRecord::value).forEach(value -> log.info("{}", value));
+            List<ConsumerEnvelope<OrderCrudConsumerDto>> envelopes = records.stream()
+                    .map(r -> ConsumerEnvelope.fromRecord(r, OrderCrudConsumerDto.from(r.value())))
+                    .toList();
 
-            facade.executeOrderCrud(records);
+            facade.executeOrderCrud(envelopes);
         } catch (Exception e) {
-            log.error("error : order-crud", e);
+            log.error("error: order-crud", e);
         } finally {
             acknowledgment.acknowledge();
         }

@@ -7,7 +7,7 @@
 //import org.example.order.api.master.web.advice.MasterApiExceptionHandler;
 //import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 //import org.example.order.client.kafka.service.KafkaProducerCluster;
-//import org.example.order.common.core.messaging.code.MessageMethodType;
+//import org.example.order.common.core.messaging.code.Operation;
 //import org.example.order.core.application.order.mapper.OrderMapper;
 //import org.junit.jupiter.api.DisplayName;
 //import org.junit.jupiter.api.Tag;
@@ -68,7 +68,7 @@
 //    @Test
 //    @DisplayName("POST /order: 정상 요청시 202 ACCEPTED 반환")
 //    void post_order_should_return_accepted() throws Exception {
-//        LocalOrderRequest req = new LocalOrderRequest(1L, MessageMethodType.POST);
+//        LocalOrderRequest req = new LocalOrderRequest(1L, Operation.POST);
 //        Mockito.doNothing().when(facade).sendOrderMessage(any());
 //
 //        mvc.perform(post("/order")
@@ -83,7 +83,7 @@
 //    @Tag("restdocs")
 //    @DisplayName("REST Docs 스니펫 생성용: 202 응답")
 //    void restdocs_snippet() throws Exception {
-//        LocalOrderRequest req = new LocalOrderRequest(2L, MessageMethodType.PUT);
+//        LocalOrderRequest req = new LocalOrderRequest(2L, Operation.PUT);
 //        Mockito.doNothing().when(facade).sendOrderMessage(any());
 //
 //        mvc.perform(post("/order")

@@ -15,16 +15,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SignerTest {
 
-    private static String b64UrlKey(int bytes) {
+    private static String b64Key(int bytes) {
         byte[] buf = new byte[bytes];
         new SecureRandom().nextBytes(buf);
-
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
+        return Base64.getEncoder().encodeToString(buf);
     }
 
     @Test
     void hmac_sha256_sign_and_verify() {
-        String khmac = b64UrlKey(32); // URL-safe Base64
+        String khmac = b64Key(32);
 
         new ApplicationContextRunner()
                 .withPropertyValues(

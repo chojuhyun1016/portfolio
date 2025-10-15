@@ -3,16 +3,20 @@ package org.example.order.core.application.order.mapper;
 import org.example.order.contract.order.messaging.event.OrderLocalMessage;
 import org.example.order.contract.order.messaging.type.MessageOrderType;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
-import org.example.order.core.application.order.dto.internal.LocalOrderDto;
-import org.example.order.domain.order.entity.OrderEntity;
-import org.example.order.domain.order.model.OrderUpdate;
-
-import org.example.order.core.support.mapping.config.AppMappingConfig;
+import org.example.order.core.application.order.dto.internal.OrderSyncDto;
 import org.example.order.core.support.mapping.TimeMapper;
 import org.example.order.core.support.mapping.TimeProvider;
-
+import org.example.order.core.support.mapping.config.AppMappingConfig;
+import org.example.order.domain.order.entity.OrderEntity;
+import org.example.order.domain.order.model.OrderUpdate;
 import org.mapstruct.*;
 
+import java.util.List;
+
+/**
+ * OrderMapper
+ * - DTO/Entity/메시지 간 매핑 정의
+ */
 @Mapper(
         config = AppMappingConfig.class,
         uses = {TimeMapper.class, TimeProvider.class},
@@ -22,7 +26,7 @@ public interface OrderMapper {
 
     // LocalOrderCommand -> OrderLocalMessage
     @Mapping(target = "id", source = "orderId")
-    @Mapping(target = "category", expression = "java(MessageOrderType.ORDER_LOCAL)")
+    @Mapping(target = "orderType", expression = "java(MessageOrderType.ORDER_LOCAL)")
     @Mapping(
             target = "publishedTimestamp",
             expression = "java(org.example.order.core.support.mapping.TimeMapper.localDateTimeToEpochMillis(timeProvider.now()))"
@@ -34,20 +38,20 @@ public interface OrderMapper {
     }
 
     // Entity -> DTO
-    LocalOrderDto toDto(OrderEntity entity);
+    OrderSyncDto toDto(OrderEntity entity);
 
     @AfterMapping
-    default void setPublishedTimestamp(@MappingTarget LocalOrderDto dto, OrderEntity entity) {
+    default void setPublishedTimestamp(@MappingTarget OrderSyncDto dto, OrderEntity entity) {
         if (entity != null && entity.getPublishedDatetime() != null) {
             dto.updatePublishedTimestamp(
-                    org.example.order.core.support.mapping.TimeMapper.localDateTimeToEpochMillis(entity.getPublishedDatetime())
+                    TimeMapper.localDateTimeToEpochMillis(entity.getPublishedDatetime())
             );
         }
     }
 
     // DTO -> Entity
     @ObjectFactory
-    default OrderEntity newOrderEntity(LocalOrderDto dto) {
+    default OrderEntity newOrderEntity(OrderSyncDto dto) {
         OrderEntity e = OrderEntity.createEmpty();
         e.setId(dto.getId());
 
@@ -56,10 +60,10 @@ public interface OrderMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "publishedDatetime", ignore = true)
-    OrderEntity toEntity(LocalOrderDto dto);
+    OrderEntity toEntity(OrderSyncDto dto);
 
     @AfterMapping
-    default void fillEntity(@MappingTarget OrderEntity entity, LocalOrderDto dto) {
+    default void fillEntity(@MappingTarget OrderEntity entity, OrderSyncDto dto) {
         entity.updateAll(
                 dto.getUserId(),
                 dto.getUserNumber(),
@@ -68,7 +72,7 @@ public interface OrderMapper {
                 dto.getOrderPrice(),
                 dto.getDeleteYn(),
                 dto.getVersion(),
-                org.example.order.core.support.mapping.TimeMapper.epochMillisToLocalDateTime(dto.getPublishedTimestamp()),
+                TimeMapper.epochMillisToLocalDateTime(dto.getPublishedTimestamp()),
                 dto.getCreatedUserId(),
                 dto.getCreatedUserType(),
                 dto.getCreatedDatetime(),
@@ -84,5 +88,8 @@ public interface OrderMapper {
             source = "publishedTimestamp",
             qualifiedByName = "epochMillisToLocalDateTime"
     )
-    OrderUpdate toUpdate(LocalOrderDto dto);
+    OrderUpdate toUpdate(OrderSyncDto dto);
+
+    // DTO(List) -> Update(List) : 배치 변환 (서비스에서 사용하는 toUpdateCommands)
+    List<OrderUpdate> toUpdateCommands(List<OrderSyncDto> dtos);
 }

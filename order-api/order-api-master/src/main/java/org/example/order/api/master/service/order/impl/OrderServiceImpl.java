@@ -6,6 +6,7 @@ import org.example.order.api.master.service.common.KafkaProducerService;
 import org.example.order.api.master.service.order.OrderService;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.dto.internal.OrderDto;
+import org.example.order.core.application.order.dto.internal.OrderSyncDto;
 import org.example.order.core.application.order.mapper.OrderMapper;
 import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
@@ -89,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
                 ? Instant.now().toEpochMilli() + tsDelta
                 : original.getPublishedTimestamp() + tsDelta;
 
-        var overwritten = new org.example.order.core.application.order.dto.internal.LocalOrderDto(
+        var overwritten = new OrderSyncDto(
                 (original.getId() == null ? idDelta : original.getId() + idDelta),
                 (original.getUserId() == null ? userIdDelta : original.getUserId() + userIdDelta),
                 original.getUserNumber(),

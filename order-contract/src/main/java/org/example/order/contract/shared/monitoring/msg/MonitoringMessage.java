@@ -1,4 +1,4 @@
-package org.example.order.contract.common.monitoring.message;
+package org.example.order.contract.shared.monitoring.msg;
 
 /**
  * 모니터링 메시지 "계약" (카프카 등 외부 시스템으로 전송되는 와이어 스키마)

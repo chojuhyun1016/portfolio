@@ -15,11 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class EncryptorTest {
 
-    private static String b64UrlKey(int bytes) {
+    private static String b64Key(int bytes) {
         byte[] buf = new byte[bytes];
         new SecureRandom().nextBytes(buf);
-
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
+        return Base64.getEncoder().encodeToString(buf);
     }
 
     private ApplicationContextRunner runnerSeeded() {
@@ -27,10 +26,10 @@ class EncryptorTest {
                 .withPropertyValues(
                         "crypto.enabled=true",
                         "crypto.props.seed=true",
-                        "encrypt.aes128.key=" + b64UrlKey(16),
-                        "encrypt.aes256.key=" + b64UrlKey(32),
-                        "encrypt.aesgcm.key=" + b64UrlKey(32),
-                        "encrypt.hmac.key=" + b64UrlKey(32)
+                        "encrypt.aes128.key=" + b64Key(16),
+                        "encrypt.aes256.key=" + b64Key(32),
+                        "encrypt.aesgcm.key=" + b64Key(32),
+                        "encrypt.hmac.key=" + b64Key(32)
                 )
                 .withConfiguration(UserConfigurations.of(CryptoInfraConfig.class));
     }

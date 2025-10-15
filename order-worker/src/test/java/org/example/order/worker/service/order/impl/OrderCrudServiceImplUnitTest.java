@@ -1,6 +1,6 @@
 //package org.example.order.worker.service.order.impl;
 //
-//import org.example.order.core.application.order.dto.internal.LocalOrderDto;
+//import org.example.order.core.application.order.dto.internal.OrderSyncDto;
 //import org.example.order.core.application.order.mapper.OrderMapper;
 //import org.example.order.domain.order.entity.OrderEntity;
 //import org.example.order.domain.order.model.OrderUpdate;
@@ -35,7 +35,7 @@
 //                repo, q, cmd, mapper, /* idGen */ null, /* dynamo */ null, /* redis */ null
 //        );
 //
-//        LocalOrderDto d = new LocalOrderDto();
+//        OrderSyncDto d = new OrderSyncDto();
 //        when(mapper.toEntity(d)).thenReturn(new OrderEntity());
 //
 //        sut.bulkInsert(List.of(d));
@@ -60,7 +60,7 @@
 //        doThrow(new org.springframework.dao.DuplicateKeyException("dup"))
 //                .when(cmd).bulkInsert(anyList());
 //
-//        assertThatThrownBy(() -> sut.bulkInsert(List.of(new LocalOrderDto())))
+//        assertThatThrownBy(() -> sut.bulkInsert(List.of(new OrderSyncDto())))
 //                .isInstanceOf(DataAccessException.class);
 //    }
 //
@@ -78,7 +78,7 @@
 //
 //        when(mapper.toUpdateCommands(anyList())).thenReturn(List.of(mock(OrderUpdate.class)));
 //
-//        sut.bulkUpdate(List.of(new LocalOrderDto()));
+//        sut.bulkUpdate(List.of(new OrderSyncDto()));
 //
 //        verify(mapper, times(1)).toUpdateCommands(anyList());
 //        verify(cmd, times(1)).bulkUpdate(anyList());
@@ -96,9 +96,9 @@
 //                repo, q, cmd, mapper, null, null, null
 //        );
 //
-//        LocalOrderDto d1 = new LocalOrderDto();
+//        OrderSyncDto d1 = new OrderSyncDto();
 //        d1.setOrderId(1L);
-//        LocalOrderDto d2 = new LocalOrderDto();
+//        OrderSyncDto d2 = new OrderSyncDto();
 //        d2.setOrderId(2L);
 //
 //        sut.deleteAll(List.of(d1, d2));

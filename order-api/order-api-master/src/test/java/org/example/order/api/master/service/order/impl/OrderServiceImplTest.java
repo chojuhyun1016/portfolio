@@ -1,7 +1,7 @@
 //package org.example.order.api.master.service.order.impl;
 //
 //import org.example.order.api.master.service.common.KafkaProducerService;
-//import org.example.order.common.core.messaging.code.MessageMethodType;
+//import org.example.order.common.core.messaging.code.Operation;
 //import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 //import org.example.order.core.application.order.mapper.OrderMapper;
 //import org.example.order.core.infra.messaging.order.message.OrderLocalMessage;
@@ -24,7 +24,7 @@
 //        when(mapper.toOrderLocalMessage(any())).thenReturn(message);
 //
 //        OrderServiceImpl service = new OrderServiceImpl(producer, mapper);
-//        LocalOrderCommand cmd = new LocalOrderCommand(77L, MessageMethodType.PUT);
+//        LocalOrderCommand cmd = new LocalOrderCommand(77L, Operation.PUT);
 //
 //        // when
 //        service.sendMessage(cmd);

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class LocalOrderDto {
+public class OrderSyncDto {
 
     private Long id;
     private Long userId;
@@ -39,6 +39,22 @@ public class LocalOrderDto {
 
     public void updateUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public void updateUserNumber(String userNumber) {
+        this.userNumber = userNumber;
+    }
+
+    public void updateOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public void updateOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    public void updateOrderPrice(Long orderPrice) {
+        this.orderPrice = orderPrice;
     }
 
     public void markAsFailed() {

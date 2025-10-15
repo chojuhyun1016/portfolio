@@ -1,4 +1,4 @@
-package org.example.order.contract.common.monitoring.type;
+package org.example.order.contract.shared.monitoring.type;
 
 /**
  * 모니터링 유형(계약용)

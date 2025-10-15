@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.example.order.batch.application.message.LocalMessage;
-import org.example.order.core.infra.messaging.order.code.MessageCategory;
+import org.example.order.contract.shared.op.Operation;
 
 @Getter
 @NoArgsConstructor
@@ -14,5 +14,5 @@ import org.example.order.core.infra.messaging.order.code.MessageCategory;
 public class LocalMessageDto {
     private String timestamp;
     private LocalMessage message;
-    private MessageCategory category;
+    private Operation category;
 }

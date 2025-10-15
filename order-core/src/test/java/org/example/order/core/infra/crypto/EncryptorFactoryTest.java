@@ -18,11 +18,10 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 class EncryptorFactoryTest {
 
-    private static String b64UrlKey(int bytes) {
+    private static String b64Key(int bytes) {
         byte[] buf = new byte[bytes];
         new SecureRandom().nextBytes(buf);
-
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
+        return Base64.getEncoder().encodeToString(buf);
     }
 
     @Test
@@ -54,10 +53,10 @@ class EncryptorFactoryTest {
 
     @Test
     void when_enabled_and_seeded_then_end_to_end_sanity_via_factory() {
-        String k128 = b64UrlKey(16);
-        String k256 = b64UrlKey(32);
-        String kgcm = b64UrlKey(32);
-        String khmac = b64UrlKey(32);
+        String k128 = b64Key(16);
+        String k256 = b64Key(32);
+        String kgcm = b64Key(32);
+        String khmac = b64Key(32);
 
         new ApplicationContextRunner()
                 .withPropertyValues(

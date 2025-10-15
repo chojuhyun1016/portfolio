@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.example.order.common.core.messaging.code.MessageMethodType;
+import org.example.order.contract.shared.op.Operation;
 
 @Getter
 @NoArgsConstructor
@@ -13,5 +13,5 @@ import org.example.order.common.core.messaging.code.MessageMethodType;
 public class LocalMessage {
     private Long id;
     private Long publishedTimestamp;
-    private MessageMethodType methodType;
+    private Operation methodType;
 }

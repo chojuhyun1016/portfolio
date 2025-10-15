@@ -1,7 +1,7 @@
 package org.example.order.api.master.dto.order;
 
 import jakarta.validation.constraints.NotNull;
-import org.example.order.common.core.messaging.code.MessageMethodType;
+import org.example.order.contract.shared.op.Operation;
 
 public record LocalOrderRequest(
 
@@ -9,6 +9,6 @@ public record LocalOrderRequest(
         Long orderId,
 
         @NotNull(message = "methodType 은 필수입니다.")
-        MessageMethodType methodType
+        Operation operation
 ) {
 }

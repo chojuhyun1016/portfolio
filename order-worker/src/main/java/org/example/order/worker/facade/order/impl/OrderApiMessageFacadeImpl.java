@@ -2,9 +2,10 @@ package org.example.order.worker.facade.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.application.order.dto.internal.OrderDto;
-import org.example.order.core.infra.messaging.order.message.OrderApiMessage;
-import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
+import org.example.order.contract.order.messaging.event.OrderCrudMessage;
+import org.example.order.contract.order.messaging.payload.OrderPayload;
+import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+import org.example.order.worker.dto.consumer.OrderApiConsumerDto;
 import org.example.order.worker.facade.order.OrderApiMessageFacade;
 import org.example.order.worker.service.common.KafkaProducerService;
 import org.example.order.worker.service.common.WebClientService;
@@ -13,14 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * OrderApiMessageFacadeImpl
- * ------------------------------------------------------------------------
- * 목적
- * - API 호출 → DTO 조합 → CRUD 발행.
- * MDC 전략
- * - 리스너에서 @Correlate 로 traceId/orderId가 이미 세팅됨(동기 호출 경로).
- * <p>
- * [변경 사항]
- * - ObjectMapperUtils 변환 제거, POJO 직접 사용.
+ * - API 호출로 데이터를 조회하고 CRUD 메시지를 발행
  */
 @Slf4j
 @Component
@@ -32,26 +26,40 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
 
     @Transactional
     @Override
-    public void requestApi(OrderApiMessage message) {
-
+    public void requestApi(OrderApiConsumerDto dto) {
         try {
-            log.info("requestApi : message : {}", message);
+            log.info("requestApi : dto : {}", dto);
 
-            if (message == null) {
-                throw new IllegalArgumentException("OrderApiMessage is null");
+            if (dto == null) {
+                throw new IllegalArgumentException("OrderApiConsumerDto is null");
             }
 
-            OrderDto dto = webClientService.findOrderListByOrderId(message.getId());
-//            dto.updatePublishedTimestamp(message.getPublishedTimestamp());
+            dto.validate();
 
-//            kafkaProducerService.sendToOrderCrud(OrderCrudMessage.toMessage(message, dto));
+            OrderSyncDto orderDto = webClientService.findOrderListByOrderId(dto.getId());
+
+            if (orderDto == null) {
+                throw new IllegalStateException("Order API returned empty order for id=" + dto.getId());
+            }
+
+            OrderPayload payload = toPayload(orderDto);
+
+            kafkaProducerService.sendToOrderCrud(OrderCrudMessage.of(dto.getOperation(), payload));
+
         } catch (Exception e) {
-            log.error("error : order api message : {}", message);
-            log.error(e.getMessage(), e);
-
-            kafkaProducerService.sendToDlq(message, e);
+            log.error("error : order api dto : {}", dto, e);
 
             throw e;
         }
+    }
+
+    private OrderPayload toPayload(OrderSyncDto o) {
+        return new OrderPayload(
+                o.getOrderId(),
+                o.getOrderNumber(),
+                o.getUserId(),
+                o.getUserNumber(),
+                o.getOrderPrice()
+        );
     }
 }

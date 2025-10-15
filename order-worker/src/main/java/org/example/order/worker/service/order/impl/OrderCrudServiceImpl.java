@@ -2,7 +2,7 @@ package org.example.order.worker.service.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.application.order.dto.internal.LocalOrderDto;
+import org.example.order.core.application.order.dto.internal.OrderSyncDto;
 import org.example.order.core.application.order.mapper.OrderMapper;
 import org.example.order.core.infra.crypto.algorithm.encryptor.AesGcmEncryptor;
 import org.example.order.core.infra.persistence.order.redis.RedisRepository;
@@ -24,15 +24,22 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * OrderCrudServiceImpl
+ * ------------------------------------------------------------------------
+ * 목적
+ * - 원본 벌크 연산과 증폭 연산을 함께 수행
+ * - 커밋 이후 외부 동기화 트리거
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class OrderCrudServiceImpl implements OrderCrudService {
 
-    private final OrderRepository orderRepository;                   // JPA 저장소 (증폭 INSERT/DELETE)
-    private final OrderQueryRepository orderQueryRepository;         // QueryDSL 기반 조회/갱신(증폭 UPDATE)
-    private final OrderCommandRepository orderCommandRepository;     // JDBC 벌크 커맨드 (원본 INSERT/UPDATE)
+    private final OrderRepository orderRepository;                   // JPA 저장소
+    private final OrderQueryRepository orderQueryRepository;         // QueryDSL 기반 갱신
+    private final OrderCommandRepository orderCommandRepository;     // JDBC 벌크 커맨드
 
     private final OrderMapper orderMapper;
     private final IdGenerator idGenerator;
@@ -49,9 +56,9 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     private final AesGcmEncryptor aesGcmEncryptor;
 
     @Override
-    public List<OrderEntity> bulkInsert(List<LocalOrderDto> dtoList) {
+    public List<OrderEntity> bulkInsert(List<OrderSyncDto> dtoList) {
         try {
-            // 1) DTO -> Entity (원본) & ID 보정
+            // DTO -> Entity (원본) & ID 보정
             List<OrderEntity> entities = dtoList.stream()
                     .map(orderMapper::toEntity)
                     .peek(e -> {
@@ -61,44 +68,42 @@ public class OrderCrudServiceImpl implements OrderCrudService {
                     })
                     .toList();
 
-            // 2) JDBC 벌크 INSERT (원본)
+            // JDBC 벌크 INSERT (원본)
             orderCommandRepository.bulkInsert(entities);
 
-            // 3) 증폭 INSERT — JPA로 새 PK 행 INSERT (항상 수행)
+            // 증폭 INSERT — JPA로 새 PK 행 INSERT
             for (OrderEntity src : entities) {
                 try {
                     OrderEntity amplified = amplifyToEntity(src);
-
                     orderRepository.save(amplified);
                 } catch (Throwable t) {
                     log.warn("[JPA][AMPLIFY][SKIP] orderId={} cause={}", src.getOrderId(), t.toString());
                 }
             }
 
-            // 4) 커밋 후 외부 동기화(원본만)
+            // 커밋 후 외부 동기화
             afterCommit(() -> upsertExternal(dtoList));
 
             return entities;
         } catch (DataAccessException e) {
-            log.error("error : OrderCrudEntity bulkInsert failed - msg : {}, cause : {}", e.getMessage(), e.getCause(), e);
+            log.error("error: OrderCrudEntity bulkInsert failed - msg: {}, cause: {}", e.getMessage(), e.getCause(), e);
 
             throw e;
         } catch (Exception e) {
-            log.error("error : OrderCrudEntity bulkInsert failed", e);
+            log.error("error: OrderCrudEntity bulkInsert failed", e);
 
             throw e;
         }
     }
 
     @Override
-    public void bulkUpdate(List<LocalOrderDto> dtoList) {
-        // 1) 원본은 JDBC 벌크 UPDATE
+    public void bulkUpdate(List<OrderSyncDto> dtoList) {
+        // 원본은 JDBC 벌크 UPDATE
         List<OrderUpdate> commandList = orderMapper.toUpdateCommands(dtoList);
-
         orderCommandRepository.bulkUpdate(commandList);
 
-        // 2) 증폭 UPDATE — 대상이 없으면 0건 유지(보완 INSERT 금지)
-        for (LocalOrderDto d : dtoList) {
+        // 증폭 UPDATE
+        for (OrderSyncDto d : dtoList) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
@@ -126,20 +131,20 @@ public class OrderCrudServiceImpl implements OrderCrudService {
             }
         }
 
-        // 3) 커밋 후 외부 동기화(원본만)
+        // 커밋 후 외부 동기화
         afterCommit(() -> upsertExternal(dtoList));
     }
 
     @Override
-    public void deleteAll(List<LocalOrderDto> dtoList) {
-        // 1) 원본 삭제
+    public void deleteAll(List<OrderSyncDto> dtoList) {
+        // 원본 삭제
         List<Long> ids = dtoList.stream()
-                .map(LocalOrderDto::getOrderId)
+                .map(OrderSyncDto::getOrderId)
                 .toList();
 
         orderRepository.deleteByOrderIdIn(ids);
 
-        // 2) 증폭 삭제: orderId + OFFSET
+        // 증폭 삭제: orderId + OFFSET
         List<Long> amplifiedIds = new ArrayList<>(ids.size());
 
         for (Long id : ids) {
@@ -156,19 +161,19 @@ public class OrderCrudServiceImpl implements OrderCrudService {
             }
         }
 
-        // 3) 커밋 후 외부 삭제 동기화(원본만)
+        // 커밋 후 외부 삭제 동기화
         afterCommit(() -> deleteExternal(dtoList));
     }
 
-    /* ========================= 외부 동기화(원본만) ========================= */
+    /* 외부 동기화 */
 
-    private void upsertExternal(List<LocalOrderDto> items) {
+    private void upsertExternal(List<OrderSyncDto> items) {
         if (items == null || items.isEmpty()) {
             return;
         }
 
         // DynamoDB upsert
-        for (LocalOrderDto d : items) {
+        for (OrderSyncDto d : items) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
@@ -177,13 +182,8 @@ public class OrderCrudServiceImpl implements OrderCrudService {
                 OrderDynamoEntity e = toDynamo(d);
 
                 if (d.getOrderPrice() != null) {
-                    String enc = aesGcmEncryptor.encrypt(String.valueOf(d.getOrderPrice())); // "v1:BASE64(...)"
+                    String enc = aesGcmEncryptor.encrypt(String.valueOf(d.getOrderPrice()));
                     e.setOrderPriceEnc(enc);
-
-                    String prefix = enc.substring(0, Math.min(18, enc.length()));
-                    String rest = enc.length() > 18 ? enc.substring(18) : "";
-
-                    log.info("[DYNAMO][PRICE][ENC] orderId={} enc.prefix={} enc.rest={}", safeId(d), prefix, rest);
                 }
 
                 orderDynamoRepository.save(e);
@@ -200,14 +200,13 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         }
 
         // Redis upsert
-        for (LocalOrderDto d : items) {
+        for (OrderSyncDto d : items) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
                 }
 
                 String key = redisKey(d.getOrderId());
-
                 redisRepository.set(key, d);
             } catch (Throwable t) {
                 log.error("[REDIS][UPSERT][SKIP] orderId={} cause={}", safeId(d), t.toString());
@@ -215,13 +214,13 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         }
     }
 
-    private void deleteExternal(List<LocalOrderDto> items) {
+    private void deleteExternal(List<OrderSyncDto> items) {
         if (items == null || items.isEmpty()) {
             return;
         }
 
         // DynamoDB delete
-        for (LocalOrderDto d : items) {
+        for (OrderSyncDto d : items) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
@@ -240,7 +239,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         }
 
         // Redis delete
-        for (LocalOrderDto d : items) {
+        for (OrderSyncDto d : items) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
@@ -253,18 +252,12 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         }
     }
 
-    /* ========================= 증폭(JPA INSERT) 헬퍼 ========================= */
+    /* 증폭(JPA INSERT) 헬퍼 */
 
-    /**
-     * 원본 엔티티를 변형하여 “새 PK”로 INSERT할 증폭 엔티티 생성
-     */
     private OrderEntity amplifyToEntity(OrderEntity src) {
         OrderEntity e = new OrderEntity();
-
-        // 새 PK (INSERT 보장)
         e.setId(idGenerator.nextId());
 
-        // 업무키/컬럼 변형
         if (src.getOrderId() != null) {
             e.setOrderId(src.getOrderId() + ORDER_ID_OFFSET);
         } else {
@@ -279,10 +272,8 @@ public class OrderCrudServiceImpl implements OrderCrudService {
 
         e.setUserId(src.getUserId());
         e.setUserNumber(src.getUserNumber());
-
         Long price = src.getOrderPrice();
         e.setOrderPrice((price == null ? 0L : price) + ORDER_PRICE_DELTA);
-
         e.setDeleteYn(src.getDeleteYn());
         e.setCreatedUserId(src.getCreatedUserId());
         e.setCreatedUserType(src.getCreatedUserType());
@@ -295,20 +286,17 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         return e;
     }
 
-    /* ========================= 기타 헬퍼 ========================= */
+    /* 기타 헬퍼 */
 
     private static String redisKey(Long orderId) {
         return String.format(REDIS_KEY_FMT, String.valueOf(orderId));
     }
 
-    private static String safeId(LocalOrderDto d) {
+    private static String safeId(OrderSyncDto d) {
         return (d == null || d.getOrderId() == null) ? "null" : String.valueOf(d.getOrderId());
     }
 
-    /**
-     * LocalOrderDto -> Dynamo 저장용 매핑
-     */
-    private static OrderDynamoEntity toDynamo(LocalOrderDto d) {
+    private static OrderDynamoEntity toDynamo(OrderSyncDto d) {
         OrderDynamoEntity e = new OrderDynamoEntity();
         e.setId(String.valueOf(d.getOrderId()));
         e.setOrderId(d.getOrderId());
@@ -329,16 +317,12 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         return e;
     }
 
-    /**
-     * 트랜잭션 커밋 이후 실행 유틸
-     */
     private static void afterCommit(Runnable r) {
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             try {
                 r.run();
             } catch (Throwable ignore) {
             }
-
             return;
         }
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

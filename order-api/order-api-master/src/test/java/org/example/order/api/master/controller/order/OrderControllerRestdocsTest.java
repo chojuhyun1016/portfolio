@@ -7,7 +7,7 @@
 //import org.example.order.api.master.web.advice.MasterApiExceptionHandler;
 //import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 //import org.example.order.client.kafka.service.KafkaProducerCluster;
-//import org.example.order.common.core.messaging.code.MessageMethodType;
+//import org.example.order.common.core.messaging.code.Operation;
 //import org.example.order.core.application.order.mapper.OrderMapper;
 //import org.junit.jupiter.api.DisplayName;
 //import org.junit.jupiter.api.Tag;
@@ -80,7 +80,7 @@
 //    void restdocs_order_accepted() throws Exception {
 //        Mockito.doNothing().when(facade).sendOrderMessage(any());
 //
-//        var req = new LocalOrderRequest(999L, MessageMethodType.POST);
+//        var req = new LocalOrderRequest(999L, Operation.POST);
 //
 //        mvc.perform(RestDocumentationRequestBuilders.post("/order")
 //                        .contentType(MediaType.APPLICATION_JSON)

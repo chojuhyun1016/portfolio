@@ -1,9 +1,9 @@
 //package org.example.order.worker.facade.order.impl;
 //
 //import org.apache.kafka.clients.consumer.ConsumerRecord;
-//import org.example.order.common.core.messaging.code.MessageMethodType;
+//import org.example.order.common.core.messaging.code.Operation;
 //import org.example.order.common.core.messaging.message.DlqMessage;
-//import org.example.order.core.application.order.dto.internal.LocalOrderDto;
+//import org.example.order.core.application.order.dto.internal.OrderSyncDto;
 //import org.example.order.core.application.order.dto.internal.OrderDto;
 //import org.example.order.core.infra.messaging.order.message.OrderCloseMessage;
 //import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
@@ -28,11 +28,11 @@
 // */
 //class OrderCrudMessageFacadeImplUnitTest {
 //
-//    private static OrderCrudMessage msg(MessageMethodType type, long orderId, boolean failure) {
+//    private static OrderCrudMessage msg(Operation type, long orderId, boolean failure) {
 //        OrderCrudMessage m = mock(OrderCrudMessage.class, RETURNS_DEEP_STUBS);
 //        when(m.getMethodType()).thenReturn(type);
 //
-//        LocalOrderDto local = new LocalOrderDto();
+//        OrderSyncDto local = new OrderSyncDto();
 //        local.setOrderId(orderId);
 //        local.setFailure(failure);
 //
@@ -50,12 +50,12 @@
 //
 //        OrderCrudMessageFacadeImpl sut = new OrderCrudMessageFacadeImpl(producer, orderService);
 //
-//        var r1 = new ConsumerRecord<>("t", 0, 0, "k1", msg(MessageMethodType.POST, 1L, false));
-//        var r2 = new ConsumerRecord<>("t", 0, 1, "k2", msg(MessageMethodType.POST, 2L, false));
+//        var r1 = new ConsumerRecord<>("t", 0, 0, "k1", msg(Operation.POST, 1L, false));
+//        var r2 = new ConsumerRecord<>("t", 0, 1, "k2", msg(Operation.POST, 2L, false));
 //
 //        sut.executeOrderCrud(List.of(r1, r2));
 //
-//        verify(orderService, times(1)).execute(eq(MessageMethodType.POST), anyList());
+//        verify(orderService, times(1)).execute(eq(Operation.POST), anyList());
 //        verify(producer, atLeastOnce()).sendToOrderRemote(any(OrderCloseMessage.class));
 //        verify(producer, never()).sendToDlq(anyList(), any());
 //        verify(producer, never()).sendToDlq(any(DlqMessage.class), any());
@@ -69,8 +69,8 @@
 //
 //        OrderCrudMessageFacadeImpl sut = new OrderCrudMessageFacadeImpl(producer, orderService);
 //
-//        var r1 = new ConsumerRecord<>("t", 0, 0, "k1", msg(MessageMethodType.PUT, 10L, false));
-//        var r2 = new ConsumerRecord<>("t", 0, 1, "k2", msg(MessageMethodType.PUT, 20L, true));
+//        var r1 = new ConsumerRecord<>("t", 0, 0, "k1", msg(Operation.PUT, 10L, false));
+//        var r2 = new ConsumerRecord<>("t", 0, 1, "k2", msg(Operation.PUT, 20L, true));
 //
 //        assertThatThrownBy(() -> sut.executeOrderCrud(List.of(r1, r2)))
 //                .isInstanceOf(DatabaseExecuteException.class)

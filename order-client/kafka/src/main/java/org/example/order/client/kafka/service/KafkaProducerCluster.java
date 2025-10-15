@@ -10,11 +10,13 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * KafkaTemplate을 이용한 Producer 서비스 (순수 POJO)
- * - 빈 등록은 설정 클래스(KafkaModuleConfig)에서 조건부로 수행
+ * KafkaTemplate 기반 전송 어댑터
+ * - 기본 전송
+ * - 헤더 복원 전송
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -33,10 +35,34 @@ public class KafkaProducerCluster implements SmartLifecycle {
 
         future.whenComplete(MdcPropagation.wrap((result, ex) -> {
             if (ex == null) {
-                log.info("Sending kafka message - topic: {}, message: {}, offset: {}",
-                        topic, result.getProducerRecord().value(), result.getRecordMetadata().offset());
+                log.info("Sending kafka message - topic: {}, offset: {}", topic, result.getRecordMetadata().offset());
             } else {
-                log.error("error : Sending kafka message failed - topic: {}, message: {}", topic, ex.getMessage(), ex);
+                log.error("error: Sending kafka message failed - topic: {}, message: {}", topic, ex.getMessage(), ex);
+            }
+        }));
+    }
+
+    /**
+     * 헤더 복원 전송
+     */
+    public void sendMessage(Object data, String topic, Map<String, String> originalHeaders) {
+        MessageBuilder<Object> builder = MessageBuilder
+                .withPayload(data)
+                .setHeader(KafkaHeaders.TOPIC, topic);
+
+        if (originalHeaders != null) {
+            originalHeaders.forEach(builder::setHeader);
+        }
+
+        Message<Object> message = builder.build();
+
+        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(message);
+
+        future.whenComplete(MdcPropagation.wrap((result, ex) -> {
+            if (ex == null) {
+                log.info("Sending kafka message with headers - topic: {}, offset: {}", topic, result.getRecordMetadata().offset());
+            } else {
+                log.error("error: Sending kafka message with headers failed - topic: {}, message: {}", topic, ex.getMessage(), ex);
             }
         }));
     }

@@ -1,19 +1,20 @@
 package org.example.order.contract.order.messaging.event;
 
+import org.example.order.contract.shared.op.Operation;
 import org.example.order.contract.order.messaging.type.MessageOrderType;
-import org.example.order.contract.order.messaging.type.MessageMethodType;
 
 /**
  * Local 이벤트 메시지 계약
- * - 내부에서 최초 발행되는 이벤트를 표준화
+ * - 정상/본선 토픽에 실리는 메시지
+ * - DLQ에 보낼 때는 이걸 DeadLetter<OrderLocalMessage>의 payload로 감싼다.
  */
 public record OrderLocalMessage(
-        MessageOrderType category,
+        Operation operation,
+        MessageOrderType orderType,
         Long id,
-        MessageMethodType methodType,
         Long publishedTimestamp
 ) {
-    public static OrderLocalMessage of(Long id, MessageMethodType methodType, Long ts) {
-        return new OrderLocalMessage(MessageOrderType.ORDER_LOCAL, id, methodType, ts);
+    public static OrderLocalMessage of(Long id, Operation operation, Long ts) {
+        return new OrderLocalMessage(operation, MessageOrderType.ORDER_LOCAL, id, ts);
     }
 }

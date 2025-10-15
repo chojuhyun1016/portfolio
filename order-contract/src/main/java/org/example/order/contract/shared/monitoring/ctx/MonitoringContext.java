@@ -1,4 +1,4 @@
-package org.example.order.contract.common.monitoring.constant;
+package org.example.order.contract.shared.monitoring.ctx;
 
 /**
  * 모니터링 메시지에 들어가는 고정 식별자(회사/시스템/도메인)

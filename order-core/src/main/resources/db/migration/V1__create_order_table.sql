@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS `order`
 (
-    id                 BIGINT       NOT NULL             COMMENT 'PK' PRIMARY KEY,
+    id                 BIGINT       NOT NULL             COMMENT 'PK'
     user_id            BIGINT       NOT NULL             COMMENT '회원ID',
     user_number        VARCHAR(50)  NOT NULL             COMMENT '회원번호',
     order_id           BIGINT       NOT NULL             COMMENT '주문ID',
@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `order`
     modified_datetime  DATETIME     NOT NULL             COMMENT '수정일시',
     version            BIGINT       NOT NULL DEFAULT 0   COMMENT 'Data Version',
 
-    UNIQUE KEY uq_order_order_id (order_id),
-    UNIQUE KEY uq_order_order_number (order_number)
+    CONSTRAINT pk_order PRIMARY KEY (id),
+    CONSTRAINT uq_order_order_id UNIQUE (order_id),
+    CONSTRAINT uq_order_order_number UNIQUE (order_number)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

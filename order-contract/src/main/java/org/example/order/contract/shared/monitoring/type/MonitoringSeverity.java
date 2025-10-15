@@ -1,4 +1,4 @@
-package org.example.order.contract.common.monitoring.type;
+package org.example.order.contract.shared.monitoring.type;
 
 /**
  * 장애 심각도(계약용): 1~5

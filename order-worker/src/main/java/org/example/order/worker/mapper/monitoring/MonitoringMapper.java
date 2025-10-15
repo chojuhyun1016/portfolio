@@ -1,9 +1,9 @@
 package org.example.order.worker.mapper.monitoring;
 
-import org.example.order.contract.common.monitoring.constant.MonitoringContext;
-import org.example.order.contract.common.monitoring.message.MonitoringMessage;
-import org.example.order.contract.common.monitoring.type.MonitoringSeverity;
-import org.example.order.contract.common.monitoring.type.MonitoringType;
+import org.example.order.contract.shared.monitoring.ctx.MonitoringContext;
+import org.example.order.contract.shared.monitoring.msg.MonitoringMessage;
+import org.example.order.contract.shared.monitoring.type.MonitoringSeverity;
+import org.example.order.contract.shared.monitoring.type.MonitoringType;
 import org.springframework.stereotype.Component;
 
 /**
