@@ -3,6 +3,8 @@ package org.example.order.worker.listener.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.example.order.common.messaging.ConsumerEnvelope;
+import org.example.order.common.support.logging.Correlate;
 import org.example.order.contract.order.messaging.event.OrderApiMessage;
 import org.example.order.worker.dto.consumer.OrderApiConsumerDto;
 import org.example.order.worker.facade.order.OrderApiMessageFacade;
@@ -10,11 +12,11 @@ import org.example.order.worker.listener.order.OrderApiMessageListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
-import org.example.order.common.support.logging.Correlate;
 
 /**
  * OrderApiMessageListenerImpl
- * - API 요청 메시지를 수신해 파사드에 위임
+ * - API 요청 메시지 수신
+ * - 레코드를 Envelope로 감싸 파사드에 위임
  */
 @Slf4j
 @Component
@@ -53,9 +55,10 @@ public class OrderApiMessageListenerImpl implements OrderApiMessageListener {
         log.info("API - order-api record received: {}", record.value());
 
         try {
-            OrderApiConsumerDto dto = OrderApiConsumerDto.from(record.value());
+            ConsumerEnvelope<OrderApiConsumerDto> envelope =
+                    ConsumerEnvelope.fromRecord(record, OrderApiConsumerDto.from(record.value()));
 
-            facade.requestApi(dto);
+            facade.requestApi(envelope);
         } catch (Exception e) {
             log.error("error : order-api", e);
         } finally {

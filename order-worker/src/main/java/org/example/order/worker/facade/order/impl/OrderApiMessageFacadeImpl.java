@@ -2,6 +2,7 @@ package org.example.order.worker.facade.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.order.common.messaging.ConsumerEnvelope;
 import org.example.order.contract.order.messaging.event.OrderCrudMessage;
 import org.example.order.contract.order.messaging.payload.OrderPayload;
 import org.example.order.core.application.order.dto.internal.OrderSyncDto;
@@ -15,7 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * OrderApiMessageFacadeImpl
  * - API 호출 후 CRUD 메시지 발행
- * - OrderPayload를 생성/수정 메타까지 채워서 보낸다
+ * - 예외 발생 시 Envelope의 원본 헤더를 사용해 DLQ 전송
+ * - OrderPayload는 생성/수정 메타를 포함해 구성
  */
 @Slf4j
 @Component
@@ -27,12 +29,17 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
 
     @Transactional
     @Override
-    public void requestApi(OrderApiConsumerDto dto) {
+    public void requestApi(ConsumerEnvelope<OrderApiConsumerDto> envelope) {
+        OrderApiConsumerDto dto = envelope.getPayload();
+
         try {
-            log.info("requestApi : dto : {}", dto);
-            if (dto == null) throw new IllegalArgumentException("OrderApiConsumerDto is null");
+            if (dto == null) {
+                throw new IllegalArgumentException("OrderApiConsumerDto is null");
+            }
 
             dto.validate();
+
+            log.info("[API->CRUD] requestApi id={}", dto.getId());
 
             // 1) API 조회
             OrderSyncDto orderDto = webClientService.findOrderListByOrderId(dto.getId());
@@ -45,9 +52,11 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
 
             // 3) CRUD 메시지 발행
             kafkaProducerService.sendToOrderCrud(OrderCrudMessage.of(dto.getOperation(), payload));
+
         } catch (Exception e) {
-            log.error("error : order api dto : {}", dto, e);
-            throw e;
+            log.error("order-api failed. id={} cause={}", dto == null ? null : dto.getId(), e.toString());
+
+            kafkaProducerService.sendToDlq(dto, envelope.getHeaders(), e);
         }
     }
 

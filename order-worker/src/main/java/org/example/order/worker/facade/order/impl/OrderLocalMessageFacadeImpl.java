@@ -44,7 +44,6 @@ public class OrderLocalMessageFacadeImpl implements OrderLocalMessageFacade {
             );
 
             kafkaProducerService.sendToOrderApi(msg);
-
         } catch (Exception e) {
             log.error("order-local failed. orderId={} cause={}",
                     dto == null ? null : dto.getId(), e.toString());

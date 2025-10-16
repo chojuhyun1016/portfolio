@@ -68,7 +68,6 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 
             if (!hasText(dlqTopic)) {
                 log.error("DLQ topic name is empty. message={}", message);
-
                 return;
             }
 
@@ -95,7 +94,6 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 
             if (!hasText(dlqTopic)) {
                 log.error("DLQ topic name is empty. payload={}", payload);
-
                 return;
             }
 
@@ -127,12 +125,9 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         }
     }
 
-    /* 내부 공용 */
-
     private void send(Object message, String topic) {
         if (!hasText(topic)) {
             log.error("Kafka topic is empty. skip sending. message={}", message);
-
             return;
         }
 
@@ -167,6 +162,12 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         return MessageOrderType.ORDER_DLQ;
     }
 
+    /**
+     * Exception -> ErrorDetail 변환
+     * - CommonException이면 code(Integer)를 문자열로 변환해 채움
+     * - stack trace는 제한 길이로 잘라서 수집(기본 4000자)
+     * - ErrorDetail은 record 생성자 직접 사용
+     */
     private ErrorDetail buildErrorDetail(Exception ex, Map<String, String> meta, int stackLimit) {
         String code = "UNKNOWN";
         String msg = ex == null ? "unknown" : nullSafe(ex.getMessage(), "unknown");
@@ -174,7 +175,6 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 
         if (ex instanceof CommonException ce) {
             code = (ce.getCode() == null) ? "COMMON" : String.valueOf(ce.getCode());
-
             if (hasText(ce.getMsg())) {
                 msg = ce.getMsg();
             }
