@@ -28,7 +28,7 @@ include(
         "order-common",
         "order-core",
         "order-domain",
-        "order-contract",
+        "order-contracts",
         "order-client:web",
         "order-client:kafka",
         "order-client:s3",

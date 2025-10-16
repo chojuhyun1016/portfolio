@@ -9,9 +9,7 @@ import org.example.order.core.application.order.dto.internal.OrderSyncDto;
 
 /**
  * OrderCrudConsumerDto
- * 목적
- * - CRUD 토픽에서 수신한 계약 이벤트(OrderCrudMessage)를
- * worker 내부에서 사용하는 전용 DTO로 변환해 운반한다.
+ * - CRUD 토픽 계약 이벤트(OrderCrudMessage)를 worker 내부용 DTO로 변환
  */
 @Getter
 @ToString
@@ -30,7 +28,8 @@ public class OrderCrudConsumerDto {
             return null;
         }
 
-        OrderSyncDto d = toLocalOrderDto(msg.payload());
+        OrderPayload p = msg.payload();
+        OrderSyncDto d = toLocalOrderDto(p);
 
         return new OrderCrudConsumerDto(msg.operation(), d);
     }
@@ -56,12 +55,26 @@ public class OrderCrudConsumerDto {
             return d;
         }
 
-        d.updatePublishedTimestamp(null);
-        d.updateUserId(p.userId());
-        d.updateOrderId(p.orderId());
-        d.updateOrderNumber(p.orderNumber());
-        d.updateUserNumber(p.userNumber());
-        d.updateOrderPrice(p.orderPrice());
+        // 식별/주문 기본
+        d.setId(p.id());
+        d.setOrderId(p.orderId());
+        d.setOrderNumber(p.orderNumber());
+
+        // 사용자/가격
+        d.setUserId(p.userId());
+        d.setUserNumber(p.userNumber());
+        d.setOrderPrice(p.orderPrice());
+
+        // 삭제/버전
+        d.setDeleteYn(p.deleteYn());
+        d.setVersion(p.version());
+
+        // 생성/수정 메타
+        d.updateCreatedMeta(p.createdUserId(), p.createdUserType(), p.createdDatetime());
+        d.updateModifiedMeta(p.modifiedUserId(), p.modifiedUserType(), p.modifiedDatetime());
+
+        // 발행 시각(epoch millis)
+        d.setPublishedTimestamp(p.publishedTimestamp());
 
         return d;
     }

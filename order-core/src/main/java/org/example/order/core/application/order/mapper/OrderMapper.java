@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * OrderMapper
  * - DTO/Entity/메시지 간 매핑 정의
+ * - 날짜/시간 필드 매핑은 TimeMapper의 @Named 메서드로 명시 매핑
  */
 @Mapper(
         config = AppMappingConfig.class,
@@ -24,7 +25,9 @@ import java.util.List;
 )
 public interface OrderMapper {
 
-    // LocalOrderCommand -> OrderLocalMessage
+    /* ----------------------------------------------------------------------
+     * LocalOrderCommand -> OrderLocalMessage
+     * ---------------------------------------------------------------------- */
     @Mapping(target = "id", source = "orderId")
     @Mapping(target = "orderType", expression = "java(MessageOrderType.ORDER_LOCAL)")
     @Mapping(
@@ -37,19 +40,22 @@ public interface OrderMapper {
         return toOrderLocalMessage(command, new TimeProvider());
     }
 
-    // Entity -> DTO
+    /* ----------------------------------------------------------------------
+     * Entity -> DTO
+     *  - publishedDatetime(LocalDateTime) -> publishedTimestamp(Long)
+     * ---------------------------------------------------------------------- */
+    @Mapping(
+            target = "publishedTimestamp",
+            source = "publishedDatetime",
+            qualifiedByName = "localDateTimeToEpochMillis"
+    )
     OrderSyncDto toDto(OrderEntity entity);
 
-    @AfterMapping
-    default void setPublishedTimestamp(@MappingTarget OrderSyncDto dto, OrderEntity entity) {
-        if (entity != null && entity.getPublishedDatetime() != null) {
-            dto.updatePublishedTimestamp(
-                    TimeMapper.localDateTimeToEpochMillis(entity.getPublishedDatetime())
-            );
-        }
-    }
-
-    // DTO -> Entity
+    /* ----------------------------------------------------------------------
+     * DTO -> Entity
+     *  - publishedTimestamp(Long) -> publishedDatetime(LocalDateTime)
+     *  - id는 ObjectFactory에서 주입, 이후 매핑 단계에서는 ignore
+     * ---------------------------------------------------------------------- */
     @ObjectFactory
     default OrderEntity newOrderEntity(OrderSyncDto dto) {
         OrderEntity e = OrderEntity.createEmpty();
@@ -59,30 +65,13 @@ public interface OrderMapper {
     }
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "publishedDatetime", ignore = true)
+    @Mapping(target = "publishedDatetime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
     OrderEntity toEntity(OrderSyncDto dto);
 
-    @AfterMapping
-    default void fillEntity(@MappingTarget OrderEntity entity, OrderSyncDto dto) {
-        entity.updateAll(
-                dto.getUserId(),
-                dto.getUserNumber(),
-                dto.getOrderId(),
-                dto.getOrderNumber(),
-                dto.getOrderPrice(),
-                dto.getDeleteYn(),
-                dto.getVersion(),
-                TimeMapper.epochMillisToLocalDateTime(dto.getPublishedTimestamp()),
-                dto.getCreatedUserId(),
-                dto.getCreatedUserType(),
-                dto.getCreatedDatetime(),
-                dto.getModifiedUserId(),
-                dto.getModifiedUserType(),
-                dto.getModifiedDatetime()
-        );
-    }
-
-    // DTO -> Update(Command)
+    /* ----------------------------------------------------------------------
+     * DTO -> Update(Command)
+     *  - publishedTimestamp(Long) -> publishedDateTime(LocalDateTime)
+     * ---------------------------------------------------------------------- */
     @Mapping(
             target = "publishedDateTime",
             source = "publishedTimestamp",
@@ -90,6 +79,6 @@ public interface OrderMapper {
     )
     OrderUpdate toUpdate(OrderSyncDto dto);
 
-    // DTO(List) -> Update(List) : 배치 변환 (서비스에서 사용하는 toUpdateCommands)
+    /* 배치 변환 */
     List<OrderUpdate> toUpdateCommands(List<OrderSyncDto> dtos);
 }
