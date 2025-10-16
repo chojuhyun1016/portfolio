@@ -121,6 +121,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
         } catch (Exception e) {
             log.error("error: order crud dtos grouping failed: {}", dtos);
             log.error(e.getMessage(), e);
+
             throw new CommonException(WorkerExceptionCode.MESSAGE_GROUPING_FAILED);
         }
     }
