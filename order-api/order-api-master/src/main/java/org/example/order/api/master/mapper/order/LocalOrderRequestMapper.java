@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * - 의존 방향: adapter -> application (OK)
  */
 @Component
-public class OrderRequestMapper {
+public class LocalOrderRequestMapper {
 
     public LocalOrderCommand toCommand(LocalOrderPublishRequest req) {
         if (req == null) {

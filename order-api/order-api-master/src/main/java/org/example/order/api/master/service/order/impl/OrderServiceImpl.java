@@ -7,7 +7,6 @@ import org.example.order.api.master.service.order.OrderService;
 import org.example.order.contract.order.messaging.event.OrderLocalMessage;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.dto.query.LocalOrderQuery;
-import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 import org.example.order.core.application.order.dto.view.LocalOrderView;
 import org.example.order.core.application.order.mapper.OrderMapper;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
@@ -35,10 +34,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void sendMessage(LocalOrderCommand command) {
         final OrderLocalMessage message = orderMapper.toOrderLocalMessage(command);
-        message.validation(); // 필수값 검증
+        message.validation();
 
         log.info("[OrderService] send to Kafka: id={}, operation={}, publishedTs={}",
-                message.id(), message.operation(), message.publishedTimestamp());
+                message.getId(), message.getOperation(), message.getPublishedTimestamp());
 
         kafkaProducerService.sendToOrder(message);
     }
@@ -52,15 +51,18 @@ public class OrderServiceImpl implements OrderService {
     public LocalOrderView findById(LocalOrderQuery query) {
         Long id = query.orderId();
 
-        var original = orderRepository
+        // Entity -> LocalOrderView (MapStruct)
+        LocalOrderView original = orderRepository
                 .findById(id)
-                .map(orderMapper::toDto) // Entity -> LocalOrderSync (내부표현)
+                .map(orderMapper::toView)
                 .orElseThrow(() -> {
                     String msg = "Order not found. id=" + id;
                     log.warn("[OrderService] {}", msg);
+
                     return new CommonException(CommonExceptionCode.NOT_FOUND_RESOURCE, msg);
                 });
 
+        // 가공(랜덤 델타) 적용
         SecureRandom r = new SecureRandom();
         long idDelta = 1 + r.nextInt(9);
         long userIdDelta = 1 + r.nextInt(9);
@@ -89,26 +91,26 @@ public class OrderServiceImpl implements OrderService {
                 ? Instant.now().toEpochMilli() + tsDelta
                 : original.getPublishedTimestamp() + tsDelta;
 
-        // 덮어쓴 내부 Sync DTO 생성 후 View로 변환
-        LocalOrderSync overwritten = new LocalOrderSync(
-                (original.getId() == null ? idDelta : original.getId() + idDelta),
-                (original.getUserId() == null ? userIdDelta : original.getUserId() + userIdDelta),
-                original.getUserNumber(),
-                original.getOrderId(),
-                newOrderNumber,
-                (original.getOrderPrice() == null ? priceDelta : original.getOrderPrice() + priceDelta),
-                original.getDeleteYn(),
-                (original.getVersion() == null ? versionDelta : original.getVersion() + versionDelta),
-                original.getCreatedUserId(),
-                original.getCreatedUserType(),
-                original.getCreatedDatetime(),
-                original.getModifiedUserId(),
-                original.getModifiedUserType(),
-                original.getModifiedDatetime(),
-                newPublishedTs,
-                original.getFailure()
-        );
+        // 덮어쓴 View 구성 (불변 DTO이므로 빌더로 새로 생성)
+        LocalOrderView overwritten = LocalOrderView.builder()
+                .id(original.getId() == null ? idDelta : original.getId() + idDelta)
+                .userId(original.getUserId() == null ? userIdDelta : original.getUserId() + userIdDelta)
+                .userNumber(original.getUserNumber())
+                .orderId(original.getOrderId())
+                .orderNumber(newOrderNumber)
+                .orderPrice(original.getOrderPrice() == null ? priceDelta : original.getOrderPrice() + priceDelta)
+                .deleteYn(original.getDeleteYn())
+                .version(original.getVersion() == null ? versionDelta : original.getVersion() + versionDelta)
+                .createdUserId(original.getCreatedUserId())
+                .createdUserType(original.getCreatedUserType())
+                .createdDatetime(original.getCreatedDatetime())
+                .modifiedUserId(original.getModifiedUserId())
+                .modifiedUserType(original.getModifiedUserType())
+                .modifiedDatetime(original.getModifiedDatetime())
+                .publishedTimestamp(newPublishedTs)
+                .failure(Boolean.TRUE.equals(original.getFailure()))
+                .build();
 
-        return orderMapper.toView(overwritten);
+        return overwritten;
     }
 }

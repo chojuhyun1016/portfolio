@@ -13,7 +13,7 @@
 //    @Test
 //    @DisplayName("LocalOrderPublishRequest → LocalOrderCommand 매핑")
 //    void toCommand_should_map_correctly() {
-//        OrderRequestMapper mapper = new OrderRequestMapper();
+//        LocalOrderRequestMapper mapper = new LocalOrderRequestMapper();
 //        LocalOrderPublishRequest req = new LocalOrderPublishRequest(123L, MessageMethodType.POST);
 //
 //        LocalOrderCommand cmd = mapper.toCommand(req);
@@ -26,7 +26,7 @@
 //    @Test
 //    @DisplayName("null 입력 시 null 반환")
 //    void toCommand_null_returns_null() {
-//        OrderRequestMapper mapper = new OrderRequestMapper();
+//        LocalOrderRequestMapper mapper = new LocalOrderRequestMapper();
 //        assertThat(mapper.toCommand(null)).isNull();
 //    }
 //}

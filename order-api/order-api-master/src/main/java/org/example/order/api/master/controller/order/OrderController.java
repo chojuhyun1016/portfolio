@@ -9,8 +9,8 @@ import org.example.order.api.master.dto.order.LocalOrderPublishResponse;
 import org.example.order.api.master.dto.order.LocalOrderQueryRequest;
 import org.example.order.api.master.dto.order.LocalOrderQueryResponse;
 import org.example.order.api.master.facade.order.OrderFacade;
-import org.example.order.api.master.mapper.order.OrderRequestMapper;
-import org.example.order.api.master.mapper.order.OrderResponseMapper;
+import org.example.order.api.master.mapper.order.LocalOrderRequestMapper;
+import org.example.order.api.master.mapper.order.LocalOrderResponseMapper;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
 import org.example.order.common.support.logging.Correlate;
 import org.example.order.common.web.response.ApiResponse;
@@ -38,8 +38,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class OrderController {
 
     private final OrderFacade facade;
-    private final OrderRequestMapper requestMapper;
-    private final OrderResponseMapper responseMapper;
+    private final LocalOrderRequestMapper requestMapper;
+    private final LocalOrderResponseMapper responseMapper;
 
     /**
      * 주문 메시지를 수신하여 내부로 전달한다. (Kafka 전송)

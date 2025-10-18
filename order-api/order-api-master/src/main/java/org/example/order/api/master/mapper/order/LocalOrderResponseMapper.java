@@ -14,7 +14,7 @@ import org.mapstruct.Mapper;
         config = AppMappingConfig.class,
         uses = {TimeMapper.class}
 )
-public interface OrderResponseMapper {
+public interface LocalOrderResponseMapper {
 
     LocalOrderQueryResponse toResponse(LocalOrderView view);
 }

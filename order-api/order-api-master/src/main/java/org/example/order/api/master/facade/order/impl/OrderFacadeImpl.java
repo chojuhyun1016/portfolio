@@ -3,7 +3,7 @@ package org.example.order.api.master.facade.order.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
 import org.example.order.api.master.facade.order.OrderFacade;
-import org.example.order.api.master.mapper.order.OrderRequestMapper;
+import org.example.order.api.master.mapper.order.LocalOrderRequestMapper;
 import org.example.order.api.master.service.order.OrderService;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.dto.query.LocalOrderQuery;
@@ -20,11 +20,11 @@ import org.springframework.stereotype.Component;
 public class OrderFacadeImpl implements OrderFacade {
 
     private final OrderService orderService;
-    private final OrderRequestMapper orderRequestMapper;
+    private final LocalOrderRequestMapper localOrderRequestMapper;
 
     @Override
     public void sendOrderMessage(LocalOrderPublishRequest request) {
-        LocalOrderCommand command = orderRequestMapper.toCommand(request);
+        LocalOrderCommand command = localOrderRequestMapper.toCommand(request);
 
         orderService.sendMessage(command);
     }
