@@ -1,7 +1,8 @@
 package org.example.order.api.master.facade.order;
 
-import org.example.order.api.master.dto.order.LocalOrderRequest;
-import org.example.order.core.application.order.dto.internal.OrderDto;
+import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
+import org.example.order.core.application.order.dto.query.LocalOrderQuery;
+import org.example.order.core.application.order.dto.view.LocalOrderView;
 
 /**
  * Order Facade
@@ -10,7 +11,7 @@ import org.example.order.core.application.order.dto.internal.OrderDto;
  */
 public interface OrderFacade {
 
-    void sendOrderMessage(LocalOrderRequest request);
+    void sendOrderMessage(LocalOrderPublishRequest request);
 
-    OrderDto findById(Long orderId);
+    LocalOrderView findById(LocalOrderQuery query);
 }

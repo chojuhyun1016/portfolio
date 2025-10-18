@@ -4,13 +4,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.api.master.dto.order.LocalOrderRequest;
-import org.example.order.api.master.dto.order.LocalOrderResponse;
+import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
+import org.example.order.api.master.dto.order.LocalOrderPublishResponse;
+import org.example.order.api.master.dto.order.LocalOrderQueryRequest;
+import org.example.order.api.master.dto.order.LocalOrderQueryResponse;
 import org.example.order.api.master.facade.order.OrderFacade;
-import org.example.order.api.master.web.dto.OrderIdRequest;
+import org.example.order.api.master.mapper.order.OrderRequestMapper;
+import org.example.order.api.master.mapper.order.OrderResponseMapper;
+import org.example.order.common.core.exception.code.CommonExceptionCode;
 import org.example.order.common.support.logging.Correlate;
 import org.example.order.common.web.response.ApiResponse;
-import org.example.order.core.application.order.dto.internal.OrderDto;
+import org.example.order.core.application.order.dto.query.LocalOrderQuery;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -34,6 +38,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class OrderController {
 
     private final OrderFacade facade;
+    private final OrderRequestMapper requestMapper;
+    private final OrderResponseMapper responseMapper;
 
     /**
      * 주문 메시지를 수신하여 내부로 전달한다. (Kafka 전송)
@@ -41,11 +47,8 @@ public class OrderController {
     @PostMapping("/publish")
     @Correlate(
             paths = {
-                    // 바디(우선)
                     "#p0?.orderId",
-                    // 쿼리스트링
                     "#p1?.getParameter('orderId')",
-                    // 헤더
                     "#p1?.getHeader('X-Order-Id')",
                     "#p1?.getHeader('X-Request-Id')",
                     "#p1?.getHeader('x-request-id')"
@@ -53,22 +56,23 @@ public class OrderController {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public ResponseEntity<ApiResponse<LocalOrderResponse>> sendOrderMasterMessage(
-            @RequestBody @Valid LocalOrderRequest request,
+    public ResponseEntity<ApiResponse<LocalOrderPublishResponse>> sendOrderMasterMessage(
+            @RequestBody @Valid LocalOrderPublishRequest request,
             HttpServletRequest httpReq
     ) {
-        log.info("[OrderController][sendOrderMasterMessage] orderId={}, methodType={}",
-                request.orderId(), request.methodType());
+        log.info("[OrderController][sendOrderMasterMessage] orderId={}, operation={}",
+                request.orderId(), request.operation());
 
         facade.sendOrderMessage(request);
 
-        return ApiResponse.accepted(new LocalOrderResponse(request.orderId(), HttpStatus.ACCEPTED.name()));
+        return ApiResponse.accepted(new LocalOrderPublishResponse(request.orderId(), HttpStatus.ACCEPTED.name()));
     }
 
     /**
      * 주문 단건 조회(가공 포함)
-     * - Body: JSON 숫자(Long) 하나 (예: 12345)
+     * - Body: JSON { "orderId": 12345 }
      * - 동작: DB 조회 -> 특정 필드 랜덤 델타 -> 가공값으로 덮어쓴 후 반환
+     * - 반환: LocalOrderQueryResponse (LocalOrderView -> Response 매핑)
      */
     @PostMapping(
             value = "/query",
@@ -76,11 +80,8 @@ public class OrderController {
     )
     @Correlate(
             paths = {
-                    // 바디(우선)
                     "#p0.orderId",
-                    // 쿼리스트링(백업)
                     "#p1?.getParameter('orderId')",
-                    // 헤더(백업)
                     "#p1?.getHeader('X-Order-Id')",
                     "#p1?.getHeader('X-Request-Id')",
                     "#p1?.getHeader('x-request-id')"
@@ -88,18 +89,23 @@ public class OrderController {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public ResponseEntity<ApiResponse<OrderDto>> findById(
-            @RequestBody @Valid OrderIdRequest req,
+    public ResponseEntity<ApiResponse<LocalOrderQueryResponse>> findById(
+            @RequestBody @Valid LocalOrderQueryRequest req,
             HttpServletRequest httpReq
     ) {
         if (req.getOrderId() == null) {
             log.warn("[OrderController][findById] missing orderId in request body");
 
-            return ApiResponse.error(org.example.order.common.core.exception.code.CommonExceptionCode.INVALID_REQUEST);
+            return ApiResponse.error(CommonExceptionCode.INVALID_REQUEST);
         }
 
         log.info("[OrderController][findById] orderId={}", req.getOrderId());
 
-        return ApiResponse.ok(facade.findById(req.getOrderId()));
+        LocalOrderQuery query = requestMapper.toQuery(req);
+
+        var view = facade.findById(query);
+        var response = responseMapper.toResponse(view);
+
+        return ApiResponse.ok(response);
     }
 }

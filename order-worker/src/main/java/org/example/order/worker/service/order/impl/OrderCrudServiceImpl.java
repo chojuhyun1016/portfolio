@@ -2,7 +2,7 @@ package org.example.order.worker.service.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 import org.example.order.core.application.order.mapper.OrderMapper;
 import org.example.order.core.infra.crypto.algorithm.encryptor.AesGcmEncryptor;
 import org.example.order.core.infra.persistence.order.redis.RedisRepository;
@@ -56,7 +56,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     private final AesGcmEncryptor aesGcmEncryptor;
 
     @Override
-    public List<OrderEntity> bulkInsert(List<OrderSyncDto> dtoList) {
+    public List<OrderEntity> bulkInsert(List<LocalOrderSync> dtoList) {
         try {
             // DTO -> Entity (원본) & ID 보정
             List<OrderEntity> entities = dtoList.stream()
@@ -97,13 +97,13 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     @Override
-    public void bulkUpdate(List<OrderSyncDto> dtoList) {
+    public void bulkUpdate(List<LocalOrderSync> dtoList) {
         // 원본은 JDBC 벌크 UPDATE
         List<OrderUpdate> commandList = orderMapper.toUpdateCommands(dtoList);
         orderCommandRepository.bulkUpdate(commandList);
 
         // 증폭 UPDATE
-        for (OrderSyncDto d : dtoList) {
+        for (LocalOrderSync d : dtoList) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
@@ -136,10 +136,10 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     @Override
-    public void deleteAll(List<OrderSyncDto> dtoList) {
+    public void deleteAll(List<LocalOrderSync> dtoList) {
         // 원본 삭제
         List<Long> ids = dtoList.stream()
-                .map(OrderSyncDto::getOrderId)
+                .map(LocalOrderSync::getOrderId)
                 .toList();
 
         orderRepository.deleteByOrderIdIn(ids);
@@ -167,13 +167,13 @@ public class OrderCrudServiceImpl implements OrderCrudService {
 
     /* 외부 동기화 */
 
-    private void upsertExternal(List<OrderSyncDto> items) {
+    private void upsertExternal(List<LocalOrderSync> items) {
         if (items == null || items.isEmpty()) {
             return;
         }
 
         // DynamoDB upsert
-        for (OrderSyncDto d : items) {
+        for (LocalOrderSync d : items) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
@@ -200,7 +200,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         }
 
         // Redis upsert
-        for (OrderSyncDto d : items) {
+        for (LocalOrderSync d : items) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
@@ -214,13 +214,13 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         }
     }
 
-    private void deleteExternal(List<OrderSyncDto> items) {
+    private void deleteExternal(List<LocalOrderSync> items) {
         if (items == null || items.isEmpty()) {
             return;
         }
 
         // DynamoDB delete
-        for (OrderSyncDto d : items) {
+        for (LocalOrderSync d : items) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
@@ -239,7 +239,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         }
 
         // Redis delete
-        for (OrderSyncDto d : items) {
+        for (LocalOrderSync d : items) {
             try {
                 if (d == null || d.getOrderId() == null) {
                     continue;
@@ -292,11 +292,11 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         return String.format(REDIS_KEY_FMT, String.valueOf(orderId));
     }
 
-    private static String safeId(OrderSyncDto d) {
+    private static String safeId(LocalOrderSync d) {
         return (d == null || d.getOrderId() == null) ? "null" : String.valueOf(d.getOrderId());
     }
 
-    private static OrderDynamoEntity toDynamo(OrderSyncDto d) {
+    private static OrderDynamoEntity toDynamo(LocalOrderSync d) {
         OrderDynamoEntity e = new OrderDynamoEntity();
         e.setId(String.valueOf(d.getOrderId()));
         e.setOrderId(d.getOrderId());

@@ -15,10 +15,10 @@ public record OrderApiMessage(
 ) {
     public static OrderApiMessage fromLocal(OrderLocalMessage local) {
         return new OrderApiMessage(
-                local.operation(),
+                local.getOperation(),
                 MessageOrderType.ORDER_API,
-                local.id(),
-                local.publishedTimestamp()
+                local.getId(),
+                local.getPublishedTimestamp()
         );
     }
 }

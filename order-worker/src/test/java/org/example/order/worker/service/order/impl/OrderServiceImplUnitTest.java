@@ -1,7 +1,7 @@
 //package org.example.order.worker.service.order.impl;
 //
 //import org.example.order.common.core.messaging.code.Operation;
-//import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+//import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 //import org.example.order.core.application.order.dto.internal.OrderDto;
 //import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
 //import org.junit.jupiter.api.DisplayName;
@@ -18,7 +18,7 @@
 //class OrderServiceImplUnitTest {
 //
 //    private static OrderCrudMessage msg() {
-//        OrderSyncDto local = new OrderSyncDto();
+//        LocalOrderSync local = new LocalOrderSync();
 //        OrderDto dto = OrderDto.fromInternal(local);
 //        OrderCrudMessage m = mock(OrderCrudMessage.class);
 //        when(m.getDto()).thenReturn(dto);

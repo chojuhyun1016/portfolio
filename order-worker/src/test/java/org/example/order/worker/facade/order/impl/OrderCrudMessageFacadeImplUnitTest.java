@@ -3,7 +3,7 @@
 //import org.apache.kafka.clients.consumer.ConsumerRecord;
 //import org.example.order.common.core.messaging.code.Operation;
 //import org.example.order.common.core.messaging.message.DlqMessage;
-//import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+//import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 //import org.example.order.core.application.order.dto.internal.OrderDto;
 //import org.example.order.core.infra.messaging.order.message.OrderCloseMessage;
 //import org.example.order.core.infra.messaging.order.message.OrderCrudMessage;
@@ -32,7 +32,7 @@
 //        OrderCrudMessage m = mock(OrderCrudMessage.class, RETURNS_DEEP_STUBS);
 //        when(m.getMethodType()).thenReturn(type);
 //
-//        OrderSyncDto local = new OrderSyncDto();
+//        LocalOrderSync local = new LocalOrderSync();
 //        local.setOrderId(orderId);
 //        local.setFailure(failure);
 //

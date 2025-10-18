@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.messaging.ConsumerEnvelope;
 import org.example.order.contract.order.messaging.event.OrderCrudMessage;
 import org.example.order.contract.order.messaging.payload.OrderPayload;
-import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 import org.example.order.worker.dto.consumer.OrderApiConsumerDto;
 import org.example.order.worker.facade.order.OrderApiMessageFacade;
 import org.example.order.worker.service.common.KafkaProducerService;
@@ -42,7 +42,7 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
             log.info("[API->CRUD] requestApi id={}", dto.getId());
 
             // 1) API 조회
-            OrderSyncDto orderDto = webClientService.findOrderListByOrderId(dto.getId());
+            LocalOrderSync orderDto = webClientService.findOrderListByOrderId(dto.getId());
             if (orderDto == null) {
                 throw new IllegalStateException("Order API returned empty order for id=" + dto.getId());
             }
@@ -60,7 +60,7 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
         }
     }
 
-    private OrderPayload toPayload(OrderSyncDto o) {
+    private OrderPayload toPayload(LocalOrderSync o) {
         return new OrderPayload(
                 o.getId(),
                 o.getOrderId(),

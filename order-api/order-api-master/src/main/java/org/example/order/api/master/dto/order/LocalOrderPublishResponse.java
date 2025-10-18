@@ -1,6 +1,6 @@
 package org.example.order.api.master.dto.order;
 
-public record LocalOrderResponse(
+public record LocalOrderPublishResponse(
         Long orderId,
         String status // 예: "ACCEPTED"
 ) {

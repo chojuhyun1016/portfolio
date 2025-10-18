@@ -1,10 +1,10 @@
-package org.example.order.api.master.web.dto;
+package org.example.order.api.master.dto.order;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class OrderIdRequest {
+public class LocalOrderQueryRequest {
     private Long orderId;
 }

@@ -1,7 +1,7 @@
 package org.example.order.worker.service.common;
 
-import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 
 public interface WebClientService {
-    OrderSyncDto findOrderListByOrderId(Long id);
+    LocalOrderSync findOrderListByOrderId(Long id);
 }

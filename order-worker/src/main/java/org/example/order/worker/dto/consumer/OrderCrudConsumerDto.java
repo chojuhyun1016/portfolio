@@ -5,7 +5,7 @@ import lombok.ToString;
 import org.example.order.contract.order.messaging.event.OrderCrudMessage;
 import org.example.order.contract.order.messaging.payload.OrderPayload;
 import org.example.order.contract.shared.op.Operation;
-import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 
 /**
  * OrderCrudConsumerDto
@@ -16,9 +16,9 @@ import org.example.order.core.application.order.dto.internal.OrderSyncDto;
 public class OrderCrudConsumerDto {
 
     private final Operation operation;
-    private final OrderSyncDto order;
+    private final LocalOrderSync order;
 
-    public OrderCrudConsumerDto(Operation operation, OrderSyncDto order) {
+    public OrderCrudConsumerDto(Operation operation, LocalOrderSync order) {
         this.operation = operation;
         this.order = order;
     }
@@ -29,7 +29,7 @@ public class OrderCrudConsumerDto {
         }
 
         OrderPayload p = msg.payload();
-        OrderSyncDto d = toLocalOrderDto(p);
+        LocalOrderSync d = toLocalOrderDto(p);
 
         return new OrderCrudConsumerDto(msg.operation(), d);
     }
@@ -48,8 +48,8 @@ public class OrderCrudConsumerDto {
         }
     }
 
-    private static OrderSyncDto toLocalOrderDto(OrderPayload p) {
-        OrderSyncDto d = new OrderSyncDto();
+    private static LocalOrderSync toLocalOrderDto(OrderPayload p) {
+        LocalOrderSync d = new LocalOrderSync();
 
         if (p == null) {
             return d;

@@ -8,7 +8,7 @@ import org.example.order.contract.order.messaging.event.OrderCloseMessage;
 import org.example.order.contract.order.messaging.event.OrderCrudMessage;
 import org.example.order.contract.order.messaging.payload.OrderPayload;
 import org.example.order.contract.shared.op.Operation;
-import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 import org.example.order.worker.dto.consumer.OrderCrudConsumerDto;
 import org.example.order.worker.exception.DatabaseExecuteException;
 import org.example.order.worker.exception.WorkerExceptionCode;
@@ -63,17 +63,17 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                                     LinkedHashMap::new
                             ));
 
-            List<OrderSyncDto> failureList = new ArrayList<>();
+            List<LocalOrderSync> failureList = new ArrayList<>();
 
             dtos.forEach(OrderCrudConsumerDto::validate);
 
-            Map<Operation, List<OrderSyncDto>> byType = groupingByOperation(dtos);
+            Map<Operation, List<LocalOrderSync>> byType = groupingByOperation(dtos);
 
             byType.forEach((operation, orders) -> {
                 try {
                     orderService.execute(operation, orders);
 
-                    for (OrderSyncDto order : orders) {
+                    for (LocalOrderSync order : orders) {
                         if (Boolean.TRUE.equals(order.getFailure())) {
                             log.info("failed order: {}", order);
 
@@ -111,7 +111,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
         }
     }
 
-    private Map<Operation, List<OrderSyncDto>> groupingByOperation(List<OrderCrudConsumerDto> dtos) {
+    private Map<Operation, List<LocalOrderSync>> groupingByOperation(List<OrderCrudConsumerDto> dtos) {
         try {
             return dtos.stream()
                     .collect(Collectors.groupingBy(
@@ -126,7 +126,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
         }
     }
 
-    private void sendOneToDlq(OrderSyncDto order,
+    private void sendOneToDlq(LocalOrderSync order,
                               Operation operation,
                               Map<Long, ConsumerEnvelope<OrderCrudConsumerDto>> index,
                               Exception cause) {
@@ -144,11 +144,11 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
         kafkaProducerService.sendToDlq(originalLike, env.getHeaders(), cause);
     }
 
-    private void sendGroupToDlq(List<OrderSyncDto> orders,
+    private void sendGroupToDlq(List<LocalOrderSync> orders,
                                 Operation operation,
                                 Map<Long, ConsumerEnvelope<OrderCrudConsumerDto>> index,
                                 Exception cause) {
-        for (OrderSyncDto o : orders) {
+        for (LocalOrderSync o : orders) {
             try {
                 sendOneToDlq(o, operation, index, cause);
             } catch (Exception ex) {
@@ -177,7 +177,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
         }
     }
 
-    private OrderPayload toPayload(OrderSyncDto o) {
+    private OrderPayload toPayload(LocalOrderSync o) {
         if (o == null) {
             return null;
         }

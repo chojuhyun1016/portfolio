@@ -3,7 +3,7 @@ package org.example.order.worker.service.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.contract.shared.op.Operation;
-import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 import org.example.order.worker.service.order.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -35,9 +35,9 @@ public class OrderServiceImpl implements OrderService {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public void execute(Operation operation, List<OrderSyncDto> messages) {
+    public void execute(Operation operation, List<LocalOrderSync> messages) {
 
-        final List<OrderSyncDto> safe = (messages == null) ? List.of() : messages;
+        final List<LocalOrderSync> safe = (messages == null) ? List.of() : messages;
 
         log.info("order-crud start: total={}, operation={}", safe.size(), operation);
 

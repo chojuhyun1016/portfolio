@@ -1,7 +1,7 @@
 //package org.example.order.api.master.controller.order;
 //
 //import com.fasterxml.jackson.databind.ObjectMapper;
-//import org.example.order.api.master.dto.order.LocalOrderRequest;
+//import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
 //import org.example.order.api.master.facade.order.OrderFacade;
 //import org.example.order.api.master.service.common.KafkaProducerService;
 //import org.example.order.api.master.web.advice.MasterApiExceptionHandler;
@@ -80,7 +80,7 @@
 //    void restdocs_order_accepted() throws Exception {
 //        Mockito.doNothing().when(facade).sendOrderMessage(any());
 //
-//        var req = new LocalOrderRequest(999L, Operation.POST);
+//        var req = new LocalOrderPublishRequest(999L, Operation.POST);
 //
 //        mvc.perform(RestDocumentationRequestBuilders.post("/order")
 //                        .contentType(MediaType.APPLICATION_JSON)

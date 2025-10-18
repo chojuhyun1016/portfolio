@@ -1,7 +1,7 @@
 //package org.example.order.api.master.controller.order;
 //
 //import com.fasterxml.jackson.databind.ObjectMapper;
-//import org.example.order.api.master.dto.order.LocalOrderRequest;
+//import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
 //import org.example.order.api.master.facade.order.OrderFacade;
 //import org.example.order.api.master.service.common.KafkaProducerService;
 //import org.example.order.api.master.web.advice.MasterApiExceptionHandler;
@@ -68,7 +68,7 @@
 //    @Test
 //    @DisplayName("POST /order: 정상 요청시 202 ACCEPTED 반환")
 //    void post_order_should_return_accepted() throws Exception {
-//        LocalOrderRequest req = new LocalOrderRequest(1L, Operation.POST);
+//        LocalOrderPublishRequest req = new LocalOrderPublishRequest(1L, Operation.POST);
 //        Mockito.doNothing().when(facade).sendOrderMessage(any());
 //
 //        mvc.perform(post("/order")
@@ -83,7 +83,7 @@
 //    @Tag("restdocs")
 //    @DisplayName("REST Docs 스니펫 생성용: 202 응답")
 //    void restdocs_snippet() throws Exception {
-//        LocalOrderRequest req = new LocalOrderRequest(2L, Operation.PUT);
+//        LocalOrderPublishRequest req = new LocalOrderPublishRequest(2L, Operation.PUT);
 //        Mockito.doNothing().when(facade).sendOrderMessage(any());
 //
 //        mvc.perform(post("/order")

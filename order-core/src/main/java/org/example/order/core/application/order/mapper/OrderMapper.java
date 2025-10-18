@@ -3,15 +3,14 @@ package org.example.order.core.application.order.mapper;
 import org.example.order.contract.order.messaging.event.OrderLocalMessage;
 import org.example.order.contract.order.messaging.type.MessageOrderType;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
-import org.example.order.core.application.order.dto.internal.OrderSyncDto;
+import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 import org.example.order.core.support.mapping.TimeMapper;
 import org.example.order.core.support.mapping.TimeProvider;
 import org.example.order.core.support.mapping.config.AppMappingConfig;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderUpdate;
+import org.example.order.domain.order.model.OrderView;
 import org.mapstruct.*;
-
-import java.util.List;
 
 /**
  * OrderMapper
@@ -41,44 +40,43 @@ public interface OrderMapper {
     }
 
     /* ----------------------------------------------------------------------
-     * Entity -> DTO
-     *  - publishedDatetime(LocalDateTime) -> publishedTimestamp(Long)
+     * Entity <-> LocalOrderSync
+     *  - publishedDatetime(LocalDateTime) <-> publishedTimestamp(Long)
      * ---------------------------------------------------------------------- */
     @Mapping(
             target = "publishedTimestamp",
             source = "publishedDatetime",
             qualifiedByName = "localDateTimeToEpochMillis"
     )
-    OrderSyncDto toDto(OrderEntity entity);
+    LocalOrderSync toDto(OrderEntity entity);
 
-    /* ----------------------------------------------------------------------
-     * DTO -> Entity
-     *  - publishedTimestamp(Long) -> publishedDatetime(LocalDateTime)
-     *  - id는 ObjectFactory에서 주입, 이후 매핑 단계에서는 ignore
-     * ---------------------------------------------------------------------- */
     @ObjectFactory
-    default OrderEntity newOrderEntity(OrderSyncDto dto) {
+    default OrderEntity newOrderEntity(LocalOrderSync dto) {
         OrderEntity e = OrderEntity.createEmpty();
-        e.setId(dto.getId());
+        e.setId(dto.id());
 
         return e;
     }
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "publishedDatetime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
-    OrderEntity toEntity(OrderSyncDto dto);
+    OrderEntity toEntity(LocalOrderSync dto);
 
     /* ----------------------------------------------------------------------
-     * DTO -> Update(Command)
-     *  - publishedTimestamp(Long) -> publishedDateTime(LocalDateTime)
+     * LocalOrderSync -> OrderUpdate (Command)
      * ---------------------------------------------------------------------- */
     @Mapping(
             target = "publishedDateTime",
             source = "publishedTimestamp",
             qualifiedByName = "epochMillisToLocalDateTime"
     )
-    OrderUpdate toUpdate(OrderSyncDto dto);
+    OrderUpdate toUpdate(LocalOrderSync dto);
 
-    /* 배치 변환 */
-    List<OrderUpdate> toUpdateCommands(List<OrderSyncDto> dtos);
+    java.util.List<OrderUpdate> toUpdateCommands(java.util.List<LocalOrderSync> dtos);
+
+    /* ----------------------------------------------------------------------
+     * LocalOrderSync -> OrderView (Application View)
+     * ---------------------------------------------------------------------- */
+    @Mapping(target = "failure", source = "failure")
+    OrderView toView(LocalOrderSync dto);
 }

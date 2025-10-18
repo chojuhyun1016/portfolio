@@ -20,7 +20,7 @@ dependencies {
     implementation project(":order-common")
     implementation project(":order-core")
     implementation project(":order-domain")
-    implementation project(":order-contract")
+    implementation project(":order-contracts")
     implementation project(":order-api:order-api-common")
     implementation project(":order-client:kafka")
 
@@ -39,6 +39,26 @@ dependencies {
     implementation(libs.querydslCore)
     implementation("com.querydsl:querydsl-jpa:${libs.versions.querydsl.get()}:jakarta")
     annotationProcessor("com.querydsl:querydsl-apt:${libs.versions.querydsl.get()}:jakarta")
+
+    // MapStruct (Lombok binding)
+    implementation(libs.mapstruct)
+    annotationProcessor(libs.mapstructProcessor)
+
+    // Lombok과 함께 사용할 때 컴파일러 인식 보정
+    annotationProcessor(libs.lombokMapstructBinding)
+
+    // Lombok (메인/테스트/IT 모두 명시)
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+
+    // 통합테스트 소스셋용 Lombok/MapStruct 프로세서 (IDE 인식 안정화)
+    integrationTestCompileOnly(libs.lombok)
+    integrationTestAnnotationProcessor(libs.lombok)
+    integrationTestAnnotationProcessor(libs.mapstructProcessor)
+    integrationTestAnnotationProcessor(libs.lombokMapstructBinding)
 
     // 로깅 / Jackson
     implementation(libs.logbackJsonClassic)
@@ -70,6 +90,7 @@ dependencies {
     integrationTestImplementation(libs.mockitoCore)
     integrationTestImplementation(libs.mockitoJunitJupiter)
     integrationTestImplementation(libs.springKafkaTest)
+
     // 필요 시:
     // integrationTestImplementation(libs.springSecurityTest)
 }
