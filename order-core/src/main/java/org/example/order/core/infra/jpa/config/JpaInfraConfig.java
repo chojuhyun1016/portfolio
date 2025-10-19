@@ -15,9 +15,15 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @ConditionalOnProperty(name = "jpa.enabled", havingValue = "true", matchIfMissing = false)
 @Import({
+        // ----- order -----
         JpaOrderQueryInfraConfig.class,         // JPAQueryFactory & 조회 리포지토리
         JpaOrderRepositoryInfraConfig.class,    // 저장 리포지토리
-        JpaOrderCommandInfraConfig.class        // JDBC 기반 Command 리포지토리
+        JpaOrderCommandInfraConfig.class,       // JDBC 기반 Command 리포지토리
+
+        // ----- local_order -----
+        JpaLocalOrderQueryInfraConfig.class,        // JPAQueryFactory & 조회 리포지토리
+        JpaLocalOrderRepositoryInfraConfig.class,   // 저장 리포지토리
+        JpaLocalOrderCommandInfraConfig.class       // JDBC 기반 Command 리포지토리
 })
 public class JpaInfraConfig {
     // 게이트 전용: 빈 정의 없음 (하위 설정에서 모두 제공)

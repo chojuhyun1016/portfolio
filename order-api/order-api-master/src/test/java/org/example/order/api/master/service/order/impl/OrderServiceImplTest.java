@@ -23,7 +23,7 @@
 //
 //        when(mapper.toOrderLocalMessage(any())).thenReturn(message);
 //
-//        OrderServiceImpl service = new OrderServiceImpl(producer, mapper);
+//        LocalOrderServiceImpl service = new LocalOrderServiceImpl(producer, mapper);
 //        LocalOrderCommand cmd = new LocalOrderCommand(77L, Operation.PUT);
 //
 //        // when

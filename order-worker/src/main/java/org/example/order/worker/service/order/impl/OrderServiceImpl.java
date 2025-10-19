@@ -31,7 +31,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     @Correlate(
-            key = "#messages != null && #messages.size() == 1 ? #messages[0].orderId : T(java.util.UUID).randomUUID().toString()",
+            key = "#messages != null && #messages.size() == 1 ? #messages.get(0).orderId() : T(java.util.UUID).randomUUID().toString()",
             mdcKey = "orderId",
             overrideTraceId = true
     )
@@ -42,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
         log.info("order-crud start: total={}, operation={}", safe.size(), operation);
 
         safe.stream()
-                .map(d -> d != null ? d.getOrderId() : null)
+                .map(d -> d != null ? d.orderId() : null)
                 .forEach(oid -> log.info("order-crud item: orderId={}, operation={}", oid, operation));
 
         try {

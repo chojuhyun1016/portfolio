@@ -2,7 +2,6 @@ package com.example.order.api.web.mapper.order;
 
 import com.example.order.api.web.dto.order.OrderResponse;
 import org.example.order.core.application.order.dto.sync.LocalOrderSync;
-import org.example.order.core.application.order.dto.internal.OrderDto;
 import org.springframework.stereotype.Component;
 
 /**

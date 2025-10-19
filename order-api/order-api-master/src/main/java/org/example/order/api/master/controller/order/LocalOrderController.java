@@ -8,7 +8,7 @@ import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
 import org.example.order.api.master.dto.order.LocalOrderPublishResponse;
 import org.example.order.api.master.dto.order.LocalOrderQueryRequest;
 import org.example.order.api.master.dto.order.LocalOrderQueryResponse;
-import org.example.order.api.master.facade.order.OrderFacade;
+import org.example.order.api.master.facade.order.LocalOrderFacade;
 import org.example.order.api.master.mapper.order.LocalOrderRequestMapper;
 import org.example.order.api.master.mapper.order.LocalOrderResponseMapper;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
@@ -34,11 +34,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/orders")
-public class OrderController {
+@RequestMapping("/api/v1/local-orders")
+public class LocalOrderController {
 
-    private final OrderFacade facade;
+    private final LocalOrderFacade facade;
     private final LocalOrderRequestMapper requestMapper;
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     private final LocalOrderResponseMapper responseMapper;
 
     /**
@@ -60,7 +62,7 @@ public class OrderController {
             @RequestBody @Valid LocalOrderPublishRequest request,
             HttpServletRequest httpReq
     ) {
-        log.info("[OrderController][sendOrderMasterMessage] orderId={}, operation={}",
+        log.info("[LocalOrderController][sendOrderMasterMessage] orderId={}, operation={}",
                 request.orderId(), request.operation());
 
         facade.sendOrderMessage(request);
@@ -94,12 +96,12 @@ public class OrderController {
             HttpServletRequest httpReq
     ) {
         if (req.getOrderId() == null) {
-            log.warn("[OrderController][findById] missing orderId in request body");
+            log.warn("[LocalOrderController][findById] missing orderId in request body");
 
             return ApiResponse.error(CommonExceptionCode.INVALID_REQUEST);
         }
 
-        log.info("[OrderController][findById] orderId={}", req.getOrderId());
+        log.info("[LocalOrderController][findById] orderId={}", req.getOrderId());
 
         LocalOrderQuery query = requestMapper.toQuery(req);
 

@@ -43,6 +43,7 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
 
             // 1) API 조회
             LocalOrderSync orderDto = webClientService.findOrderListByOrderId(dto.getId());
+
             if (orderDto == null) {
                 throw new IllegalStateException("Order API returned empty order for id=" + dto.getId());
             }
@@ -52,7 +53,6 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
 
             // 3) CRUD 메시지 발행
             kafkaProducerService.sendToOrderCrud(OrderCrudMessage.of(dto.getOperation(), payload));
-
         } catch (Exception e) {
             log.error("order-api failed. id={} cause={}", dto == null ? null : dto.getId(), e.toString());
 
@@ -62,21 +62,21 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
 
     private OrderPayload toPayload(LocalOrderSync o) {
         return new OrderPayload(
-                o.getId(),
-                o.getOrderId(),
-                o.getOrderNumber(),
-                o.getUserId(),
-                o.getUserNumber(),
-                o.getOrderPrice(),
-                o.getDeleteYn(),
-                o.getVersion(),
-                o.getCreatedUserId(),
-                o.getCreatedUserType(),
-                o.getCreatedDatetime(),
-                o.getModifiedUserId(),
-                o.getModifiedUserType(),
-                o.getModifiedDatetime(),
-                o.getPublishedTimestamp()
+                o.id(),
+                o.orderId(),
+                o.orderNumber(),
+                o.userId(),
+                o.userNumber(),
+                o.orderPrice(),
+                o.deleteYn(),
+                o.version(),
+                o.createdUserId(),
+                o.createdUserType(),
+                o.createdDatetime(),
+                o.modifiedUserId(),
+                o.modifiedUserType(),
+                o.modifiedDatetime(),
+                o.publishedTimestamp()
         );
     }
 }

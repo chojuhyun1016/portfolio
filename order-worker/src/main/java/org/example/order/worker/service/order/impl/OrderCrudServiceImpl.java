@@ -105,29 +105,29 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         // 증폭 UPDATE
         for (LocalOrderSync d : dtoList) {
             try {
-                if (d == null || d.getOrderId() == null) {
+                if (d == null || d.orderId() == null) {
                     continue;
                 }
 
-                final long amplifiedOrderId = d.getOrderId() + ORDER_ID_OFFSET;
-                final String amplifiedOrderNumber = (d.getOrderNumber() == null)
+                final long amplifiedOrderId = d.orderId() + ORDER_ID_OFFSET;
+                final String amplifiedOrderNumber = (d.orderNumber() == null)
                         ? ORDER_NUMBER_SUFFIX
-                        : (d.getOrderNumber() + ORDER_NUMBER_SUFFIX);
-                final Long newPrice = ((d.getOrderPrice() == null) ? 0L : d.getOrderPrice()) + ORDER_PRICE_DELTA;
+                        : (d.orderNumber() + ORDER_NUMBER_SUFFIX);
+                final Long newPrice = ((d.orderPrice() == null) ? 0L : d.orderPrice()) + ORDER_PRICE_DELTA;
 
                 orderQueryRepository.updateByOrderId(
                         amplifiedOrderId,
                         amplifiedOrderNumber,
-                        d.getUserId(),
-                        d.getUserNumber(),
+                        d.userId(),
+                        d.userNumber(),
                         newPrice,
-                        d.getDeleteYn(),
-                        d.getModifiedUserId(),
-                        d.getModifiedUserType(),
-                        d.getModifiedDatetime()
+                        d.deleteYn(),
+                        d.modifiedUserId(),
+                        d.modifiedUserType(),
+                        d.modifiedDatetime()
                 );
             } catch (Throwable t) {
-                log.error("[JPA][AMPLIFY][UPDATE][SKIP] orderId={} cause={}", d == null ? "null" : d.getOrderId(), t.toString());
+                log.error("[JPA][AMPLIFY][UPDATE][SKIP] orderId={} cause={}", d == null ? "null" : d.orderId(), t.toString());
             }
         }
 
@@ -139,14 +139,13 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     public void deleteAll(List<LocalOrderSync> dtoList) {
         // 원본 삭제
         List<Long> ids = dtoList.stream()
-                .map(LocalOrderSync::getOrderId)
+                .map(LocalOrderSync::orderId)
                 .toList();
 
         orderRepository.deleteByOrderIdIn(ids);
 
         // 증폭 삭제: orderId + OFFSET
         List<Long> amplifiedIds = new ArrayList<>(ids.size());
-
         for (Long id : ids) {
             if (id != null) {
                 amplifiedIds.add(id + ORDER_ID_OFFSET);
@@ -166,7 +165,6 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     /* 외부 동기화 */
-
     private void upsertExternal(List<LocalOrderSync> items) {
         if (items == null || items.isEmpty()) {
             return;
@@ -175,14 +173,14 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         // DynamoDB upsert
         for (LocalOrderSync d : items) {
             try {
-                if (d == null || d.getOrderId() == null) {
+                if (d == null || d.orderId() == null) {
                     continue;
                 }
 
                 OrderDynamoEntity e = toDynamo(d);
 
-                if (d.getOrderPrice() != null) {
-                    String enc = aesGcmEncryptor.encrypt(String.valueOf(d.getOrderPrice()));
+                if (d.orderPrice() != null) {
+                    String enc = aesGcmEncryptor.encrypt(String.valueOf(d.orderPrice()));
                     e.setOrderPriceEnc(enc);
                 }
 
@@ -202,11 +200,11 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         // Redis upsert
         for (LocalOrderSync d : items) {
             try {
-                if (d == null || d.getOrderId() == null) {
+                if (d == null || d.orderId() == null) {
                     continue;
                 }
 
-                String key = redisKey(d.getOrderId());
+                String key = redisKey(d.orderId());
                 redisRepository.set(key, d);
             } catch (Throwable t) {
                 log.error("[REDIS][UPSERT][SKIP] orderId={} cause={}", safeId(d), t.toString());
@@ -222,14 +220,14 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         // DynamoDB delete
         for (LocalOrderSync d : items) {
             try {
-                if (d == null || d.getOrderId() == null) {
+                if (d == null || d.orderId() == null) {
                     continue;
                 }
 
-                final String id = String.valueOf(d.getOrderId());
+                final String id = String.valueOf(d.orderId());
 
-                if (d.getOrderNumber() != null && !d.getOrderNumber().isBlank()) {
-                    orderDynamoRepository.deleteByIdAndOrderNumber(id, d.getOrderNumber());
+                if (d.orderNumber() != null && !d.orderNumber().isBlank()) {
+                    orderDynamoRepository.deleteByIdAndOrderNumber(id, d.orderNumber());
                 } else {
                     orderDynamoRepository.deleteById(id);
                 }
@@ -241,11 +239,11 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         // Redis delete
         for (LocalOrderSync d : items) {
             try {
-                if (d == null || d.getOrderId() == null) {
+                if (d == null || d.orderId() == null) {
                     continue;
                 }
 
-                redisRepository.delete(redisKey(d.getOrderId()));
+                redisRepository.delete(redisKey(d.orderId()));
             } catch (Throwable t) {
                 log.error("[REDIS][DELETE][SKIP] orderId={} cause={}", safeId(d), t.toString());
             }
@@ -293,27 +291,26 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     private static String safeId(LocalOrderSync d) {
-        return (d == null || d.getOrderId() == null) ? "null" : String.valueOf(d.getOrderId());
+        return (d == null || d.orderId() == null) ? "null" : String.valueOf(d.orderId());
     }
 
     private static OrderDynamoEntity toDynamo(LocalOrderSync d) {
         OrderDynamoEntity e = new OrderDynamoEntity();
-        e.setId(String.valueOf(d.getOrderId()));
-        e.setOrderId(d.getOrderId());
-        e.setOrderNumber(d.getOrderNumber());
-        e.setUserId(d.getUserId());
-        e.setUserNumber(d.getUserNumber());
-        e.setUserName(d.getUserNumber());
-        e.setOrderPrice(d.getOrderPrice());
-        e.setDeleteYn(Boolean.TRUE.equals(d.getDeleteYn()) ? "Y" : "N");
-        e.setCreatedUserId(d.getCreatedUserId());
-        e.setCreatedUserType(d.getCreatedUserType());
-        e.setCreatedDatetime(d.getCreatedDatetime());
-        e.setModifiedUserId(d.getModifiedUserId());
-        e.setModifiedUserType(d.getModifiedUserType());
-        e.setModifiedDatetime(d.getModifiedDatetime());
-        e.setPublishedTimestamp(d.getPublishedTimestamp());
-
+        e.setId(String.valueOf(d.orderId()));
+        e.setOrderId(d.orderId());
+        e.setOrderNumber(d.orderNumber());
+        e.setUserId(d.userId());
+        e.setUserNumber(d.userNumber());
+        e.setUserName(d.userNumber());
+        e.setOrderPrice(d.orderPrice());
+        e.setDeleteYn(Boolean.TRUE.equals(d.deleteYn()) ? "Y" : "N");
+        e.setCreatedUserId(d.createdUserId());
+        e.setCreatedUserType(d.createdUserType());
+        e.setCreatedDatetime(d.createdDatetime());
+        e.setModifiedUserId(d.modifiedUserId());
+        e.setModifiedUserType(d.modifiedUserType());
+        e.setModifiedDatetime(d.modifiedDatetime());
+        e.setPublishedTimestamp(d.publishedTimestamp());
         return e;
     }
 
@@ -323,6 +320,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
                 r.run();
             } catch (Throwable ignore) {
             }
+
             return;
         }
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

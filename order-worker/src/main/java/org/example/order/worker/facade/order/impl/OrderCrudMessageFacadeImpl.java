@@ -55,9 +55,9 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                     envelopes.stream()
                             .filter(env -> env.getPayload() != null
                                     && env.getPayload().getOrder() != null
-                                    && env.getPayload().getOrder().getOrderId() != null)
+                                    && env.getPayload().getOrder().orderId() != null) // record accessor
                             .collect(Collectors.toMap(
-                                    env -> env.getPayload().getOrder().getOrderId(),
+                                    env -> env.getPayload().getOrder().orderId(), // record accessor
                                     Function.identity(),
                                     (a, b) -> b,
                                     LinkedHashMap::new
@@ -74,15 +74,16 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                     orderService.execute(operation, orders);
 
                     for (LocalOrderSync order : orders) {
-                        if (Boolean.TRUE.equals(order.getFailure())) {
+                        if (Boolean.TRUE.equals(order.failure())) { // record accessor
                             log.info("failed order: {}", order);
 
-                            sendOneToDlq(order, operation, envelopeIndex, new DatabaseExecuteException(WorkerExceptionCode.MESSAGE_UPDATE_FAILED));
+                            sendOneToDlq(order, operation, envelopeIndex,
+                                    new DatabaseExecuteException(WorkerExceptionCode.MESSAGE_UPDATE_FAILED));
 
                             failureList.add(order);
                         } else {
                             kafkaProducerService.sendToOrderRemote(
-                                    OrderCloseMessage.of(order.getOrderId(), operation)
+                                    OrderCloseMessage.of(order.orderId(), operation) // record accessor
                             );
                         }
                     }
@@ -130,7 +131,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                               Operation operation,
                               Map<Long, ConsumerEnvelope<OrderCrudConsumerDto>> index,
                               Exception cause) {
-        Long oid = (order == null ? null : order.getOrderId());
+        Long oid = (order == null ? null : order.orderId()); // record accessor
         ConsumerEnvelope<OrderCrudConsumerDto> env = (oid == null ? null : index.get(oid));
 
         if (env == null) {
@@ -140,7 +141,6 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
         }
 
         OrderCrudMessage originalLike = OrderCrudMessage.of(operation, toPayload(order));
-
         kafkaProducerService.sendToDlq(originalLike, env.getHeaders(), cause);
     }
 
@@ -152,7 +152,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
             try {
                 sendOneToDlq(o, operation, index, cause);
             } catch (Exception ex) {
-                log.error("error: dlq send failed. orderId={}", (o == null ? null : o.getOrderId()), ex);
+                log.error("error: dlq send failed. orderId={}", (o == null ? null : o.orderId()), ex); // record accessor
             }
         }
     }
@@ -169,7 +169,6 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                 }
 
                 OrderCrudMessage originalLike = OrderCrudMessage.of(dto.getOperation(), toPayload(dto.getOrder()));
-
                 kafkaProducerService.sendToDlq(originalLike, env.getHeaders(), cause);
             } catch (Exception ex) {
                 log.error("error: dlq send failed (all). key={}", env.getKey(), ex);
@@ -183,21 +182,21 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
         }
 
         return new OrderPayload(
-                o.getId(),
-                o.getOrderId(),
-                o.getOrderNumber(),
-                o.getUserId(),
-                o.getUserNumber(),
-                o.getOrderPrice(),
-                o.getDeleteYn(),
-                o.getVersion(),
-                o.getCreatedUserId(),
-                o.getCreatedUserType(),
-                o.getCreatedDatetime(),
-                o.getModifiedUserId(),
-                o.getModifiedUserType(),
-                o.getModifiedDatetime(),
-                o.getPublishedTimestamp()
+                o.id(),
+                o.orderId(),
+                o.orderNumber(),
+                o.userId(),
+                o.userNumber(),
+                o.orderPrice(),
+                o.deleteYn(),
+                o.version(),
+                o.createdUserId(),
+                o.createdUserType(),
+                o.createdDatetime(),
+                o.modifiedUserId(),
+                o.modifiedUserType(),
+                o.modifiedDatetime(),
+                o.publishedTimestamp()
         );
     }
 }

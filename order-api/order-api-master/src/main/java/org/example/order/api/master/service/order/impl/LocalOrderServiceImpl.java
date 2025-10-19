@@ -3,15 +3,15 @@ package org.example.order.api.master.service.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.api.master.service.common.KafkaProducerService;
-import org.example.order.api.master.service.order.OrderService;
+import org.example.order.api.master.service.order.LocalOrderService;
 import org.example.order.contract.order.messaging.event.OrderLocalMessage;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.dto.query.LocalOrderQuery;
 import org.example.order.core.application.order.dto.view.LocalOrderView;
-import org.example.order.core.application.order.mapper.OrderMapper;
+import org.example.order.core.application.order.mapper.LocalOrderMapper;
 import org.example.order.common.core.exception.code.CommonExceptionCode;
 import org.example.order.common.core.exception.core.CommonException;
-import org.example.order.domain.order.repository.OrderRepository;
+import org.example.order.domain.order.repository.LocalOrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +21,11 @@ import java.time.Instant;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrderServiceImpl implements OrderService {
+public class LocalOrderServiceImpl implements LocalOrderService {
 
     private final KafkaProducerService kafkaProducerService;
-    private final OrderMapper orderMapper;
-    private final OrderRepository orderRepository;
+    private final LocalOrderMapper localOrderMapper;
+    private final LocalOrderRepository localOrderRepository;
 
     /**
      * 주문 메시지를 Kafka로 발행.
@@ -33,10 +33,10 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public void sendMessage(LocalOrderCommand command) {
-        final OrderLocalMessage message = orderMapper.toOrderLocalMessage(command);
+        final OrderLocalMessage message = localOrderMapper.toOrderLocalMessage(command);
         message.validation();
 
-        log.info("[OrderService] send to Kafka: id={}, operation={}, publishedTs={}",
+        log.info("[LocalOrderService] send to Kafka: id={}, operation={}, publishedTs={}",
                 message.getId(), message.getOperation(), message.getPublishedTimestamp());
 
         kafkaProducerService.sendToOrder(message);
@@ -52,12 +52,12 @@ public class OrderServiceImpl implements OrderService {
         Long id = query.orderId();
 
         // Entity -> LocalOrderView (MapStruct)
-        LocalOrderView original = orderRepository
+        LocalOrderView original = localOrderRepository
                 .findById(id)
-                .map(orderMapper::toView)
+                .map(localOrderMapper::toView)
                 .orElseThrow(() -> {
                     String msg = "Order not found. id=" + id;
-                    log.warn("[OrderService] {}", msg);
+                    log.warn("[LocalOrderService] {}", msg);
 
                     return new CommonException(CommonExceptionCode.NOT_FOUND_RESOURCE, msg);
                 });

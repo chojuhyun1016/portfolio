@@ -43,39 +43,55 @@ public class OrderCrudConsumerDto {
             throw new IllegalArgumentException("order is null");
         }
 
-        if (order.getOrderId() == null) {
+        if (order.orderId() == null) {
             throw new IllegalArgumentException("orderId is null");
         }
     }
 
+    /**
+     * 계약 Payload -> 불변 record(LocalOrderSync)로 변환
+     * - LocalOrderSync는 record이므로 setter가 없고, canonical constructor로 생성해야 한다.
+     * - failure 플래그는 기본 false로 시작
+     */
     private static LocalOrderSync toLocalOrderDto(OrderPayload p) {
-        LocalOrderSync d = new LocalOrderSync();
-
         if (p == null) {
-            return d;
+            return new LocalOrderSync(
+                    null,   // id
+                    null,   // userId
+                    null,   // userNumber
+                    null,   // orderId
+                    null,   // orderNumber
+                    null,   // orderPrice
+                    null,   // deleteYn
+                    null,   // version
+                    null,   // createdUserId
+                    null,   // createdUserType
+                    null,   // createdDatetime
+                    null,   // modifiedUserId
+                    null,   // modifiedUserType
+                    null,   // modifiedDatetime
+                    null,   // publishedTimestamp
+                    false   // failure
+            );
         }
 
-        // 식별/주문 기본
-        d.setId(p.id());
-        d.setOrderId(p.orderId());
-        d.setOrderNumber(p.orderNumber());
-
-        // 사용자/가격
-        d.setUserId(p.userId());
-        d.setUserNumber(p.userNumber());
-        d.setOrderPrice(p.orderPrice());
-
-        // 삭제/버전
-        d.setDeleteYn(p.deleteYn());
-        d.setVersion(p.version());
-
-        // 생성/수정 메타
-        d.updateCreatedMeta(p.createdUserId(), p.createdUserType(), p.createdDatetime());
-        d.updateModifiedMeta(p.modifiedUserId(), p.modifiedUserType(), p.modifiedDatetime());
-
-        // 발행 시각(epoch millis)
-        d.setPublishedTimestamp(p.publishedTimestamp());
-
-        return d;
+        return new LocalOrderSync(
+                p.id(),
+                p.userId(),
+                p.userNumber(),
+                p.orderId(),
+                p.orderNumber(),
+                p.orderPrice(),
+                p.deleteYn(),
+                p.version(),
+                p.createdUserId(),
+                p.createdUserType(),
+                p.createdDatetime(),
+                p.modifiedUserId(),
+                p.modifiedUserType(),
+                p.modifiedDatetime(),
+                p.publishedTimestamp(),
+                false
+        );
     }
 }

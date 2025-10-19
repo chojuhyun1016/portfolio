@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor(access = lombok.AccessLevel.PUBLIC)
-public class LocalOrderView {
+public class OrderView {
 
     private final Long id;
 

@@ -54,6 +54,10 @@ dependencies {
     testCompileOnly(libs.lombok)
     testAnnotationProcessor(libs.lombok)
 
+    // 테스트 스코프에도 MapStruct 프로세서 (주입/생성 테스트 시 필요)
+    testAnnotationProcessor(libs.mapstructProcessor)
+    testAnnotationProcessor(libs.lombokMapstructBinding)
+
     // 통합테스트 소스셋용 Lombok/MapStruct 프로세서 (IDE 인식 안정화)
     integrationTestCompileOnly(libs.lombok)
     integrationTestAnnotationProcessor(libs.lombok)

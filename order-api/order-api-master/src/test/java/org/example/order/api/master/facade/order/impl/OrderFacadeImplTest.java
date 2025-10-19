@@ -2,7 +2,7 @@
 //
 //import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
 //import org.example.order.api.master.mapper.order.LocalOrderRequestMapper;
-//import org.example.order.api.master.service.order.OrderService;
+//import org.example.order.api.master.service.order.LocalOrderService;
 //import org.example.order.common.core.messaging.code.MessageMethodType;
 //import org.junit.jupiter.api.DisplayName;
 //import org.junit.jupiter.api.Test;
@@ -15,9 +15,9 @@
 //    @Test
 //    @DisplayName("Facade: request → mapper → service.sendMessage 호출")
 //    void sendOrderMessage_flow() {
-//        OrderService service = mock(OrderService.class);
+//        LocalOrderService service = mock(LocalOrderService.class);
 //        LocalOrderRequestMapper mapper = spy(new LocalOrderRequestMapper());
-//        OrderFacadeImpl facade = new OrderFacadeImpl(service, mapper);
+//        LocalOrderFacadeImpl facade = new LocalOrderFacadeImpl(service, mapper);
 //
 //        LocalOrderPublishRequest req = new LocalOrderPublishRequest(10L, MessageMethodType.PUT);
 //

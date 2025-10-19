@@ -2,10 +2,10 @@ package org.example.order.core.infra.persistence.order.jdbc.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.example.order.domain.order.entity.OrderEntity;
+import org.example.order.domain.order.entity.LocalOrderEntity;
 import org.example.order.domain.order.model.OrderBatchOptions;
 import org.example.order.domain.order.model.OrderUpdate;
-import org.example.order.domain.order.repository.OrderCommandRepository;
+import org.example.order.domain.order.repository.LocalOrderCommandRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Types;
@@ -13,12 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * OrderCommandRepository 구현체 (JDBC)
- * <p>
- * - JpaInfraConfig 에서 jpa.enabled=true 일 때에만 조건부 등록
+ * LocalOrderCommandRepository 구현체 (JDBC)
+ * - 기존 OrderCommandRepositoryJdbcImpl과 동일한 로직, 테이블명만 local_order
  */
 @RequiredArgsConstructor
-public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
+public class LocalOrderCommandRepositoryJdbcImpl implements LocalOrderCommandRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -30,7 +29,7 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
     }
 
     @Override
-    public void bulkInsert(List<OrderEntity> entities) {
+    public void bulkInsert(List<LocalOrderEntity> entities) {
         bulkInsert(entities, null);
     }
 
@@ -40,13 +39,13 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
     }
 
     @Override
-    public void bulkInsert(List<OrderEntity> entities, OrderBatchOptions options) {
+    public void bulkInsert(List<LocalOrderEntity> entities, OrderBatchOptions options) {
         final int chunk = resolveChunk(options);
 
         String sql = """
-                insert ignore into `order` (id, user_id, user_number, order_id, order_number, order_price,
-                                            published_datetime, delete_yn, created_user_id, created_user_type,
-                                            created_datetime, modified_user_id, modified_user_type, modified_datetime, version)
+                insert ignore into `local_order` (id, user_id, user_number, order_id, order_number, order_price,
+                                                 published_datetime, delete_yn, created_user_id, created_user_type,
+                                                 created_datetime, modified_user_id, modified_user_type, modified_datetime, version)
                 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
@@ -58,9 +57,9 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
 
         List<Object[]> batchArgs = new ArrayList<>();
 
-        for (OrderEntity e : entities) {
+        for (LocalOrderEntity e : entities) {
             if (e.getId() == null) {
-                throw new IllegalArgumentException("OrderEntity.id must be assigned before bulkInsert");
+                throw new IllegalArgumentException("LocalOrderEntity.id must be assigned before bulkInsert");
             }
 
             batchArgs.add(new Object[]{
@@ -94,20 +93,20 @@ public class OrderCommandRepositoryJdbcImpl implements OrderCommandRepository {
         final int chunk = resolveChunk(options);
 
         String sql = """
-                update `order` set user_id = ?,
-                                   user_number = ?,
-                                   order_id = ?,
-                                   order_number = ?,
-                                   order_price = ?,
-                                   published_datetime = ?,
-                                   delete_yn = ?,
-                                   created_user_id = ?,
-                                   created_user_type = ?,
-                                   created_datetime = ?,
-                                   modified_user_id = ?,
-                                   modified_user_type = ?,
-                                   modified_datetime = ?,
-                                   version = version + 1
+                update `local_order` set user_id = ?,
+                                         user_number = ?,
+                                         order_id = ?,
+                                         order_number = ?,
+                                         order_price = ?,
+                                         published_datetime = ?,
+                                         delete_yn = ?,
+                                         created_user_id = ?,
+                                         created_user_type = ?,
+                                         created_datetime = ?,
+                                         modified_user_id = ?,
+                                         modified_user_type = ?,
+                                         modified_datetime = ?,
+                                         version = version + 1
                 where order_id = ? and published_datetime <= ?
                 """;
 

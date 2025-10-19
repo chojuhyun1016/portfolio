@@ -8,18 +8,15 @@ import org.example.order.core.application.order.dto.view.LocalOrderView;
 import org.example.order.core.support.mapping.TimeMapper;
 import org.example.order.core.support.mapping.TimeProvider;
 import org.example.order.core.support.mapping.config.AppMappingConfig;
-import org.example.order.domain.order.entity.OrderEntity;
+import org.example.order.domain.order.entity.LocalOrderEntity;
 import org.example.order.domain.order.model.OrderUpdate;
-import org.mapstruct.Builder;
-import org.mapstruct.Context;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ObjectFactory;
+import org.mapstruct.*;
 
 import java.util.List;
 
 /**
- * OrderMapper
+ * LocalOrderMapper
+ * - LocalOrderEntity 전용 매퍼
  * - DTO/Entity/메시지 간 매핑 정의
  * - 날짜/시간 필드 매핑은 TimeMapper의 @Named 메서드로 명시 매핑
  */
@@ -29,7 +26,7 @@ import java.util.List;
         imports = {MessageOrderType.class},
         builder = @Builder(disableBuilder = true)
 )
-public interface OrderMapper {
+public interface LocalOrderMapper {
 
     /* ----------------------------------------------------------------------
      * LocalOrderCommand -> OrderLocalMessage
@@ -49,8 +46,8 @@ public interface OrderMapper {
     /* ----------------------------------------------------------------------
      * Entity -> LocalOrderSync
      *  - publishedDatetime(LocalDateTime) -> publishedTimestamp(Long)
-     *  - with* 메서드들은 진짜 속성이 아니므로 ignore 지정
-     *  - failure는 기본 false로 고정
+     *  - with* 메서드는 실제 속성이 아니므로 ignore 지정
+     *  - failure는 기본 false
      * ---------------------------------------------------------------------- */
     @Mapping(
             target = "publishedTimestamp",
@@ -62,27 +59,26 @@ public interface OrderMapper {
     @Mapping(target = "withOrderNumber", ignore = true)
     @Mapping(target = "withOrderPrice", ignore = true)
     @Mapping(target = "withVersion", ignore = true)
-    LocalOrderSync toDto(OrderEntity entity);
+    LocalOrderSync toDto(LocalOrderEntity entity);
 
     /* ----------------------------------------------------------------------
-     * LocalOrderSync -> OrderEntity
-     *  - id는 @ObjectFactory에서만 주입 (여기서는 ignore)
+     * LocalOrderSync -> LocalOrderEntity
+     *  - id는 @ObjectFactory에서만 주입
      *  - publishedTimestamp(Long) -> publishedDatetime(LocalDateTime)
      * ---------------------------------------------------------------------- */
     @ObjectFactory
-    default OrderEntity newOrderEntity(LocalOrderSync dto) {
-        OrderEntity e = OrderEntity.createEmpty();
+    default LocalOrderEntity newLocalOrderEntity(LocalOrderSync dto) {
+        LocalOrderEntity e = LocalOrderEntity.createEmpty();
         e.setId(dto.id());
-
         return e;
     }
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "publishedDatetime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
-    OrderEntity toEntity(LocalOrderSync dto);
+    LocalOrderEntity toEntity(LocalOrderSync dto);
 
     /* ----------------------------------------------------------------------
-     * LocalOrderSync -> OrderUpdate (Command)
+     * LocalOrderSync -> OrderUpdate (공용 커맨드 모델 재사용)
      * ---------------------------------------------------------------------- */
     @Mapping(
             target = "publishedDateTime",
@@ -101,7 +97,7 @@ public interface OrderMapper {
     LocalOrderView toView(LocalOrderSync dto);
 
     /* ----------------------------------------------------------------------
-     * Entity -> LocalOrderView  (조회 경로에서 Sync 생략)
+     * LocalOrderEntity -> LocalOrderView (조회 경로에서 Sync 생략)
      * ---------------------------------------------------------------------- */
     @Mapping(
             target = "publishedTimestamp",
@@ -109,5 +105,5 @@ public interface OrderMapper {
             qualifiedByName = "localDateTimeToEpochMillis"
     )
     @Mapping(target = "failure", constant = "false")
-    LocalOrderView toView(OrderEntity entity);
+    LocalOrderView toView(LocalOrderEntity entity);
 }

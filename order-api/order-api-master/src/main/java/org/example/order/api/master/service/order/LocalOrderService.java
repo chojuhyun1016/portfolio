@@ -9,7 +9,7 @@ import org.example.order.core.application.order.dto.view.LocalOrderView;
  * - 메시지 발행/전송
  * - 단건 조회(가공 포함)
  */
-public interface OrderService {
+public interface LocalOrderService {
 
     /**
      * Kafka로 메시지 전송

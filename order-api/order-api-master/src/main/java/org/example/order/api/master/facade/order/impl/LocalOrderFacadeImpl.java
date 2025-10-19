@@ -2,9 +2,9 @@ package org.example.order.api.master.facade.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
-import org.example.order.api.master.facade.order.OrderFacade;
+import org.example.order.api.master.facade.order.LocalOrderFacade;
 import org.example.order.api.master.mapper.order.LocalOrderRequestMapper;
-import org.example.order.api.master.service.order.OrderService;
+import org.example.order.api.master.service.order.LocalOrderService;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.dto.query.LocalOrderQuery;
 import org.example.order.core.application.order.dto.view.LocalOrderView;
@@ -17,20 +17,20 @@ import org.springframework.stereotype.Component;
  */
 @RequiredArgsConstructor
 @Component
-public class OrderFacadeImpl implements OrderFacade {
+public class LocalOrderFacadeImpl implements LocalOrderFacade {
 
-    private final OrderService orderService;
+    private final LocalOrderService localOrderService;
     private final LocalOrderRequestMapper localOrderRequestMapper;
 
     @Override
     public void sendOrderMessage(LocalOrderPublishRequest request) {
         LocalOrderCommand command = localOrderRequestMapper.toCommand(request);
 
-        orderService.sendMessage(command);
+        localOrderService.sendMessage(command);
     }
 
     @Override
     public LocalOrderView findById(LocalOrderQuery query) {
-        return orderService.findById(query);
+        return localOrderService.findById(query);
     }
 }

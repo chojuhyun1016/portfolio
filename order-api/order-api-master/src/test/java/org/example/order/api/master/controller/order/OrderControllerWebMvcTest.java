@@ -2,7 +2,7 @@
 //
 //import com.fasterxml.jackson.databind.ObjectMapper;
 //import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
-//import org.example.order.api.master.facade.order.OrderFacade;
+//import org.example.order.api.master.facade.order.LocalOrderFacade;
 //import org.example.order.api.master.service.common.KafkaProducerService;
 //import org.example.order.api.master.web.advice.MasterApiExceptionHandler;
 //import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
@@ -34,7 +34,7 @@
 // * - 서비스/파사드 구현체는 명시 제외
 // */
 //@WebMvcTest(
-//        controllers = OrderController.class,
+//        controllers = LocalOrderController.class,
 //        excludeFilters = {
 //                @Filter(type = FilterType.REGEX, pattern = "org\\.example\\.order\\..*\\.service\\..*"),
 //                @Filter(type = FilterType.REGEX, pattern = "org\\.example\\.order\\..*\\.facade\\..*\\.impl\\..*")
@@ -51,7 +51,7 @@
 //    private ObjectMapper om;
 //
 //    @MockBean
-//    private OrderFacade facade;
+//    private LocalOrderFacade facade;
 //
 //    @MockBean
 //    private KafkaProducerService kafkaProducerService;

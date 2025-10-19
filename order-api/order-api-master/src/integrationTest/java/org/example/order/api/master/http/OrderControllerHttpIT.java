@@ -4,7 +4,7 @@
 //import org.example.order.api.master.OrderApiMasterApplication;
 //import org.example.order.api.master.config.OrderApiMasterConfig;
 //import org.example.order.api.master.dto.order.LocalOrderPublishRequest;
-//import org.example.order.api.master.facade.order.OrderFacade;
+//import org.example.order.api.master.facade.order.LocalOrderFacade;
 //import org.example.order.api.master.service.common.KafkaProducerService;
 //import org.example.order.client.kafka.service.KafkaProducerCluster;
 //import org.example.order.common.core.messaging.code.MessageMethodType;
@@ -73,7 +73,7 @@
 //class OrderControllerHttpIT {
 //
 //    @MockBean
-//    private OrderFacade facade;
+//    private LocalOrderFacade facade;
 //
 //    @MockBean
 //    private KafkaProducerService kafkaProducerService;
