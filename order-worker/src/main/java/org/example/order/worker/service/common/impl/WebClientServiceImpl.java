@@ -9,6 +9,8 @@ import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.common.support.json.ObjectMapperUtils;
 import org.example.order.common.web.response.ApiResponse;
 import org.example.order.core.application.order.dto.sync.LocalOrderSync;
+import org.example.order.worker.dto.api.OrderQueryRequest;
+import org.example.order.worker.dto.api.OrderQueryResponse;
 import org.example.order.worker.exception.WorkerExceptionCode;
 import org.example.order.worker.service.common.WebClientService;
 import org.springframework.stereotype.Service;
@@ -24,32 +26,48 @@ public class WebClientServiceImpl implements WebClientService {
     private final WebService webService;
     private final WebUrlProperties webUrlProperties;
 
+    /**
+     * order-api-master 로 POST /api/v1/local-orders/query 호출
+     * - Body: { "orderId": <id> }
+     * - Response: ApiResponse(data = LocalOrderQueryResponse)
+     * - data 를 OrderQueryResponse -> LocalOrderSync 로 변환하여 반환
+     */
     @Override
-    public LocalOrderSync findOrderListByOrderId(Long id) {
+    public LocalOrderSync queryLocalOrderById(Long id) {
         try {
-            WebUrlProperties.Client client = webUrlProperties.getClient();
+            if (id == null) {
+                throw new IllegalArgumentException("id is null");
+            }
 
+            WebUrlProperties.Client client = webUrlProperties.getClient();
             Map<String, String> headers = new HashMap<>();
             headers.put(HttpConstant.X_CLIENT_ID, client.getClientId());
 
-            String orderUrl = client.getUrl().getWithPathVariable(client.getUrl().getOrder(), id);
-            log.info("{}", orderUrl);
+            final String base = client.getUrl().getOrder();
+            final String url = (base.endsWith("/") ? base.substring(0, base.length() - 1) : base)
+                    + "/api/v1/local-orders/query";
 
-            ApiResponse<?> response = (ApiResponse<?>) webService.get(orderUrl, headers, null, ApiResponse.class);
-            Object data = response.getData();
+            OrderQueryRequest body = new OrderQueryRequest(id);
 
-            log.info("{}", response.getData());
+            log.info("[WebClientService] POST {}", url);
 
-            LocalOrderSync result = ObjectMapperUtils.convertTreeToValue(data, LocalOrderSync.class);
+            @SuppressWarnings("unchecked")
+            ApiResponse<?> response = (ApiResponse<?>) webService.post(url, headers, body, ApiResponse.class);
 
-            if (result == null) {
-                throw new CommonException(WorkerExceptionCode.NOT_FOUND_LOCAL_RESOURCE);
+            Object data = (response == null ? null : response.getData());
+
+            log.info("[WebClientService] response.data={}", data);
+
+            OrderQueryResponse view = ObjectMapperUtils.convertTreeToValue(data, OrderQueryResponse.class);
+
+            if (view == null) {
+                throw new CommonException(WorkerExceptionCode.NOT_FOUND_LOCAL_RESOURCE, "empty data");
             }
 
-            return result;
+            return view.toLocalOrderSync();
         } catch (Exception e) {
             log.error("error : not found local resource - id : {}", id);
-            log.error("error : find order failed", e);
+            log.error("error : query local order failed", e);
 
             throw e;
         }

@@ -3,9 +3,9 @@ package org.example.order.worker.listener.order.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.example.order.common.messaging.ConsumerEnvelope;
 import org.example.order.common.support.logging.Correlate;
 import org.example.order.contract.order.messaging.event.OrderLocalMessage;
-import org.example.order.common.messaging.ConsumerEnvelope;
 import org.example.order.worker.dto.consumer.OrderLocalConsumerDto;
 import org.example.order.worker.facade.order.OrderLocalMessageFacade;
 import org.example.order.worker.listener.order.OrderLocalMessageListener;
@@ -15,7 +15,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * OrderLocalMessageListenerImpl
- * - Local 메시지를 수신해 Envelope로 감싸 파사드에 전달
+ * - Local 메시지 단건 수신
+ * - 레코드를 Envelope로 감싸 파사드에 위임
+ * - 변환/검증/에러처리는 파사드에서 일관 수행
  */
 @Slf4j
 @Component
@@ -50,21 +52,18 @@ public class OrderLocalMessageListenerImpl implements OrderLocalMessageListener 
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public void orderLocal(ConsumerRecord<String, OrderLocalMessage> record, Acknowledgment ack) {
-        log.info("orderLocal received: {}", record.value());
+    public void orderLocal(ConsumerRecord<String, OrderLocalMessage> record, Acknowledgment acknowledgment) {
+        log.info("LOCAL - order-local record received: {}", record.value());
 
         try {
-            OrderLocalConsumerDto dto = OrderLocalConsumerDto.from(record.value());
-            dto.validate();
-
             ConsumerEnvelope<OrderLocalConsumerDto> envelope =
-                    ConsumerEnvelope.fromRecord(record, dto);
+                    ConsumerEnvelope.fromRecord(record, OrderLocalConsumerDto.from(record.value()));
 
             facade.sendOrderApiTopic(envelope);
         } catch (Exception e) {
             log.error("error : order-local", e);
         } finally {
-            ack.acknowledge();
+            acknowledgment.acknowledge();
         }
     }
 }

@@ -10,6 +10,7 @@ import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 /**
  * OrderCrudConsumerDto
  * - CRUD 토픽 계약 이벤트(OrderCrudMessage)를 worker 내부용 DTO로 변환
+ * - validate() 외에 isValid()/invalidReason() 정적 헬퍼 제공(스트림 필터링/분기에 사용)
  */
 @Getter
 @ToString
@@ -48,30 +49,43 @@ public class OrderCrudConsumerDto {
         }
     }
 
+    public static boolean isValid(OrderCrudConsumerDto d) {
+        return d != null
+                && d.getOperation() != null
+                && d.getOrder() != null
+                && d.getOrder().orderId() != null;
+    }
+
+    public static String invalidReason(OrderCrudConsumerDto d) {
+        if (d == null) {
+            return "payload is null";
+        }
+
+        if (d.getOperation() == null) {
+            return "operation is null";
+        }
+
+        if (d.getOrder() == null) {
+            return "order is null";
+        }
+
+        if (d.getOrder().orderId() == null) {
+            return "orderId is null";
+        }
+
+        return "unknown";
+    }
+
     /**
      * 계약 Payload -> 불변 record(LocalOrderSync)로 변환
-     * - LocalOrderSync는 record이므로 setter가 없고, canonical constructor로 생성해야 한다.
-     * - failure 플래그는 기본 false로 시작
+     * - LocalOrderSync는 record이므로 canonical constructor로 생성해야 한다.
+     * - failure 플래그는 기본 false
      */
     private static LocalOrderSync toLocalOrderDto(OrderPayload p) {
         if (p == null) {
             return new LocalOrderSync(
-                    null,   // id
-                    null,   // userId
-                    null,   // userNumber
-                    null,   // orderId
-                    null,   // orderNumber
-                    null,   // orderPrice
-                    null,   // deleteYn
-                    null,   // version
-                    null,   // createdUserId
-                    null,   // createdUserType
-                    null,   // createdDatetime
-                    null,   // modifiedUserId
-                    null,   // modifiedUserType
-                    null,   // modifiedDatetime
-                    null,   // publishedTimestamp
-                    false   // failure
+                    null, null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null, false
             );
         }
 

@@ -1,10 +1,11 @@
 package org.example.order.worker.service.order;
 
-import org.example.order.contract.shared.op.Operation;
-import org.example.order.core.application.order.dto.sync.LocalOrderSync;
+import org.example.order.worker.dto.command.OrderCrudBatchCommand;
 
-import java.util.List;
-
+/**
+ * OrderService
+ * - 연산별 배치 커맨드를 받아 CRUD 오케스트레이션 수행
+ */
 public interface OrderService {
-    void execute(Operation operation, List<LocalOrderSync> messages);
+    void execute(OrderCrudBatchCommand batch);
 }

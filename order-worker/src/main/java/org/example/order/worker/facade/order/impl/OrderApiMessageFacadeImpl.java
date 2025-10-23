@@ -41,17 +41,14 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
 
             log.info("[API->CRUD] requestApi id={}", dto.getId());
 
-            // 1) API 조회
-            LocalOrderSync orderDto = webClientService.findOrderListByOrderId(dto.getId());
+            LocalOrderSync orderDto = webClientService.queryLocalOrderById(dto.getId());
 
             if (orderDto == null) {
                 throw new IllegalStateException("Order API returned empty order for id=" + dto.getId());
             }
 
-            // 2) 내부 DTO -> 계약 Payload (메타 포함)
             OrderPayload payload = toPayload(orderDto);
 
-            // 3) CRUD 메시지 발행
             kafkaProducerService.sendToOrderCrud(OrderCrudMessage.of(dto.getOperation(), payload));
         } catch (Exception e) {
             log.error("order-api failed. id={} cause={}", dto == null ? null : dto.getId(), e.toString());

@@ -2,13 +2,13 @@ package org.example.order.worker.service.order.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.order.contract.shared.op.Operation;
 import org.example.order.core.application.order.dto.sync.LocalOrderSync;
+import org.example.order.worker.dto.command.OrderCrudBatchCommand;
 import org.example.order.worker.service.order.OrderService;
+import org.example.order.common.support.logging.Correlate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.example.order.common.support.logging.Correlate;
 
 import java.util.List;
 
@@ -31,22 +31,21 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     @Correlate(
-            key = "#messages != null && #messages.size() == 1 ? #messages.get(0).orderId() : T(java.util.UUID).randomUUID().toString()",
+            key = "#batch != null && #batch.items() != null && #batch.items().size() == 1 ? #batch.items().get(0).orderId() : T(java.util.UUID).randomUUID().toString()",
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public void execute(Operation operation, List<LocalOrderSync> messages) {
+    public void execute(OrderCrudBatchCommand batch) {
+        final List<LocalOrderSync> safe = (batch == null || batch.items() == null) ? List.of() : batch.items();
 
-        final List<LocalOrderSync> safe = (messages == null) ? List.of() : messages;
-
-        log.info("order-crud start: total={}, operation={}", safe.size(), operation);
+        log.info("order-crud start: total={}, operation={}", safe.size(), (batch == null ? null : batch.operation()));
 
         safe.stream()
                 .map(d -> d != null ? d.orderId() : null)
-                .forEach(oid -> log.info("order-crud item: orderId={}, operation={}", oid, operation));
+                .forEach(oid -> log.info("order-crud item: orderId={}, operation={}", oid, (batch == null ? null : batch.operation())));
 
         try {
-            switch (operation) {
+            switch (batch.operation()) {
                 case CREATE -> orderCrudService.bulkInsert(safe);
                 case UPDATE -> orderCrudService.bulkUpdate(safe);
                 case DELETE -> orderCrudService.deleteAll(safe);

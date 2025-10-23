@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
  * - Local 컨슈머 DTO를 계약 메시지로 변환해 API 토픽에 전송
  * - 정상 전송 시 헤더를 수정하지 않음
  * - 실패 시 Envelope의 원본 헤더를 DLQ 전송에 사용
+ * - 단건 처리 유지
  */
 @Slf4j
 @Component
@@ -25,7 +26,7 @@ public class OrderLocalMessageFacadeImpl implements OrderLocalMessageFacade {
 
     @Override
     public void sendOrderApiTopic(ConsumerEnvelope<OrderLocalConsumerDto> envelope) {
-        OrderLocalConsumerDto dto = envelope.getPayload();
+        OrderLocalConsumerDto dto = (envelope != null ? envelope.getPayload() : null);
 
         try {
             if (dto == null) {
@@ -34,7 +35,8 @@ public class OrderLocalMessageFacadeImpl implements OrderLocalMessageFacade {
 
             dto.validate();
 
-            log.info("[LOCAL->API] orderId={}", dto.getId());
+            log.info("[LOCAL->API] orderId={} op={} ts={}",
+                    dto.getId(), dto.getOperation(), dto.getPublishedTimestamp());
 
             OrderApiMessage msg = new OrderApiMessage(
                     dto.getOperation(),
@@ -46,9 +48,9 @@ public class OrderLocalMessageFacadeImpl implements OrderLocalMessageFacade {
             kafkaProducerService.sendToOrderApi(msg);
         } catch (Exception e) {
             log.error("order-local failed. orderId={} cause={}",
-                    dto == null ? null : dto.getId(), e.toString());
+                    dto == null ? null : dto.getId(), e.toString(), e);
 
-            kafkaProducerService.sendToDlq(dto, envelope.getHeaders(), e);
+            kafkaProducerService.sendToDlq(dto, envelope != null ? envelope.getHeaders() : null, e);
         }
     }
 }

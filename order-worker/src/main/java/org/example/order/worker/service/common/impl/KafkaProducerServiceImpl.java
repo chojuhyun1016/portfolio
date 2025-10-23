@@ -68,6 +68,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 
             if (!hasText(dlqTopic)) {
                 log.error("DLQ topic name is empty. message={}", message);
+
                 return;
             }
 
@@ -94,6 +95,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 
             if (!hasText(dlqTopic)) {
                 log.error("DLQ topic name is empty. payload={}", payload);
+
                 return;
             }
 
@@ -128,6 +130,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     private void send(Object message, String topic) {
         if (!hasText(topic)) {
             log.error("Kafka topic is empty. skip sending. message={}", message);
+
             return;
         }
 
@@ -175,6 +178,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 
         if (ex instanceof CommonException ce) {
             code = (ce.getCode() == null) ? "COMMON" : String.valueOf(ce.getCode());
+
             if (hasText(ce.getMsg())) {
                 msg = ce.getMsg();
             }

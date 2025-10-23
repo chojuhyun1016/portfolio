@@ -14,7 +14,9 @@ import org.example.order.domain.order.repository.OrderCommandRepository;
 import org.example.order.domain.order.repository.OrderDynamoRepository;
 import org.example.order.domain.order.repository.OrderQueryRepository;
 import org.example.order.domain.order.repository.OrderRepository;
+import org.example.order.worker.mapper.order.OrderExternalMapper;
 import org.example.order.worker.service.order.OrderCrudService;
+import org.example.order.worker.cache.view.OrderCacheView;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +57,8 @@ public class OrderCrudServiceImpl implements OrderCrudService {
 
     private final AesGcmEncryptor aesGcmEncryptor;
 
+    private final OrderExternalMapper externalMapper;
+
     @Override
     public List<OrderEntity> bulkInsert(List<LocalOrderSync> dtoList) {
         try {
@@ -75,6 +79,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
             for (OrderEntity src : entities) {
                 try {
                     OrderEntity amplified = amplifyToEntity(src);
+
                     orderRepository.save(amplified);
                 } catch (Throwable t) {
                     log.warn("[JPA][AMPLIFY][SKIP] orderId={} cause={}", src.getOrderId(), t.toString());
@@ -105,9 +110,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         // 증폭 UPDATE
         for (LocalOrderSync d : dtoList) {
             try {
-                if (d == null || d.orderId() == null) {
-                    continue;
-                }
+                if (d == null || d.orderId() == null) continue;
 
                 final long amplifiedOrderId = d.orderId() + ORDER_ID_OFFSET;
                 final String amplifiedOrderNumber = (d.orderNumber() == null)
@@ -177,7 +180,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
                     continue;
                 }
 
-                OrderDynamoEntity e = toDynamo(d);
+                OrderDynamoEntity e = externalMapper.toDynamo(d);
 
                 if (d.orderPrice() != null) {
                     String enc = aesGcmEncryptor.encrypt(String.valueOf(d.orderPrice()));
@@ -189,7 +192,6 @@ public class OrderCrudServiceImpl implements OrderCrudService {
                 if (e.getOrderPriceEnc() != null) {
                     String decStr = aesGcmEncryptor.decrypt(e.getOrderPriceEnc());
                     long dec = Long.parseLong(decStr);
-
                     log.info("[DYNAMO][PRICE][DEC] orderId={} price.dec={}", safeId(d), dec);
                 }
             } catch (Throwable t) {
@@ -197,7 +199,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
             }
         }
 
-        // Redis upsert
+        // Redis upsert (캐시 전용 뷰)
         for (LocalOrderSync d : items) {
             try {
                 if (d == null || d.orderId() == null) {
@@ -205,7 +207,8 @@ public class OrderCrudServiceImpl implements OrderCrudService {
                 }
 
                 String key = redisKey(d.orderId());
-                redisRepository.set(key, d);
+                OrderCacheView cache = OrderCacheView.of(d);
+                redisRepository.set(key, cache);
             } catch (Throwable t) {
                 log.error("[REDIS][UPSERT][SKIP] orderId={} cause={}", safeId(d), t.toString());
             }
@@ -229,7 +232,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
                 if (d.orderNumber() != null && !d.orderNumber().isBlank()) {
                     orderDynamoRepository.deleteByIdAndOrderNumber(id, d.orderNumber());
                 } else {
-                    orderDynamoRepository.deleteById(id);
+                    orderDynamoRepository.deleteAllByPartition(id);
                 }
             } catch (Throwable t) {
                 log.error("[DYNAMO][DELETE][SKIP] orderId={} cause={}", safeId(d), t.toString());
@@ -251,7 +254,6 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     /* 증폭(JPA INSERT) 헬퍼 */
-
     private OrderEntity amplifyToEntity(OrderEntity src) {
         OrderEntity e = new OrderEntity();
         e.setId(idGenerator.nextId());
@@ -285,7 +287,6 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     /* 기타 헬퍼 */
-
     private static String redisKey(Long orderId) {
         return String.format(REDIS_KEY_FMT, String.valueOf(orderId));
     }
@@ -294,35 +295,15 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         return (d == null || d.orderId() == null) ? "null" : String.valueOf(d.orderId());
     }
 
-    private static OrderDynamoEntity toDynamo(LocalOrderSync d) {
-        OrderDynamoEntity e = new OrderDynamoEntity();
-        e.setId(String.valueOf(d.orderId()));
-        e.setOrderId(d.orderId());
-        e.setOrderNumber(d.orderNumber());
-        e.setUserId(d.userId());
-        e.setUserNumber(d.userNumber());
-        e.setUserName(d.userNumber());
-        e.setOrderPrice(d.orderPrice());
-        e.setDeleteYn(Boolean.TRUE.equals(d.deleteYn()) ? "Y" : "N");
-        e.setCreatedUserId(d.createdUserId());
-        e.setCreatedUserType(d.createdUserType());
-        e.setCreatedDatetime(d.createdDatetime());
-        e.setModifiedUserId(d.modifiedUserId());
-        e.setModifiedUserType(d.modifiedUserType());
-        e.setModifiedDatetime(d.modifiedDatetime());
-        e.setPublishedTimestamp(d.publishedTimestamp());
-        return e;
-    }
-
     private static void afterCommit(Runnable r) {
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             try {
                 r.run();
             } catch (Throwable ignore) {
             }
-
             return;
         }
+
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {

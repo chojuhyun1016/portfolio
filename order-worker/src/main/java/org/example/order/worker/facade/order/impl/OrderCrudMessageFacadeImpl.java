@@ -9,6 +9,10 @@ import org.example.order.contract.order.messaging.event.OrderCrudMessage;
 import org.example.order.contract.order.messaging.payload.OrderPayload;
 import org.example.order.contract.shared.op.Operation;
 import org.example.order.core.application.order.dto.sync.LocalOrderSync;
+import org.example.order.worker.dto.command.OrderCreateBatchCommand;
+import org.example.order.worker.dto.command.OrderCrudBatchCommand;
+import org.example.order.worker.dto.command.OrderDeleteBatchCommand;
+import org.example.order.worker.dto.command.OrderUpdateBatchCommand;
 import org.example.order.worker.dto.consumer.OrderCrudConsumerDto;
 import org.example.order.worker.exception.DatabaseExecuteException;
 import org.example.order.worker.exception.WorkerExceptionCode;
@@ -20,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -51,50 +54,54 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                     .map(ConsumerEnvelope::getPayload)
                     .toList();
 
-            Map<Long, ConsumerEnvelope<OrderCrudConsumerDto>> envelopeIndex =
+            // 동일 orderId에 대한 모든 Envelope를 유지하는 멀티맵
+            Map<Long, List<ConsumerEnvelope<OrderCrudConsumerDto>>> envelopeIndex =
                     envelopes.stream()
                             .filter(env -> env.getPayload() != null
                                     && env.getPayload().getOrder() != null
-                                    && env.getPayload().getOrder().orderId() != null) // record accessor
-                            .collect(Collectors.toMap(
-                                    env -> env.getPayload().getOrder().orderId(), // record accessor
-                                    Function.identity(),
-                                    (a, b) -> b,
-                                    LinkedHashMap::new
+                                    && env.getPayload().getOrder().orderId() != null)
+                            .collect(Collectors.groupingBy(
+                                    env -> env.getPayload().getOrder().orderId(),
+                                    LinkedHashMap::new,
+                                    Collectors.toList()
                             ));
-
-            List<LocalOrderSync> failureList = new ArrayList<>();
 
             dtos.forEach(OrderCrudConsumerDto::validate);
 
             Map<Operation, List<LocalOrderSync>> byType = groupingByOperation(dtos);
+            List<OrderCrudBatchCommand> batches = byType.entrySet().stream()
+                    .map(e -> toBatch(e.getKey(), List.copyOf(e.getValue())))
+                    .toList();
 
-            byType.forEach((operation, orders) -> {
+            List<LocalOrderSync> failureList = new ArrayList<>();
+
+            for (OrderCrudBatchCommand batch : batches) {
                 try {
-                    orderService.execute(operation, orders);
+                    orderService.execute(batch);
 
-                    for (LocalOrderSync order : orders) {
-                        if (Boolean.TRUE.equals(order.failure())) { // record accessor
+                    for (LocalOrderSync order : batch.items()) {
+                        if (Boolean.TRUE.equals(order.failure())) {
                             log.info("failed order: {}", order);
 
-                            sendOneToDlq(order, operation, envelopeIndex,
+                            sendOneToDlq(order, batch.operation(), envelopeIndex,
                                     new DatabaseExecuteException(WorkerExceptionCode.MESSAGE_UPDATE_FAILED));
 
                             failureList.add(order);
                         } else {
                             kafkaProducerService.sendToOrderRemote(
-                                    OrderCloseMessage.of(order.orderId(), operation) // record accessor
+                                    OrderCloseMessage.of(order.orderId(), batch.operation())
                             );
                         }
                     }
                 } catch (Exception e) {
-                    log.error("error: order crud execute failed. operation={}, orders={}", operation, orders, e);
+                    log.error("error: order crud execute failed. operation={}, orders={}",
+                            batch.operation(), batch.items(), e);
 
-                    sendGroupToDlq(orders, operation, envelopeIndex, e);
+                    sendGroupToDlq(batch.items(), batch.operation(), envelopeIndex, e);
 
                     throw e;
                 }
-            });
+            }
 
             if (!failureList.isEmpty()) {
                 throw new DatabaseExecuteException(WorkerExceptionCode.MESSAGE_UPDATE_FAILED);
@@ -110,6 +117,15 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
 
             throw e;
         }
+    }
+
+    // 반환 타입을 인터페이스로 고정하는 팩토리 메서드
+    private static OrderCrudBatchCommand toBatch(Operation op, List<LocalOrderSync> items) {
+        return switch (op) {
+            case CREATE -> new OrderCreateBatchCommand(items);
+            case UPDATE -> new OrderUpdateBatchCommand(items);
+            case DELETE -> new OrderDeleteBatchCommand(items);
+        };
     }
 
     private Map<Operation, List<LocalOrderSync>> groupingByOperation(List<OrderCrudConsumerDto> dtos) {
@@ -129,30 +145,37 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
 
     private void sendOneToDlq(LocalOrderSync order,
                               Operation operation,
-                              Map<Long, ConsumerEnvelope<OrderCrudConsumerDto>> index,
+                              Map<Long, List<ConsumerEnvelope<OrderCrudConsumerDto>>> index,
                               Exception cause) {
-        Long oid = (order == null ? null : order.orderId()); // record accessor
-        ConsumerEnvelope<OrderCrudConsumerDto> env = (oid == null ? null : index.get(oid));
+        Long oid = (order == null ? null : order.orderId());
+        List<ConsumerEnvelope<OrderCrudConsumerDto>> envs = (oid == null ? null : index.get(oid));
 
-        if (env == null) {
+        if (envs == null || envs.isEmpty()) {
             log.warn("skip dlq: envelope not found for orderId={}", oid);
 
             return;
         }
 
         OrderCrudMessage originalLike = OrderCrudMessage.of(operation, toPayload(order));
-        kafkaProducerService.sendToDlq(originalLike, env.getHeaders(), cause);
+
+        for (ConsumerEnvelope<OrderCrudConsumerDto> env : envs) {
+            try {
+                kafkaProducerService.sendToDlq(originalLike, env.getHeaders(), cause);
+            } catch (Exception ex) {
+                log.error("error: dlq send failed. orderId={}", oid, ex);
+            }
+        }
     }
 
     private void sendGroupToDlq(List<LocalOrderSync> orders,
                                 Operation operation,
-                                Map<Long, ConsumerEnvelope<OrderCrudConsumerDto>> index,
+                                Map<Long, List<ConsumerEnvelope<OrderCrudConsumerDto>>> index,
                                 Exception cause) {
         for (LocalOrderSync o : orders) {
             try {
                 sendOneToDlq(o, operation, index, cause);
             } catch (Exception ex) {
-                log.error("error: dlq send failed. orderId={}", (o == null ? null : o.orderId()), ex); // record accessor
+                log.error("error: dlq send failed. orderId={}", (o == null ? null : o.orderId()), ex);
             }
         }
     }
@@ -169,6 +192,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                 }
 
                 OrderCrudMessage originalLike = OrderCrudMessage.of(dto.getOperation(), toPayload(dto.getOrder()));
+
                 kafkaProducerService.sendToDlq(originalLike, env.getHeaders(), cause);
             } catch (Exception ex) {
                 log.error("error: dlq send failed (all). key={}", env.getKey(), ex);
