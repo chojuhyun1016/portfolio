@@ -35,6 +35,6 @@ include(
 //        "order-batch",
         "order-worker",
         "order-api:order-api-common",
-        "order-api:order-api-master"
-//        "order-api:order-api-web"
+        "order-api:order-api-master",
+        "order-api:order-api-web"
 )

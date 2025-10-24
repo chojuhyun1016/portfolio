@@ -3,7 +3,7 @@ spring:
     # Redis 사용 여부 토글
     # true  → Redis 연결을 활성화 (host/port 반드시 설정 필요)
     # false → Redis 자동 구성 비활성화 (client-type=none 권장)
-    enabled: false
+    enabled: true
     host: localhost
     port: 6379
     database: 0

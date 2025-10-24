@@ -1,38 +1,23 @@
 package com.example.order.api.web.mapper.order;
 
-import com.example.order.api.web.dto.order.OrderResponse;
-import org.example.order.core.application.order.dto.sync.LocalOrderSync;
-import org.springframework.stereotype.Component;
+import com.example.order.api.web.dto.order.OrderQueryResponse;
+import org.example.order.core.application.order.dto.view.OrderView;
+import org.example.order.core.support.mapping.TimeMapper;
+import org.example.order.core.support.mapping.config.AppMappingConfig;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
 /**
- * Application DTO -> API Response 변환 매퍼 (수동)
- * - 위치: API(어댑터) 레이어
- * - 의존 방향: adapter -> application (OK)
+ * Application 내부 View -> API 응답 DTO 매핑 (MapStruct)
+ * - 계약(API) DTO는 여기서만 생성
  */
-@Component
-public class OrderResponseMapper {
+@Mapper(
+        config = AppMappingConfig.class,
+        uses = {TimeMapper.class},
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public interface OrderResponseMapper {
 
-    public OrderResponse toResponse(OrderDto dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        LocalOrderSync o = dto.getOrder();
-
-        if (o == null) {
-            return null;
-        }
-
-        return new OrderResponse(
-                o.getId(),
-                o.getUserId(),
-                o.getUserNumber(),
-                o.getOrderId(),
-                o.getOrderNumber(),
-                o.getOrderPrice(),
-                o.getDeleteYn(),
-                o.getVersion(),
-                o.getPublishedTimestamp()
-        );
-    }
+    OrderQueryResponse toResponse(OrderView view);
 }

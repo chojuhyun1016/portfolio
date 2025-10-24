@@ -10,7 +10,7 @@
 # - create-missing-gsi: 기존 테이블이 있을 경우, 누락된 GSI만 UpdateTable로 추가(LSI는 생성 시점에만 가능)
 # - 권장: 로컬에서는 안전 변경(누락 GSI 추가)만 자동 반영, 위험 변경(PK/LSI/GSI 키·프로젝션 변경)은 DRY-RUN 유지
 dynamodb:
-  enabled: false
+  enabled: true
   endpoint: "http://localhost:4566"
   region: "ap-northeast-2"   # 로컬은 임의 리전 가능(예: us-east-1 / ap-northeast-2)
   access-key: "local"

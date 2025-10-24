@@ -203,44 +203,341 @@ MDC/Kafka | (자동) `MdcToHeaderProducerInterceptor` · `CommonKafkaProducerAut
 - Asciidoctor HTML: `order-api-master/build/docs/asciidoc/`
 - `bootJar` 포함 시 정적 리소스: `order-api-master/build/libs/` 내 JAR의 `/static/docs/` (스크립트 설정에 따름)
 
-### 3.2 애플리케이션 프로퍼티(YAML) 샘플
+### 3.2 전체 환경설정(YAML) — local 프로파일 분할 포함
 
-    # File: src/main/resources/application.yml
+#### 3.2.1 `application.yml`
+
+    spring:
+      config:
+        activate:
+          on-profile: local
+        import:
+          - classpath:config/local/server.yml
+          - classpath:config/local/datasource.yml
+          - classpath:config/local/jpa.yml
+          - classpath:config/local/flyway.yml
+          - classpath:config/local/redis.yml
+          - classpath:config/local/web.yml
+          - classpath:config/local/aws.yml
+          - classpath:config/local/dynamodb.yml
+          - classpath:config/local/lock.yml
+          - classpath:config/local/crypto.yml
+          - classpath:config/local/kafka.yml
+          - classpath:config/local/logging.yml
+
+    server:
+      port: 18081
+
+#### 3.2.2 `config/local/aws.yml`
+
+    aws:
+      region: ap-northeast-2
+      endpoint: http://localhost:4566
+
+      credential:
+        enabled: false
+        access-key: local
+        secret-key: local
+
+      s3:
+        enabled: false
+        bucket: my-local-bucket
+        default-folder: logs
+        auto-create: true
+        create-prefix-placeholder: true
+
+      secrets-manager:
+        enabled: false
+        secret-name: myapp/secret-key
+        scheduler-enabled: false
+        refresh-interval-millis: 300000
+        fail-fast: true
+
+#### 3.2.3 `config/local/crypto.yml`
+
+    crypto:
+      enabled: false
+      props:
+        seed: false
+
+    app:
+      crypto:
+        keys:
+          orderAesGcm:
+            alias: "order.aesgcm"
+            encryptor: "AES-GCM"
+            kid: "key-2025-09-27"   # Secrets JSON에서 kid=key-2025-09-27 사용
+          orderAes256:
+            alias: "order.aes256"
+            encryptor: "AES-256"
+            version: 3              # kid 대신 version=3 사용
+          orderAes128:
+            alias: "order.aes128"
+            encryptor: "AES-128"
+            version: 2              # 최신 버전 2 사용
+          orderHmac:
+            alias: "order.hmac"
+            encryptor: "HMAC_SHA256"
+            kid: "key-2025-01-10"   # 최신 kid로 핀
+
+#### 3.2.4 `config/local/datasource.yml`
+
+    spring:
+      datasource:
+        url: jdbc:mysql://localhost:3306/order_local?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+        username: order
+        password: order1234
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        hikari:
+          connection-timeout: 3000         # ms
+          max-lifetime: 58000              # ms (테스트 환경 짧게)
+          maximum-pool-size: 16
+          auto-commit: false
+          data-source-properties:
+            connectTimeout: 3000           # ms
+            socketTimeout: 60000           # ms
+            useUnicode: true
+            characterEncoding: utf-8
+            rewriteBatchedStatements: true # JDBC 대량 insert 최적화
+
+      sql:
+        init:
+          mode: never
+
+#### 3.2.5 `config/local/dynamodb.yml`
+
+    # DynamoDB 로컬 설정 (local 프로파일 전용)
+    # - dynamodb.enabled=true 일 때만 모듈 동작
+    # - endpoint 지정 시: LocalStack 등 로컬 엔드포인트 사용
+    # - region: 수동/자동 모두에서 사용 가능. 로컬은 아무 리전이어도 무방
+    # - accessKey/secretKey: LocalStack이면 dummy 값으로 사용해도 됨
+    # - tableName: 사용할 테이블 이름 (존재하지 않으면 local 프로파일에서만 자동 생성)
+    # - auto-create: 로컬 + true일 때만 테이블 생성/시드
+    # - migration-location: 마이그레이션 리소스 위치(테이블 생성)
+    # - seed-location: 시드 리소스 위치(데이터 생성)
+    # - create-missing-gsi: 기존 테이블이 있을 경우, 누락된 GSI만 UpdateTable로 추가(LSI는 생성 시점에만 가능)
+    # - 권장: 로컬에서는 안전 변경(누락 GSI 추가)만 자동 반영, 위험 변경(PK/LSI/GSI 키·프로젝션 변경)은 DRY-RUN 유지
+    dynamodb:
+      enabled: false
+      endpoint: "http://localhost:4566"
+      region: "ap-northeast-2"   # 로컬은 임의 리전 가능(예: us-east-1 / ap-northeast-2)
+      access-key: "local"
+      secret-key: "local"
+      table-name: "order_dynamo"
+
+      auto-create: false                          # 로컬에서만 테이블/인덱스 생성 + 시드
+      migration-location: classpath:dynamodb/migration
+      seed-location: classpath:dynamodb/seed
+      create-missing-gsi: true                   # 누락된 GSI는 안전 변경으로 자동 추가
+
+      schema-reconcile:
+        enabled: true                            # 드리프트 감지/조정 사용(로컬 전용 권장)
+        dry-run: true                            # 기본 DRY-RUN(위험 변경은 로그만 출력)
+        allow-destructive: false                 # 파괴적 재생성(드롭&리크리에이트) 금지
+        delete-extra-gsi: false                  # 마이그레이션에 없는 GSI 자동 삭제 금지(명시적 전환 권장)
+        copy-data: false                         # 재생성 시 데이터 복사 비활성(실험 시에만 켜기)
+        max-item-count: 10000                    # copy-data=true일 때 복사 허용 상한
+
+      # ===== [선택] 로컬 실험용 토글(필요 시 주석 해제 후 사용) =====
+      #  - 위험 변경을 실제 반영해야 하는 실험에서만 잠시 켜고, 테스트 후 반드시 되돌리세요.
+      # schema-reconcile:
+      #   enabled: true
+      #   dry-run: false                          # 실제 변경 수행
+      #   allow-destructive: true                 # 테이블 재빌드 허용(데이터 유실 주의)
+      #   copy-data: true                         # 재빌드시 임시 테이블 경유 데이터 복사
+      #   max-item-count: 100000                  # 복사 상한 증설(테스트 용량에 맞게)
+      #   delete-extra-gsi: true                  # 여분 GSI 제거(실험에서만 권장)
+
+#### 3.2.6 `config/local/flyway.yml`
+
+    spring:
+      flyway:
+        enabled: true
+        locations: classpath:db/migration
+        baseline-on-migrate: true
+        validate-on-migrate: true
+        out-of-order: false
+        connect-retries: 10
+        clean-disabled: false   # 로컬만 허용 (운영/베타/개발은 true 권장)
+
+#### 3.2.7 `config/local/jpa.yml`
+
+    spring:
+      jpa:
+        hibernate:
+          ddl-auto: none      # local
+          # ddl-auto: validate  # dev, beta, prod
+        open-in-view: false
+        properties:
+          hibernate:
+            # Hibernate 6은 dialect 자동선택 가능(명시 제거 권장). 필요한 경우만 지정.
+            # dialect: org.hibernate.dialect.MySQLDialect
+
+            # 저장소/쿼리 성능 및 가독
+            highlight_sql: true
+            use_sql_comments: true
+            show_sql: true
+
+            # 배치/정렬 최적화
+            default_batch_fetch_size: ${chunkSize:1000}
+            jdbc.batch_size: ${chunkSize:1000}
+            jdbc.batch_versioned_data: true
+            order_inserts: true
+            order_updates: true
+
+            # 트랜잭션/타임존
+            connection.provider_disables_autocommit: true
+            jdbc.time_zone: UTC
+            timezone.default_storage: NORMALIZE
+
+            # 기타
+            hbm2ddl.import_files_sql_extractor: org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor
+            dialect.storage_engine: innodb
+
+    jpa:
+      enabled: true
+
+#### 3.2.8 `config/local/kafka.yml`
+
+    # ============================================================================
+    # config/local/kafka.yml
+    #  - 로컬 개발/테스트용 카프카 설정
+    # ============================================================================
+
+    spring:
+      kafka:
+        bootstrap-servers: 127.0.0.1:29092
+
+        admin:
+          auto-create: true
+
+    # ------------------------------------------------------------------------
+    # 애플리케이션 커스텀 토글
+    # ------------------------------------------------------------------------
+    app:
+      kafka:
+        auto-create-topics: true     # @Configuration 활성
+        ensure-at-startup: true      # 기동 후 AdminClient 보장 활성
+
+    kafka:
+      # ------------------------------------------------------------------------
+      # SSL/SASL : 로컬에선 일반적으로 필요 없음 → 끔
+      # ------------------------------------------------------------------------
+      ssl:
+        enabled: false
+        security-protocol: SASL_SSL
+        sasl-mechanism: AWS_MSK_IAM
+        sasl-jaas-config: software.amazon.msk.auth.iam.IAMLoginModule required;
+        sasl-client-callback-handler-class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+
+      # ------------------------------------------------------------------------
+      # 프로듀서/컨슈머 부트스트랩(참고: spring.kafka.bootstrap-servers 사용)
+      #  - 아래 값은 애플 내부 팩토리 바인딩용으로 남겨두되, 실제 공통 값과 동일하게 유지
+      # ------------------------------------------------------------------------
+      producer:
+        enabled: true
+        bootstrap-servers: 127.0.0.1:29092
+
+      consumer:
+        enabled: false
+        bootstrap-servers: 127.0.0.1:29092
+        trusted-packages: "org.example.order.*,org.example.common.*"
+        option:
+          max-fail-count: 1
+          max-poll-records: 1000
+          fetch-max-wait-ms: 500
+          fetch-max-bytes: 52428800
+          max-poll-interval-ms: 300000
+          idle-between-polls: 0
+          auto-offset-reset: "earliest"
+          enable-auto-commit: false
+
+      # ------------------------------------------------------------------------
+      # 토픽 매핑
+      # ------------------------------------------------------------------------
+      topic:
+        - category: ORDER_LOCAL
+          name: "local-order-local"
+
+#### 3.2.9 `config/local/lock.yml`
+
+    spring:
+      autoconfigure:
+        exclude:
+          - org.redisson.spring.starter.RedissonAutoConfigurationV2
+
+    lock:
+      redisson:
+        enabled: false
+        host: localhost
+        port: 6379
+        database: 10
+        password: order1234
+        wait-time: 3000
+        lease-time: 10000
+        retry-interval: 150
+
+      named:
+        enabled: false
+        wait-time: 3000
+        retry-interval: 150
+
+#### 3.2.10 `config/local/logging.yml`  (요청하신 레벨 반영)
+
+    logging:
+      file:
+        path: ./logs
+      level:
+        org.example: info
+        org.hibernate.orm.jdbc.bind: info
+
+#### 3.2.11 `config/local/redis.yml`
+
+    spring:
+      redis:
+        # Redis 사용 여부 토글
+        # true  → Redis 연결을 활성화 (host/port 반드시 설정 필요)
+        # false → Redis 자동 구성 비활성화 (client-type=none 권장)
+        enabled: false
+        host: localhost
+        port: 6379
+        database: 0
+        password: order1234
+        trusted-package: org.example.order
+        command-timeout-seconds: 3
+        shutdown-timeout-seconds: 3
+        pool-max-active: 32
+        pool-max-idle: 16
+        pool-min-idle: 8
+        pool-max-wait: 2000
+
+    management:
+      health:
+        redis:
+          enabled: false
+
+#### 3.2.12 `config/local/server.yml`
+
+    server:
+      shutdown: graceful
+
+    spring:
+      lifecycle:
+        timeout-per-shutdown-phase: 30s
+
+#### 3.2.13 `config/local/tsid.yml`
+
+    tsid:
+      enabled: false         # 반드시 true 여야 TsidFactory 빈 생성 + Holder 세팅
+      node-bits: 10          # 0~1023
+      zone-id: UTC           # 필요 시 조정 (미설정 시 시스템 기본)
+      prefer-ec2-meta: false # 로컬에선 false 권장, EC2에선 true 권장
+
+#### 3.2.14 `config/local/web.yml`
+
     spring:
       application:
         name: order-api-master
-      jackson:
-        timezone: UTC
-      kafka:
-        bootstrap-servers: localhost:9092
-        # (선택) 인터셉터를 직접 지정한 경우에도 AutoConfiguration이 중복 없이 병합 처리
-        # producer:
-        #   properties:
-        #     interceptor.classes: org.example.order.common.kafka.MdcToHeaderProducerInterceptor
-
-    logging:
-      level:
-        org.example.order: INFO
-
-    # File: src/main/resources/application-local.yml
-    spring:
-      profiles:
-        active: local
-    logging:
-      file:
-        path: logs
-
-    # File: src/main/resources/application-prod.yml
-    spring:
-      kafka:
-        bootstrap-servers: PLAINTEXT://kafka-broker:9092
-
-    client:
-      kafka:
-        topics:
-          ORDER_LOCAL: order.local
-
-> 로컬 통합 테스트에서 Redis/Redisson, Security 자동설정이 개입되면 실제 인프라 미기동 시 예외가 발생할 수 있습니다. **테스트 컨텍스트에서만 오토컨피그 제외**를 권장합니다(아래 §6 참조).
 
 --------------------------------------------------------------------------------
 
@@ -458,20 +755,20 @@ Kafka 클러스터 의존 빈(`KafkaProducerCluster`)과 프로듀서 서비스(
 
 ### 7.4 샘플 문서 스켈레톤
 
-    = Order API Master REST Docs
-    :toc: left
-    :toclevels: 3
-    :sectanchors:
-    :source-highlighter: highlightjs
-    :snippets: build/generated-snippets
+        = Order API Master REST Docs
+        :toc: left
+        :toclevels: 3
+        :sectanchors:
+        :source-highlighter: highlightjs
+        :snippets: build/generated-snippets
 
-    == POST /order → 202 ACCEPTED
+        == POST /order → 202 ACCEPTED
 
-    .Request
-    include::{snippets}/order-accepted/http-request.adoc[]
+        .Request
+        include::{snippets}/order-accepted/http-request.adoc[]
 
-    .Response
-    include::{snippets}/order-accepted/http-response.adoc[]
+        .Response
+        include::{snippets}/order-accepted/http-response.adoc[]
 
 > **FAQ (빌드 실패 흔한 원인)**
 > - `403`(Forbidden) → 테스트에서 Security 필터가 켜져 있습니다. `@AutoConfigureMockMvc(addFilters = false)` 적용.

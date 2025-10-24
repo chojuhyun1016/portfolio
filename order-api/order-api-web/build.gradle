@@ -1,9 +1,10 @@
 // ======================================================================
 // module: order-api-web / build.gradle
 //  - Boot 웹 API 모듈 (+ Spring REST Docs 문서화)
-//  - 모든 버전/의존성은 libs.versions.toml(버전 카탈로그) 기준
-//  - Kafka, Querydsl(Jakarta), 보안/웹/JPA/검증, 로깅 포함
-//  - REST Docs: test 또는 rest 태스크로 스니펫 생성
+//  - 카탈로그 기반 의존성 사용
+//  - integrationTest 소스셋/태스크 포함
+//  - 기본 build/test 시 integrationTest 자동실행 비활성화
+//    (필요 시: ./gradlew clean build -PincludeIT=true)
 // ======================================================================
 
 plugins {
@@ -23,6 +24,7 @@ dependencies {
     implementation project(":order-common")
     implementation project(":order-core")
     implementation project(":order-domain")
+    implementation project(":order-contracts")
     implementation project(":order-api:order-api-common")
     implementation project(":order-client:kafka")
 
@@ -42,26 +44,58 @@ dependencies {
     implementation("com.querydsl:querydsl-jpa:${libs.versions.querydsl.get()}:jakarta")
     annotationProcessor("com.querydsl:querydsl-apt:${libs.versions.querydsl.get()}:jakarta")
 
+    // --- MapStruct (Lombok binding 포함) ---
+    // @Mapper / ReportingPolicy 심볼 오류 해결 및 구현체 생성
+    implementation(libs.mapstruct)
+    annotationProcessor(libs.mapstructProcessor)
+    // Lombok과 함께 사용할 때 컴파일러 인식 보정
+    annotationProcessor(libs.lombokMapstructBinding)
+
+    // --- Lombok (메인/테스트/IT 모두 명시) ---
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+    // 테스트 스코프에도 MapStruct 프로세서 (주입/생성 테스트 시 필요)
+    testAnnotationProcessor(libs.mapstructProcessor)
+    testAnnotationProcessor(libs.lombokMapstructBinding)
+
+    // 통합테스트 소스셋용 Lombok/MapStruct 프로세서 (IDE 인식 안정화)
+    integrationTestCompileOnly(libs.lombok)
+    integrationTestAnnotationProcessor(libs.lombok)
+    integrationTestAnnotationProcessor(libs.mapstructProcessor)
+    integrationTestAnnotationProcessor(libs.lombokMapstructBinding)
+
     // --- 로깅 / Jackson ---
     implementation(libs.logbackJsonClassic)
     implementation(libs.logbackJackson)
     implementation(libs.jacksonDatabind)
 
-    // --- DB 런타임 (RDS JDBC) ---
+    // --- DB 런타임 (로컬/H2 + 운영 RDS) ---
+    runtimeOnly(libs.h2)
     runtimeOnly(libs.awsMysqlJdbc)
 
     // --- 테스트 공통 ---
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.springSecurityTest)
 
+    // Mockito (BOM + core + junit-jupiter)
+    testImplementation(platform(libs.mockitoBom))
+    testImplementation(libs.mockitoCore)
+    testImplementation(libs.mockitoJunitJupiter)
+
     // --- REST Docs (버전 카탈로그 사용) ---
     testImplementation(libs.restdocsMockmvc)
     asciidoctorExt(libs.restdocsAsciidoctor)
 }
 
-// 기본 test 태스크에서 스니펫을 생성
+// 모든 테스트 태스크 JUnit Platform 사용
+tasks.withType(Test).configureEach { useJUnitPlatform() }
+
+// 기본 test 태스크에서 일반 테스트 실행(REST Docs 태그 제외)
 tasks.named("test", Test) {
-    useJUnitPlatform()
+    useJUnitPlatform { excludeTags "restdocs" }
     doFirst { snippetsDir.mkdirs() }
     systemProperty "org.springframework.restdocs.outputDir", snippetsDir
     outputs.dir snippetsDir
@@ -90,12 +124,54 @@ asciidoctor {
             "sectanchors": true,
             "source-highlighter": "highlightjs"
     )
-    dependsOn("test", "rest")
+    dependsOn tasks.named("rest")
     onlyIf { snippetsDir.exists() && snippetsDir.listFiles()?.length > 0 }
 }
 
 // 문서 Boot JAR 포함 (static/docs)
 tasks.named("bootJar") {
     dependsOn tasks.named("asciidoctor")
-    from("${asciidoctor.outputDir}/") { into "static/docs" }
+    from("${layout.buildDirectory.get()}/docs/asciidoc/") { into "static/docs" }
+}
+
+// ----------------------------------------------------------------------
+// integrationTest 소스셋/태스크 정의
+// ----------------------------------------------------------------------
+sourceSets {
+    integrationTest {
+        java.srcDir 'src/integrationTest/java'
+        resources.srcDir 'src/integrationTest/resources'
+        compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+if (tasks.findByName('integrationTest') == null) {
+    tasks.register('integrationTest', Test) {
+        description = 'Runs integration tests.'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        shouldRunAfter tasks.test
+        useJUnitPlatform()
+    }
+} else {
+    tasks.named('integrationTest', Test) {
+        description = 'Runs integration tests.'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        shouldRunAfter tasks.test
+        useJUnitPlatform()
+    }
+}
+
+// 기본 빌드 시 IT 자동 실행 X (옵션 플래그로 제어)
+if (project.hasProperty("includeIT") && project.property("includeIT").toString().toBoolean()) {
+    tasks.check { dependsOn tasks.named('integrationTest') }
 }

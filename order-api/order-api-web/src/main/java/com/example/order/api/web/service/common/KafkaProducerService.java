@@ -1,4 +1,8 @@
-package com.example.order.api.web.service.common;
+package org.example.order.api.master.service.common;
+
+import org.example.order.contract.order.messaging.event.OrderLocalMessage;
 
 public interface KafkaProducerService {
+    void sendToOrder(OrderLocalMessage message);
 }
+

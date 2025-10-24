@@ -1,4 +1,4 @@
-package org.example.order.api.master.config;
+package com.example.order.api.web.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

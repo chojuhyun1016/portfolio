@@ -4,17 +4,14 @@ import org.example.order.contract.order.messaging.event.OrderLocalMessage;
 import org.example.order.contract.order.messaging.type.MessageOrderType;
 import org.example.order.core.application.order.dto.command.LocalOrderCommand;
 import org.example.order.core.application.order.dto.sync.LocalOrderSync;
-import org.example.order.core.application.order.dto.view.LocalOrderView;
+import org.example.order.core.application.order.dto.sync.OrderSync;
+import org.example.order.core.application.order.dto.view.OrderView;
 import org.example.order.core.support.mapping.TimeMapper;
 import org.example.order.core.support.mapping.TimeProvider;
 import org.example.order.core.support.mapping.config.AppMappingConfig;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.model.OrderUpdate;
-import org.mapstruct.Builder;
-import org.mapstruct.Context;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ObjectFactory;
+import org.mapstruct.*;
 
 import java.util.List;
 
@@ -47,28 +44,41 @@ public interface OrderMapper {
     }
 
     /* ----------------------------------------------------------------------
-     * Entity -> LocalOrderSync
+     * Entity -> OrderSync / LocalOrderSync
      *  - publishedDatetime(LocalDateTime) -> publishedTimestamp(Long)
-     *  - with* 메서드들은 진짜 속성이 아니므로 ignore 지정
-     *  - failure는 기본 false로 고정
+     *  - with* 메서드는 실제 속성이 아니므로 ignore 지정
+     *  - failure는 기본 false
      * ---------------------------------------------------------------------- */
-    @Mapping(
-            target = "publishedTimestamp",
-            source = "publishedDatetime",
-            qualifiedByName = "localDateTimeToEpochMillis"
-    )
+    @Mapping(target = "publishedTimestamp", source = "publishedDatetime", qualifiedByName = "localDateTimeToEpochMillis")
     @Mapping(target = "failure", constant = "false")
     @Mapping(target = "withPublishedTimestamp", ignore = true)
     @Mapping(target = "withOrderNumber", ignore = true)
     @Mapping(target = "withOrderPrice", ignore = true)
     @Mapping(target = "withVersion", ignore = true)
-    LocalOrderSync toDto(OrderEntity entity);
+    OrderSync toDto(OrderEntity entity);
+
+    // 필요 시 LocalOrderSync도 직접 생성해야 한다면 아래 매핑 추가
+    @Mapping(target = "publishedTimestamp", source = "publishedDatetime", qualifiedByName = "localDateTimeToEpochMillis")
+    @Mapping(target = "failure", constant = "false")
+    @Mapping(target = "withPublishedTimestamp", ignore = true)
+    @Mapping(target = "withOrderNumber", ignore = true)
+    @Mapping(target = "withOrderPrice", ignore = true)
+    @Mapping(target = "withVersion", ignore = true)
+    LocalOrderSync toLocalDto(OrderEntity entity);
 
     /* ----------------------------------------------------------------------
-     * LocalOrderSync -> OrderEntity
-     *  - id는 @ObjectFactory에서만 주입 (여기서는 ignore)
+     * OrderSync / LocalOrderSync -> OrderEntity
+     *  - id는 @ObjectFactory에서만 주입
      *  - publishedTimestamp(Long) -> publishedDatetime(LocalDateTime)
      * ---------------------------------------------------------------------- */
+    @ObjectFactory
+    default OrderEntity newOrderEntity(OrderSync dto) {
+        OrderEntity e = OrderEntity.createEmpty();
+        e.setId(dto.id());
+
+        return e;
+    }
+
     @ObjectFactory
     default OrderEntity newOrderEntity(LocalOrderSync dto) {
         OrderEntity e = OrderEntity.createEmpty();
@@ -79,35 +89,40 @@ public interface OrderMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "publishedDatetime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
+    OrderEntity toEntity(OrderSync dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "publishedDatetime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
     OrderEntity toEntity(LocalOrderSync dto);
 
     /* ----------------------------------------------------------------------
-     * LocalOrderSync -> OrderUpdate (Command)
+     * OrderSync / LocalOrderSync -> OrderUpdate (Command)
      * ---------------------------------------------------------------------- */
-    @Mapping(
-            target = "publishedDateTime",
-            source = "publishedTimestamp",
-            qualifiedByName = "epochMillisToLocalDateTime"
-    )
+    @Mapping(target = "publishedDateTime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
+    OrderUpdate toUpdate(OrderSync dto);
+
+    @Mapping(target = "publishedDateTime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
     OrderUpdate toUpdate(LocalOrderSync dto);
 
     List<OrderUpdate> toUpdateCommands(List<LocalOrderSync> dtos);
 
+    List<OrderUpdate> toUpdateCommandsFromOrderSync(List<OrderSync> dtos);
+
     /* ----------------------------------------------------------------------
-     * LocalOrderSync -> LocalOrderView
+     * OrderSync / LocalOrderSync -> OrderView
      * ---------------------------------------------------------------------- */
     @Mapping(target = "publishedTimestamp", source = "publishedTimestamp")
     @Mapping(target = "failure", source = "failure")
-    LocalOrderView toView(LocalOrderSync dto);
+    OrderView toView(OrderSync dto);
+
+    @Mapping(target = "publishedTimestamp", source = "publishedTimestamp")
+    @Mapping(target = "failure", source = "failure")
+    OrderView toView(LocalOrderSync dto);
 
     /* ----------------------------------------------------------------------
-     * Entity -> LocalOrderView  (조회 경로에서 Sync 생략)
+     * Entity -> OrderView  (조회 경로에서 Sync 생략)
      * ---------------------------------------------------------------------- */
-    @Mapping(
-            target = "publishedTimestamp",
-            source = "publishedDatetime",
-            qualifiedByName = "localDateTimeToEpochMillis"
-    )
+    @Mapping(target = "publishedTimestamp", source = "publishedDatetime", qualifiedByName = "localDateTimeToEpochMillis")
     @Mapping(target = "failure", constant = "false")
-    LocalOrderView toView(OrderEntity entity);
+    OrderView toView(OrderEntity entity);
 }

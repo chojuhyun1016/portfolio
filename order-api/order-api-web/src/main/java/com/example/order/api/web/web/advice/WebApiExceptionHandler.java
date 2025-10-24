@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
  * Web 모듈 전용 예외 핸들러
+ * - 전역 정책은 common(GlobalExceptionHandler)이 담당
+ * - 이 핸들러는 Web 모듈 전용 로그 태깅 등 최소한의 차별화만 수행
  */
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
