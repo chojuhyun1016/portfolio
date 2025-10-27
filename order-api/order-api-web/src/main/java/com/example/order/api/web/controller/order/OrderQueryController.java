@@ -46,7 +46,7 @@ public class OrderQueryController {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public ResponseEntity<ApiResponse<OrderQueryResponse>> findByMySql(
+    public ResponseEntity<? extends ApiResponse<?>> findByMySql(
             @RequestBody @Valid OrderQueryRequest req,
             HttpServletRequest httpReq
     ) {
@@ -58,7 +58,7 @@ public class OrderQueryController {
 
         log.info("[OrderQueryController][findByMySql] orderId={}", req.orderId());
 
-        var res = facade.findByMySql(req.orderId());
+        OrderQueryResponse res = facade.findByMySql(req.orderId());
 
         return ApiResponse.ok(res);
     }
@@ -75,7 +75,7 @@ public class OrderQueryController {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public ResponseEntity<ApiResponse<OrderQueryResponse>> findByDynamo(
+    public ResponseEntity<? extends ApiResponse<?>> findByDynamo(
             @RequestBody @Valid OrderQueryRequest req,
             HttpServletRequest httpReq
     ) {
@@ -87,7 +87,7 @@ public class OrderQueryController {
 
         log.info("[OrderQueryController][findByDynamo] orderId={}", req.orderId());
 
-        var res = facade.findByDynamo(req.orderId());
+        OrderQueryResponse res = facade.findByDynamo(req.orderId());
 
         return ApiResponse.ok(res);
     }
@@ -104,7 +104,7 @@ public class OrderQueryController {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public ResponseEntity<ApiResponse<OrderQueryResponse>> findByRedis(
+    public ResponseEntity<? extends ApiResponse<?>> findByRedis(
             @RequestBody @Valid OrderQueryRequest req,
             HttpServletRequest httpReq
     ) {
@@ -116,7 +116,7 @@ public class OrderQueryController {
 
         log.info("[OrderQueryController][findByRedis] orderId={}", req.orderId());
 
-        var res = facade.findByRedis(req.orderId());
+        OrderQueryResponse res = facade.findByRedis(req.orderId());
 
         return ApiResponse.ok(res);
     }

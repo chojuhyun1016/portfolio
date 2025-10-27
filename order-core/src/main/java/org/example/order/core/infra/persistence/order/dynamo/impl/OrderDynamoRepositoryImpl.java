@@ -22,6 +22,11 @@ import java.util.Optional;
  * - Infra Layer: 외부 DynamoDB 연동만 담당
  * - 비즈니스 로직 없이 순수 Infra 구현
  * - @Repository 제거: 설정(Manual/Auto Config)에서만 조건부 등록
+ * <p>
+ * 운영 규약:
+ * - 복합키 테이블(PK+SK)에서 단건 조회 시 getItem 금지(PK+SK 모두 알아야 하므로).
+ * → PartitionKey(id)만으로 "Query" 수행, 첫 건을 단건으로 취급(접근 패턴 기준).
+ * - Scan은 운영 금지(옵션으로만 허용). 다른 접근 패턴은 전용 GSI 설계.
  */
 @Slf4j
 public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
@@ -50,7 +55,8 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
      * @param userIdIndexName userId 파티션키를 사용하는 GSI 이름 (예: "gsi_user_id"), null이면 scan() fallback
      */
     public OrderDynamoRepositoryImpl(DynamoDbEnhancedClient enhancedClient, String tableName, String userIdIndexName) {
-        this(enhancedClient, tableName, userIdIndexName, 1000, false, true);
+        // 운영 기본: limit=1000, consistentRead=false, scanFallback=false
+        this(enhancedClient, tableName, userIdIndexName, 1000, false, false);
     }
 
     public OrderDynamoRepositoryImpl(
@@ -71,7 +77,7 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
 
     @PostConstruct
     public void init() {
-        log.info("OrderDynamoRepository initialized. table={}, userIdIndexName={}, limit={}, consistentGet={}, allowScanFallback={}",
+        log.info("OrderDynamoRepository initialized. table={}, userIdIndexName={}, limit={}, consistentRead={}, allowScanFallback={}",
                 table.tableName(), userIdIndexName, defaultQueryLimit, consistentReadGet, allowScanFallback);
     }
 
@@ -101,14 +107,22 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
     public Optional<OrderDynamoEntity> findById(String id, OrderDynamoQueryOptions options) {
         ResolvedOptions opt = resolve(options);
 
-        GetItemEnhancedRequest req = GetItemEnhancedRequest.builder()
-                .key(Key.builder().partitionValue(id).build())
-                .consistentRead(opt.consistentReadGet)
-                .build();
+        PageIterable<OrderDynamoEntity> pages = table.query(QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(id)))
+                .limit(1)
+                .consistentRead(opt.consistentReadGet) // Base Table Query에 한해 strong read 가능
+                .build()
+        );
 
-        OrderDynamoEntity item = table.getItem(req);
+        for (Page<OrderDynamoEntity> page : pages) {
+            if (page.items() != null) {
+                for (OrderDynamoEntity it : page.items()) {
+                    return Optional.ofNullable(it);
+                }
+            }
+        }
 
-        return Optional.ofNullable(item);
+        return Optional.empty();
     }
 
     @Override
@@ -213,7 +227,6 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
 
     @Override
     public void deleteById(String id) {
-        // PK+SK 테이블에서 PK-only 삭제는 지원하지 않는다.
         throw new UnsupportedOperationException("Composite PK table requires orderNumber. Use deleteByIdAndOrderNumber(id, orderNumber). id=" + id);
     }
 
@@ -307,7 +320,6 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
             try {
                 BatchWriteResult result = enhancedClient.batchWriteItem(req);
 
-                // 미처리 항목 확인
                 List<Key> unprocessed = result.unprocessedDeleteItemsForTable(table);
                 int processed = remaining.size() - (unprocessed == null ? 0 : unprocessed.size());
                 deleted += processed;
@@ -317,27 +329,26 @@ public class OrderDynamoRepositoryImpl implements OrderDynamoRepository {
                 } else {
                     remaining = new ArrayList<>(unprocessed);
 
-                    // 지수 백오프
                     try {
                         Thread.sleep(backoffMillis);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
+
                         break;
                     }
 
                     backoffMillis = Math.min((long) (backoffMillis * 2), Duration.ofSeconds(3).toMillis());
                 }
             } catch (ProvisionedThroughputExceededException pte) {
-                // 쓰로틀링 -> 대기 후 재시도
                 log.warn("Batch delete throttled. attempt={} size={} cause={}", attempt, remaining.size(), pte.toString());
 
                 try {
                     Thread.sleep(backoffMillis);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
+
                     break;
                 }
-
                 backoffMillis = Math.min((long) (backoffMillis * 2), Duration.ofSeconds(3).toMillis());
             } catch (Throwable t) {
                 log.warn("Batch delete failed. attempt={} size={} cause={}", attempt, remaining.size(), t.toString());

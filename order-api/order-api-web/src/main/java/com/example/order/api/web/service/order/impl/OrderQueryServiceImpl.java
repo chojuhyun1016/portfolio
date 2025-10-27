@@ -45,6 +45,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
                 .orElseThrow(() -> {
                     String msg = "Order not found in MySQL. id=" + id;
                     log.warn("[OrderQueryService][MySQL] {}", msg);
+
                     return new CommonException(CommonExceptionCode.NOT_FOUND_RESOURCE, msg);
                 });
 
@@ -66,6 +67,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         var item = opt.orElseThrow(() -> {
             String msg = "Order not found in DynamoDB. id=" + id;
             log.warn("[OrderQueryService][Dynamo] {}", msg);
+
             return new CommonException(CommonExceptionCode.NOT_FOUND_RESOURCE, msg);
         });
 
@@ -75,14 +77,14 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         Boolean deleteYnBool = toBooleanYN(item.getDeleteYn());
 
         return OrderView.builder()
-                .id(null) // 필요 시 매핑 규칙에 따라 설정
+                .id(item.getOrderId())
                 .userId(item.getUserId())
                 .userNumber(item.getUserNumber())
                 .orderId(item.getOrderId())
                 .orderNumber(item.getOrderNumber())
                 .orderPrice(item.getOrderPrice())
                 .deleteYn(deleteYnBool)
-                .version(null) // OrderDynamoEntity에 version 게터가 없다면 null 유지
+                .version(null)
                 .createdUserId(item.getCreatedUserId())
                 .createdUserType(item.getCreatedUserType())
                 .createdDatetime(item.getCreatedDatetime())
@@ -110,6 +112,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         if (v == null) {
             String msg = "Order not found in Redis. key=" + key;
             log.warn("[OrderQueryService][Redis] {}", msg);
+
             throw new CommonException(CommonExceptionCode.NOT_FOUND_RESOURCE, msg);
         }
 
@@ -124,6 +127,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
         // 그 외 타입(예: JSON 문자열/Map 등)은 상황에 맞게 역직렬화/매핑 구현 필요
         String msg = "Unsupported redis value type: " + v.getClass().getName();
         log.warn("[OrderQueryService][Redis] {}", msg);
+
         throw new CommonException(CommonExceptionCode.UNKNOWN_SERVER_ERROR, msg);
     }
 
@@ -133,22 +137,42 @@ public class OrderQueryServiceImpl implements OrderQueryService {
      * "Y"/"N", Boolean, Number 등 다양한 표현을 Boolean으로 안전 변환
      */
     private static Boolean toBooleanYN(Object any) {
-        if (any == null) return null;
-        if (any instanceof Boolean b) return b;
+        if (any == null) {
+            return null;
+        }
+
+        if (any instanceof Boolean b) {
+            return b;
+        }
+
         if (any instanceof CharSequence cs) {
             String s = cs.toString().trim();
-            if (s.isEmpty()) return null;
-            if ("Y".equalsIgnoreCase(s) || "YES".equalsIgnoreCase(s) || "TRUE".equalsIgnoreCase(s)) return Boolean.TRUE;
-            if ("N".equalsIgnoreCase(s) || "NO".equalsIgnoreCase(s) || "FALSE".equalsIgnoreCase(s))
+
+            if (s.isEmpty()) {
+                return null;
+            }
+
+            if ("Y".equalsIgnoreCase(s) || "YES".equalsIgnoreCase(s) || "TRUE".equalsIgnoreCase(s)) {
+                return Boolean.TRUE;
+            }
+
+            if ("N".equalsIgnoreCase(s) || "NO".equalsIgnoreCase(s) || "FALSE".equalsIgnoreCase(s)) {
                 return Boolean.FALSE;
+            }
+
             // 숫자 문자열 처리
             try {
                 return Integer.parseInt(s) != 0;
             } catch (NumberFormatException ignored) {
             }
+
             return null;
         }
-        if (any instanceof Number n) return n.intValue() != 0;
+
+        if (any instanceof Number n) {
+            return n.intValue() != 0;
+        }
+
         return null;
     }
 }
