@@ -10,6 +10,7 @@ import org.example.order.core.infra.common.idgen.tsid.config.TsidInfraConfig;
 import org.example.order.core.infra.config.OrderCoreConfig;
 import org.example.order.worker.config.properties.AppCryptoKeyProperties;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
@@ -39,6 +40,7 @@ import org.example.order.core.application.config.ApplicationAutoConfiguration;
 @ImportAutoConfiguration({
         S3AutoConfiguration.class,
         KafkaAutoConfiguration.class,
+        CacheAutoConfiguration.class,
         ApplicationAutoConfiguration.class
 })
 @ComponentScan(basePackages = {

@@ -50,6 +50,7 @@ dependencies {
     implementation(project(':order-common'))
     implementation(project(':order-domain'))
     implementation(project(':order-contracts'))
+    implementation(project(':order-cache'))
 
     // ==== Spring Boot AutoConfiguration ====
     compileOnly(libs.springBootAutoconfigure)

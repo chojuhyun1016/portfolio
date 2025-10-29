@@ -28,6 +28,7 @@ include(
         "order-common",
         "order-core",
         "order-domain",
+        "order-cache",
         "order-contracts",
         "order-client:web",
         "order-client:kafka",
@@ -38,3 +39,5 @@ include(
         "order-api:order-api-master",
         "order-api:order-api-web"
 )
+include 'order-cache'
+

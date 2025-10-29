@@ -6,7 +6,6 @@ import org.example.order.core.infra.crypto.config.CryptoInfraConfig;
 import org.example.order.core.infra.dynamo.config.DynamoInfraConfig;
 import org.example.order.core.infra.jpa.config.JpaInfraConfig;
 import org.example.order.core.infra.lock.config.LockInfraConfig;
-import org.example.order.core.infra.redis.config.RedisInfraConfig;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -47,10 +46,7 @@ import org.springframework.context.annotation.Import;
         JpaInfraConfig.class,
 
         // ===== Distributed Lock (NamedLock / Redisson) =====
-        LockInfraConfig.class,
-
-        // ===== Redis =====
-        RedisInfraConfig.class
+        LockInfraConfig.class
 })
 public class OrderCoreConfig {
 }

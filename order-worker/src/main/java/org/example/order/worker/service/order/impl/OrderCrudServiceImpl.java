@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.core.application.order.dto.sync.LocalOrderSync;
 import org.example.order.core.application.order.mapper.OrderMapper;
+import org.example.order.core.application.order.cache.OrderCacheWriteService;
 import org.example.order.core.infra.crypto.algorithm.encryptor.AesGcmEncryptor;
-import org.example.order.core.infra.persistence.order.redis.RedisRepository;
 import org.example.order.domain.common.id.IdGenerator;
 import org.example.order.domain.order.entity.OrderDynamoEntity;
 import org.example.order.domain.order.entity.OrderEntity;
@@ -16,7 +16,6 @@ import org.example.order.domain.order.repository.OrderQueryRepository;
 import org.example.order.domain.order.repository.OrderRepository;
 import org.example.order.worker.mapper.order.OrderExternalMapper;
 import org.example.order.worker.service.order.OrderCrudService;
-import org.example.order.worker.cache.view.OrderCacheView;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,17 +46,16 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     private final IdGenerator idGenerator;
 
     private final OrderDynamoRepository orderDynamoRepository;
-    private final RedisRepository redisRepository;
-
-    private static final String REDIS_KEY_FMT = "order:byId:%s";
-
-    private static final long ORDER_ID_OFFSET = 1_000_000_000_000L;
-    private static final long ORDER_PRICE_DELTA = 5_000L;
-    private static final String ORDER_NUMBER_SUFFIX = "-JPA";
 
     private final AesGcmEncryptor aesGcmEncryptor;
 
     private final OrderExternalMapper externalMapper;
+
+    private final OrderCacheWriteService orderCacheWriteService;
+
+    private static final long ORDER_ID_OFFSET = 1_000_000_000_000L;
+    private static final long ORDER_PRICE_DELTA = 5_000L;
+    private static final String ORDER_NUMBER_SUFFIX = "-JPA";
 
     @Override
     public List<OrderEntity> bulkInsert(List<LocalOrderSync> dtoList) {
@@ -110,7 +108,9 @@ public class OrderCrudServiceImpl implements OrderCrudService {
         // 증폭 UPDATE
         for (LocalOrderSync d : dtoList) {
             try {
-                if (d == null || d.orderId() == null) continue;
+                if (d == null || d.orderId() == null) {
+                    continue;
+                }
 
                 final long amplifiedOrderId = d.orderId() + ORDER_ID_OFFSET;
                 final String amplifiedOrderNumber = (d.orderNumber() == null)
@@ -149,6 +149,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
 
         // 증폭 삭제: orderId + OFFSET
         List<Long> amplifiedIds = new ArrayList<>(ids.size());
+
         for (Long id : ids) {
             if (id != null) {
                 amplifiedIds.add(id + ORDER_ID_OFFSET);
@@ -199,18 +200,17 @@ public class OrderCrudServiceImpl implements OrderCrudService {
             }
         }
 
-        // Redis upsert (캐시 전용 뷰)
+        // Cache upsert (캐시 전용 뷰) — TTL 정책 필요 시 지정
         for (LocalOrderSync d : items) {
             try {
                 if (d == null || d.orderId() == null) {
                     continue;
                 }
 
-                String key = redisKey(d.orderId());
-                OrderCacheView cache = OrderCacheView.of(d);
-                redisRepository.set(key, cache);
+                // 무기한 저장; 필요 시 TTL 지정 가능
+                orderCacheWriteService.upsert(d, null);
             } catch (Throwable t) {
-                log.error("[REDIS][UPSERT][SKIP] orderId={} cause={}", safeId(d), t.toString());
+                log.error("[CACHE][UPSERT][SKIP] orderId={} cause={}", safeId(d), t.toString());
             }
         }
     }
@@ -239,16 +239,16 @@ public class OrderCrudServiceImpl implements OrderCrudService {
             }
         }
 
-        // Redis delete
+        // Cache delete
         for (LocalOrderSync d : items) {
             try {
                 if (d == null || d.orderId() == null) {
                     continue;
                 }
 
-                redisRepository.delete(redisKey(d.orderId()));
+                orderCacheWriteService.evict(d.orderId());
             } catch (Throwable t) {
-                log.error("[REDIS][DELETE][SKIP] orderId={} cause={}", safeId(d), t.toString());
+                log.error("[CACHE][DELETE][SKIP] orderId={} cause={}", safeId(d), t.toString());
             }
         }
     }
@@ -287,10 +287,6 @@ public class OrderCrudServiceImpl implements OrderCrudService {
     }
 
     /* 기타 헬퍼 */
-    private static String redisKey(Long orderId) {
-        return String.format(REDIS_KEY_FMT, String.valueOf(orderId));
-    }
-
     private static String safeId(LocalOrderSync d) {
         return (d == null || d.orderId() == null) ? "null" : String.valueOf(d.orderId());
     }
@@ -301,6 +297,7 @@ public class OrderCrudServiceImpl implements OrderCrudService {
                 r.run();
             } catch (Throwable ignore) {
             }
+
             return;
         }
 
