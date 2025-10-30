@@ -7,12 +7,11 @@ import org.example.order.common.core.exception.code.CommonExceptionCode;
 import org.example.order.common.core.exception.core.CommonException;
 import org.example.order.core.application.order.dto.query.OrderQuery;
 import org.example.order.core.application.order.dto.view.OrderView;
-// ↓ 동일 패키지 (org.example)
 import org.example.order.core.application.order.mapper.OrderMapper;
 import org.example.order.domain.order.entity.OrderEntity;
 import org.example.order.domain.order.repository.OrderDynamoRepository;
 import org.example.order.domain.order.repository.OrderRepository;
-import org.example.order.core.application.order.cache.OrderCacheService; // ← ★ core 서비스 사용
+import org.example.order.core.application.order.cache.OrderCacheService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,8 +29,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
     private final OrderDynamoRepository orderDynamoRepository;     // DynamoDB (Enhanced Client)
     private final OrderMapper orderMapper;                         // Entity/Sync/View 매퍼
 
-    // ★ Redis 직접 접근 제거 → core 서비스로 위임
-    private final OrderCacheService orderCacheService;
+    private final OrderCacheService orderCacheService;             // core 서비스로 위임
 
     /**
      * MySQL(JPA) 조회
@@ -103,9 +101,10 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 
         return orderCacheService.getViewByOrderId(orderId)
                 .orElseThrow(() -> {
-                    String key = "order:" + orderId; // 로깅용
+                    String key = "order:" + orderId;
                     String msg = "Order not found in Redis. key=" + key;
                     log.warn("[OrderQueryService][Redis] {}", msg);
+
                     return new CommonException(CommonExceptionCode.NOT_FOUND_RESOURCE, msg);
                 });
     }
