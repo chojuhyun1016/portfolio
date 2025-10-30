@@ -1,0 +1,33 @@
+plugins {
+    id "java-library"
+}
+
+group = "org.example"
+version = "1.0.0"
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.named("jar") { enabled = true }
+
+dependencies {
+    // ===== Spring Data Redis (RedisTemplate) =====
+    implementation(libs.springBootStarterDataRedis)
+
+    // ===== Jackson (JavaTime/Map 파싱) =====
+    implementation(libs.jacksonDatabind)
+    implementation(libs.jacksonJsr310)
+
+    // ===== commons-pool2 (Lettuce Pool) =====
+    implementation(libs.commonsPool2)
+
+    // ===== 롬복 =====
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    // ===== 테스트 =====
+    testImplementation(libs.springBootStarterTest)
+}
