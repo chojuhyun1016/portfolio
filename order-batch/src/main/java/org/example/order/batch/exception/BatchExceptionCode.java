@@ -12,9 +12,9 @@ public enum BatchExceptionCode implements ExceptionCodeEnum {
     UNSUPPORTED_EVENT_CATEGORY(6004, "Unsupported event category", HttpStatus.INTERNAL_SERVER_ERROR),
     UNSUPPORTED_DLQ_TYPE(6005, "Dlq Type is not unregistered", HttpStatus.INTERNAL_SERVER_ERROR);
 
-    private int code;
-    private String msg;
-    private HttpStatus httpStatus;
+    private final int code;
+    private final String msg;
+    private final HttpStatus httpStatus;
 
     BatchExceptionCode(int code, String msg, HttpStatus httpStatus) {
         this.code = code;

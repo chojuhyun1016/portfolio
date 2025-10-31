@@ -49,7 +49,6 @@ public class KafkaProducerConfig {
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         configProps.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name);
         configProps.put(ProducerConfig.BATCH_SIZE_CONFIG, 65_536);
-
         configProps.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, MdcHeadersProducerInterceptor.class.getName());
 
         // 보안 설정: 필요 시에만

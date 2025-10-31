@@ -8,6 +8,7 @@ public class ExceptionUtils {
             if (ex instanceof SQLException) return (SQLException) ex;
             ex = ex.getCause();
         }
+
         return null;
     }
 }

@@ -45,6 +45,7 @@ public class KafkaTopicsConfig {
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> props = new HashMap<>();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, resolveBootstrap());
+
         // 필요시 추가 Admin 설정 가능
         return new KafkaAdmin(props);
     }
@@ -184,9 +185,9 @@ public class KafkaTopicsConfig {
         // 4) 디폴트
         String v =
                 env.getProperty("spring.kafka.bootstrap-servers",
-                env.getProperty("kafka.producer.bootstrap-servers",
-                env.getProperty("kafka.consumer.bootstrap-servers",
-                "127.0.0.1:29092")));
+                        env.getProperty("kafka.producer.bootstrap-servers",
+                                env.getProperty("kafka.consumer.bootstrap-servers",
+                                        "127.0.0.1:29092")));
 
         log.info("[KafkaTopicsConfig] bootstrap-servers={}", v);
 

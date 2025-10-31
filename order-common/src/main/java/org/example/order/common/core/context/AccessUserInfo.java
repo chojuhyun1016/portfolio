@@ -14,7 +14,7 @@ import lombok.Builder;
  */
 @Builder
 public record AccessUserInfo(
-        Long userId,    // X-User-Id (숫자 파싱 실패 시 0L)
+        Long userId,      // X-User-Id (숫자 파싱 실패 시 0L)
         String loginId,   // X-Login-Id (없으면 "")
         String userType,  // X-User-Type (SYSTEM/USER/PARTNER/UNKNOWN...)
         String roles,     // X-Client-Roles (CSV: "ROLE_A,ROLE_B")

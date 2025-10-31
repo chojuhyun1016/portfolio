@@ -16,6 +16,9 @@ import org.example.order.contract.order.messaging.type.MessageOrderType;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
+/**
+ * DLQ 메시지 유형별 재처리 (기존 방식 유지)
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -25,34 +28,68 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
     private final KafkaProducerService kafkaProducerService;
     private final KafkaConsumerProperties kafkaConsumerProperties;
 
-    // DLQ 메시지 유형별 재처리
     @Override
     public void retry(Object message) {
-        MessageOrderType type = ObjectMapperUtils.getFieldValueFromString(message.toString(), "type", DlqOrderType.class);
+        MessageOrderType type;
+
+        try {
+            type = ObjectMapperUtils.getFieldValueFromString(String.valueOf(message), "type", MessageOrderType.class);
+        } catch (Exception e) {
+            log.error("DLQ retry: failed to resolve type from payload: {}", message);
+
+            throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
+        }
 
         log.info("DLQ 처리 시작 - Type: {}", type);
 
         switch (type) {
-            case ORDER_LOCAL -> retryMessage(message, OrderLocalMessage.class, kafkaProducerService::sendToLocal);
-            case ORDER_API -> retryMessage(message, OrderApiMessage.class, kafkaProducerService::sendToOrderApi);
-            case ORDER_CRUD -> retryMessage(message, OrderCrudMessage.class, kafkaProducerService::sendToOrderCrud);
+            case ORDER_LOCAL -> retryMessage(message, OrderLocalMessage.class);
+            case ORDER_API -> retryMessage(message, OrderApiMessage.class);
+            case ORDER_CRUD -> retryMessage(message, OrderCrudMessage.class);
             default -> throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
         }
     }
 
-    // 개별 메시지 재처리 로직
-    private <T extends DeadLetter> void retryMessage(Object rawMessage, Class<T> clazz, java.util.function.Consumer<T> retrySender) {
-        T dlqMessage = ObjectMapperUtils.valueToObject(rawMessage, clazz);
+    private <T> void retryMessage(Object rawMessage, Class<T> clazz) {
+        DeadLetter<T> dlqMessage = ObjectMapperUtils.valueToObject(rawMessage,
+                ObjectMapperUtils.constructParametricType(DeadLetter.class, clazz));
+
+        if (dlqMessage == null || dlqMessage.payload() == null) {
+            log.warn("skip: empty DLQ payload (class={})", clazz.getSimpleName());
+
+            return;
+        }
 
         if (shouldDiscard(dlqMessage)) {
             kafkaProducerService.sendToDiscard(dlqMessage);
         } else {
-            retrySender.accept(dlqMessage);
+            resend(dlqMessage.payload());
         }
     }
 
-    // 최대 실패 횟수 초과 시 discard
-    private <T extends DeadLetter> boolean shouldDiscard(T message) {
-        return message.discard(kafkaConsumerProperties.getOption().getMaxFailCount());
+    private boolean shouldDiscard(DeadLetter<?> message) {
+        try {
+            // 실패 횟수 초과 여부 판단(옵션 기반, 필요 시 확장)
+            return message.error() != null
+                    && kafkaConsumerProperties != null
+                    && kafkaConsumerProperties.getOption() != null
+                    && kafkaConsumerProperties.getOption().getMaxFailCount() != null
+                    && Boolean.TRUE.equals(message.error().isExceeded(kafkaConsumerProperties.getOption().getMaxFailCount()));
+        } catch (Throwable ignore) {
+            return false;
+        }
+    }
+
+    private void resend(Object payload) {
+        if (payload instanceof OrderLocalMessage m) {
+            kafkaProducerService.sendToLocal(m);
+        } else if (payload instanceof OrderApiMessage m) {
+            kafkaProducerService.sendToOrderApi(m);
+        } else if (payload instanceof OrderCrudMessage m) {
+            kafkaProducerService.sendToOrderCrud(m);
+        } else {
+            log.warn("Unsupported payload class for resend: {}", (payload == null ? null : payload.getClass()));
+            throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
+        }
     }
 }

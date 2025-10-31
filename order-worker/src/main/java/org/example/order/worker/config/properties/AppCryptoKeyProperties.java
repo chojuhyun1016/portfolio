@@ -16,16 +16,16 @@ import java.util.Map;
  * <p>
  * [예시(yaml)]
  * app:
- *   crypto:
- *     keys:
- *       orderAesGcm:
- *         alias: "order.aesgcm"
- *         encryptor: "AESGCM"
- *         kid: "key-2025-09-27"
- *       userPhoneAes256:
- *         alias: "user.phone.aes256"
- *         encryptor: "AES256"
- *         version: 2
+ * crypto:
+ * keys:
+ * orderAesGcm:
+ * alias: "order.aesgcm"
+ * encryptor: "AESGCM"
+ * kid: "key-2025-09-27"
+ * userPhoneAes256:
+ * alias: "user.phone.aes256"
+ * encryptor: "AES256"
+ * version: 2
  */
 @Getter
 @Setter
@@ -34,11 +34,11 @@ public class AppCryptoKeyProperties {
 
     /**
      * keys:
-     *   <logical-name>:
-     *     alias: "order.aesgcm"
-     *     encryptor: "AESGCM" | "AES256" | "AES128"
-     *     kid: "key-..."        # 선택 1 (우선)
-     *     version: 1            # 선택 2 (kid 없을 때)
+     * <logical-name>:
+     * alias: "order.aesgcm"
+     * encryptor: "AESGCM" | "AES256" | "AES128"
+     * kid: "key-..."        # 선택 1 (우선)
+     * version: 1            # 선택 2 (kid 없을 때)
      */
     private Map<String, Alias> keys = new LinkedHashMap<>();
 

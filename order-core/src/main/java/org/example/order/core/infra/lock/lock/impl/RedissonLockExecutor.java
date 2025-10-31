@@ -35,6 +35,7 @@ public class RedissonLockExecutor implements LockExecutor {
 
                 if (locked) {
                     log.debug("Acquired redisson lock. key={}, attempt={}, waited={}ms", key, attempt, elapsed);
+
                     try {
                         return callback.call();
                     } finally {
@@ -43,17 +44,20 @@ public class RedissonLockExecutor implements LockExecutor {
                 }
 
                 log.debug("Redisson lock attempt failed. key={}, attempt={}, retrying...", key, attempt);
+
                 TimeUnit.MILLISECONDS.sleep(retryInterval);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+
                 throw new LockAcquisitionException("Redisson lock interrupted. key: " + key, e);
             } catch (Exception e) {
                 log.error("""
-                    Redisson error during lock
-                    ├─ key     : {}
-                    ├─ attempt : {}
-                    └─ error   : {}
-                    """, key, attempt, e.getMessage(), e);
+                        Redisson error during lock
+                        ├─ key     : {}
+                        ├─ attempt : {}
+                        └─ error   : {}
+                        """, key, attempt, e.getMessage(), e);
+
                 throw new LockAcquisitionException("Redisson lock execution failed for key: " + key, e);
             }
         }
@@ -66,6 +70,7 @@ public class RedissonLockExecutor implements LockExecutor {
         try {
             if (lock.isHeldByCurrentThread()) {
                 lock.unlock();
+
                 log.debug("Released redisson lock. key={}", key);
             } else {
                 log.warn("Redisson lock not held by current thread. key={}", key);

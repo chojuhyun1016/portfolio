@@ -1,0 +1,9 @@
+spring:
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: false
+    out-of-order: false
+    connect-retries: 10
+    clean-disabled: false

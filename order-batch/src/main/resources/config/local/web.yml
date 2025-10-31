@@ -1,0 +1,12 @@
+web:
+  enabled: true
+  client:
+    clientId: order-worker
+    url:
+      order: http://localhost:8081
+      user: http://localhost:8082
+  timeout:
+    connectMs: 3000
+    readMs: 10000
+  codec:
+    maxBytes: 2097152

@@ -58,6 +58,7 @@ public class ZipBase64Utils {
 
             gzipOut.write(data);
             gzipOut.finish();
+
             return bos.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("GZIP compression failed", e);
@@ -71,9 +72,11 @@ public class ZipBase64Utils {
 
             byte[] buffer = new byte[1024];
             int len;
+
             while ((len = gzipIn.read(buffer)) != -1) {
                 out.write(buffer, 0, len);
             }
+
             return out.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("GZIP decompression failed", e);

@@ -26,5 +26,4 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         JpaLocalOrderCommandInfraConfig.class       // JDBC 기반 Command 리포지토리
 })
 public class JpaInfraConfig {
-    // 게이트 전용: 빈 정의 없음 (하위 설정에서 모두 제공)
 }

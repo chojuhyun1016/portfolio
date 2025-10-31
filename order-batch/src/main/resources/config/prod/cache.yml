@@ -1,0 +1,42 @@
+order:
+  application:
+    enabled: true                # 코어 오토컨피그 전역 토글
+    cache:
+      default-ttl-seconds: 300  # 코어 레이어 캐시 기본 TTL(초) – Optional
+
+  cache:
+    enabled: true                # 캐시 전역 토글 (명시적)
+    redis:
+      enabled: true              # Redis 구현 토글 (명시적)
+
+      # ==== Redis 연결(이관된 값) ====
+      host: localhost
+      port: 6379
+      database: 0
+      password: order1234
+
+      # URI를 쓰고 싶다면 host/port 대신 아래 사용 (예: rediss://)
+      # uri: rediss://user:pass@redis.example.com:6380/0
+
+      # ==== 클라이언트 명 ====
+      # client-name: my-cache
+      # enable-default-client-name: true
+      # default-client-name: my-app
+
+      # ==== 직렬화 신뢰 패키지 ====
+      trusted-package: org.example.order
+
+      # ==== 타임아웃 ====
+      command-timeout-seconds: 3
+      shutdown-timeout-seconds: 3
+
+      # ==== 풀 설정 ====
+      pool-max-active: 32
+      pool-max-idle: 16
+      pool-min-idle: 8
+      pool-max-wait: 2000
+
+management:
+  health:
+    redis:
+      enabled: false

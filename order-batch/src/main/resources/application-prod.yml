@@ -1,10 +1,23 @@
+server:
+  port: 28081
+
 spring:
   config:
     activate:
-      on-profile: prod
+      on-profile: local
     import:
-      - application-core-prod.yml
-      - application-kafka-prod.yml
+      - classpath:config/prod/server.yml
+      - classpath:config/prod/datasource.yml
+      - classpath:config/prod/jpa.yml
+      - classpath:config/prod/flyway.yml
+      - classpath:config/prod/cache.yml
+      - classpath:config/prod/web.yml
+      - classpath:config/prod/aws.yml
+      - classpath:config/prod/dynamodb.yml
+      - classpath:config/prod/lock.yml
+      - classpath:config/prod/crypto.yml
+      - classpath:config/prod/kafka.yml
+      - classpath:config/prod/logging.yml
 
   batch:
     job:
@@ -12,17 +25,3 @@ spring:
       enabled: true                   # 애플리케이션 기동 시 Job 실행 여부
     jdbc:
       initialize-schema: always       # 배치 메타테이블 자동 생성 (RDS 초기가동/로컬 포함)
-
-aws:
-  endpoint: ${AWS_ENDPOINT:}
-  region: ${AWS_REGION:ap-northeast-2}
-
-  credential:
-    enabled: false
-    accessKey: ${AWS_ACCESS_KEY:}
-    secretKey: ${AWS_SECRET_KEY:}
-
-  s3:
-    enabled: true
-    bucket: ${AWS_S3_BUCKET:my-bucket}
-    default-folder: ${AWS_S3_DEFAULT_FOLDER:tmp}

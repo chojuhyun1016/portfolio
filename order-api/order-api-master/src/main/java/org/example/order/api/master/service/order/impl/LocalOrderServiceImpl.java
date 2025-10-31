@@ -34,6 +34,7 @@ public class LocalOrderServiceImpl implements LocalOrderService {
     @Override
     public void sendMessage(LocalOrderCommand command) {
         final OrderLocalMessage message = localOrderMapper.toOrderLocalMessage(command);
+
         message.validation();
 
         log.info("[LocalOrderService] send to Kafka: id={}, operation={}, publishedTs={}",

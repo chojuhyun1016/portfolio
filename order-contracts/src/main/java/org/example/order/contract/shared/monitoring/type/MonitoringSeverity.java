@@ -28,7 +28,12 @@ public enum MonitoringSeverity {
     }
 
     public static MonitoringSeverity ofLevel(int level) {
-        for (var s : values()) if (s.level == level) return s;
+        for (var s : values()) {
+            if (s.level == level) {
+                return s;
+            }
+        }
+
         return null;
     }
 }

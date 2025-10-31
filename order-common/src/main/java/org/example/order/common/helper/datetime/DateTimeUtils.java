@@ -59,11 +59,13 @@ public class DateTimeUtils {
 
     public static LocalDateTime getCurrentDateTime(ZoneCode zone) {
         ZoneId zoneId = zone != null ? zone.getZoneId() : ZoneId.systemDefault();
+
         return ZonedDateTime.now(zoneId).toLocalDateTime();
     }
 
     public static LocalDateTime getCurrentDateTime(RegionCode region) {
         ZoneId zoneId = ZoneMapper.zoneOf(region).getZoneId();
+
         return ZonedDateTime.now(zoneId).toLocalDateTime();
     }
 
@@ -77,11 +79,13 @@ public class DateTimeUtils {
 
     public static LocalDate getCurrentDate(ZoneCode zone) {
         ZoneId zoneId = zone != null ? zone.getZoneId() : ZoneId.systemDefault();
+
         return ZonedDateTime.now(zoneId).toLocalDate();
     }
 
     public static LocalDate getCurrentDate(RegionCode region) {
         ZoneId zoneId = ZoneMapper.zoneOf(region).getZoneId();
+
         return ZonedDateTime.now(zoneId).toLocalDate();
     }
 
@@ -95,11 +99,13 @@ public class DateTimeUtils {
 
     public static long nowTime(ZoneCode zone) {
         ZoneId zoneId = zone != null ? zone.getZoneId() : ZoneId.systemDefault();
+
         return ZonedDateTime.now(zoneId).toInstant().toEpochMilli();
     }
 
     public static long nowTime(RegionCode region) {
         ZoneId zoneId = ZoneMapper.zoneOf(region).getZoneId();
+
         return ZonedDateTime.now(zoneId).toInstant().toEpochMilli();
     }
 

@@ -65,6 +65,7 @@ public class NamedLockExecutor implements LockExecutor {
             if (!locked) {
                 long elapsed = System.currentTimeMillis() - startTime;
                 log.error("[LOCK] 최종 실패 | key={} | totalElapsed={}ms", key, elapsed);
+
                 throw new LockAcquisitionException("Named lock failed for key=" + key);
             }
 
@@ -73,9 +74,11 @@ public class NamedLockExecutor implements LockExecutor {
 
             try {
                 result = callback.call();
+
                 log.debug("[LOCK] 처리 완료 | key={} | taskElapsed={}ms", key, System.currentTimeMillis() - callStart);
             } catch (Throwable t) {
                 log.error("[LOCK] callback 예외 | key={} | error={}", key, t.getMessage(), t);
+
                 throw t;
             } finally {
                 try {

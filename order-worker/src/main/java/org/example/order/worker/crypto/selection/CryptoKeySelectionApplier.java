@@ -76,6 +76,7 @@ public class CryptoKeySelectionApplier {
 
         // 3) 현재 선택 키 바이트 획득
         final byte[] keyBytes;
+
         try {
             keyBytes = secrets.getKey(alias);
         } catch (IllegalStateException ise) {

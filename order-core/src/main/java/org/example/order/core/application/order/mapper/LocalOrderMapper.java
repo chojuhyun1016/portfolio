@@ -70,6 +70,7 @@ public interface LocalOrderMapper {
     default LocalOrderEntity newLocalOrderEntity(LocalOrderSync dto) {
         LocalOrderEntity e = LocalOrderEntity.createEmpty();
         e.setId(dto.id());
+
         return e;
     }
 

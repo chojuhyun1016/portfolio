@@ -33,8 +33,9 @@ public enum RegionCode implements CodeEnum {
     }
 
     public static RegionCode of(String regionString) {
-        if (Objects.isNull(regionString))
+        if (Objects.isNull(regionString)) {
             return null;
+        }
 
         return Arrays.stream(RegionCode.values())
                 .filter(status -> status.toString().equals(regionString))

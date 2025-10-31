@@ -49,21 +49,25 @@ public final class OrderDynamoQueryOptions {
 
         public Builder limit(Integer limit) {
             this.limit = limit;
+
             return this;
         }
 
         public Builder consistentRead(Boolean consistentRead) {
             this.consistentRead = consistentRead;
+
             return this;
         }
 
         public Builder allowScanFallback(Boolean allowScanFallback) {
             this.allowScanFallback = allowScanFallback;
+
             return this;
         }
 
         public Builder startKey(String startKey) {
             this.startKey = startKey;
+
             return this;
         }
 

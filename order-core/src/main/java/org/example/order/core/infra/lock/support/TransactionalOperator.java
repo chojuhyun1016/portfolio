@@ -8,10 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 트랜잭션 래핑을 제공하는 기술적 유틸리티.
- *
+ * <p>
  * - 기존 트랜잭션을 이어받아 실행
  * - 새로운 트랜잭션으로 실행
- *
+ * <p>
  * infra 레이어의 보조 기술 컴포넌트이며,
  * 비즈니스 로직은 포함하지 않음.
  */

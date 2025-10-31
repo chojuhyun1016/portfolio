@@ -85,6 +85,7 @@ public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler,
             paths.filter(Files::isRegularFile).forEach(path -> {
                 try {
                     s3LogSyncEventService.syncFileToS3(bucket, folder, path);
+
                     success.incrementAndGet();
                 } catch (Exception ex) {
                     failed.incrementAndGet();

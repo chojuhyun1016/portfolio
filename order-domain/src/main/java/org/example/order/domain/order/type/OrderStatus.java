@@ -33,6 +33,7 @@ public enum OrderStatus {
         if (code == null) {
             throw new IllegalArgumentException("OrderStatus code cannot be null");
         }
+
         return Arrays.stream(values())
                 .filter(v -> v.getCode().equals(code))
                 .findFirst()

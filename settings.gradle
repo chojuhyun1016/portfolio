@@ -33,7 +33,7 @@ include(
         "order-client:web",
         "order-client:kafka",
         "order-client:s3",
-//        "order-batch",
+        "order-batch",
         "order-worker",
         "order-api:order-api-common",
         "order-api:order-api-master",

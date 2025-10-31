@@ -19,6 +19,7 @@ public class SecureHashUtils {
             byte[] digest = md.digest();
 
             StringBuilder sb = new StringBuilder();
+
             for (byte b : digest) {
                 sb.append(String.format("%02x", b));
             }

@@ -32,11 +32,13 @@ public final class OrderBatchOptions {
 
         public Builder batchChunkSize(Integer v) {
             this.batchChunkSize = v;
+
             return this;
         }
 
         public Builder sqlHint(String v) {
             this.sqlHint = v;
+
             return this;
         }
 

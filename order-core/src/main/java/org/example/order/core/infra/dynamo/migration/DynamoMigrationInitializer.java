@@ -62,6 +62,7 @@ public class DynamoMigrationInitializer {
         }
 
         Optional<MigrationFile> migrationOpt = loader.loadLatestMigration(props.getMigrationLocation());
+
         if (migrationOpt.isEmpty() || migrationOpt.get().getTables().isEmpty()) {
             log.info("[DynamoMigration] No latest migration found. skip.");
 
@@ -898,7 +899,8 @@ public class DynamoMigrationInitializer {
     private static class Drift {
         boolean tableKeyChanged = false;
         boolean lsiChanged = false;
-        boolean keyTypeMismatches = false; // 🔸 키 타입 불일치
+        boolean keyTypeMismatches = false;
+
         final List<TableDef.GsiDef> missingGsis = new ArrayList<>();
         final List<String> extraGsis = new ArrayList<>();
         final List<String> gsiKeyOrProjectionMismatches = new ArrayList<>();
@@ -911,6 +913,7 @@ public class DynamoMigrationInitializer {
 
         String reason() {
             List<String> r = new ArrayList<>();
+
             if (tableKeyChanged) {
                 r.add("TABLE_KEY_CHANGED");
             }

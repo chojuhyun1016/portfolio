@@ -1,0 +1,5 @@
+tsid:
+  enabled: false
+  node-bits: 10
+  zone-id: UTC
+  prefer-ec2-meta: false

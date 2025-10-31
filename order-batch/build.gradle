@@ -13,7 +13,7 @@ java {
     targetCompatibility = '17'
 }
 
-// 소스셋
+// 소스셋 (integrationTest 유지)
 sourceSets {
     test {
         java.srcDir 'src/test/java'
@@ -31,58 +31,61 @@ idea {
     module {
         testSourceDirs += file('src/integrationTest/java')
         testResourceDirs += file('src/integrationTest/resources')
+        downloadSources = true
+        downloadJavadoc = true
     }
 }
 
 dependencies {
-    // 프로젝트 모듈
+    // ===== 프로젝트 모듈 =====
     implementation(project(':order-common'))
     implementation(project(':order-domain'))
-    implementation(project(':order-contract'))
+    implementation(project(':order-contracts'))
     implementation(project(':order-core'))
     implementation(project(':order-client:web'))
     implementation(project(':order-client:kafka'))
     implementation(project(':order-client:s3'))
 
-    // main
-    implementation(libs.springKafka)
-    implementation(libs.springBootStarterWeb)
-    implementation(libs.springBootStarterDataJpa)
-    implementation(libs.querydslCore)
-    implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
-    implementation(libs.springBootStarterValidation)
+    // ===== Spring Core =====
     implementation(libs.springBootStarter)
     implementation(libs.springBootStarterActuator)
     implementation(libs.springBootStarterBatch)
+    implementation(libs.springBootStarterWeb)
 
-    // Querydsl APT
+    // ===== Kafka =====
+    implementation(libs.springKafka)
+
+    // ===== Data/JPA/Querydsl =====
+    implementation(libs.springBootStarterDataJpa)
+    implementation(libs.querydslCore)
+    implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
     annotationProcessor("${libs.querydslApt.get().module}:${libs.versions.querydsl.get()}:jakarta")
     annotationProcessor(libs.jakartaPersistenceApi)
 
-    // 로깅/직렬화
+    // ===== 직렬화/로깅 =====
+    implementation(libs.jacksonDatabind)
+    implementation(libs.jacksonJsr310)
     implementation(libs.logbackJsonClassic)
     implementation(libs.logbackJackson)
-    implementation(libs.jacksonJsr310)
-    implementation(libs.jacksonDatabind)
     implementation(libs.logstashLogbackEncoder)
 
-    // AWS
+    // ===== AWS =====
     implementation(libs.awsMskIamAuth)
     implementation(libs.awsS3v1)
     runtimeOnly(libs.awsMysqlJdbc)
 
-    // Lombok / Config Processor
+    // ===== Lombok / Config Processor =====
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.springBootConfigProcessor)
 
-    // Unit Test
+    // ===== Unit Test =====
     testImplementation(libs.springBootStarterTest)
     testImplementation(libs.springKafkaTest)
     testRuntimeOnly(libs.h2)
     testImplementation(libs.springBatchTest)
 
-    // Integration Test
+    // ===== Integration Test =====
     configurations.integrationTestImplementation.extendsFrom configurations.testImplementation
     configurations.integrationTestRuntimeOnly.extendsFrom configurations.testRuntimeOnly
 
@@ -127,7 +130,6 @@ test {
 
 // integrationTest
 def hasIntegrationTask = tasks.findByName('integrationTest') != null
-
 if (hasIntegrationTask) {
     tasks.named('integrationTest', Test) {
         description = 'Runs integration tests (EmbeddedKafka; Testcontainers optional).'
@@ -138,10 +140,7 @@ if (hasIntegrationTask) {
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
         shouldRunAfter tasks.named('test')
-        testLogging {
-            events "PASSED", "FAILED", "SKIPPED"
-            exceptionFormat "FULL"
-        }
+        testLogging { events "PASSED", "FAILED", "SKIPPED"; exceptionFormat "FULL" }
     }
 } else {
     tasks.register('integrationTest', Test) {
@@ -153,12 +152,8 @@ if (hasIntegrationTask) {
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
         shouldRunAfter tasks.named('test')
-        testLogging {
-            events "PASSED", "FAILED", "SKIPPED"
-            exceptionFormat "FULL"
-        }
+        testLogging { events "PASSED", "FAILED", "SKIPPED"; exceptionFormat "FULL" }
     }
 }
 
-// 파이프라인 의존성
 check.dependsOn test
