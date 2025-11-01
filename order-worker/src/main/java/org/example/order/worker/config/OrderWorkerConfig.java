@@ -45,12 +45,14 @@ import org.example.order.core.application.config.ApplicationAutoConfiguration;
 })
 @ComponentScan(basePackages = {
         "org.example.order.worker.config",
+        "org.example.order.worker.crypto",
         "org.example.order.worker.service",
         "org.example.order.worker.facade",
-        "org.example.order.worker.listener",
         "org.example.order.worker.lifecycle",
-        "org.example.order.worker.crypto",
-        "org.example.order.worker.mapper"
+        "org.example.order.worker.listener",
+        "org.example.order.worker.mapper",
+        "org.example.order.worker.scheduler",
+        "org.example.order.worker.service"
 })
 @EnableConfigurationProperties({
         AppCryptoKeyProperties.class

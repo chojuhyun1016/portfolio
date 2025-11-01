@@ -13,7 +13,7 @@ java {
     targetCompatibility = '17'
 }
 
-// 소스셋 (integrationTest 유지)
+// ===== 소스셋 =====
 sourceSets {
     test {
         java.srcDir 'src/test/java'
@@ -22,6 +22,7 @@ sourceSets {
     integrationTest {
         java.srcDir 'src/integrationTest/java'
         resources.srcDir 'src/integrationTest/resources'
+
         compileClasspath += sourceSets.main.output + configurations.runtimeClasspath + configurations.testRuntimeClasspath
         runtimeClasspath += output + compileClasspath
     }
@@ -46,17 +47,22 @@ dependencies {
     implementation(project(':order-client:kafka'))
     implementation(project(':order-client:s3'))
 
+    // ===== Spring Boot AutoConfiguration (워커 기준 추가) =====
+    compileOnly(libs.springBootAutoconfigure)
+    annotationProcessor(libs.springBootConfigProcessor)
+
     // ===== Spring Core =====
     implementation(libs.springBootStarter)
     implementation(libs.springBootStarterActuator)
     implementation(libs.springBootStarterBatch)
     implementation(libs.springBootStarterWeb)
+    implementation(libs.springBootStarterDataJpa)
+    implementation(libs.springBootStarterValidation)
 
     // ===== Kafka =====
     implementation(libs.springKafka)
 
     // ===== Data/JPA/Querydsl =====
-    implementation(libs.springBootStarterDataJpa)
     implementation(libs.querydslCore)
     implementation("${libs.querydslJpaJakarta.get().module}:${libs.querydslJpaJakarta.get().version}:jakarta")
     annotationProcessor("${libs.querydslApt.get().module}:${libs.versions.querydsl.get()}:jakarta")
@@ -69,15 +75,21 @@ dependencies {
     implementation(libs.logbackJackson)
     implementation(libs.logstashLogbackEncoder)
 
-    // ===== AWS =====
+    // ===== AWS (MSK IAM, S3 v1, MySQL JDBC) =====
     implementation(libs.awsMskIamAuth)
     implementation(libs.awsS3v1)
     runtimeOnly(libs.awsMysqlJdbc)
 
-    // ===== Lombok / Config Processor =====
+    // ===== AWS SDK v2 BOM + Secrets Manager =====
+    implementation(platform(libs.awsBomV2))
+    implementation(libs.awsSecretsManager)
+
+    // ===== JAXB (워커 기준 추가: 일부 환경에서 필요) =====
+    implementation(libs.jaxbApi)
+
+    // ===== Lombok =====
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
-    annotationProcessor(libs.springBootConfigProcessor)
 
     // ===== Unit Test =====
     testImplementation(libs.springBootStarterTest)
@@ -102,6 +114,10 @@ dependencies {
 
     integrationTestCompileOnly(libs.lombok)
     integrationTestAnnotationProcessor(libs.lombok)
+
+    // ===== Netty macOS 네이티브 DNS (Apple Silicon/x86, 워커 기준 추가) =====
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:${libs.versions.netty.get()}:osx-aarch_64")
+    runtimeOnly("io.netty:netty-resolver-dns-native-macos:${libs.versions.netty.get()}:osx-x86_64")
 }
 
 tasks.withType(ProcessResources).configureEach {
@@ -128,8 +144,9 @@ test {
     systemProperty "junit.jupiter.execution.parallel.mode.default", "concurrent"
 }
 
-// integrationTest
+// integrationTest 태스크
 def hasIntegrationTask = tasks.findByName('integrationTest') != null
+
 if (hasIntegrationTask) {
     tasks.named('integrationTest', Test) {
         description = 'Runs integration tests (EmbeddedKafka; Testcontainers optional).'
@@ -140,7 +157,10 @@ if (hasIntegrationTask) {
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
         shouldRunAfter tasks.named('test')
-        testLogging { events "PASSED", "FAILED", "SKIPPED"; exceptionFormat "FULL" }
+        testLogging {
+            events "PASSED", "FAILED", "SKIPPED"
+            exceptionFormat "FULL"
+        }
     }
 } else {
     tasks.register('integrationTest', Test) {
@@ -152,8 +172,12 @@ if (hasIntegrationTask) {
         systemProperty "spring.profiles.active", System.getProperty("spring.profiles.active", "integration")
         systemProperty "junit.jupiter.execution.parallel.enabled", "false"
         shouldRunAfter tasks.named('test')
-        testLogging { events "PASSED", "FAILED", "SKIPPED"; exceptionFormat "FULL" }
+        testLogging {
+            events "PASSED", "FAILED", "SKIPPED"
+            exceptionFormat "FULL"
+        }
     }
 }
 
+// 파이프라인 의존성
 check.dependsOn test

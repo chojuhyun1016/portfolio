@@ -17,6 +17,17 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.util.*;
 
+/**
+ * OrderDeadLetterFacadeImpl
+ * ------------------------------------------------------------------------
+ * 목적
+ * - DLQ에서 **단건**을 폴링하여 재처리(기존 알고리즘 동일).
+ * <p>
+ * 개선/수정 사항
+ * - Iterable 에서는 get(index)가 불가 → iterator()로 첫 레코드 안전 획득.
+ * - Topic 문자열 기반 records(...) 대신 TopicPartition 기반 records(...) 사용.
+ * - 커밋 로직/시킹 로직 기존 유지, NPE 방지 보강.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -42,13 +53,14 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
                 return;
             }
 
+            // 단일 파티션 선택(기존 구현 유지 — 필요 시 라운드로빈 확장 가능)
             TopicPartition partition = new TopicPartition(topic, partitionsInfo.get(0).partition());
             Set<TopicPartition> partitions = Collections.singleton(partition);
             consumer.assign(partitions);
 
             Map<TopicPartition, OffsetAndMetadata> committedOffsets = consumer.committed(partitions);
 
-            if (committedOffsets.get(partition) == null) {
+            if (committedOffsets == null || committedOffsets.get(partition) == null) {
                 consumer.seekToBeginning(partitions);
             } else {
                 consumer.seek(partition, committedOffsets.get(partition).offset());
@@ -56,19 +68,38 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
 
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1500));
 
-            if (records.count() == 0) {
+            if (records == null || records.isEmpty()) {
                 log.debug("DLQ empty");
 
                 return;
             }
 
-            ConsumerRecord<String, String> record = records.records(topic).get(0);
+            // TopicPartition 기반 Iterable 얻기
+            Iterable<ConsumerRecord<String, String>> iterable = records.records(partition);
+
+            if (iterable == null) {
+                log.debug("DLQ iterable is null");
+
+                return;
+            }
+
+            Iterator<ConsumerRecord<String, String>> it = iterable.iterator();
+
+            if (!it.hasNext()) {
+                log.debug("DLQ has no record in the partition {}", partition);
+
+                return;
+            }
+
+            ConsumerRecord<String, String> record = it.next();
 
             log.info("DLQ record offset={}, key={}, headers={}", record.offset(), record.key(), record.headers());
 
             try {
+                // 원문 value(JSON) 를 서비스에 위임
                 orderDeadLetterService.retry(record.value());
 
+                // 현재 포지션 커밋(기존 동작 유지)
                 consumer.commitSync();
 
                 log.info("DLQ commit offset={}", record.offset());

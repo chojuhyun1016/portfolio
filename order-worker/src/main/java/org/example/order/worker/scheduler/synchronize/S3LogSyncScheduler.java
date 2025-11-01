@@ -1,4 +1,4 @@
-package org.example.order.worker.listener.synchronize;
+package org.example.order.worker.scheduler.synchronize;
 
 public interface S3LogSyncScheduler {
     void event();

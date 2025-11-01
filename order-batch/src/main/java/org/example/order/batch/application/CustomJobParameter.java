@@ -15,10 +15,13 @@ public class CustomJobParameter {
 
     @Value("#{jobParameters[version]}")
     private String version;
+
     @Value("#{jobParameters[s3Key]}")
     private String s3Key;
+
     @Value("#{jobParameters[date]}")
     private String date;
+
     @Value("#{jobParameters[yearMonth]}")
     private String yearMonth;
 

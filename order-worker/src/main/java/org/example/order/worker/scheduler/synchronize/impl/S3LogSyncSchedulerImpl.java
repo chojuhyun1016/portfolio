@@ -1,9 +1,9 @@
-package org.example.order.worker.listener.synchronize.impl;
+package org.example.order.worker.scheduler.synchronize.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.order.worker.facade.synchronize.S3LogSyncFacade;
-import org.example.order.worker.listener.synchronize.S3LogSyncScheduler;
+import org.example.order.worker.scheduler.synchronize.S3LogSyncScheduler;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

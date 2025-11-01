@@ -1,4 +1,4 @@
-package org.example.order.worker.facade.synchronize.impl;
+package org.example.order.batch.facade.synchronize.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
