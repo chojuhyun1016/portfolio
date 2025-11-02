@@ -1,4 +1,4 @@
-package org.example.order.batch.job;
+package org.example.order.batch.job.deadletter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,12 +15,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+/**
+ * OrderDeadLetterJobConfig
+ * ------------------------------------------------------------------------
+ * 목적
+ * - DLQ 재처리 잡 구성(기존 로직 유지)
+ * <p>
+ * 변경사항
+ * - 패키지 경로를 job.deadletter 로 정리.
+ * - Tasklet 이 잡 파라미터를 직접 주입받지 않으므로 @StepScope 필수는 아님.
+ * (향후 JobParametersAccessor 를 주입받아 파라미터 사용 시 @StepScope 권장)
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class OrderDeadLetterJob {
+public class OrderDeadLetterJobConfig {
 
     private final OrderDeadLetterFacade facade;
+
     public static final String JOB_NAME = "ORDER_DEAD_LETTER_JOB";
 
     @Bean(name = JOB_NAME)
@@ -41,8 +53,12 @@ public class OrderDeadLetterJob {
                 .build();
     }
 
+    /**
+     * DLQ 재처리 Tasklet
+     * - 현재는 파라미터를 참조하지 않으므로 스코프는 기본.
+     * - 만약 JobParametersAccessor 등을 주입해서 파라미터 사용 시 @StepScope 권장.
+     */
     @Bean
-    @JobScope
     public Tasklet orderDeadLetterTasklet() {
         return (contribution, chunkContext) -> {
             log.info("OrderDeadLetterJob start");
@@ -51,7 +67,6 @@ public class OrderDeadLetterJob {
                 facade.retry();
             } catch (Exception e) {
                 log.error("dead-letter job failed", e);
-
                 throw e;
             }
 
