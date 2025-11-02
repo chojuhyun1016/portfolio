@@ -7,17 +7,12 @@ import org.example.order.core.infra.config.OrderCoreConfig;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
 
-@SpringBootApplication(
-        exclude = {
-                RedisRepositoriesAutoConfiguration.class
-        }
-)
+@SpringBootApplication
 @EnableScheduling
 @Import({
         OrderWorkerConfig.class,

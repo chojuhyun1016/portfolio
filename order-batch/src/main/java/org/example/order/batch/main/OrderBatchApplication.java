@@ -7,7 +7,6 @@ import org.example.order.batch.config.OrderBatchConfig;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -26,9 +25,7 @@ import java.util.TimeZone;
  * - UTC 타임존 고정(운영 표준인 경우) — 필요 없으면 메서드 제거.
  * - RedisRepositoriesAutoConfiguration 제외는 기본 제거(필요 시 주석 해제).
  */
-@SpringBootApplication(
-        exclude = {RedisRepositoriesAutoConfiguration.class}
-)
+@SpringBootApplication
 @EnableScheduling
 @Import({
         OrderBatchConfig.class,
