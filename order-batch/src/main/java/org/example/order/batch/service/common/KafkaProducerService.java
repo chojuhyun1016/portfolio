@@ -9,11 +9,18 @@ import java.util.List;
 import java.util.Map;
 
 public interface KafkaProducerService {
-    void sendToLocal(OrderLocalMessage message);
 
-    void sendToOrderApi(OrderApiMessage message);
+    void sendToLocal(OrderLocalMessage m);
 
-    void sendToOrderCrud(OrderCrudMessage message);
+    void sendToOrderApi(OrderApiMessage m);
+
+    void sendToOrderCrud(OrderCrudMessage m);
+
+    void sendToLocal(OrderLocalMessage m, Map<String, String> headers);
+
+    void sendToOrderApi(OrderApiMessage m, Map<String, String> headers);
+
+    void sendToOrderCrud(OrderCrudMessage m, Map<String, String> headers);
 
     <T> void sendToDiscard(DeadLetter<T> message);
 

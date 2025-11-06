@@ -67,6 +67,7 @@ public class OrderDeadLetterJobConfig {
                 facade.retry();
             } catch (Exception e) {
                 log.error("dead-letter job failed", e);
+
                 throw e;
             }
 

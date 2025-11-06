@@ -45,6 +45,21 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     }
 
     @Override
+    public void sendToLocal(OrderLocalMessage m, Map<String, String> headers) {
+        send(m, kafkaTopicProperties.getName(MessageOrderType.ORDER_LOCAL.name()), headers);
+    }
+
+    @Override
+    public void sendToOrderApi(OrderApiMessage m, Map<String, String> headers) {
+        send(m, kafkaTopicProperties.getName(MessageOrderType.ORDER_API.name()), headers);
+    }
+
+    @Override
+    public void sendToOrderCrud(OrderCrudMessage m, Map<String, String> headers) {
+        send(m, kafkaTopicProperties.getName(MessageOrderType.ORDER_CRUD.name()), headers);
+    }
+
+    @Override
     public <T> void sendToDiscard(DeadLetter<T> message) {
         String topic = kafkaTopicProperties.getName(MessageOrderType.ORDER_ALARM.name());
 
@@ -102,6 +117,16 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         }
 
         cluster.sendMessage(message, topic);
+    }
+
+    private void send(Object message, String topic, Map<String, String> headers) {
+        if (topic == null || topic.isBlank()) {
+            log.error("Kafka topic is empty. skip: {}", message);
+
+            return;
+        }
+
+        cluster.sendMessage(message, topic, headers);
     }
 
     private ErrorDetail buildErrorDetail(Exception ex, Map<String, String> meta, int stackLimit) {
