@@ -17,11 +17,11 @@ import java.util.*;
 
 /**
  * DLQ 메시지 유형별 재처리 (기존 방식 유지)
- * <p>
- * 변경사항
- * - Facade에서 타입 분류 후 각 메서드(retryLocal/retryApi/retryCrud)로 직접 위임하도록 구조 단순화.
- * - 각 메서드 내부에서 재시도 카운트 +1, 임계치 비교, 전송/폐기 결정.
- * - 전송 시 헤더 포함 전송 지원.
+ * ------------------------------------------------------------------------
+ * 변경사항 (권장 방식 적용)
+ * - Facade에서 DeadLetter<?> 로 이미 역직렬화된 객체를 전달받음.
+ * - 여기서는 payload(Object -> DTO)만 convertValue로 안전 변환(Map/JsonNode -> POJO).
+ * - 문자열 JSON 파싱 경로 제거.
  */
 @Slf4j
 @Service
@@ -56,8 +56,9 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public void retryLocal(Object rawMessage, Map<String, String> headers) {
-        DeadLetter<OrderLocalMessage> dlq = toDeadLetter(rawMessage, OrderLocalMessage.class);
+    public void retryLocal(Object dlqObj, Map<String, String> headers) {
+        DeadLetter<?> dlqRaw = (DeadLetter<?>) dlqObj;
+        DeadLetter<OrderLocalMessage> dlq = castPayload(dlqRaw, OrderLocalMessage.class);
 
         if (dlq == null || dlq.payload() == null) {
             log.warn("skip: empty DLQ payload (ORDER_LOCAL)");
@@ -87,8 +88,9 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public void retryApi(Object rawMessage, Map<String, String> headers) {
-        DeadLetter<OrderApiMessage> dlq = toDeadLetter(rawMessage, OrderApiMessage.class);
+    public void retryApi(Object dlqObj, Map<String, String> headers) {
+        DeadLetter<?> dlqRaw = (DeadLetter<?>) dlqObj;
+        DeadLetter<OrderApiMessage> dlq = castPayload(dlqRaw, OrderApiMessage.class);
 
         if (dlq == null || dlq.payload() == null) {
             log.warn("skip: empty DLQ payload (ORDER_API)");
@@ -118,8 +120,9 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public void retryCrud(Object rawMessage, Map<String, String> headers) {
-        DeadLetter<OrderCrudMessage> dlq = toDeadLetter(rawMessage, OrderCrudMessage.class);
+    public void retryCrud(Object dlqObj, Map<String, String> headers) {
+        DeadLetter<?> dlqRaw = (DeadLetter<?>) dlqObj;
+        DeadLetter<OrderCrudMessage> dlq = castPayload(dlqRaw, OrderCrudMessage.class);
 
         if (dlq == null || dlq.payload() == null) {
             log.warn("skip: empty DLQ payload (ORDER_CRUD)");
@@ -138,16 +141,20 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
         kafkaProducerService.sendToOrderCrud(bumped.deadLetter().payload(), bumped.headers());
     }
 
-    private <T> DeadLetter<T> toDeadLetter(Object rawMessage, Class<T> clazz) {
-        DeadLetter<?> dlqRaw = ObjectMapperUtils.valueToObject(rawMessage, DeadLetter.class);
-
-        if (dlqRaw == null) {
+    /**
+     * 공용 payload 캐스팅 (Map/JsonNode -> DTO)
+     * - DLQ value는 JsonDeserializer에 의해 DeadLetter<?>로 역직렬화됨.
+     * - payload(Object)는 LinkedHashMap/JsonNode일 수 있으므로 convertValue만 진행.
+     */
+    private <T> DeadLetter<T> castPayload(DeadLetter<?> raw, Class<T> clazz) {
+        if (raw == null) {
             return null;
         }
 
-        T payload = ObjectMapperUtils.valueToObject(dlqRaw.payload(), clazz);
+        Object p = raw.payload();
+        T payload = ObjectMapperUtils.valueToObject(p, clazz);
 
-        return DeadLetter.of(dlqRaw.type(), dlqRaw.error(), payload);
+        return DeadLetter.of(raw.type(), raw.error(), payload);
     }
 
     /**

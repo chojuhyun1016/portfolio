@@ -12,9 +12,10 @@ import org.example.order.batch.facade.retry.OrderDeadLetterFacade;
 import org.example.order.batch.service.retry.OrderDeadLetterService;
 import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.common.core.exception.core.CommonException;
-import org.example.order.common.support.json.ObjectMapperUtils;
 import org.example.order.common.support.logging.Correlate;
+import org.example.order.contract.order.messaging.dlq.DeadLetter;
 import org.example.order.contract.order.messaging.type.MessageOrderType;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Component;
 
@@ -26,14 +27,11 @@ import java.util.*;
  * OrderDeadLetterFacadeImpl
  * ------------------------------------------------------------------------
  * 목적
- * - DLQ에서 폴링하여 레코드 개별 재처리(재전송/폐기 판단).
- * - 레코드 단위로 MDC 상관키를 AOP(@Correlate)로 설정.
- * <p>
- * 개선/수정 사항
- * - TopicPartition 기반 records(...) 사용(기존 유지).
- * - 레코드별 개별 커밋.
- * - Kafka 헤더 -> Map<String, String> 추출 후 서비스에 전달(재시도 카운트 헤더 반영).
- * - 메시지 타입 분류는 Facade에서 수행하고, Service의 타입별 메서드에 위임.
+ * - DLQ에서 한 번 폴링하여 들어온 레코드를 모두 처리(재전송/폐기 판단) 후 종료.
+ * 개선/수정
+ * - 모든 파티션 assign + 파티션별 안전 커밋.
+ * - 비어있을 때 INFO 로그로 노출(운영 가시성).
+ * - consumer 레이어에서 JSON -> DeadLetter<?> 역직렬화(별도 @Qualifier 팩토리).
  */
 @Slf4j
 @Component
@@ -41,7 +39,10 @@ import java.util.*;
 public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
 
     private final OrderDeadLetterService orderDeadLetterService;
-    private final ConsumerFactory<String, String> consumerFactory;
+
+    @Qualifier("deadLetterConsumerFactory")
+    private final ConsumerFactory<String, DeadLetter<?>> deadLetterConsumerFactory;
+
     private final KafkaTopicProperties kafkaTopicProperties;
 
     private static final String DEAD_LETTER_GROUP_ID = "group-order-dead-letter";
@@ -52,51 +53,70 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
     public void retry() {
         final String topic = kafkaTopicProperties.getName(MessageOrderType.ORDER_DLQ);
 
-        try (Consumer<String, String> consumer = consumerFactory.createConsumer(DEAD_LETTER_GROUP_ID, CLIENT_SUFFIX)) {
-            List<PartitionInfo> partitionsInfo = consumer.partitionsFor(topic);
+        try (Consumer<String, DeadLetter<?>> consumer =
+                     deadLetterConsumerFactory.createConsumer(DEAD_LETTER_GROUP_ID, CLIENT_SUFFIX)) {
 
-            if (partitionsInfo == null || partitionsInfo.isEmpty()) {
-                log.warn("DLQ topic has no partitions: {}", topic);
+            List<PartitionInfo> infos = consumer.partitionsFor(topic);
+
+            if (infos == null || infos.isEmpty()) {
+                log.info("DLQ topic has no partitions: {}", topic);
 
                 return;
             }
 
-            TopicPartition partition = new TopicPartition(topic, partitionsInfo.get(0).partition());
-            Set<TopicPartition> partitions = Collections.singleton(partition);
+            // 모든 파티션 assign
+            List<TopicPartition> partitions = new ArrayList<>();
+
+            for (PartitionInfo pi : infos) {
+                partitions.add(new TopicPartition(topic, pi.partition()));
+            }
+
             consumer.assign(partitions);
 
-            Map<TopicPartition, OffsetAndMetadata> committedOffsets = consumer.committed(partitions);
+            // 커밋된 오프셋 기준으로 seek (없으면 earliest)
+            Map<TopicPartition, OffsetAndMetadata> committed = consumer.committed(new HashSet<>(partitions));
 
-            if (committedOffsets == null || committedOffsets.get(partition) == null) {
-                consumer.seekToBeginning(partitions);
-            } else {
-                consumer.seek(partition, committedOffsets.get(partition).offset());
+            for (TopicPartition tp : partitions) {
+                OffsetAndMetadata meta = committed != null ? committed.get(tp) : null;
+
+                if (meta == null) {
+                    consumer.seekToBeginning(Collections.singleton(tp));
+                } else {
+                    consumer.seek(tp, meta.offset());
+                }
             }
 
-            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1500));
+            // 한 번만 폴링해서 있는 레코드 처리
+            ConsumerRecords<String, DeadLetter<?>> records = consumer.poll(Duration.ofSeconds(2));
 
             if (records == null || records.isEmpty()) {
-                log.debug("DLQ empty");
-
-                return;
-            }
-
-            Iterable<ConsumerRecord<String, String>> iterable = records.records(partition);
-
-            if (iterable == null) {
-                log.debug("DLQ iterable is null");
+                log.info("DLQ empty (no records polled)");
 
                 return;
             }
 
             int processed = 0;
 
-            for (ConsumerRecord<String, String> record : iterable) {
-                try {
-                    processOne(consumer, record);
-                    processed++;
-                } catch (Exception e) {
-                    log.error("dead-letter retry failed at offset={}", record.offset(), e);
+            // 파티션별로 모아서 커밋
+            for (TopicPartition tp : records.partitions()) {
+                List<ConsumerRecord<String, DeadLetter<?>>> list = records.records(tp);
+                long lastOffset = -1L;
+
+                for (ConsumerRecord<String, DeadLetter<?>> r : list) {
+                    try {
+                        processOne(consumer, r);
+                        processed++;
+                        lastOffset = r.offset();
+                    } catch (Exception e) {
+                        log.error("dead-letter retry failed at tp={}, offset={}", tp, r.offset(), e);
+                    }
+                }
+
+                // 해당 파티션에서 처리한 마지막 오프셋 + 1 로 커밋
+                if (lastOffset >= 0) {
+                    consumer.commitSync(Collections.singletonMap(tp, new OffsetAndMetadata(lastOffset + 1)));
+
+                    log.info("DLQ commit tp={}, lastOffsetCommitted={}", tp, lastOffset + 1);
                 }
             }
 
@@ -109,13 +129,6 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
         }
     }
 
-    /**
-     * 단일 레코드 처리
-     * - @Correlate 로 MDC(orderId) 설정: 헤더 -> key 순서
-     * - 처리 성공 시 개별 커밋
-     * - 공통 정책: 재전송 카운트 헤더가 없거나 null/blank면 "0"으로 초기화
-     * - Facade에서 메시지 타입 판별 후 Service의 타입별 메서드에 위임
-     */
     @Correlate(
             paths = {
                     "#p1?.headers()?.get('orderId')",
@@ -127,25 +140,45 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    protected void processOne(Consumer<String, String> consumer, ConsumerRecord<String, String> record) {
+    protected void processOne(Consumer<String, DeadLetter<?>> consumer,
+                              ConsumerRecord<String, DeadLetter<?>> record) {
         Map<String, String> headers = extractHeaders(record.headers());
-
         normalizeRetryCount(headers);
 
-        final MessageOrderType type = resolveType(record.value());
+        final DeadLetter<?> dlq = record.value();
+        final MessageOrderType type = resolveTypeSafely(dlq.type());
 
-        log.info("DLQ record offset={}, key={}, type={}, headers={}", record.offset(), record.key(), type, headers);
+        log.info("DLQ record tp={}-{}, offset={}, key={}, type={}, headers={}",
+                record.topic(), record.partition(), record.offset(), record.key(), type, headers);
 
         switch (type) {
-            case ORDER_LOCAL -> orderDeadLetterService.retryLocal(record.value(), headers);
-            case ORDER_API -> orderDeadLetterService.retryApi(record.value(), headers);
-            case ORDER_CRUD -> orderDeadLetterService.retryCrud(record.value(), headers);
+            case ORDER_LOCAL -> orderDeadLetterService.retryLocal(dlq, headers);
+            case ORDER_API -> orderDeadLetterService.retryApi(dlq, headers);
+            case ORDER_CRUD -> orderDeadLetterService.retryCrud(dlq, headers);
             default -> throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
         }
+    }
 
-        consumer.commitSync();
+    private static MessageOrderType resolveTypeSafely(Object rawType) {
+        if (rawType instanceof MessageOrderType mt) {
+            return mt;
+        }
 
-        log.info("DLQ commit offset={}", record.offset());
+        if (rawType instanceof String s) {
+            String norm = s.trim();
+
+            if (norm.isEmpty()) {
+                throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
+            }
+
+            try {
+                return MessageOrderType.valueOf(norm.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException ex) {
+                throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
+            }
+        }
+
+        throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
     }
 
     private static Map<String, String> extractHeaders(Headers hs) {
@@ -169,8 +202,7 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
 
     /**
      * 재전송 카운트 헤더 보정
-     * - 없거나 null/blank -> "0"
-     * - 숫자 아님/음수 -> "0"
+     * - 없거나 null/blank/음수/숫자아님 -> "0"
      */
     private static void normalizeRetryCount(Map<String, String> headers) {
         if (headers == null) {
@@ -184,20 +216,11 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
 
             return;
         }
-
         try {
             int n = Integer.parseInt(v.trim());
             headers.put(RETRY_COUNT_HEADER, (n < 0) ? "0" : Integer.toString(n));
         } catch (NumberFormatException nfe) {
             headers.put(RETRY_COUNT_HEADER, "0");
-        }
-    }
-
-    private static MessageOrderType resolveType(Object raw) {
-        try {
-            return ObjectMapperUtils.getFieldValueFromString(String.valueOf(raw), "type", MessageOrderType.class);
-        } catch (Exception e) {
-            throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
         }
     }
 }

@@ -18,6 +18,10 @@ import java.util.Map;
  * - JSON String ↔ Object 변환
  * - JSON 필드 추출
  * - List, Map 변환 등 지원
+ * <p>
+ * 변경사항 (안전성 보강)
+ * - valueToObject(Object, Class): 입력이 String일 경우 readValue를 사용해 직접 역직렬화.
+ * (기존 convertValue가 String -> POJO에 비적합하여 발생하던 예외 방지)
  */
 @Slf4j
 @UtilityClass
@@ -26,7 +30,7 @@ public class ObjectMapperUtils {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.defaultObjectMapper();
 
     /**
-     * 특정 JSON 필드 값 추출 (String → Class 변환)
+     * 특정 JSON 필드 값 추출 (String -> Class 변환)
      */
     public static <T> T getFieldValueFromString(String json, String fieldName, Class<T> clz) {
         try {
@@ -42,7 +46,7 @@ public class ObjectMapperUtils {
     }
 
     /**
-     * 특정 JSON 필드 값 추출 (Object → Class 변환)
+     * 특정 JSON 필드 값 추출 (Object -> Class 변환)
      */
     public static <T> T getFieldValueFromObject(Object data, String fieldName, Class<T> clz) {
         return getFieldValueFromString(writeValueAsString(data), fieldName, clz);
@@ -91,7 +95,7 @@ public class ObjectMapperUtils {
     }
 
     /**
-     * Map으로 변환 (Object → Map)
+     * Map으로 변환 (Object -> Map)
      */
     public static Map<String, Object> valueToMap(Object data) {
         return convertValue(data, new TypeReference<>() {
@@ -103,8 +107,10 @@ public class ObjectMapperUtils {
      */
     public static <T> List<T> convertToList(String data, Class<T> clz) {
         try {
-            return objectMapper.readValue(data,
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, clz));
+            return objectMapper.readValue(
+                    data,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, clz)
+            );
         } catch (Exception e) {
             String msg = String.format("Failed to convert JSON to List<%s>", clz.getSimpleName());
             log.error(msg, e);
@@ -114,10 +120,15 @@ public class ObjectMapperUtils {
     }
 
     /**
-     * 객체를 다른 타입으로 변환 (ex: Map → DTO)
+     * 객체를 다른 타입으로 변환 (ex: Map -> DTO)
+     * 변경: data가 String이면 readValue 사용 (String -> POJO 안정화)
      */
     public static <T> T valueToObject(Object data, Class<T> clz) {
         try {
+            if (data instanceof String s) {
+                return objectMapper.readValue(s, clz);
+            }
+
             return objectMapper.convertValue(data, clz);
         } catch (Exception e) {
             String msg = String.format("Failed to convert object to [%s]", clz.getSimpleName());
@@ -128,7 +139,7 @@ public class ObjectMapperUtils {
     }
 
     /**
-     * 객체를 TypeReference 기반으로 변환 (Map → List 등)
+     * 객체를 TypeReference 기반으로 변환 (Map -> List 등)
      */
     public static <T> T convertValue(Object data, TypeReference<T> typeRef) {
         try {
@@ -162,11 +173,11 @@ public class ObjectMapperUtils {
      */
     public static <T> List<T> convertTreeToValues(Object[] data, Class<T> clz) {
         List<T> result = new ArrayList<>();
+
         try {
             for (Object obj : data) {
                 result.add(convertTreeToValue(obj, clz));
             }
-
             return result;
         } catch (Exception e) {
             String msg = String.format("Failed to convert Object[] to List<%s>", clz.getSimpleName());

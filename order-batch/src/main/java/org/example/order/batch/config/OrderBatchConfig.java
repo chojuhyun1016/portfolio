@@ -30,12 +30,11 @@ import org.springframework.context.annotation.*;
         ApplicationAutoConfiguration.class
 })
 @ComponentScan(basePackages = {
-        "org.example.order.batch.application",
         "org.example.order.batch.config",
+        "org.example.order.batch.crypto",
         "org.example.order.batch.facade",
         "org.example.order.batch.job",
         "org.example.order.batch.lifecycle",
-        "org.example.order.batch.scheduler",
         "org.example.order.batch.service"
 })
 @EnableConfigurationProperties({

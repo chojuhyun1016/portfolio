@@ -7,8 +7,8 @@ import org.example.order.client.s3.properties.S3Properties;
 import org.example.order.batch.service.synchronize.S3LogSyncService;
 import org.example.order.batch.lifecycle.ApplicationStartupHandler;
 import org.example.order.batch.crypto.selection.CryptoKeySelectionApplier;
+import org.example.order.core.infra.common.secrets.manager.SecretsLoader;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,8 +23,9 @@ import java.util.stream.Stream;
 
 /**
  * ApplicationStartupHandlerImpl
- * - S3 부트스트랩은 S3LogSyncServiceImpl @PostConstruct 에서 이미 완료됨
- * - 여기서는 SmartLifecycle로 시작 시점 동기화만 수행
+ * - 시작 시 S3 초기 동기화 1회,
+ * - 암호화 키 로드는 SecretsLoader 초기 로드/리스너로 1회 시딩,
+ * - 그리고 **즉시 스케줄 취소**(주기 갱신 차단).
  */
 @Slf4j
 @Component
@@ -38,11 +39,9 @@ public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler,
     private final S3Properties s3Properties;
     private final S3LogSyncService s3LogSyncEventService;
     private final ObjectProvider<CryptoKeySelectionApplier> cryptoKeySelectionApplierProvider;
+    private final ObjectProvider<SecretsLoader> secretsLoaderProvider;
 
     private volatile boolean running = false;
-
-    @Value("${logging.file.path:logs}")
-    private String LOG_DIRECTORY;
 
     @PostConstruct
     void onReady() {
@@ -52,7 +51,7 @@ public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler,
     public void onStartup() {
         final String bucket = s3Properties.getS3().getBucket();
         final String folder = s3Properties.getS3().getDefaultFolder();
-        final Path logDir = Paths.get(LOG_DIRECTORY);
+        final Path logDir = Paths.get(System.getProperty("logging.file.path", "logs"));
 
         log.info("[Startup] begin. bucket={}, folder={}, logDir={}", bucket, folder, logDir.toAbsolutePath());
 
@@ -85,7 +84,6 @@ public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler,
             paths.filter(Files::isRegularFile).forEach(path -> {
                 try {
                     s3LogSyncEventService.syncFileToS3(bucket, folder, path);
-
                     success.incrementAndGet();
                 } catch (Exception ex) {
                     failed.incrementAndGet();
@@ -108,12 +106,26 @@ public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler,
             CryptoKeySelectionApplier applier = cryptoKeySelectionApplierProvider.getIfAvailable();
 
             if (applier != null) {
-                log.info("[Startup] 암호화 키 시딩은 리스너 경유로 처리(allowLatest=false).");
+                log.info("[Startup] 암호화 키는 SecretsLoader 초기 로드 이벤트로 시딩됨(allowLatest=false).");
             } else {
                 log.info("[Startup] CryptoKeySelectionApplier 미제공 -> 키 시딩 스킵");
             }
         } catch (Exception e) {
             log.error("[Startup] 암호화 키 시딩 실패(부팅 계속).", e);
+        }
+
+        try {
+            SecretsLoader loader = secretsLoaderProvider.getIfAvailable();
+
+            if (loader != null) {
+                loader.cancelSchedule();
+
+                log.info("[Startup][Crypto] SecretsLoader schedule canceled (startup-only load).");
+            } else {
+                log.debug("[Startup][Crypto] SecretsLoader 없음 -> 스킵");
+            }
+        } catch (Throwable t) {
+            log.warn("[Startup][Crypto] cancelSchedule() 실패/스킵: {}", t.toString());
         }
 
         log.info("[Startup] done.");
