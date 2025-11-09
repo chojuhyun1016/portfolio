@@ -68,6 +68,18 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
         cluster.sendMessage(message, topic);
     }
 
+    /**
+     * 폐기(ALARM) 전송(헤더 포함)
+     * - 운영 가시성: 원본 상관키/추적 헤더 보존 전송이 필요한 경우 사용
+     */
+    public <T> void sendToDiscard(DeadLetter<T> message, Map<String, String> headers) {
+        String topic = kafkaTopicProperties.getName(MessageOrderType.ORDER_ALARM.name());
+
+        log.info("Sending message to discard topic with headers: {}", topic);
+
+        cluster.sendMessage(message, topic, headers);
+    }
+
     @Override
     public <T> void sendToDlq(List<DeadLetter<T>> messages, Exception currentException) {
         if (ObjectUtils.isEmpty(messages)) {
@@ -116,6 +128,8 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
             return;
         }
 
+        log.debug("Resolved topic for send: {}", topic);
+
         cluster.sendMessage(message, topic);
     }
 
@@ -125,6 +139,8 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 
             return;
         }
+
+        log.debug("Resolved topic for send (with headers): {}", topic);
 
         cluster.sendMessage(message, topic, headers);
     }

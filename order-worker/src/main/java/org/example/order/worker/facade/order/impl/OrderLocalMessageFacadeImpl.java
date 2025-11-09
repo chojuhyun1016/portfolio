@@ -5,10 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.common.messaging.ConsumerEnvelope;
 import org.example.order.contract.order.messaging.event.OrderApiMessage;
 import org.example.order.contract.order.messaging.type.MessageOrderType;
+import org.example.order.contract.shared.op.Operation;
 import org.example.order.worker.dto.consumer.OrderLocalConsumerDto;
 import org.example.order.worker.facade.order.OrderLocalMessageFacade;
 import org.example.order.worker.service.common.KafkaProducerService;
 import org.springframework.stereotype.Component;
+
+import java.util.Locale;
 
 /**
  * OrderLocalMessageFacadeImpl
@@ -35,11 +38,13 @@ public class OrderLocalMessageFacadeImpl implements OrderLocalMessageFacade {
 
             dto.validate();
 
+            final Operation op = normalizeOperationOrThrow(dto.getOperation());
+
             log.info("[LOCAL->API] orderId={} op={} ts={}",
-                    dto.getId(), dto.getOperation(), dto.getPublishedTimestamp());
+                    dto.getId(), op, dto.getPublishedTimestamp());
 
             OrderApiMessage msg = new OrderApiMessage(
-                    dto.getOperation(),
+                    op,
                     MessageOrderType.ORDER_API,
                     dto.getId(),
                     dto.getPublishedTimestamp()
@@ -52,5 +57,40 @@ public class OrderLocalMessageFacadeImpl implements OrderLocalMessageFacade {
 
             kafkaProducerService.sendToDlq(dto, envelope != null ? envelope.getHeaders() : null, e);
         }
+    }
+
+    /**
+     * operation 엄격 확정:
+     * - null / blank -> 예외
+     * - 문자열이면 대소문자 무시하고 Operation.valueOf 로만 허용 (alias/매핑 없음)
+     * - 이미 enum 이면 그대로 반환
+     * - 그 외 타입은 예외
+     */
+    private static Operation normalizeOperationOrThrow(Object raw) {
+        if (raw == null) {
+            throw new IllegalArgumentException("operation is required");
+        }
+
+        if (raw instanceof Operation op) {
+            return op;
+        }
+
+        if (raw instanceof CharSequence cs) {
+            String norm = cs.toString().trim();
+
+            if (norm.isEmpty()) {
+                throw new IllegalArgumentException("operation is required");
+            }
+
+            try {
+                return Operation.valueOf(norm.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException(
+                        "Unsupported operation: '" + cs + "'. Allowed: " + java.util.Arrays.toString(Operation.values())
+                );
+            }
+        }
+
+        throw new IllegalArgumentException("operation type is invalid: " + raw.getClass().getName());
     }
 }

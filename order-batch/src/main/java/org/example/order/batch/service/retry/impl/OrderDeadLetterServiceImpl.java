@@ -16,12 +16,35 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 /**
- * DLQ 메시지 유형별 재처리 (기존 방식 유지)
+ * OrderDeadLetterServiceImpl
  * ------------------------------------------------------------------------
- * 변경사항 (권장 방식 적용)
- * - Facade에서 DeadLetter<?> 로 이미 역직렬화된 객체를 전달받음.
- * - 여기서는 payload(Object -> DTO)만 convertValue로 안전 변환(Map/JsonNode -> POJO).
- * - 문자열 JSON 파싱 경로 제거.
+ * 목적
+ * - DLQ(Dead-Letter Queue)에 적재된 주문 메시지를 유형별로 재처리한다.
+ * - 재시도 임계치 정책에 따라 "재전송" 또는 "폐기(알람 토픽)"를 결정한다.
+ * <p>
+ * 핵심 동작 (타입별 동일 로직)
+ * 1) 현재 재시도 횟수(current)를 계산한다.
+ * - error.meta / Kafka headers 의 후보 키에서 정수값을 읽어 최대값을 사용한다.
+ * - 우선 키: retryCount(PRIMARY_RETRY_KEY), 그 외 failedCount, attempts, x-retry-count 등 유연 인식.
+ * 2) 임계치 비교는 "증가 전 값(current)"으로 수행한다.
+ * - current >= MAX 일 때: 폐기(ORDER_ALARM 토픽) 전송.
+ * - current <  MAX 일 때: 재전송하며 그때만 +1(next=current+1)로 메타/헤더 값을 갱신한다.
+ * (이전 대비 보정: +1 후 비교로 인해 경계값에서 즉시 폐기되던 off-by-one 문제를 제거)
+ * 3) 타입별 전송 토픽
+ * - ORDER_LOCAL  -> sendToLocal
+ * - ORDER_API    -> sendToOrderApi
+ * - ORDER_CRUD   -> sendToOrderCrud
+ * - 폐기(ALARM)  -> sendToDiscard (주제: ORDER_ALARM)
+ * <p>
+ * 설계 포인트
+ * - payload(Object)는 Map/JsonNode 등으로 들어올 수 있으므로 convertValue 기반의 안전 캐스팅 적용.
+ * - 재시도 카운트는 메타/헤더 모두에 동기화하여 운영 가시성 및 후속 시스템 일관성 보장.
+ * - 예외/누락/비정상 값에 견고하게 대응(빈 값, 숫자 아님, 대소문자/키 변형 등).
+ * - Correlate AOP로 orderId/traceId를 MDC에 일원화하여 로그 추적성 강화.
+ * <p>
+ * 튜닝 지점
+ * - 타입별 임계치(LOCAL/API/CRUD) 상수 정의로 간단하게 조정 가능.
+ * - 재시도/폐기 로깅은 운영 정책에 맞춰 레벨 및 메시지 포맷 조정 가능.
  */
 @Slf4j
 @Service
@@ -66,13 +89,24 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
             return;
         }
 
-        Bumped<OrderLocalMessage> bumped = bumpRetryCount(dlq, headers);
+        int current = resolveCurrentRetryCount(dlq.error(), headers);
 
-        if (shouldDiscardWithMax(bumped.deadLetter(), LOCAL_MAX_RETRY, bumped.headers())) {
-            kafkaProducerService.sendToDiscard(bumped.deadLetter());
+        if (current >= LOCAL_MAX_RETRY) {
+            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}",
+                    current, LOCAL_MAX_RETRY,
+                    dlq.type(),
+                    dlq.error() != null ? dlq.error().code() : null,
+                    dlq.error() != null ? dlq.error().message() : null);
+
+            kafkaProducerService.sendToDiscard(dlq);
 
             return;
         }
+
+        Bumped<OrderLocalMessage> bumped = bumpRetryCountFromBase(dlq, headers, current + 1);
+
+        log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={})",
+                current, LOCAL_MAX_RETRY, dlq.type());
 
         kafkaProducerService.sendToLocal(bumped.deadLetter().payload(), bumped.headers());
     }
@@ -98,13 +132,24 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
             return;
         }
 
-        Bumped<OrderApiMessage> bumped = bumpRetryCount(dlq, headers);
+        int current = resolveCurrentRetryCount(dlq.error(), headers);
 
-        if (shouldDiscardWithMax(bumped.deadLetter(), API_MAX_RETRY, bumped.headers())) {
-            kafkaProducerService.sendToDiscard(bumped.deadLetter());
+        if (current >= API_MAX_RETRY) {
+            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}",
+                    current, API_MAX_RETRY,
+                    dlq.type(),
+                    dlq.error() != null ? dlq.error().code() : null,
+                    dlq.error() != null ? dlq.error().message() : null);
+
+            kafkaProducerService.sendToDiscard(dlq);
 
             return;
         }
+
+        Bumped<OrderApiMessage> bumped = bumpRetryCountFromBase(dlq, headers, current + 1);
+
+        log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={})",
+                current, API_MAX_RETRY, dlq.type());
 
         kafkaProducerService.sendToOrderApi(bumped.deadLetter().payload(), bumped.headers());
     }
@@ -130,13 +175,24 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
             return;
         }
 
-        Bumped<OrderCrudMessage> bumped = bumpRetryCount(dlq, headers);
+        int current = resolveCurrentRetryCount(dlq.error(), headers);
 
-        if (shouldDiscardWithMax(bumped.deadLetter(), CRUD_MAX_RETRY, bumped.headers())) {
-            kafkaProducerService.sendToDiscard(bumped.deadLetter());
+        if (current >= CRUD_MAX_RETRY) {
+            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}",
+                    current, CRUD_MAX_RETRY,
+                    dlq.type(),
+                    dlq.error() != null ? dlq.error().code() : null,
+                    dlq.error() != null ? dlq.error().message() : null);
+
+            kafkaProducerService.sendToDiscard(dlq);
 
             return;
         }
+
+        Bumped<OrderCrudMessage> bumped = bumpRetryCountFromBase(dlq, headers, current + 1);
+
+        log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={})",
+                current, CRUD_MAX_RETRY, dlq.type());
 
         kafkaProducerService.sendToOrderCrud(bumped.deadLetter().payload(), bumped.headers());
     }
@@ -158,16 +214,23 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
     }
 
     /**
-     * 재시도 카운트 증가:
-     * - 메타와 헤더에서 추출한 현재값의 최대치에 +1
-     * - 메타(PRIMARY_RETRY_KEY)와 헤더(RETRY_HEADER_KEYS[0])에 동시 반영
+     * 현재 재시도 횟수 계산:
+     * - 메타와 헤더의 유효숫자 중 최대값을 현재값으로 사용.
      */
-    private <T> Bumped<T> bumpRetryCount(DeadLetter<T> dlq, Map<String, String> headers) {
-        ErrorDetail old = dlq.error();
-        int fromMeta = resolveFailCount(old);
+    private int resolveCurrentRetryCount(ErrorDetail error, Map<String, String> headers) {
+        int fromMeta = resolveFailCount(error);
         int fromHeader = resolveHeaderRetryCount(headers);
-        int base = Math.max(fromMeta, fromHeader);
-        int next = base + 1;
+
+        return Math.max(fromMeta, fromHeader);
+    }
+
+    /**
+     * 재시도 카운트 증가 (기준값 제공 버전):
+     * - 호출자가 판단한 next(=current+1)를 그대로 메타/헤더에 반영.
+     * - 메타(PRIMARY_RETRY_KEY)와 헤더(RETRY_HEADER_KEYS[0])에 동시 반영.
+     */
+    private <T> Bumped<T> bumpRetryCountFromBase(DeadLetter<T> dlq, Map<String, String> headers, int next) {
+        ErrorDetail old = dlq.error();
 
         Map<String, String> newMeta = new LinkedHashMap<>();
 
@@ -201,34 +264,12 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
         return new Bumped<>(bumped, newHeaders);
     }
 
-    private boolean shouldDiscardWithMax(DeadLetter<?> message, int maxRetry, Map<String, String> headers) {
-        int currentMeta = resolveFailCount(message != null ? message.error() : null);
-        int currentHeader = resolveHeaderRetryCount(headers);
-        int current = Math.max(currentMeta, currentHeader);
-
-        boolean discard = current >= maxRetry;
-
-        if (discard) {
-            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}",
-                    current, maxRetry,
-                    message != null ? message.type() : null,
-                    message != null && message.error() != null ? message.error().code() : null,
-                    message != null && message.error() != null ? message.error().message() : null);
-        } else {
-            log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={})",
-                    current, maxRetry, message != null ? message.type() : null);
-        }
-
-        return discard;
-    }
-
     private int resolveFailCount(ErrorDetail error) {
         if (error == null) {
             return 0;
         }
 
         Map<String, String> meta = error.meta();
-
         if (meta != null && !meta.isEmpty()) {
             String[] keys = new String[]{
                     PRIMARY_RETRY_KEY, "failedCount", "failCount", "retryCount",
