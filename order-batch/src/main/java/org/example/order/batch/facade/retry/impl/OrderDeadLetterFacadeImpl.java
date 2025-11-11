@@ -12,7 +12,6 @@ import org.example.order.batch.facade.retry.OrderDeadLetterFacade;
 import org.example.order.batch.service.retry.OrderDeadLetterService;
 import org.example.order.client.kafka.config.properties.KafkaTopicProperties;
 import org.example.order.common.core.exception.core.CommonException;
-import org.example.order.common.support.logging.Correlate;
 import org.example.order.contract.order.messaging.dlq.DeadLetter;
 import org.example.order.contract.order.messaging.type.MessageOrderType;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -129,17 +128,6 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
         }
     }
 
-    @Correlate(
-            paths = {
-                    "#p1?.headers()?.get('orderId')",
-                    "#p1?.headers()?.get('traceId')",
-                    "#p1?.headers()?.get('X-Request-Id')",
-                    "#p1?.headers()?.get('x-request-id')",
-                    "#p1?.key()"
-            },
-            mdcKey = "orderId",
-            overrideTraceId = true
-    )
     protected void processOne(Consumer<String, DeadLetter<?>> consumer,
                               ConsumerRecord<String, DeadLetter<?>> record) {
         Map<String, String> headers = extractHeaders(record.headers());
@@ -148,8 +136,10 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
         final DeadLetter<?> dlq = record.value();
         final MessageOrderType type = resolveTypeSafely(dlq.type());
 
-        log.info("DLQ record tp={}-{}, offset={}, key={}, type={}, headers={}",
-                record.topic(), record.partition(), record.offset(), record.key(), type, headers);
+        String orderId = resolveOrderId(headers);
+
+        log.info("DLQ record tp={}-{}, offset={}, key={}, type={}, orderId={}, headers={}",
+                record.topic(), record.partition(), record.offset(), record.key(), type, orderId, headers);
 
         switch (type) {
             case ORDER_LOCAL -> orderDeadLetterService.retryLocal(dlq, headers);
@@ -222,5 +212,25 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
         } catch (NumberFormatException nfe) {
             headers.put(RETRY_COUNT_HEADER, "0");
         }
+    }
+
+    private static String resolveOrderId(Map<String, String> headers) {
+        if (headers == null || headers.isEmpty()) {
+            return "-";
+        }
+
+        String[] keys = new String[]{
+                "orderId", "x-order-id", "X-Order-Id", "order-id"
+        };
+
+        for (String k : keys) {
+            String v = headers.get(k);
+
+            if (v != null && !v.isBlank()) {
+                return v;
+            }
+        }
+
+        return "-";
     }
 }

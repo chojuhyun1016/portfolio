@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.order.batch.service.common.KafkaProducerService;
 import org.example.order.batch.service.retry.OrderDeadLetterService;
 import org.example.order.common.support.json.ObjectMapperUtils;
-import org.example.order.common.support.logging.Correlate;
 import org.example.order.contract.order.messaging.dlq.DeadLetter;
 import org.example.order.contract.order.messaging.event.OrderApiMessage;
 import org.example.order.contract.order.messaging.event.OrderCrudMessage;
@@ -69,16 +68,6 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
     };
 
     @Override
-    @Correlate(
-            paths = {
-                    "#p1?.get('orderId')",
-                    "#p1?.get('traceId')",
-                    "#p1?.get('X-Request-Id')",
-                    "#p1?.get('x-request-id')"
-            },
-            mdcKey = "orderId",
-            overrideTraceId = true
-    )
     public void retryLocal(Object dlqObj, Map<String, String> headers) {
         DeadLetter<?> dlqRaw = (DeadLetter<?>) dlqObj;
         DeadLetter<OrderLocalMessage> dlq = castPayload(dlqRaw, OrderLocalMessage.class);
@@ -92,11 +81,12 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
         int current = resolveCurrentRetryCount(dlq.error(), headers);
 
         if (current >= LOCAL_MAX_RETRY) {
-            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}",
+            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}, orderId={}",
                     current, LOCAL_MAX_RETRY,
                     dlq.type(),
                     dlq.error() != null ? dlq.error().code() : null,
-                    dlq.error() != null ? dlq.error().message() : null);
+                    dlq.error() != null ? dlq.error().message() : null,
+                    resolveOrderId(headers));
 
             kafkaProducerService.sendToDiscard(dlq);
 
@@ -105,23 +95,13 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
 
         Bumped<OrderLocalMessage> bumped = bumpRetryCountFromBase(dlq, headers, current + 1);
 
-        log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={})",
-                current, LOCAL_MAX_RETRY, dlq.type());
+        log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={}), orderId={}",
+                current, LOCAL_MAX_RETRY, dlq.type(), resolveOrderId(headers));
 
         kafkaProducerService.sendToLocal(bumped.deadLetter().payload(), bumped.headers());
     }
 
     @Override
-    @Correlate(
-            paths = {
-                    "#p1?.get('orderId')",
-                    "#p1?.get('traceId')",
-                    "#p1?.get('X-Request-Id')",
-                    "#p1?.get('x-request-id')"
-            },
-            mdcKey = "orderId",
-            overrideTraceId = true
-    )
     public void retryApi(Object dlqObj, Map<String, String> headers) {
         DeadLetter<?> dlqRaw = (DeadLetter<?>) dlqObj;
         DeadLetter<OrderApiMessage> dlq = castPayload(dlqRaw, OrderApiMessage.class);
@@ -135,11 +115,12 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
         int current = resolveCurrentRetryCount(dlq.error(), headers);
 
         if (current >= API_MAX_RETRY) {
-            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}",
+            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}, orderId={}",
                     current, API_MAX_RETRY,
                     dlq.type(),
                     dlq.error() != null ? dlq.error().code() : null,
-                    dlq.error() != null ? dlq.error().message() : null);
+                    dlq.error() != null ? dlq.error().message() : null,
+                    resolveOrderId(headers));
 
             kafkaProducerService.sendToDiscard(dlq);
 
@@ -148,23 +129,13 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
 
         Bumped<OrderApiMessage> bumped = bumpRetryCountFromBase(dlq, headers, current + 1);
 
-        log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={})",
-                current, API_MAX_RETRY, dlq.type());
+        log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={}), orderId={}",
+                current, API_MAX_RETRY, dlq.type(), resolveOrderId(headers));
 
         kafkaProducerService.sendToOrderApi(bumped.deadLetter().payload(), bumped.headers());
     }
 
     @Override
-    @Correlate(
-            paths = {
-                    "#p1?.get('orderId')",
-                    "#p1?.get('traceId')",
-                    "#p1?.get('X-Request-Id')",
-                    "#p1?.get('x-request-id')"
-            },
-            mdcKey = "orderId",
-            overrideTraceId = true
-    )
     public void retryCrud(Object dlqObj, Map<String, String> headers) {
         DeadLetter<?> dlqRaw = (DeadLetter<?>) dlqObj;
         DeadLetter<OrderCrudMessage> dlq = castPayload(dlqRaw, OrderCrudMessage.class);
@@ -178,11 +149,12 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
         int current = resolveCurrentRetryCount(dlq.error(), headers);
 
         if (current >= CRUD_MAX_RETRY) {
-            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}",
+            log.warn("DLQ discard: retryCount={} >= maxRetry={}, type={}, code={}, msg={}, orderId={}",
                     current, CRUD_MAX_RETRY,
                     dlq.type(),
                     dlq.error() != null ? dlq.error().code() : null,
-                    dlq.error() != null ? dlq.error().message() : null);
+                    dlq.error() != null ? dlq.error().message() : null,
+                    resolveOrderId(headers));
 
             kafkaProducerService.sendToDiscard(dlq);
 
@@ -191,8 +163,8 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
 
         Bumped<OrderCrudMessage> bumped = bumpRetryCountFromBase(dlq, headers, current + 1);
 
-        log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={})",
-                current, CRUD_MAX_RETRY, dlq.type());
+        log.info("DLQ keep retrying: retryCount={} < maxRetry={} (type={}), orderId={}",
+                current, CRUD_MAX_RETRY, dlq.type(), resolveOrderId(headers));
 
         kafkaProducerService.sendToOrderCrud(bumped.deadLetter().payload(), bumped.headers());
     }
@@ -270,6 +242,7 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
         }
 
         Map<String, String> meta = error.meta();
+
         if (meta != null && !meta.isEmpty()) {
             String[] keys = new String[]{
                     PRIMARY_RETRY_KEY, "failedCount", "failCount", "retryCount",
@@ -372,6 +345,26 @@ public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
         } catch (NumberFormatException ignore) {
             return null;
         }
+    }
+
+    private String resolveOrderId(Map<String, String> headers) {
+        if (headers == null || headers.isEmpty()) {
+            return "-";
+        }
+
+        String[] keys = new String[]{
+                "orderId", "x-order-id", "X-Order-Id", "order-id"
+        };
+
+        for (String k : keys) {
+            String v = headers.get(k);
+
+            if (v != null && !v.isBlank()) {
+                return v;
+            }
+        }
+
+        return "-";
     }
 
     private record Bumped<T>(DeadLetter<T> deadLetter, Map<String, String> headers) {

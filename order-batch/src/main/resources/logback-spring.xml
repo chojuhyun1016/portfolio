@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- ===== 공통 프로퍼티 ===== -->
+    <property name="POD_ID" value="${HOSTNAME:-unknown}"/>
+    <springProperty name="DEFAULT_LOG_DIR" source="logging.file.path" defaultValue="logs"/>
+    <property name="DEFAULT_LOG_FILE" value="default"/>
+    <property name="ERROR_LOG_FILE" value="error"/>
+    <property name="SYNCHRONIZE_LOG_FILE" value="synchronize"/>
+    <property name="MAX_SIZE" value="100MB"/>
+    <property name="MAX_HISTORY" value="7"/>
+
+    <!-- 텍스트 로그 패턴: 모든 항목 [] 감싸기 + 항목 간 공백 없음 -->
+    <!-- traceId는 TurboFilter로 항상 UUID가 채워지며, 극초기/특수상황엔 NA로 폴백 -->
+    <property name="LOG_PATTERN"
+              value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread][%level][trace:%X{traceId:-NA}][line:%L][%logger][%M]: %msg%n"/>
+
+    <!-- ===== 전역 TurboFilter: traceId 보강(필수) ===== -->
+    <!-- 모든 로깅 이벤트에서 MDC['traceId']가 비어있으면 UUID를 생성/주입 -->
+    <turboFilter class="org.example.order.common.support.logging.TraceIdTurboFilter"/>
+
+    <!-- ===== 콘솔 ===== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ===== 롤링 파일: DEFAULT (INFO~WARN~DEBUG 등) ===== -->
+    <appender name="DEFAULT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${DEFAULT_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ===== 롤링 파일: ERROR 전용 ===== -->
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${ERROR_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ===== 롤링 파일: SYNCHRONIZE 전용 ===== -->
+    <appender name="SYNCHRONIZE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>DENY</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DEFAULT_LOG_DIR}/${SYNCHRONIZE_LOG_FILE}.%d{yyyy-MM-dd}-%i.${POD_ID}.log
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ===== 카테고리 라우팅(프로파일 제한) ===== -->
+    <springProfile name="dev, beta, prod">
+        <!-- 동기화 파사드 -->
+        <logger name="org.example.order.batch.facade.synchronize" level="INFO" additivity="false">
+            <appender-ref ref="SYNCHRONIZE"/>
+            <appender-ref ref="ERROR"/>
+        </logger>
+
+        <!-- 동기화 서비스 -->
+        <logger name="org.example.order.batch.service.synchronize" level="INFO" additivity="false">
+            <appender-ref ref="SYNCHRONIZE"/>
+            <appender-ref ref="ERROR"/>
+        </logger>
+    </springProfile>
+
+    <!-- ===== 루트 ===== -->
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <springProfile name="local">
+        <root level="info">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="DEFAULT"/>
+            <appender-ref ref="ERROR"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="dev, beta, prod">
+        <root level="info">
+            <appender-ref ref="DEFAULT"/>
+            <appender-ref ref="ERROR"/>
+        </root>
+    </springProfile>
+</configuration>
