@@ -2,6 +2,13 @@
 <configuration>
     <timestamp key="BY_DATE" datePattern="yyyy-MM-dd"/>
 
+    <!-- ===== 전역 TurboFilter: traceId 자동 보강 =====
+         - 모든 로그 이벤트에서 MDC['traceId']가 비어 있으면 UUID로 채웁니다.
+         - 컨트롤러 @Correlate(overrideTraceId=true)가 orderId 등을 발견하면 해당 값으로 자연스럽게 덮어씁니다.
+         - order-worker와 동일한 전략을 사용합니다.
+    -->
+    <turboFilter class="org.example.order.common.support.logging.TraceIdTurboFilter"/>
+
     <!-- 기존 변수들 그대로 유지 (필요 시 파일 appender 추가 가능) -->
     <property name="LOG_PARENT_PATH" value="./log"/>
     <property name="LOG_CHILD_INFO" value="info"/>
@@ -26,10 +33,7 @@
     <!-- =================================================================== -->
 
     <!-- 프로필별로 필요하면 재정의/추가 -->
-    <!-- 공백 없이 나열하거나, 아래처럼 블록을 나눠 명확히 유지 -->
-
     <springProfile name="local">
-        <!-- 예: 로컬에서 레벨 덮어쓰기 -->
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>

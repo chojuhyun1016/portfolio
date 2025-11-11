@@ -15,6 +15,14 @@
     <property name="LOG_PATTERN"
               value="[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread][%level][trace:%X{traceId:-NA}][req:%X{requestId:-NA}][order:%X{orderId:-NA}][line:%L][%logger][%M]: %msg%n"/>
 
+    <!--
+      전역 TurboFilter: traceId 자동 보강
+      - 모든 로그 이벤트에서 MDC['traceId']가 비어 있으면 UUID로 채움
+      - 컨트롤러/필터 등에서 @Correlate(overrideTraceId=true)로 도메인 키(orderId 등)를 추출하면
+        해당 값으로 자연스럽게 덮어쓰여, "키 우선, 없으면 UUID" 전략을 보장
+    -->
+    <turboFilter class="org.example.order.common.support.logging.TraceIdTurboFilter"/>
+
     <springProfile name="local, dev, beta, prod">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
