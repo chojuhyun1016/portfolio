@@ -31,6 +31,9 @@ import java.util.*;
  * - 모든 파티션 assign + 파티션별 안전 커밋.
  * - 비어있을 때 INFO 로그로 노출(운영 가시성).
  * - consumer 레이어에서 JSON -> DeadLetter<?> 역직렬화(별도 @Qualifier 팩토리).
+ * 추가 보강
+ * - 파티션별 마지막 처리 오프셋(+1) 누적 추적 후, 정상/예외 종료 직전 최종 commitSync 한 번 더 수행.
+ * - close(Duration) 타임아웃을 명시해 안정적인 종료 보장.
  */
 @Slf4j
 @Component
@@ -52,14 +55,16 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
     public void retry() {
         final String topic = kafkaTopicProperties.getName(MessageOrderType.ORDER_DLQ);
 
-        try (Consumer<String, DeadLetter<?>> consumer =
-                     deadLetterConsumerFactory.createConsumer(DEAD_LETTER_GROUP_ID, CLIENT_SUFFIX)) {
+        Consumer<String, DeadLetter<?>> consumer = null;
+        final Map<TopicPartition, OffsetAndMetadata> lastProcessedToCommit = new HashMap<>();
+
+        try {
+            consumer = deadLetterConsumerFactory.createConsumer(DEAD_LETTER_GROUP_ID, CLIENT_SUFFIX);
 
             List<PartitionInfo> infos = consumer.partitionsFor(topic);
 
             if (infos == null || infos.isEmpty()) {
                 log.info("DLQ topic has no partitions: {}", topic);
-
                 return;
             }
 
@@ -113,7 +118,9 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
 
                 // 해당 파티션에서 처리한 마지막 오프셋 + 1 로 커밋
                 if (lastOffset >= 0) {
-                    consumer.commitSync(Collections.singletonMap(tp, new OffsetAndMetadata(lastOffset + 1)));
+                    OffsetAndMetadata oam = new OffsetAndMetadata(lastOffset + 1);
+                    lastProcessedToCommit.put(tp, oam);
+                    consumer.commitSync(Collections.singletonMap(tp, oam));
 
                     log.info("DLQ commit tp={}, lastOffsetCommitted={}", tp, lastOffset + 1);
                 }
@@ -123,8 +130,27 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
 
         } catch (Exception e) {
             log.error("dead-letter facade error", e);
-
             throw new CommonException(BatchExceptionCode.POLLING_FAILED);
+        } finally {
+            // 지금까지 누적된 마지막 오프셋(+1)을 한 번 더 동기 커밋(실패해도 로깅만)
+            if (consumer != null && !lastProcessedToCommit.isEmpty()) {
+                try {
+                    consumer.commitSync(lastProcessedToCommit);
+
+                    log.info("DLQ final commitSync done for {} partition(s).", lastProcessedToCommit.size());
+                } catch (Exception ex) {
+                    log.warn("DLQ final commitSync failed (ignored): {}", ex.toString());
+                }
+            }
+
+            // 타임아웃 있는 종료로 네트워크/코디네이터 정리 기회 제공
+            if (consumer != null) {
+                try {
+                    consumer.close(Duration.ofSeconds(5));
+                } catch (Exception ex) {
+                    log.warn("DLQ consumer close failed (ignored): {}", ex.toString());
+                }
+            }
         }
     }
 
@@ -219,9 +245,7 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
             return "-";
         }
 
-        String[] keys = new String[]{
-                "orderId", "x-order-id", "X-Order-Id", "order-id"
-        };
+        String[] keys = new String[]{"orderId", "x-order-id", "X-Order-Id", "order-id"};
 
         for (String k : keys) {
             String v = headers.get(k);

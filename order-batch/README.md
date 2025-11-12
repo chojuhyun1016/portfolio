@@ -1,503 +1,720 @@
-# 🧰 order-batch 서비스 README (Spring Batch · DLQ 재처리 · S3 업로드 · 구성/확장/운영 가이드)
+# 🧰 order-batch 서비스 README (Spring Batch · DLQ 재처리 · S3 업로드 · Secrets/Crypto 키 시딩 · 운영 가이드)
 
-Spring Boot 기반 **배치 모듈**입니다.  
-Kafka DLQ(Dead Letter Queue) 재처리 잡과 S3 업로드 유틸을 제공하며, 코어/클라이언트 모듈은 **설정(@Import)** 으로 조립하고, 배치 모듈 내부만 **컴포넌트 스캔**합니다.  
-설정은 **YAML 중심**, 토픽명은 `MessageCategory` → `KafkaTopicProperties` 로 타입 세이프하게 주입합니다.
-
----
-
-## 1) 전체 구조
-
-| 레이어 | 주요 패키지/클래스 | 핵심 역할 |
-|---|---|---|
-| 조립/부트스트랩 | org.example.order.batch.config.OrderBatchConfig | 코어/클라이언트 모듈 Import, 배치 패키지 스캔, BatchProperties 바인딩, ObjectMapper 기본 빈 |
-| 잡/스텝/태스크릿 | org.example.order.batch.job.OrderDeadLetterJob | DLQ 재처리 Job/Step/Tasklet 정의 |
-| 파사드 | org.example.order.batch.facade.retry.impl.OrderDeadLetterFacadeImpl | Kafka DLQ 파티션 수동 소비, 오프셋 관리, 재처리 위임 |
-| 서비스(공통) | FileServiceImpl, KafkaProducerServiceImpl, S3ServiceImpl | 파일→S3 업로드, 카프카 발행(DLQ/Discard 포함), S3 래퍼 |
-| 서비스(DLQ) | OrderDeadLetterServiceImpl | DLQ 메시지 타입 분기(LOCAL/API/CRUD), 실패 횟수 기준 discard 판단 |
-| 예외/코드 | BatchExceptionCode | 배치 전용 표준 오류 코드 |
-
-메시지 카테고리(일부): ORDER_LOCAL, ORDER_API, ORDER_CRUD, ORDER_DLQ, ORDER_ALARM  
-DLQ 재처리 타입: DlqOrderType.ORDER_LOCAL, ORDER_API, ORDER_CRUD
+Spring Boot 기반 배치 모듈입니다.  
+Kafka DLQ(Dead Letter) 재처리, S3 로그 동기화(시작/종료 훅), Secrets/Crypto 키 시딩(AES128/AES256/AESGCM/HMAC_SHA256)까지 운영에 필요한 경로를
+포함합니다.  
+실행 후 종료되는 단발성 배치이며, **잡 상태 → 프로세스 종료코드 매핑(성공=0, 그 외=1)** 을 지원합니다.
 
 ---
 
-## 2) 동작 흐름(요약)
+## 1) 모듈 조립/오토구성
 
-    OrderDeadLetterJob (Tasklet)
-      → OrderDeadLetterFacadeImpl.retry()
-         → Kafka Consumer (DLQ 토픽 파티션 0 수동 할당, 오프셋 지정)
-            → poll → record.value() 전달
-               → OrderDeadLetterServiceImpl.retry(...)
-                  → DlqOrderType 에 따라 Producer로 재발행(sendToLocal/Api/Crud)
-                  → 실패 누적이 임계값 초과 시 discard 토픽으로 전송
+- **핵심 오토구성:** `OrderBatchConfig` (현재 코드 반영)
+    - Import: `OrderCoreConfig`, `WebAutoConfiguration`, `TsidInfraConfig`
+    - ImportAutoConfiguration: `S3AutoConfiguration`, `KafkaAutoConfiguration`, `CacheAutoConfiguration`,
+      `ApplicationAutoConfiguration`
+    - ComponentScan: `config/crypto/facade/job/lifecycle/service`
+    - Properties: `BatchProperties`, `AppCryptoKeyProperties`
+    - ObjectMapper 기본 빈 제공(`ObjectMapperFactory`) — `@ConditionalOnMissingBean`
 
-원칙:
-- 파사드: 컨슈머 생성/오프셋 결정/루프 처리/커밋 — 핵심 경로만 수행
-- 서비스: 타입 안전 변환(ObjectMapperUtils), 실패 회수 증가, Discard 임계값 체크
-- 프로듀서: DLQ/Discard/일반 토픽 발행 공통 send(...) 경로 유지
+```java
 
----
+@Configuration
+@Import({
+        OrderCoreConfig.class,
+        WebAutoConfiguration.class,
+        TsidInfraConfig.class
+})
+@ImportAutoConfiguration({
+        S3AutoConfiguration.class,
+        KafkaAutoConfiguration.class,
+        CacheAutoConfiguration.class,
+        ApplicationAutoConfiguration.class
+})
+@ComponentScan(basePackages = {
+        "org.example.order.batch.config",
+        "org.example.order.batch.crypto",
+        "org.example.order.batch.facade",
+        "org.example.order.batch.job",
+        "org.example.order.batch.lifecycle",
+        "org.example.order.batch.service"
+})
+@EnableConfigurationProperties({
+        BatchProperties.class,
+        AppCryptoKeyProperties.class
+})
+@RequiredArgsConstructor
+public class OrderBatchConfig {
 
-## 3) 조립/구성
+    @Bean
+    @ConditionalOnMissingBean(ObjectMapper.class)
+    ObjectMapper objectMapper() {
+        return ObjectMapperFactory.defaultObjectMapper();
+    }
+}
+```
 
-### 3.1 OrderBatchConfig
+- **배치 앱 엔트리:** `OrderBatchApplication`
+    - `WebApplicationType.NONE`, 실행 후 `SpringApplication.exit(ctx)` → `System.exit(exitCode)`
+    - JVM 기본 타임존: `UTC`
 
-    @Configuration
-    @Import({
-            OrderCoreConfig.class,     // 코어 인프라(도메인/JPA/락/레디스 등)
-            KafkaModuleConfig.class,   // Kafka 클라이언트 모듈
-            S3ModuleConfig.class       // S3 클라이언트 모듈
-    })
-    @EnableConfigurationProperties(BatchProperties.class)
-    @ComponentScan(basePackages = {
-            "org.example.order.batch.config",
-            "org.example.order.batch.application",
-            "org.example.order.batch.facade",
-            "org.example.order.batch.job",
-            "org.example.order.batch.service"
-    })
-    public class OrderBatchConfig {
+```java
 
-        @Bean
-        @ConditionalOnMissingBean(ObjectMapper.class)
-        ObjectMapper objectMapper() {
-            return ObjectMapperFactory.defaultObjectMapper();
-        }
+@SpringBootApplication
+@Import({
+        OrderBatchConfig.class,
+        FlywayDevLocalStrategy.class,
+        OrderCoreConfig.class
+})
+public class OrderBatchApplication {
+
+    public static void main(String[] args) {
+        SpringApplication app = new SpringApplication(OrderBatchApplication.class);
+        app.setWebApplicationType(WebApplicationType.NONE);
+
+        ConfigurableApplicationContext ctx = app.run(args);
+        int exitCode = SpringApplication.exit(ctx);
+        System.exit(exitCode);
     }
 
-- 외부 모듈은 @Import 로만 조립하고, **외부 패키지는 스캔하지 않음**
-- BatchProperties 바인딩 활성화
-- ObjectMapper 는 외부 제공 시 중복 생성 방지
+    @PostConstruct
+    void setTimeZone() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
+}
+```
 
-### 3.2 배치 잡/스텝/태스크릿
+---
 
-    @Configuration
-    @RequiredArgsConstructor
-    @Slf4j
-    public class OrderDeadLetterJob {
+## 2) 잡 구성 (DLQ 재처리)
 
-        private final OrderDeadLetterFacade facade;
-        public static final String JOB_NAME = "ORDER_DEAD_LETTER_JOB";
+- 구성 클래스: `job.deadletter.OrderDeadLetterJobConfig`
+    - Job 이름: `ORDER_DEAD_LETTER_JOB`
+    - `RunIdIncrementer` 적용(재실행 충돌 방지), `preventRestart()`
+    - Step: `ORDER_DEAD_LETTER_JOB.retry`
+    - Tasklet: `facade.retry()` 수행(예외 로깅 후 전파)
 
-        // 잡 정의
-        @Bean(name = JOB_NAME)
-        public Job job(JobRepository jobRepository, Step orderDeadLetterStep) {
-            return new JobBuilder(JOB_NAME, jobRepository)
-                    .start(orderDeadLetterStep)
-                    .preventRestart()
-                    .build();
-        }
+```java
 
-        // 스텝 정의
-        @Bean
-        @JobScope
-        public Step orderDeadLetterStep(JobRepository jobRepository,
-                                        Tasklet orderDeadLetterTasklet,
-                                        PlatformTransactionManager platformTransactionManager) {
-            return new StepBuilder(String.format("%s.%s", JOB_NAME, "retry"), jobRepository)
-                    .tasklet(orderDeadLetterTasklet, platformTransactionManager)
-                    .build();
-        }
+@Configuration
+@RequiredArgsConstructor
+@Slf4j
+public class OrderDeadLetterJobConfig {
 
-        // 태스크릿: DLQ 재처리 실행
-        @Bean
-        @JobScope
-        public Tasklet orderDeadLetterTasklet() {
-            return (contribution, chunkContext) -> {
-                log.info("OrderDeadLetterJob start");
-                facade.retry();
-                return RepeatStatus.FINISHED;
-            };
-        }
+    private final OrderDeadLetterFacade facade;
+
+    public static final String JOB_NAME = "ORDER_DEAD_LETTER_JOB";
+
+    @Bean(name = JOB_NAME)
+    public Job job(JobRepository jobRepository, Step orderDeadLetterStep) {
+        return new JobBuilder(JOB_NAME, jobRepository)
+                .incrementer(new RunIdIncrementer())
+                .start(orderDeadLetterStep)
+                .preventRestart()
+                .build();
     }
 
----
+    @Bean
+    @JobScope
+    public Step orderDeadLetterStep(JobRepository jobRepository,
+                                    Tasklet orderDeadLetterTasklet,
+                                    PlatformTransactionManager tx) {
+        return new StepBuilder(JOB_NAME + ".retry", jobRepository)
+                .tasklet(orderDeadLetterTasklet, tx)
+                .build();
+    }
 
-## 4) Kafka DLQ 재처리
+    @Bean
+    public Tasklet orderDeadLetterTasklet() {
+        return (contribution, chunkContext) -> {
+            log.info("OrderDeadLetterJob start");
+            facade.retry();
+            return RepeatStatus.FINISHED;
+        };
+    }
+}
+```
 
-### 4.1 파사드: OrderDeadLetterFacadeImpl (핵심 단계)
+- **대안 Tasklet(파라미터 필요 시):** `job.tasklet.OrderDeadLetterRetryTasklet` (`@StepScope`)
 
-- DLQ 토픽 조회
-- 컨슈머 생성 (그룹/클라이언트 suffix)
-- 파티션 0 수동 할당
-- 시작 오프셋 결정(커밋 없으면 beginning)
-- 전체 메시지 수 계산(end-offset - position)
-- 루프: poll → 서비스에 위임 → commitSync
+```java
 
-  @RequiredArgsConstructor
-  @Slf4j
-  @Component
-  public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
+@Slf4j
+@StepScope
+@Component
+@RequiredArgsConstructor
+public class OrderDeadLetterRetryTasklet implements Tasklet {
 
-        private final OrderDeadLetterService orderDeadLetterService;
-        private final ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory;
-        private final KafkaTopicProperties kafkaTopicProperties;
+    private final OrderDeadLetterFacade facade;
 
-        private static final String DEAD_LETTER_GROUP_ID = "order-order-dead-letter";
-        private static final String CLIENT_SUFFIX = "dlt-client";
-
-        @Override
-        public void retry() {
-            try {
-                // DLQ 토픽
-                String topic = kafkaTopicProperties.getName(MessageCategory.ORDER_DLQ);
-
-                // Consumer 생성
-                ConsumerFactory<String, String> factory =
-                        (ConsumerFactory<String, String>) kafkaListenerContainerFactory.getConsumerFactory();
-                Consumer<String, String> consumer = factory.createConsumer(DEAD_LETTER_GROUP_ID, CLIENT_SUFFIX);
-
-                // 파티션 할당
-                TopicPartition partition = new TopicPartition(topic, 0);
-                Set<TopicPartition> partitions = Collections.singleton(partition);
-                consumer.assign(partitions);
-
-                // 시작 offset 지정
-                Map<TopicPartition, OffsetAndMetadata> committedOffsets = consumer.committed(partitions);
-                if (committedOffsets.get(partition) == null) {
-                    consumer.seekToBeginning(partitions);
-                } else {
-                    consumer.seek(partition, committedOffsets.get(partition).offset());
-                }
-
-                // 전체 메시지 수
-                long endOffset = consumer.endOffsets(partitions).get(partition);
-                long currentOffset = consumer.position(partition);
-                long messageCount = endOffset - currentOffset;
-                long consumedCount = 0L;
-
-                log.debug("number of messages : {}", messageCount);
-
-                // 메시지 처리 루프
-                while (consumedCount < messageCount) {
-                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(2000));
-                    if (records.count() == 0) {
-                        throw new CommonException(BatchExceptionCode.POLLING_FAILED);
-                    }
-
-                    for (ConsumerRecord<String, String> record : records.records(topic)) {
-                        orderDeadLetterService.retry(record.value());
-                    }
-
-                    consumedCount += records.count();
-                    consumer.commitSync();
-                }
-
-                consumer.close();
-            } catch (Exception e) {
-                log.error("error : order dead letter retry failed", e);
-                throw e;
-            }
-        }
-  }
-
-### 4.2 서비스: OrderDeadLetterServiceImpl
-
-핵심 포인트:
-- 원본 문자열에서 DlqOrderType 필드만 추출 → 타입 분기
-- 각 타입의 메시지 클래스로 역직렬화 → 실패 회수 증가
-- maxFailCount 초과 시 discard, 아니면 재발행
-
-  @RequiredArgsConstructor
-  @Slf4j
-  @Service
-  @EnableConfigurationProperties({KafkaConsumerProperties.class})
-  public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
-
-        private final KafkaProducerService kafkaProducerService;
-        private final KafkaConsumerProperties kafkaConsumerProperties;
-
-        // DLQ 메시지 유형별 재처리
-        @Override
-        public void retry(Object message) {
-            DlqOrderType type = ObjectMapperUtils.getFieldValueFromString(message.toString(), "type", DlqOrderType.class);
-            log.info("DLQ 처리 시작 - Type: {}", type);
-
-            switch (type) {
-                case ORDER_LOCAL -> retryMessage(message, OrderLocalMessage.class, kafkaProducerService::sendToLocal);
-                case ORDER_API   -> retryMessage(message, OrderApiMessage.class, kafkaProducerService::sendToOrderApi);
-                case ORDER_CRUD  -> retryMessage(message, OrderCrudMessage.class, kafkaProducerService::sendToOrderCrud);
-                default -> throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
-            }
-        }
-
-        // 개별 메시지 재처리 로직
-        private <T extends DlqMessage> void retryMessage(Object rawMessage, Class<T> clazz, java.util.function.Consumer<T> retrySender) {
-            T dlqMessage = ObjectMapperUtils.valueToObject(rawMessage, clazz);
-            dlqMessage.increaseFailedCount();
-
-            if (shouldDiscard(dlqMessage)) {
-                kafkaProducerService.sendToDiscard(dlqMessage);
-            } else {
-                retrySender.accept(dlqMessage);
-            }
-        }
-
-        // 최대 실패 횟수 초과 시 discard
-        private <T extends DlqMessage> boolean shouldDiscard(T message) {
-            return message.discard(kafkaConsumerProperties.getOption().getMaxFailCount());
-        }
-  }
+    @Override
+    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+        log.info("OrderDeadLetterJob start");
+        facade.retry();
+        return RepeatStatus.FINISHED;
+    }
+}
+```
 
 ---
 
-## 5) 공통 서비스
+## 3) Kafka 토픽/컨슈머/프로듀서
 
-### 5.1 KafkaProducerServiceImpl (요약)
+### 3.1 토픽 이름 빈 (운영용 이름 매핑)
 
-- 카테고리별 일반 발행: sendToLocal, sendToOrderApi, sendToOrderCrud
-- DLQ 일괄/단건 발행: sendToDlq(List<T>, e), sendToDlq(T, e) — 예외를 메시지에 주입 후 발행
-- Discard 발행: sendToDiscard(T) — 모니터링 메시지로 ALARM 토픽 전송
-- 토픽명은 KafkaTopicProperties.getName(MessageCategory) 로 안전 주입, 공통 send(Object, topic) 경로 사용
+- `KafkaListenerTopicConfig` — `MessageOrderType` 기반 이름 주입
 
-  @Slf4j
-  @Component
-  @RequiredArgsConstructor
-  @EnableConfigurationProperties({KafkaTopicProperties.class})
-  public class KafkaProducerServiceImpl implements KafkaProducerService {
+```java
 
-        private final KafkaProducerCluster cluster;
-        private final KafkaTopicProperties kafkaTopicProperties;
+@Configuration
+@RequiredArgsConstructor
+@EnableConfigurationProperties(KafkaTopicProperties.class)
+public class KafkaListenerTopicConfig {
 
-        // 로컬 메시지 전송
-        @Override
-        public void sendToLocal(OrderLocalMessage message) {
-            send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_LOCAL));
+    @Bean
+    public String orderLocalTopic(KafkaTopicProperties p) {
+        return p.getName(MessageOrderType.ORDER_LOCAL);
+    }
+
+    @Bean
+    public String orderApiTopic(KafkaTopicProperties p) {
+        return p.getName(MessageOrderType.ORDER_API);
+    }
+
+    @Bean
+    public String orderCrudTopic(KafkaTopicProperties p) {
+        return p.getName(MessageOrderType.ORDER_CRUD);
+    }
+
+    @Bean
+    public String orderRemoteTopic(KafkaTopicProperties p) {
+        return p.getName(MessageOrderType.ORDER_REMOTE);
+    }
+
+    @Bean
+    public String orderDlqTopic(KafkaTopicProperties p) {
+        return p.getName(MessageOrderType.ORDER_DLQ);
+    }
+
+    @Bean
+    public String orderAlarmTopic(KafkaTopicProperties p) {
+        return p.getName(MessageOrderType.ORDER_ALARM);
+    }
+}
+```
+
+### 3.2 로컬 프로필 토픽 자동 생성/보장
+
+- `KafkaTopicsConfig` (`@Profile("local")`)
+    - `KafkaAdmin` 경로 + `ApplicationReadyEvent` 이후 `AdminClient`로 최종 보장(`ensure-at-startup=true`)
+    - 브로커 준비 대기/재시도 포함
+    - 기본 로컬 토픽: `local-order-*`
+
+```java
+
+@Configuration
+@Profile("local")
+@ConditionalOnProperty(prefix = "app.kafka", name = "auto-create-topics", havingValue = "true", matchIfMissing = true)
+public class KafkaTopicsConfig {
+    // ... (현재 코드 그대로)
+}
+```
+
+### 3.3 DLQ 전용 ConsumerFactory (DeadLetter<?> 역직렬화)
+
+- `KafkaDeadLetterConsumerConfig`
+    - value: `DeadLetter<?>`, `JsonDeserializer`(ignoreTypeHeaders, trustedPackages 동적)
+    - 활성 프로필 `local/test` → `addTrustedPackages("*")`, 그 외 운영 패키지 화이트리스트 사용
+
+```java
+
+@Configuration
+public class KafkaDeadLetterConsumerConfig {
+
+    private static final String CONTRACT_PACKAGE_PREFIX = "org.example.order.contract.*";
+
+    @Bean
+    @Qualifier("deadLetterConsumerFactory")
+    public ConsumerFactory<String, DeadLetter<?>> deadLetterConsumerFactory() {
+        Map<String, Object> props = new HashMap<>(kafkaProperties.buildConsumerProperties(null));
+        StringDeserializer key = new StringDeserializer();
+        JsonDeserializer<DeadLetter<?>> val = new JsonDeserializer<>(DeadLetter.class, objectMapper);
+
+        val.ignoreTypeHeaders();
+        val.setUseTypeMapperForKey(false);
+
+        String prof = System.getProperty("spring.profiles.active", "local");
+        if ("local".equals(prof) || "test".equals(prof)) {
+            val.addTrustedPackages("*");
+        } else {
+            val.addTrustedPackages(CONTRACT_PACKAGE_PREFIX);
         }
+        return new DefaultKafkaConsumerFactory<>(props, key, val);
+    }
+}
+```
 
-        // API 메시지 전송
-        @Override
-        public void sendToOrderApi(OrderApiMessage message) {
-            send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_API));
-        }
+### 3.4 DLQ 파사드 — 멀티 파티션 안전 커밋
 
-        // CRUD 메시지 전송
-        @Override
-        public void sendToOrderCrud(OrderCrudMessage message) {
-            send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_CRUD));
-        }
+- `facade.retry.impl.OrderDeadLetterFacadeImpl`
+    - `@Qualifier("deadLetterConsumerFactory")` 사용
+    - 모든 파티션 assign → 커밋 오프셋 있으면 seek, 없으면 beginning
+    - 한 번 `poll(Duration.ofSeconds(2))`로 들어온 레코드만 처리
+    - 파티션별 처리 후 **(마지막 offset + 1) 커밋**
+    - 헤더 정규화(`RETRY_COUNT_HEADER = x-retry-count`), 타입 안전 파싱(`MessageOrderType`)
 
-        // DLQ 메시지 일괄 전송
-        @Override
-        public <T extends DlqMessage> void sendToDlq(List<T> messages, Exception currentException) {
-            if (ObjectUtils.isEmpty(messages)) {
+```java
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
+
+    private final OrderDeadLetterService orderDeadLetterService;
+    @Qualifier("deadLetterConsumerFactory")
+    private final ConsumerFactory<String, DeadLetter<?>> deadLetterConsumerFactory;
+    private final KafkaTopicProperties kafkaTopicProperties;
+
+    private static final String DEAD_LETTER_GROUP_ID = "group-order-dead-letter";
+    private static final String CLIENT_SUFFIX = "dlt-client";
+    private static final String RETRY_COUNT_HEADER = "x-retry-count";
+
+    @Override
+    public void retry() {
+        String topic = kafkaTopicProperties.getName(MessageOrderType.ORDER_DLQ);
+        try (Consumer<String, DeadLetter<?>> c =
+                     deadLetterConsumerFactory.createConsumer(DEAD_LETTER_GROUP_ID, CLIENT_SUFFIX)) {
+
+            List<PartitionInfo> infos = c.partitionsFor(topic);
+            if (infos == null || infos.isEmpty()) {
+                log.info("DLQ topic has no partitions: {}", topic);
                 return;
             }
-            for (T message : messages) {
-                sendToDlq(message, currentException);
+
+            List<TopicPartition> tps = infos.stream()
+                    .map(pi -> new TopicPartition(topic, pi.partition()))
+                    .toList();
+
+            c.assign(tps);
+
+            Map<TopicPartition, OffsetAndMetadata> committed = c.committed(new HashSet<>(tps));
+            for (TopicPartition tp : tps) {
+                OffsetAndMetadata m = committed != null ? committed.get(tp) : null;
+                if (m == null) c.seekToBeginning(Collections.singleton(tp));
+                else c.seek(tp, m.offset());
             }
-        }
 
-        // 폐기(discard) 토픽으로 전송
-        @Override
-        public <T extends DlqMessage> void sendToDiscard(T message) {
-            log.info("Sending message to discard topic");
-            send(MonitoringMessage.toMessage(
-                            MonitoringType.ERROR,
-                            MonitoringLevelCode.LEVEL_3,
-                            message),
-                    kafkaTopicProperties.getName(MessageCategory.ORDER_ALARM));
-        }
-
-        // DLQ 토픽으로 전송
-        @Override
-        public <T extends DlqMessage> void sendToDlq(T message, Exception currentException) {
-            if (ObjectUtils.isEmpty(message)) {
+            ConsumerRecords<String, DeadLetter<?>> recs = c.poll(Duration.ofSeconds(2));
+            if (recs == null || recs.isEmpty()) {
+                log.info("DLQ empty (no records polled)");
                 return;
             }
-            try {
-                if (currentException instanceof CommonException commonException) {
-                    message.fail(CustomErrorMessage.toMessage(commonException.getCode(), commonException));
-                } else {
-                    message.fail(CustomErrorMessage.toMessage(currentException));
+
+            int processed = 0;
+            for (TopicPartition tp : recs.partitions()) {
+                List<ConsumerRecord<String, DeadLetter<?>>> list = recs.records(tp);
+                long last = -1L;
+                for (var r : list) {
+                    processOne(c, r);
+                    processed++;
+                    last = r.offset();
                 }
-                log.info("Sending message to dead letter topic");
-                send(message, kafkaTopicProperties.getName(MessageCategory.ORDER_DLQ));
-            } catch (Exception e) {
-                log.error("error : send message to order-dead-letter failed : {}", message);
-                log.error(e.getMessage(), e);
+                if (last >= 0) {
+                    c.commitSync(Collections.singletonMap(tp, new OffsetAndMetadata(last + 1)));
+                    log.info("DLQ commit tp={}, lastOffsetCommitted={}", tp, last + 1);
+                }
             }
-        }
 
-        // 메시지 전송 공통 처리
-        private void send(Object message, String topic) {
-            cluster.sendMessage(message, topic);
-        }
-  }
+            log.info("DLQ processed count={}", processed);
 
-### 5.2 FileServiceImpl / S3ServiceImpl (요약)
-
-    @Slf4j
-    @Service
-    @RequiredArgsConstructor
-    public class FileServiceImpl implements FileService {
-
-        private final S3Service s3Service;
-
-        // 객체를 파일로 변환 후 S3 업로드
-        @Override
-        public void upload(String fileName, String suffix, Object object) {
-            try {
-                File file = convert(suffix, object);
-                s3Service.upload(fileName, file);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-        }
-
-        // 객체 → JSON 직렬화 → 임시 파일 변환
-        private File convert(String suffix, Object object) throws IOException {
-            File tempFile = File.createTempFile("tmp", suffix);
-            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                ObjectMapperUtils.writeValue(fos, object);
-            }
-            return tempFile;
+        } catch (Exception e) {
+            log.error("dead-letter facade error", e);
+            throw new CommonException(BatchExceptionCode.POLLING_FAILED);
         }
     }
 
-    @Slf4j
-    @Service
-    @RequiredArgsConstructor
-    @EnableConfigurationProperties(S3Properties.class)
-    public class S3ServiceImpl implements S3Service {
+    protected void processOne(Consumer<String, DeadLetter<?>> c,
+                              ConsumerRecord<String, DeadLetter<?>> r) {
+        Map<String, String> headers = extractHeaders(r.headers());
+        normalizeRetryCount(headers);
 
-        private final S3Client s3Client;
-        private final S3Properties s3Properties;
+        DeadLetter<?> dlq = r.value();
+        MessageOrderType t = resolveTypeSafely(dlq.type());
+        String orderId = resolveOrderId(headers);
 
-        // 파일 업로드
-        @Override
-        public void upload(String fileName, File file) {
-            try {
-                s3Client.putObject(
-                        s3Properties.getS3().getBucket(),
-                        String.format("%s/%s", s3Properties.getS3().getDefaultFolder(), fileName),
-                        file
-                );
-            } catch (Exception e) {
-                log.error("error : fail to upload file", e);
-                log.error(e.getMessage(), e);
-                throw new CommonException(CommonExceptionCode.UPLOAD_FILE_TO_S3_ERROR);
-            }
-        }
+        log.info("DLQ record tp={}-{}, offset={}, key={}, type={}, orderId={}, headers={}",
+                r.topic(), r.partition(), r.offset(), r.key(), t, orderId, headers);
 
-        // 파일 읽기
-        @Override
-        public S3Object read(String key) {
-            return s3Client.getObject(s3Properties.getS3().getBucket(), key);
+        switch (t) {
+            case ORDER_LOCAL -> orderDeadLetterService.retryLocal(dlq, headers);
+            case ORDER_API -> orderDeadLetterService.retryApi(dlq, headers);
+            case ORDER_CRUD -> orderDeadLetterService.retryCrud(dlq, headers);
+            default -> throw new CommonException(BatchExceptionCode.UNSUPPORTED_DLQ_TYPE);
         }
     }
 
----
+    // extractHeaders / normalizeRetryCount / resolveOrderId / resolveTypeSafely : 현재 코드 동일
+}
+```
 
-## 6) 설정(YAML) — prod 프로필
+### 3.5 프로듀서 서비스
 
-현재 코드(S3Properties/S3ClientConfig/OrderBatchConfig)에 정확히 맞춘 샘플:
+- `service.common.impl.KafkaProducerServiceImpl`
+    - `KafkaProducerCluster` 이용
+    - 토픽명: `KafkaTopicProperties.getName(MessageOrderType.*.name())`
+    - `sendToLocal/Api/Crud(+headers)`, `sendToDlq(헤더 포함 오버로드)`, `sendToDiscard`(ALARM 토픽)
+    - `ErrorDetail` 생성 시 스택 제한/NULL 세이프 처리
 
-    spring:
-      config:
-        activate:
-          on-profile: prod
-        import:
-          - application-core-prod.yml
-          - application-kafka-prod.yml
+```java
 
-      batch:
-        job:
-          name: ${JOB_NAME:NONE}          # 실행할 배치 잡 이름 (기본 NONE → 자동 실행 안 함)
-          enabled: true                   # 애플리케이션 기동 시 Job 실행 여부
-        jdbc:
-          initialize-schema: always       # 배치 메타테이블 자동 생성 (RDS 초기가동/로컬 포함)
-
-    aws:
-      endpoint: ${AWS_ENDPOINT:}          # LocalStack 등 프록시 사용 시 지정, 실AWS면 빈 값
-      region: ${AWS_REGION:ap-northeast-2}
-
-      credential:
-        enabled: false                    # true → access/secret 사용, false → 기본 자격증명 체인(IAM Role 등)
-        accessKey: ${AWS_ACCESS_KEY:}
-        secretKey: ${AWS_SECRET_KEY:}
-
-      s3:
-        enabled: true
-        bucket: ${AWS_S3_BUCKET:my-bucket}
-        default-folder: ${AWS_S3_DEFAULT_FOLDER:tmp}
-
-주의:
-- aws.s3.enabled=true 여야 AmazonS3/S3Client 빈 생성(@ConditionalOnProperty)
-- endpoint 미지정 시 region 필수
-- credential.enabled=true 시 accessKey/secretKey 필수
+@Slf4j
+@Component
+@RequiredArgsConstructor
+@EnableConfigurationProperties({KafkaTopicProperties.class})
+public class KafkaProducerServiceImpl implements KafkaProducerService {
+    // ... (현재 코드 그대로)
+}
+```
 
 ---
 
-## 7) 빌드/런타임
+## 4) DLQ 재처리 서비스 로직
 
-### 7.1 빌드(버전 카탈로그 일원화)
-- 모든 의존성은 gradle/libs.versions.toml 의 alias(libs.*) 로 관리
-- 루트 build.gradle 의 통합 테스트 소스셋/태스크 규약을 그대로 상속
-- order-batch 모듈은 라이브러리/배치 구성 유지(부트 플러그인은 루트에서 통합 관리)
+- `service.retry.impl.OrderDeadLetterServiceImpl`
+    - 입력: `DeadLetter<?>` (JsonDeserializer 경유)
+    - payload를 안전 변환(Map/JsonNode → DTO)
+    - 현재 재시도 카운트 `current` 계산(메타/헤더 후보키의 “유효 숫자 최대값”)
+        - 메타 우선 키: `retryCount`(`PRIMARY_RETRY_KEY`)
+        - 헤더 후보 키: `x-retry-count`, `retry-count`, `x_delivery_attempts`, `deliveryAttempts` 등
+    - 임계치 비교는 **증가 전(`current`)** 으로 수행
+        - `current >= MAX` → ALARM 토픽으로 폐기(`sendToDiscard`)
+        - `current <  MAX` → 재전송, 이때만 `next=current+1` 로 메타/헤더 **동시 반영**
+    - 타입별 임계치: `LOCAL=5`, `API=3`, `CRUD=5`
+    - 공통 보조기: `Bumped<T>`(증가된 DeadLetter + 헤더 맵)
 
-### 7.2 실행
-- 기본적으로 Job은 기동 시 자동 실행(enabled: true)
-- 어떤 Job을 실행할지 JOB_NAME 로 지정
-- 예) DLQ 재처리 잡만 실행
+```java
 
-  java -DJOB_NAME=ORDER_DEAD_LETTER_JOB -jar order-batch.jar --spring.profiles.active=prod
-
-- 스키마 자동 초기화 비활성화: spring.batch.jdbc.initialize-schema=never
-
----
-
-## 8) 확장 가이드
-
-### 8.1 새로운 DLQ 타입 추가
-1) DlqOrderType 에 항목 추가 (예: ORDER_REMOTE)
-2) 해당 타입의 메시지 클래스 정의(예: OrderRemoteMessage)
-3) OrderDeadLetterServiceImpl.retry 의 switch 에 분기 추가
-4) KafkaProducerService 에 대응 전송 메서드/토픽 매핑 추가
-
-### 8.2 멀티 파티션/멀티 토픽 재처리
-- OrderDeadLetterFacadeImpl 에서 TopicPartition 목록 주입/조회 → 순회 또는 병렬화
-- 커밋/에러 처리 정책을 파티션 단위로 격리
-
-### 8.3 배치 잡 추가
-- Job/Step/Tasklet 클래스를 job 패키지에 추가
-- @Bean(name = "JOB_NAME") 로 Job 등록, JOB_NAME 으로 실행 제어
-- 공통 파사드/서비스/프로듀서 재사용
-
-### 8.4 S3 유틸 확장
-- 멱등 키(날짜/호스트/파일명) 표준화
-- 체크섬 비교 후 업로드 스킵
-- 실패 재시도/백오프/서킷브레이커 적용
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class OrderDeadLetterServiceImpl implements OrderDeadLetterService {
+    // retryLocal / retryApi / retryCrud — 현재 코드와 동일한 정책 구현
+}
+```
 
 ---
 
-## 9) 테스트 전략
+## 5) Secrets/Crypto 키 시딩
 
-### 9.1 단위 테스트
-- OrderDeadLetterServiceImpl 의 타입 분기/Discard 조건 검증
-- KafkaProducerServiceImpl 의 DLQ/Discard 전송 경로 검증(Mockito)
+### 5.1 앱 프로퍼티 바인딩
 
-### 9.2 통합 테스트(선호)
-- EmbeddedKafka 로 DLQ 토픽에 페이로드 적재 → 잡 실행 → 재발행 토픽 수신 검증
-- 배치 메타테이블 초기화가 필요한 경우 테스트 프로필에서 initialize-schema=always
+- `config.properties.AppCryptoKeyProperties`
+    - `prefix=app.crypto`, `keys[logical-name].{alias, encryptor, kid|version}`
+    - encryptor 문자열은 사람 친화적(`AES-GCM`, `aes_256` 등)도 허용
 
-유의:
-- 통합 테스트에서 외부 모듈 스캔을 크게 열면 외부 빈 의존도가 커져 NoSuchBeanDefinitionException 이 발생할 수 있으니, **테스트 전용 부트 구성**으로 필요한 설정/빈만 로딩하세요.
+```java
+
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "app.crypto")
+public class AppCryptoKeyProperties {
+    private Map<String, Alias> keys = new LinkedHashMap<>();
+
+    @Getter
+    @Setter
+    public static class Alias {
+        private String alias;
+        private String encryptor;  // "AES128" | "AES256" | "AESGCM"
+        private String kid;
+        private Integer version;
+    }
+}
+```
+
+### 5.2 키 선택/시딩 적용기
+
+- `crypto.selection.CryptoKeySelectionApplier`
+    - `normalizeAlgorithm()`: 하이픈/언더스코어/공백/슬래시/점 제거 후 대문자 → 내부 enum(`CryptoAlgorithmType`)로 매핑  
+      (`AESGCM`/`AES256`/`AES128`/`SHA256`/`SHA512`/`HMAC_SHA256` 등)
+    - `secrets.applySelection(alias, version, kid, allowLatest)`
+    - `secrets.getKey(alias)` 가져와 **Base64 인코딩 문자열**로 Encryptor/Signer에 시딩
+    - 기본 정책: **자동 최신 금지(allowLatest=false)**, 운영 승인 시 수동 승격
+
+```java
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class CryptoKeySelectionApplier {
+    // ... (현재 코드 그대로; normalizeAlgorithm / applyAll(false) 등)
+}
+```
+
+### 5.3 Secrets 로드 리스너
+
+- `lifecycle.crypto.listener.CryptoKeyRefreshListener`
+    - `@ConditionalOnBean(SecretsLoader, CryptoKeySelectionApplier)`
+    - `onSecretKeyRefreshed` → `applier.applyAll(false)` (자동 반영 금지)
+
+```java
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+@ConditionalOnBean({SecretsLoader.class, CryptoKeySelectionApplier.class})
+public class CryptoKeyRefreshListener implements SecretKeyRefreshListener {
+    private final CryptoKeySelectionApplier applier;
+
+    @Override
+    public void onSecretKeyRefreshed() {
+        applier.applyAll(false);
+        log.info("[Secrets] 키 리프레시 이벤트 수신(자동 적용 금지). 운영 승인 시 별도 경로에서 applyAll(true) 호출 권장.");
+    }
+}
+```
 
 ---
 
-## 10) 예외 코드
+## 6) S3 로그 동기화(시작/종료 훅)
 
-- BatchExceptionCode
-  - EMPTY_MESSAGE(6001), MESSAGE_TRANSMISSION_FAILED(6002), POLLING_FAILED(6003), UNSUPPORTED_EVENT_CATEGORY(6004), UNSUPPORTED_DLQ_TYPE(6005)
-- 의미
-  - POLLING_FAILED: 컨슈머 poll 결과 0건 지속 등 비정상 상태
-  - UNSUPPORTED_DLQ_TYPE: 새로운 타입 미등록 시 명확한 실패
+### 6.1 시작 훅
+
+- `lifecycle.handler.ApplicationStartupHandlerImpl`
+    - 프로필: `local/dev/beta/prod`, 조건: `aws.s3.enabled=true`, `@ConditionalOnBean(S3LogSyncService)`
+    - 로그 디렉터리 준비(없으면 생성, 디렉터리 아님이면 스킵)
+    - 기존 파일 1회 업로드(`S3LogSyncService.syncFileToS3`)
+    - `CryptoKeySelectionApplier` 존재 시 “초기 로드 이벤트로 시딩됨” 안내
+    - `SecretsLoader.schedule` 취소(시작 후 주기 로드 차단)
+
+```java
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+@EnableConfigurationProperties(S3Properties.class)
+@Profile({"local", "dev", "beta", "prod"})
+@ConditionalOnProperty(prefix = "aws.s3", name = "enabled", havingValue = "true")
+@ConditionalOnBean(S3LogSyncService.class)
+public class ApplicationStartupHandlerImpl implements ApplicationStartupHandler, SmartLifecycle {
+    // ... (현재 코드 그대로)
+}
+```
+
+### 6.2 종료 훅
+
+- `lifecycle.handler.ApplicationShutdownHandlerImpl`
+    - 프로필/조건 동일
+    - 종료 시점에 로그 디렉터리 파일들 **스냅샷 업로드**(성공/실패 카운트)
+    - 이후 `SecretsLoader.cancelSchedule()`, `SecretsManagerClient.close()`, `SecretsKeyResolver.wipeAll()` 순서로 정리
+
+```java
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+@EnableConfigurationProperties(S3Properties.class)
+@Profile({"local", "dev", "beta", "prod"})
+@ConditionalOnProperty(prefix = "aws.s3", name = "enabled", havingValue = "true")
+public class ApplicationShutdownHandlerImpl implements ApplicationShutdownHandler, SmartLifecycle {
+    // ... (현재 코드 그대로)
+}
+```
+
+### 6.3 S3 동기화 서비스
+
+- `service.synchronize.impl.S3LogSyncServiceImpl` (`@ConditionalOnProperty aws.s3.enabled=true`)
+    - `@PostConstruct`: 버킷 존재/생성, prefix placeholder(`.keep`) 생성(옵션)
+    - `syncFileToS3`: 파일을 `.upload/*.snapshot`으로 복제 후 **MD5 → ETag 비교**, 같으면 업로드 스킵
+    - `HOSTNAME` 포함 파일만 업로드(다중 인스턴스 구분)
+
+```java
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "aws.s3", name = "enabled", havingValue = "true")
+public class S3LogSyncServiceImpl implements S3LogSyncService {
+    // ... (현재 코드 그대로)
+}
+```
+
+### 6.4 비로컬 환경 수동 실행 파사드
+
+- `facade.synchronize.impl.S3LogSyncFacadeImpl` (`@Profile !local`)
+    - 지정 로그 디렉터리 전체를 순회하여 `syncFileToS3` 위임
+
+```java
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+@EnableConfigurationProperties(S3Properties.class)
+@Profile({"!local"})
+public class S3LogSyncFacadeImpl implements S3LogSyncFacade {
+    // ... (현재 코드 그대로)
+}
+```
 
 ---
 
-## 11) 한 줄 요약
+## 7) 비동기 MDC 전파 / 배치 종료코드
 
-**단순하고 안전한 DLQ 재처리 배치**입니다.  
-설정(@Import)으로 모듈을 조립하고, 배치 내부만 스캔하여 충돌을 줄였으며, S3/카프카 유틸을 재사용 가능한 서비스로 분리했습니다. 잡/스텝/태스크릿은 최소단위로 나눠 확장이 쉽습니다.
+- **AsyncConfig** (`@EnableAsync`)
+    - `ThreadPoolTaskExecutor(8/32/1000)` + `TaskDecorator`로 MDC 컨텍스트 복제/복원
+
+```java
+
+@Configuration
+@EnableAsync
+public class AsyncConfig {
+    @Bean(name = "asyncExecutor")
+    public Executor asyncExecutor() {
+        ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+        ex.setCorePoolSize(8);
+        ex.setMaxPoolSize(32);
+        ex.setQueueCapacity(1000);
+        ex.setThreadNamePrefix("async-");
+        ex.setTaskDecorator(mdcTaskDecorator());
+        ex.initialize();
+        return ex;
+    }
+
+    @Bean
+    public TaskDecorator mdcTaskDecorator() { /* 현재 코드 동일 */ }
+}
+```
+
+- **BatchExitCodeConfig**
+    - `JobExecutionListenerSupport.afterJob` → `COMPLETED=0`, 그 외 `=1`을 `AtomicInteger`에 기록
+    - `ExitCodeGenerator` → `SpringApplication.exit(ctx)` 시 읽혀서 프로세스 종료코드 결정
+
+```java
+
+@Configuration
+public class BatchExitCodeConfig {
+    @Bean
+    public AtomicInteger batchExitCodeHolder() {
+        return new AtomicInteger(0);
+    }
+
+    @Bean
+    public JobExecutionListenerSupport jobExitCodeListener(AtomicInteger holder) {
+        return new JobExecutionListenerSupport() {
+            @Override
+            public void afterJob(JobExecution jobExecution) {
+                holder.set(jobExecution.getStatus() == BatchStatus.COMPLETED ? 0 : 1);
+            }
+        };
+    }
+
+    @Bean
+    public ExitCodeGenerator batchExitCodeGenerator(AtomicInteger holder) {
+        return holder::get;
+    }
+}
+```
+
+---
+
+## 8) 예외 코드
+
+- **BatchExceptionCode**
+    - `EMPTY_MESSAGE(6001)`, `MESSAGE_TRANSMISSION_FAILED(6002)`, `POLLING_FAILED(6003)`,  
+      `UNSUPPORTED_EVENT_CATEGORY(6004)`, `UNSUPPORTED_DLQ_TYPE(6005)`
+
+```java
+
+@Getter
+public enum BatchExceptionCode implements ExceptionCodeEnum {
+    EMPTY_MESSAGE(6001, "Message is empty", HttpStatus.BAD_REQUEST),
+    MESSAGE_TRANSMISSION_FAILED(6002, "Message transmission failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    POLLING_FAILED(6003, "Message polling failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    UNSUPPORTED_EVENT_CATEGORY(6004, "Unsupported event category", HttpStatus.INTERNAL_SERVER_ERROR),
+    UNSUPPORTED_DLQ_TYPE(6005, "Dlq Type is not unregistered", HttpStatus.INTERNAL_SERVER_ERROR);
+    // ...
+}
+```
+
+---
+
+## 9) 설정(YAML) 예시 (prod)
+
+- S3/Secrets/Kafka 자동구성에 맞춘 샘플(핵심만)
+
+```yaml
+spring:
+  config:
+    activate:
+      on-profile: prod
+    import:
+      - application-core-prod.yml
+      - application-kafka-prod.yml
+  batch:
+    job:
+      name: ${JOB_NAME:NONE}     # 실행할 배치 잡 이름 (NONE이면 자동 실행 안 함)
+      enabled: true
+    jdbc:
+      initialize-schema: always  # 배치 메타테이블 자동 생성
+
+aws:
+  endpoint: ${AWS_ENDPOINT:}        # LocalStack 등 사용 시 지정, 실AWS면 빈 값
+  region: ${AWS_REGION:ap-northeast-2}
+  s3:
+    enabled: true
+    bucket: ${AWS_S3_BUCKET:my-bucket}
+    default-folder: ${AWS_S3_DEFAULT_FOLDER:logs}
+    auto-create: true
+    create-prefix-placeholder: true
+
+app:
+  crypto:
+    keys:
+      orderAesGcm:
+        alias: "order.aesgcm"
+        encryptor: "AESGCM"
+        kid: "key-2025-09-27"
+      userPhoneAes256:
+        alias: "user.phone.aes256"
+        encryptor: "AES256"
+        version: 2
+```
+
+- 참고
+    - `aws.s3.enabled=true` 여야 AmazonS3/S3Client 빈 생성
+    - endpoint 미지정 시 region 필수
+    - Kafka 토픽 이름은 `KafkaTopicProperties`에 위임 (MessageOrderType 기반)
+
+---
+
+## 10) 실행/종료
+
+- 특정 잡만 실행(예: **DLQ 재처리**)
+
+```bash
+java -DJOB_NAME=ORDER_DEAD_LETTER_JOB -jar order-batch.jar --spring.profiles.active=prod
+```
+
+- 종료코드
+    - `COMPLETED` → **0**
+    - `FAILED` 등 → **1**
+    - CI/CD/스케줄러에서 “성공/실패 분기”에 바로 활용 가능
+
+---
+
+## 11) 테스트 가이드
+
+- **단위 테스트**
+    - `OrderDeadLetterServiceImpl`: current 계산(메타/헤더), 임계치 분기, bump 동작 검증
+    - `CryptoKeySelectionApplier`: normalizeAlgorithm 매핑, applySelection 실패/성공 경로
+    - `S3LogSyncServiceImpl`: ETag=MD5 동일 시 스킵, 스냅샷 삭제 보장
+
+- **통합 테스트**
+    - EmbeddedKafka: DLQ에 `DeadLetter<?>` 적재 → 잡 실행 → 재발행/폐기 토픽 수신 검증
+    - 로컬 프로필에서 `KafkaTopicsConfig` `ensure-at-startup=true` 로 토픽 보장
+
+---
+
+## 12) 한 줄 요약
+
+운영 친화적인 **단발성 배치 플랫폼**:  
+DLQ 재처리(DeadLetter<?> 직접 역직렬화), S3 로그 업로드 보강, Secrets/Crypto 키 시딩(자동 최신 금지), 종료코드 매핑까지 **현업 즉시 적용 가능한** 구성을 제공합니다.
