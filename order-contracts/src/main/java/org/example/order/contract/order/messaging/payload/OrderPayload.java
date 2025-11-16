@@ -1,5 +1,7 @@
 package org.example.order.contract.order.messaging.payload;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 
 /**
@@ -19,10 +21,14 @@ public record OrderPayload(
 
         Long createdUserId,
         String createdUserType,
+
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime createdDatetime,
 
         Long modifiedUserId,
         String modifiedUserType,
+
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime modifiedDatetime,
 
         Long publishedTimestamp

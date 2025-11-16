@@ -32,6 +32,7 @@ public class OrderApiMessageListenerImpl implements OrderApiMessageListener {
     @KafkaListener(
             topics = "#{@orderApiTopic}",
             groupId = "group-order-api",
+            containerFactory = "kafkaListenerContainerFactory",
             concurrency = "2",
             properties = {
                     "spring.json.value.default.type=" + DEFAULT_TYPE
@@ -55,8 +56,15 @@ public class OrderApiMessageListenerImpl implements OrderApiMessageListener {
         log.info("API - order-api record received: {}", record.value());
 
         try {
+            OrderApiMessage message = record.value();
+            if (message == null) {
+                log.warn("API - order-api record value is null. key={}", record.key());
+
+                return;
+            }
+
             ConsumerEnvelope<OrderApiConsumerDto> envelope =
-                    ConsumerEnvelope.fromRecord(record, OrderApiConsumerDto.from(record.value()));
+                    ConsumerEnvelope.fromRecord(record, OrderApiConsumerDto.from(message));
 
             facade.requestApi(envelope);
         } catch (Exception e) {

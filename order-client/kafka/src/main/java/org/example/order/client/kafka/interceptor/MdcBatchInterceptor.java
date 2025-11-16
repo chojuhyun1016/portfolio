@@ -3,10 +3,11 @@ package org.example.order.client.kafka.interceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
-import org.springframework.kafka.listener.RecordInterceptor;
+import org.springframework.kafka.listener.BatchInterceptor;
 import org.springframework.kafka.support.serializer.DeserializationException;
 
 import java.io.ByteArrayInputStream;
@@ -14,73 +15,65 @@ import java.io.ObjectInputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * MdcRecordInterceptor
+ * MdcBatchInterceptor
  * ------------------------------------------------------------------------
- * 역할
- * - Kafka 헤더(traceId, orderId 등)를 MDC 에 심어서 로그 상관관계 유지
- * - (추가) ErrorHandlingDeserializer 가 남긴 역직렬화 예외 헤더를 파싱하여
- * value == null 인 레코드의 원인(예외 메시지 + 원본 데이터 일부)을 로그로 남김
+ * 역할 (배치 리스너 전용)
+ * - 첫 레코드의 Kafka 헤더(traceId, orderId)를 MDC에 심어서 로그 상관관계 유지
+ * - 각 레코드별로 value == null 인 경우
+ * - 헤더 덤프
+ * - springDeserializerException* 헤더를 DeserializationException 으로 복원
+ * → 예외 메시지 + 깨진 payload 일부를 WARN 로그로 남김
  */
 @Slf4j
-public class MdcRecordInterceptor<K, V> implements RecordInterceptor<K, V> {
+public class MdcBatchInterceptor<K, V> implements BatchInterceptor<K, V> {
 
     private static final String HEADER_TRACE_ID = "traceId";
     private static final String HEADER_ORDER_ID = "orderId";
 
-    /**
-     * Spring Kafka 3.x 기준 추상 메서드
-     * - 이 메서드를 반드시 구현해야 한다.
-     */
     @Override
-    public ConsumerRecord<K, V> intercept(ConsumerRecord<K, V> record, Consumer<K, V> consumer) {
-        return doIntercept(record);
-    }
-
-    /**
-     * 구버전/기본 구현과의 호환을 위해 남겨두는 1-파라미터 버전
-     * - @Override 는 걸지 않는다 (버전에 따라 인터페이스에 없을 수도 있음)
-     */
-    public ConsumerRecord<K, V> intercept(ConsumerRecord<K, V> record) {
-        return doIntercept(record);
-    }
-
-    /**
-     * 실제 공통 처리 로직
-     */
-    private ConsumerRecord<K, V> doIntercept(ConsumerRecord<K, V> record) {
-        if (record == null) {
-            return null;
+    public ConsumerRecords<K, V> intercept(ConsumerRecords<K, V> records, Consumer<K, V> consumer) {
+        if (records == null || records.isEmpty()) {
+            return records;
         }
 
-        // 1) MDC 복원
-        restoreMdcFromHeaders(record.headers());
+        // 1) 첫 레코드 기준으로 MDC 복원 (동일 배치 내에서는 traceId / orderId 동일하다고 가정)
+        ConsumerRecord<K, V> first = records.iterator().next();
+        restoreMdcFromHeaders(first.headers());
 
-        // 2) 역직렬화 결과에 따른 디버그 / 에러 로그
-        if (record.value() == null) {
-            log.warn("[MdcRecordInterceptor] Deserialized value is NULL " +
-                            "(topic={}, partition={}, offset={}, keyClass={}, key={})",
-                    record.topic(),
-                    record.partition(),
-                    record.offset(),
-                    record.key() == null ? "null" : record.key().getClass().getName(),
-                    record.key());
+        // 2) 각 레코드별 상태 로그
+        for (ConsumerRecord<K, V> record : records) {
+            if (record == null) {
+                continue;
+            }
 
-            logHeaders(record.headers());
-            logDeserializationException(record.headers());
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("[MdcRecordInterceptor] Deserialized record OK " +
-                                "(topic={}, partition={}, offset={}, keyClass={}, valueClass={})",
+            if (record.value() == null) {
+                log.warn("[MdcBatchInterceptor] Deserialized value is NULL " +
+                                "(topic={}, partition={}, offset={}, keyClass={}, key={})",
                         record.topic(),
                         record.partition(),
                         record.offset(),
                         record.key() == null ? "null" : record.key().getClass().getName(),
-                        record.value().getClass().getName());
+                        record.key());
+
+                logHeaders(record.headers());
+                logDeserializationException(record.headers());
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("[MdcBatchInterceptor] Deserialized record OK " +
+                                    "(topic={}, partition={}, offset={}, keyClass={}, valueClass={})",
+                            record.topic(),
+                            record.partition(),
+                            record.offset(),
+                            record.key() == null ? "null" : record.key().getClass().getName(),
+                            record.value().getClass().getName());
+                }
             }
         }
 
-        return record;
+        return records;
     }
+
+    /* ======================= 공통 유틸 ======================= */
 
     private void restoreMdcFromHeaders(Headers headers) {
         String traceId = getHeaderAsString(headers, HEADER_TRACE_ID);
@@ -105,7 +98,6 @@ public class MdcRecordInterceptor<K, V> implements RecordInterceptor<K, V> {
         if (header.value() == null) {
             return null;
         }
-
         return new String(header.value(), StandardCharsets.UTF_8);
     }
 
@@ -129,7 +121,7 @@ public class MdcRecordInterceptor<K, V> implements RecordInterceptor<K, V> {
 
         sb.append("]");
 
-        log.warn("[MdcRecordInterceptor] Headers: {}", sb);
+        log.warn("[MdcBatchInterceptor] Headers: {}", sb);
     }
 
     /**
@@ -149,7 +141,7 @@ public class MdcRecordInterceptor<K, V> implements RecordInterceptor<K, V> {
             byte[] value = header.value();
 
             if (value == null || value.length == 0) {
-                log.warn("[MdcRecordInterceptor] Deserialization exception header '{}' has empty value", key);
+                log.warn("[MdcBatchInterceptor] Deserialization exception header '{}' has empty value", key);
                 continue;
             }
 
@@ -166,21 +158,21 @@ public class MdcRecordInterceptor<K, V> implements RecordInterceptor<K, V> {
                         dataSnippet = raw.length() > 500 ? raw.substring(0, 500) + "..." : raw;
                     }
 
-                    log.warn("[MdcRecordInterceptor] Detected DeserializationException from header '{}': message={}",
+                    log.warn("[MdcBatchInterceptor] Detected DeserializationException from header '{}': message={}",
                             key, msg);
 
                     if (dataSnippet != null) {
-                        log.warn("[MdcRecordInterceptor] Offending payload snippet from header '{}': {}",
+                        log.warn("[MdcBatchInterceptor] Offending payload snippet from header '{}': {}",
                                 key, dataSnippet);
                     } else {
-                        log.warn("[MdcRecordInterceptor] No offending payload data present in exception header '{}'", key);
+                        log.warn("[MdcBatchInterceptor] No offending payload data present in exception header '{}'", key);
                     }
                 } else {
-                    log.warn("[MdcRecordInterceptor] Header '{}' is not DeserializationException but {}",
+                    log.warn("[MdcBatchInterceptor] Header '{}' is not DeserializationException but {}",
                             key, obj == null ? "null" : obj.getClass().getName());
                 }
             } catch (Exception e) {
-                log.warn("[MdcRecordInterceptor] Failed to deserialize deserialization-exception header '{}': {}",
+                log.warn("[MdcBatchInterceptor] Failed to deserialize deserialization-exception header '{}': {}",
                         key, e.toString());
             }
         }

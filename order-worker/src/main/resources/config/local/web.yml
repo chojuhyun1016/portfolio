@@ -3,7 +3,7 @@ web:
   client:
     clientId: order-worker
     url:
-      order: http://localhost:8081
+      order: http://localhost:18081
       user: http://localhost:8082
   timeout:
     connectMs: 3000

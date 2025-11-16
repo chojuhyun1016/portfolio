@@ -8,6 +8,7 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.example.order.client.kafka.config.properties.KafkaConsumerProperties;
 import org.example.order.client.kafka.config.properties.KafkaSSLProperties;
+import org.example.order.client.kafka.interceptor.MdcBatchInterceptor;
 import org.example.order.client.kafka.interceptor.MdcRecordInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -30,10 +31,9 @@ import java.util.Map;
  * consumer.enabled=true 일 때만 활성화되는 Consumer 구성 (공용 팩토리).
  * - AckMode: MANUAL_IMMEDIATE
  * - ErrorHandlingDeserializer(delegate=JsonDeserializer) → 역직렬화 실패도 루프 없이 처리
- * - JsonDeserializer.TRUSTED_PACKAGES: (변경) 코드 하드코드 → 프로퍼티(kafka.consumer.trusted-packages, 필수)에서 주입
- * - JsonDeserializer.USE_TYPE_INFO_HEADERS=false (타입 헤더 무시)
- * - VALUE_DEFAULT_TYPE 은 전역에서 설정하지 않음(리스너별 @KafkaListener.properties 로 지정)
- * - RecordInterceptor: Kafka 헤더 traceId/orderId → MDC 복원 (+ key → traceId 보정)
+ * - JsonDeserializer.TRUSTED_PACKAGES: 프로퍼티(kafka.consumer.trusted-packages, 필수)에서 주입
+ * - spring.json.value.default.type 은 리스너별 @KafkaListener.properties 에서 지정
+ * - RecordInterceptor / BatchInterceptor: Kafka 헤더 traceId/orderId → MDC 복원 + 역직렬화 실패 진단 로그
  */
 @Slf4j
 @Configuration
@@ -46,6 +46,9 @@ public class KafkaConsumerConfig {
     private final KafkaConsumerProperties properties;
     private final KafkaSSLProperties sslProperties;
 
+    // =====================================================================
+    // 단건 리스너용 팩토리 (local / api 등)
+    // =====================================================================
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
@@ -55,34 +58,28 @@ public class KafkaConsumerConfig {
         ContainerProperties cp = factory.getContainerProperties();
         cp.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
-        // 에러 핸들러: 재시도 없음
+        // poll 간 idle 시간 (ms) - 옵션이 있으면 적용
+        if (properties.getOption() != null && properties.getOption().getIdleBetweenPolls() != null) {
+            cp.setIdleBetweenPolls(properties.getOption().getIdleBetweenPolls());
+        }
+
+        // 에러 핸들러: 재시도 없음 (DLQ 등은 애플리케이션 레벨에서 처리)
         factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(0L, 0L)));
 
-        // 프로퍼티 기반으로만 deserializer 구성 (new 하지 않음)
-        Map<String, Object> props = getDefaultConfigProps();
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
-
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
-
-        // 필수: 신뢰 패키지 (누락 시 fail-fast)
-        String trusted = requireTrustedPackages();
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, trusted);
-
-        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-
-        DefaultKafkaConsumerFactory<String, Object> consumerFactory =
-                new DefaultKafkaConsumerFactory<>(props);
+        // 공통 ConsumerFactory
+        DefaultKafkaConsumerFactory<String, Object> consumerFactory = createConsumerFactory();
 
         factory.setConsumerFactory(consumerFactory);
 
-        // 공용 MDC 인터셉터
+        // 단건 리스너용 MDC 인터셉터
         factory.setRecordInterceptor(new MdcRecordInterceptor<>());
 
         return factory;
     }
 
+    // =====================================================================
+    // 배치 리스너용 팩토리 (crud 등)
+    // =====================================================================
     @Bean(name = "kafkaBatchListenerContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaBatchListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
@@ -91,46 +88,80 @@ public class KafkaConsumerConfig {
         ContainerProperties cp = factory.getContainerProperties();
         cp.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
+        if (properties.getOption() != null && properties.getOption().getIdleBetweenPolls() != null) {
+            cp.setIdleBetweenPolls(properties.getOption().getIdleBetweenPolls());
+        }
+
         factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(0L, 0L)));
 
-        Map<String, Object> props = getDefaultConfigProps();
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
-
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
-
-        // 필수: 신뢰 패키지 (누락 시 fail-fast)
-        String trusted = requireTrustedPackages();
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, trusted);
-
-        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-
-        DefaultKafkaConsumerFactory<String, Object> consumerFactory =
-                new DefaultKafkaConsumerFactory<>(props);
+        DefaultKafkaConsumerFactory<String, Object> consumerFactory = createConsumerFactory();
 
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(true);
-        factory.setRecordInterceptor(new MdcRecordInterceptor<>());
+        factory.setBatchInterceptor(new MdcBatchInterceptor<>());
 
         return factory;
     }
 
+    // =====================================================================
+    // 공용 ConsumerFactory (모든 리스너가 공유)
+    // - 타입 결정은 @KafkaListener.properties 의 spring.json.value.default.type 에 맡김
+    // =====================================================================
+    private DefaultKafkaConsumerFactory<String, Object> createConsumerFactory() {
+        Map<String, Object> props = getDefaultConfigProps();
+
+        // ErrorHandlingDeserializer + JsonDeserializer 조합 설정
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+
+        props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
+        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
+
+        // JsonDeserializer: 신뢰 패키지 설정
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, requireTrustedPackages());
+
+        // 타입 결정은:
+        // - @KafkaListener.properties 의 spring.json.value.default.type
+        // - 또는 type headers (USE_TYPE_INFO_HEADERS=true 인 경우)
+        return new DefaultKafkaConsumerFactory<>(props);
+    }
+
+    // =====================================================================
+    // 공통 기본 프로퍼티
+    // =====================================================================
     private Map<String, Object> getDefaultConfigProps() {
         Map<String, Object> propsMap = new HashMap<>();
 
         // 필수
         propsMap.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getBootstrapServers());
 
-        // 옵션 널 안전 처리
         if (properties.getOption() != null) {
-            if (properties.getOption().getEnableAutoCommit() != null) {
-                propsMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.getOption().getEnableAutoCommit());
+            KafkaConsumerProperties.KafkaConsumerOption opt = properties.getOption();
+
+            if (opt.getEnableAutoCommit() != null) {
+                propsMap.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, opt.getEnableAutoCommit());
             }
 
-            if (properties.getOption().getAutoOffsetReset() != null) {
-                propsMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, properties.getOption().getAutoOffsetReset());
+            if (opt.getAutoOffsetReset() != null) {
+                propsMap.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, opt.getAutoOffsetReset());
             }
+
+            if (opt.getMaxPollRecords() != null) {
+                propsMap.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, opt.getMaxPollRecords());
+            }
+
+            if (opt.getFetchMaxBytes() != null) {
+                propsMap.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, opt.getFetchMaxBytes());
+            }
+
+            if (opt.getFetchMaxWaitMs() != null) {
+                propsMap.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, opt.getFetchMaxWaitMs());
+            }
+
+            if (opt.getMaxPollIntervalMs() != null) {
+                propsMap.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, opt.getMaxPollIntervalMs());
+            }
+            // 나머지 maxFailCount 등은 애플리케이션 레벨에서 활용
         }
 
         // 보안 설정: 명시적으로 켜진 경우에만
@@ -149,6 +180,7 @@ public class KafkaConsumerConfig {
      */
     private String requireTrustedPackages() {
         String trusted = properties.getTrustedPackages();
+
         if (!StringUtils.hasText(trusted)) {
             String msg = """
                     Missing required property: 'kafka.consumer.trusted-packages'

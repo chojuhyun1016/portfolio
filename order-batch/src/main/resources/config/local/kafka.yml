@@ -40,7 +40,7 @@ kafka:
   consumer:
     enabled: true
     bootstrap-servers: 127.0.0.1:29092
-    trusted-packages: "org.example.order.*,org.example.common.*"
+    trusted-packages: "org.example.order.*,java.time.*,java.util.*,java.lang.*"
     option:
       max-fail-count: 1
       max-poll-records: 1000

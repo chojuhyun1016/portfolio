@@ -15,49 +15,51 @@ import org.springframework.stereotype.Component;
 
 /**
  * OrderLocalMessageListenerImpl
- * - Local 메시지 단건 수신
- * - 레코드를 Envelope로 감싸 파사드에 위임
- * - 변환/검증/에러처리는 파사드에서 일관 수행
+ * - local-order-local 단건 수신
+ * - 로컬(마스터)에서 들어온 LocalOrderMessage를 API 토픽으로 전달
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class OrderLocalMessageListenerImpl implements OrderLocalMessageListener {
 
+    private final OrderLocalMessageFacade facade;
+
     private static final String DEFAULT_TYPE =
             "org.example.order.contract.order.messaging.event.OrderLocalMessage";
-
-    private final OrderLocalMessageFacade facade;
 
     @Override
     @KafkaListener(
             topics = "#{@orderLocalTopic}",
             groupId = "group-order-local",
+            containerFactory = "kafkaListenerContainerFactory",
             concurrency = "2",
             properties = {
                     "spring.json.value.default.type=" + DEFAULT_TYPE
             }
     )
     @Correlate(
-            paths = {
-                    "#p0?.value()?.id",
-                    "#p0?.value()?.orderId",
-                    "#p0?.value()?.payload?.id",
-                    "#p0?.key()",
-                    "#p0?.headers()?.get('orderId')",
-                    "#p0?.headers()?.get('traceId')",
-                    "#p0?.headers()?.get('X-Request-Id')",
-                    "#p0?.headers()?.get('x-request-id')"
-            },
+            key = "#record.value() != null && #record.value().id() != null ? #record.value().id() : T(java.util.UUID).randomUUID().toString()",
             mdcKey = "orderId",
             overrideTraceId = true
     )
-    public void orderLocal(ConsumerRecord<String, OrderLocalMessage> record, Acknowledgment acknowledgment) {
-        log.info("LOCAL - order-local record received: {}", record.value());
-
+    public void orderLocal(ConsumerRecord<String, OrderLocalMessage> record,
+                           Acknowledgment acknowledgment) {
         try {
+            OrderLocalMessage message = record.value();
+
+            log.info("LOCAL - order-local record received: {}", message);
+
+            if (message == null) {
+                log.warn("LOCAL - order-local record value is null. key={}", record.key());
+
+                return;
+            }
+
+            OrderLocalConsumerDto dto = OrderLocalConsumerDto.from(message);
+
             ConsumerEnvelope<OrderLocalConsumerDto> envelope =
-                    ConsumerEnvelope.fromRecord(record, OrderLocalConsumerDto.from(record.value()));
+                    ConsumerEnvelope.fromRecord(record, dto);
 
             facade.sendOrderApiTopic(envelope);
         } catch (Exception e) {

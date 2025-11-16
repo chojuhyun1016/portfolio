@@ -14,12 +14,15 @@ java {
 tasks.named("jar") { enabled = true }
 
 dependencies {
-    // 검증 어노테이션
+    // 검증 어노테이션 (JSR-380 등)
     compileOnly(libs.springBootStarterValidation)
 
     // Lombok
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
+
+    // Jackson
+    implementation(libs.jacksonDatabind)
 
     // ===== test =====
     testImplementation(libs.springBootStarterTest)

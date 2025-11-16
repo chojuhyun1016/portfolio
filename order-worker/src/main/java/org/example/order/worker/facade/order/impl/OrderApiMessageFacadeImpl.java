@@ -48,8 +48,11 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
             }
 
             OrderPayload payload = toPayload(orderDto);
+            OrderCrudMessage crudMsg = OrderCrudMessage.of(dto.getOperation(), payload);
 
-            kafkaProducerService.sendToOrderCrud(OrderCrudMessage.of(dto.getOperation(), payload));
+            log.info("[API->CRUD] send OrderCrudMessage: {}", crudMsg);
+
+            kafkaProducerService.sendToOrderCrud(crudMsg);
         } catch (Exception e) {
             log.error("order-api failed. id={} cause={}", dto == null ? null : dto.getId(), e.toString());
 

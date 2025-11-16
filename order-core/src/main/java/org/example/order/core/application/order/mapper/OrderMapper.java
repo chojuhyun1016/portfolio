@@ -49,7 +49,10 @@ public interface OrderMapper {
      *  - with* 메서드는 실제 속성이 아니므로 ignore 지정
      *  - failure는 기본 false
      * ---------------------------------------------------------------------- */
-    @Mapping(target = "publishedTimestamp", source = "publishedDatetime", qualifiedByName = "localDateTimeToEpochMillis")
+    @Mapping(
+            target = "publishedTimestamp",
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.localDateTimeToEpochMillis(entity.getPublishedDatetime()))"
+    )
     @Mapping(target = "failure", constant = "false")
     @Mapping(target = "withPublishedTimestamp", ignore = true)
     @Mapping(target = "withOrderNumber", ignore = true)
@@ -57,8 +60,10 @@ public interface OrderMapper {
     @Mapping(target = "withVersion", ignore = true)
     OrderSync toDto(OrderEntity entity);
 
-    // 필요 시 LocalOrderSync도 직접 생성해야 한다면 아래 매핑 추가
-    @Mapping(target = "publishedTimestamp", source = "publishedDatetime", qualifiedByName = "localDateTimeToEpochMillis")
+    @Mapping(
+            target = "publishedTimestamp",
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.localDateTimeToEpochMillis(entity.getPublishedDatetime()))"
+    )
     @Mapping(target = "failure", constant = "false")
     @Mapping(target = "withPublishedTimestamp", ignore = true)
     @Mapping(target = "withOrderNumber", ignore = true)
@@ -88,20 +93,32 @@ public interface OrderMapper {
     }
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "publishedDatetime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
+    @Mapping(
+            target = "publishedDatetime",
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.epochMillisToLocalDateTime(dto.publishedTimestamp()))"
+    )
     OrderEntity toEntity(OrderSync dto);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "publishedDatetime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
+    @Mapping(
+            target = "publishedDatetime",
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.epochMillisToLocalDateTime(dto.publishedTimestamp()))"
+    )
     OrderEntity toEntity(LocalOrderSync dto);
 
     /* ----------------------------------------------------------------------
      * OrderSync / LocalOrderSync -> OrderUpdate (Command)
      * ---------------------------------------------------------------------- */
-    @Mapping(target = "publishedDateTime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
+    @Mapping(
+            target = "publishedDateTime",
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.epochMillisToLocalDateTime(dto.publishedTimestamp()))"
+    )
     OrderUpdate toUpdate(OrderSync dto);
 
-    @Mapping(target = "publishedDateTime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
+    @Mapping(
+            target = "publishedDateTime",
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.epochMillisToLocalDateTime(dto.publishedTimestamp()))"
+    )
     OrderUpdate toUpdate(LocalOrderSync dto);
 
     List<OrderUpdate> toUpdateCommands(List<LocalOrderSync> dtos);
@@ -122,7 +139,10 @@ public interface OrderMapper {
     /* ----------------------------------------------------------------------
      * Entity -> OrderView  (조회 경로에서 Sync 생략)
      * ---------------------------------------------------------------------- */
-    @Mapping(target = "publishedTimestamp", source = "publishedDatetime", qualifiedByName = "localDateTimeToEpochMillis")
+    @Mapping(
+            target = "publishedTimestamp",
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.localDateTimeToEpochMillis(entity.getPublishedDatetime()))"
+    )
     @Mapping(target = "failure", constant = "false")
     OrderView toView(OrderEntity entity);
 }

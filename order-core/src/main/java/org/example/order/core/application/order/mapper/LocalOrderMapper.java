@@ -51,8 +51,7 @@ public interface LocalOrderMapper {
      * ---------------------------------------------------------------------- */
     @Mapping(
             target = "publishedTimestamp",
-            source = "publishedDatetime",
-            qualifiedByName = "localDateTimeToEpochMillis"
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.localDateTimeToEpochMillis(entity.getPublishedDatetime()))"
     )
     @Mapping(target = "failure", constant = "false")
     @Mapping(target = "withPublishedTimestamp", ignore = true)
@@ -75,7 +74,10 @@ public interface LocalOrderMapper {
     }
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "publishedDatetime", source = "publishedTimestamp", qualifiedByName = "epochMillisToLocalDateTime")
+    @Mapping(
+            target = "publishedDatetime",
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.epochMillisToLocalDateTime(dto.publishedTimestamp()))"
+    )
     LocalOrderEntity toEntity(LocalOrderSync dto);
 
     /* ----------------------------------------------------------------------
@@ -83,8 +85,7 @@ public interface LocalOrderMapper {
      * ---------------------------------------------------------------------- */
     @Mapping(
             target = "publishedDateTime",
-            source = "publishedTimestamp",
-            qualifiedByName = "epochMillisToLocalDateTime"
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.epochMillisToLocalDateTime(dto.publishedTimestamp()))"
     )
     OrderUpdate toUpdate(LocalOrderSync dto);
 
@@ -102,8 +103,7 @@ public interface LocalOrderMapper {
      * ---------------------------------------------------------------------- */
     @Mapping(
             target = "publishedTimestamp",
-            source = "publishedDatetime",
-            qualifiedByName = "localDateTimeToEpochMillis"
+            expression = "java(org.example.order.core.support.mapping.TimeMapper.localDateTimeToEpochMillis(entity.getPublishedDatetime()))"
     )
     @Mapping(target = "failure", constant = "false")
     LocalOrderView toView(LocalOrderEntity entity);

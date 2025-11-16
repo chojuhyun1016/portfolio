@@ -93,6 +93,7 @@ jjwtJackson = { module = "io.jsonwebtoken:jjwt-jackson", version = "0.11.5" }
 # Jackson
 jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jacksonJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jacksonAnnotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 
 # Utils
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
@@ -141,6 +142,7 @@ flywayMysql = { module = "org.flywaydb:flyway-mysql" }
 # MapStruct
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstructProcessor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+
 # Lombok + MapStruct binding (빌더/게터 인식 안정화)
 lombokMapstructBinding = { module = "org.projectlombok:lombok-mapstruct-binding", version = "0.2.0" }
 

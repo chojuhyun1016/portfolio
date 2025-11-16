@@ -83,10 +83,7 @@ public class OrderCrudConsumerDto {
      */
     private static LocalOrderSync toLocalOrderDto(OrderPayload p) {
         if (p == null) {
-            return new LocalOrderSync(
-                    null, null, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null, false
-            );
+            return null;
         }
 
         return new LocalOrderSync(

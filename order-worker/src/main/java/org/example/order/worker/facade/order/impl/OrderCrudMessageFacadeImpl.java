@@ -47,16 +47,57 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
             return;
         }
 
-        log.debug("order-crud envelopes: {}", envelopes.size());
+        log.info("order-crud envelopes: {}", envelopes.size());
 
         try {
-            List<OrderCrudConsumerDto> dtos = envelopes.stream()
+            // 1) payload / dto null 방어 및 유효/무효 분리
+            List<ConsumerEnvelope<OrderCrudConsumerDto>> validEnvelopes = new ArrayList<>();
+            List<ConsumerEnvelope<OrderCrudConsumerDto>> invalidEnvelopes = new ArrayList<>();
+
+            for (ConsumerEnvelope<OrderCrudConsumerDto> env : envelopes) {
+                if (env == null) {
+                    log.warn("order-crud: skip null envelope");
+
+                    continue;
+                }
+
+                OrderCrudConsumerDto dto = env.getPayload();
+
+                if (!OrderCrudConsumerDto.isValid(dto)) {
+                    log.warn(
+                            "order-crud: invalid dto. reason={} dto={}",
+                            OrderCrudConsumerDto.invalidReason(dto),
+                            dto
+                    );
+                    invalidEnvelopes.add(env);
+                } else {
+                    validEnvelopes.add(env);
+                }
+            }
+
+            // 1-1) 무효 메시지는 DLQ로 보내고 본 처리에서는 제외
+            if (!invalidEnvelopes.isEmpty()) {
+                log.warn("order-crud: invalid envelopes exist. size={}", invalidEnvelopes.size());
+                sendAllToDlq(
+                        invalidEnvelopes,
+                        new IllegalArgumentException("invalid order-crud payload")
+                );
+            }
+
+            if (validEnvelopes.isEmpty()) {
+                log.warn("order-crud: all envelopes are invalid. size={}", envelopes.size());
+
+                return;
+            }
+
+            // 2) 유효 dto 리스트 생성
+            List<OrderCrudConsumerDto> dtos = validEnvelopes.stream()
                     .map(ConsumerEnvelope::getPayload)
                     .toList();
 
-            // 동일 orderId에 대한 모든 Envelope를 유지하는 멀티맵
+            // 3) orderId 기준 Envelope 인덱스 구성 (DLQ 시 원본 헤더 찾기용)
             Map<Long, List<ConsumerEnvelope<OrderCrudConsumerDto>>> envelopeIndex =
-                    envelopes.stream()
+                    validEnvelopes.stream()
                             .filter(env -> env.getPayload() != null
                                     && env.getPayload().getOrder() != null
                                     && env.getPayload().getOrder().orderId() != null)
@@ -66,25 +107,40 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                                     Collectors.toList()
                             ));
 
-            dtos.forEach(OrderCrudConsumerDto::validate);
-
+            // 4) operation 기준 그룹핑
             Map<Operation, List<LocalOrderSync>> byType = groupingByOperation(dtos);
+
+            if (byType.isEmpty()) {
+                log.warn("order-crud: grouping result is empty. dtos={}", dtos);
+                sendAllToDlq(
+                        validEnvelopes,
+                        new CommonException(WorkerExceptionCode.MESSAGE_GROUPING_FAILED)
+                );
+
+                return;
+            }
+
             List<OrderCrudBatchCommand> batches = byType.entrySet().stream()
                     .map(e -> toBatch(e.getKey(), List.copyOf(e.getValue())))
                     .toList();
 
             List<LocalOrderSync> failureList = new ArrayList<>();
 
+            // 5) 배치별 실제 CRUD 실행
             for (OrderCrudBatchCommand batch : batches) {
                 try {
                     orderService.execute(batch);
 
                     for (LocalOrderSync order : batch.items()) {
                         if (Boolean.TRUE.equals(order.failure())) {
-                            log.info("failed order: {}", order);
+                            log.info("order-crud: failed order={}", order);
 
-                            sendOneToDlq(order, batch.operation(), envelopeIndex,
-                                    new DatabaseExecuteException(WorkerExceptionCode.MESSAGE_UPDATE_FAILED));
+                            sendOneToDlq(
+                                    order,
+                                    batch.operation(),
+                                    envelopeIndex,
+                                    new DatabaseExecuteException(WorkerExceptionCode.MESSAGE_UPDATE_FAILED)
+                            );
 
                             failureList.add(order);
                         } else {
@@ -94,8 +150,12 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                         }
                     }
                 } catch (Exception e) {
-                    log.error("error: order crud execute failed. operation={}, orders={}",
-                            batch.operation(), batch.items(), e);
+                    log.error(
+                            "error: order crud execute failed. operation={} orders={}",
+                            batch.operation(),
+                            batch.items(),
+                            e
+                    );
 
                     sendGroupToDlq(batch.items(), batch.operation(), envelopeIndex, e);
 
@@ -131,6 +191,8 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
     private Map<Operation, List<LocalOrderSync>> groupingByOperation(List<OrderCrudConsumerDto> dtos) {
         try {
             return dtos.stream()
+                    .filter(Objects::nonNull)
+                    .filter(OrderCrudConsumerDto::isValid)
                     .collect(Collectors.groupingBy(
                             OrderCrudConsumerDto::getOperation,
                             Collectors.mapping(OrderCrudConsumerDto::getOrder, Collectors.toList())
@@ -183,19 +245,22 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
     private void sendAllToDlq(List<ConsumerEnvelope<OrderCrudConsumerDto>> envelopes, Exception cause) {
         for (ConsumerEnvelope<OrderCrudConsumerDto> env : envelopes) {
             try {
-                OrderCrudConsumerDto dto = env.getPayload();
+                OrderCrudConsumerDto dto = (env == null ? null : env.getPayload());
 
-                if (dto == null || dto.getOrder() == null) {
-                    log.warn("skip dlq(all): empty payload");
+                if (!OrderCrudConsumerDto.isValid(dto)) {
+                    log.warn("skip dlq(all): empty or invalid payload. reason={}",
+                            OrderCrudConsumerDto.invalidReason(dto));
 
                     continue;
                 }
 
-                OrderCrudMessage originalLike = OrderCrudMessage.of(dto.getOperation(), toPayload(dto.getOrder()));
+                OrderCrudMessage originalLike =
+                        OrderCrudMessage.of(dto.getOperation(), toPayload(dto.getOrder()));
 
                 kafkaProducerService.sendToDlq(originalLike, env.getHeaders(), cause);
             } catch (Exception ex) {
-                log.error("error: dlq send failed (all). key={}", env.getKey(), ex);
+                log.error("error: dlq send failed (all). key={}",
+                        env == null ? null : env.getKey(), ex);
             }
         }
     }
