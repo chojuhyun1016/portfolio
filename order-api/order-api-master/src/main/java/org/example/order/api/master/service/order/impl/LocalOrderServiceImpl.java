@@ -63,52 +63,23 @@ public class LocalOrderServiceImpl implements LocalOrderService {
                     return new CommonException(CommonExceptionCode.NOT_FOUND_RESOURCE, msg);
                 });
 
-        // 가공(랜덤 델타) 적용
-        SecureRandom r = new SecureRandom();
-        long idDelta = 1 + r.nextInt(9);
-        long userIdDelta = 1 + r.nextInt(9);
-        long priceDelta = 10 + r.nextInt(491);
-        long versionDelta = 1 + r.nextInt(3);
-        long tsDelta = r.nextInt(10_000);
-        long orderNoDelta = 1 + r.nextInt(9);
-
-        String orderNumber = original.getOrderNumber();
-        String newOrderNumber;
-
-        if (orderNumber != null && orderNumber.matches("\\d+")) {
-            try {
-                long on = Long.parseLong(orderNumber);
-                newOrderNumber = String.valueOf(on + orderNoDelta);
-            } catch (NumberFormatException e) {
-                newOrderNumber = orderNumber + "-" + orderNoDelta;
-            }
-        } else if (orderNumber != null) {
-            newOrderNumber = orderNumber + "-" + orderNoDelta;
-        } else {
-            newOrderNumber = String.valueOf(orderNoDelta);
-        }
-
-        Long newPublishedTs = (original.getPublishedTimestamp() == null)
-                ? Instant.now().toEpochMilli() + tsDelta
-                : original.getPublishedTimestamp() + tsDelta;
-
         // 덮어쓴 View 구성 (불변 DTO이므로 빌더로 새로 생성)
         LocalOrderView overwritten = LocalOrderView.builder()
-                .id(original.getId() == null ? idDelta : original.getId() + idDelta)
-                .userId(original.getUserId() == null ? userIdDelta : original.getUserId() + userIdDelta)
+                .id(original.getId())
+                .userId(original.getUserId())
                 .userNumber(original.getUserNumber())
                 .orderId(original.getOrderId())
-                .orderNumber(newOrderNumber)
-                .orderPrice(original.getOrderPrice() == null ? priceDelta : original.getOrderPrice() + priceDelta)
+                .orderNumber(original.getOrderNumber())
+                .orderPrice(original.getOrderPrice())
                 .deleteYn(original.getDeleteYn())
-                .version(original.getVersion() == null ? versionDelta : original.getVersion() + versionDelta)
+                .version(original.getVersion())
                 .createdUserId(original.getCreatedUserId())
                 .createdUserType(original.getCreatedUserType())
                 .createdDatetime(original.getCreatedDatetime())
                 .modifiedUserId(original.getModifiedUserId())
                 .modifiedUserType(original.getModifiedUserType())
                 .modifiedDatetime(original.getModifiedDatetime())
-                .publishedTimestamp(newPublishedTs)
+                .publishedTimestamp(original.getPublishedTimestamp())
                 .failure(Boolean.TRUE.equals(original.getFailure()))
                 .build();
 

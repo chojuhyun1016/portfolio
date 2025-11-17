@@ -69,6 +69,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
                             OrderCrudConsumerDto.invalidReason(dto),
                             dto
                     );
+
                     invalidEnvelopes.add(env);
                 } else {
                     validEnvelopes.add(env);
@@ -78,6 +79,7 @@ public class OrderCrudMessageFacadeImpl implements OrderCrudMessageFacade {
             // 1-1) 무효 메시지는 DLQ로 보내고 본 처리에서는 제외
             if (!invalidEnvelopes.isEmpty()) {
                 log.warn("order-crud: invalid envelopes exist. size={}", invalidEnvelopes.size());
+
                 sendAllToDlq(
                         invalidEnvelopes,
                         new IllegalArgumentException("invalid order-crud payload")
