@@ -12,6 +12,9 @@ import org.example.order.contract.order.messaging.event.OrderCrudMessage;
 import org.example.order.contract.order.messaging.event.OrderLocalMessage;
 import org.example.order.contract.order.messaging.type.MessageOrderType;
 import org.example.order.contract.shared.error.ErrorDetail;
+import org.example.order.worker.dto.consumer.OrderApiConsumerDto;
+import org.example.order.worker.dto.consumer.OrderCrudConsumerDto;
+import org.example.order.worker.dto.consumer.OrderLocalConsumerDto;
 import org.example.order.worker.service.common.KafkaProducerService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -146,20 +149,16 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     }
 
     private MessageOrderType resolveSourceType(Object payload) {
-        if (payload instanceof OrderLocalMessage) {
+        if (payload instanceof OrderLocalConsumerDto) {
             return MessageOrderType.ORDER_LOCAL;
         }
 
-        if (payload instanceof OrderApiMessage) {
+        if (payload instanceof OrderApiConsumerDto) {
             return MessageOrderType.ORDER_API;
         }
 
-        if (payload instanceof OrderCrudMessage) {
+        if (payload instanceof OrderCrudConsumerDto) {
             return MessageOrderType.ORDER_CRUD;
-        }
-
-        if (payload instanceof OrderCloseMessage) {
-            return MessageOrderType.ORDER_REMOTE;
         }
 
         return MessageOrderType.ORDER_DLQ;

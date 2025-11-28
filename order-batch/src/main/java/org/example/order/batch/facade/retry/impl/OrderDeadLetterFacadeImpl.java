@@ -65,6 +65,7 @@ public class OrderDeadLetterFacadeImpl implements OrderDeadLetterFacade {
 
             if (infos == null || infos.isEmpty()) {
                 log.info("DLQ topic has no partitions: {}", topic);
+
                 return;
             }
 

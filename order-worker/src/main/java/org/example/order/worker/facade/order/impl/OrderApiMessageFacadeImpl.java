@@ -52,6 +52,8 @@ public class OrderApiMessageFacadeImpl implements OrderApiMessageFacade {
 
             log.info("[API->CRUD] send OrderCrudMessage: {}", crudMsg);
 
+if (1==1) throw new RuntimeException("Order API returned error");
+
             kafkaProducerService.sendToOrderCrud(crudMsg);
         } catch (Exception e) {
             log.error("order-api failed. id={} cause={}", dto == null ? null : dto.getId(), e.toString());

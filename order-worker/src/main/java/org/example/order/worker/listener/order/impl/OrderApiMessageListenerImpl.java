@@ -57,6 +57,7 @@ public class OrderApiMessageListenerImpl implements OrderApiMessageListener {
 
         try {
             OrderApiMessage message = record.value();
+
             if (message == null) {
                 log.warn("API - order-api record value is null. key={}", record.key());
 
