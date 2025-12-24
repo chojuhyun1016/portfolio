@@ -1,10 +1,10 @@
 # 🔒 Lock 모듈 (DB NamedLock + Redis RedissonLock)
 
 Spring Boot에서 **DB 기반 NamedLock** 또는 **Redis 기반 RedissonLock** 을 선택적으로 사용하여 분산락을 구현하는 모듈입니다.  
-애노테이션 한 줄로 락 종류와 트랜잭션 전파(기존/새 트랜잭션)를 지정할 수 있으며, Kafka / S3 / TSID / Secrets 모듈과 동일하게 **설정 기반(@Bean) + 단일 조립(@Import)** 패턴으로 동작합니다.
+애노테이션 한 줄로 락 종류와 트랜잭션 전파(기존/새 트랜잭션)를 지정할 수 있으며,  
+Kafka / S3 / TSID / Secrets 모듈과 동일한 **설정 기반(@Bean) + 단일 조립(@Import)** 패턴으로 동작합니다.
 
----
-
+--------------------------------------------------------------------------------
 ## 1) 구성 개요
 
 | 구성 요소 | 설명 |
@@ -13,135 +13,154 @@ Spring Boot에서 **DB 기반 NamedLock** 또는 **Redis 기반 RedissonLock** �
 | `@DistributedLockT` | 새 트랜잭션(`REQUIRES_NEW`)에서 임계영역 실행 |
 | `DistributedLockAspect` | 애노테이션 파라미터 파싱 → 키 생성기/실행기 선택 → 트랜잭션 래퍼 호출 |
 | `LockKeyGenerator` | 키 생성 전략 SPI |
-| `SHA256LockKeyGenerator` | 인자들을 이어붙인 문자열의 SHA-256 해시 |
+| `SHA256LockKeyGenerator` | 메서드 인자들을 결합 후 SHA-256 해시 |
 | `SpelLockKeyGenerator` | SpEL(`'ORD:' + #orderId`) 평가 결과를 키로 사용 |
-| `SimpleLockKeyGenerator` | `"prefix_arg1_arg2"` 형태의 단순 결합 |
+| `SimpleLockKeyGenerator` | 리터럴 문자열 결합 전용 단순 키 생성 |
 | `LockExecutor` | 실행기 SPI |
-| `NamedLockExecutor` | DB `GET_LOCK/RELEASE_LOCK` 기반 분산락 |
+| `NamedLockExecutor` | DB `GET_LOCK / RELEASE_LOCK` 기반 분산락 |
 | `RedissonLockExecutor` | Redis `RLock.tryLock()` 기반 분산락 |
-| `LockKeyGeneratorFactory` / `LockExecutorFactory` | 이름으로 전략/실행기 조회 |
-| **`LockInfraConfig`** | 전역 단일 설정(신규). 조건부 Bean 등록과 조립 담당 |
-| `TransactionalOperator` | `REQUIRED` / `REQUIRES_NEW` 트랜잭션 래핑 유틸 |
-| `NamedLockProperties` / `RedissonLockProperties` | 설정 프로퍼티 바인딩 |
+| `LockKeyGeneratorFactory` | keyStrategy 이름으로 키 생성기 선택 |
+| `LockExecutorFactory` | type 이름으로 실행기 선택 |
+| **`LockInfraConfig`** | 단일 설정 진입점, 조건부 Bean 조립 |
+| `TransactionalOperator` | `REQUIRED` / `REQUIRES_NEW` 트랜잭션 래핑 |
+| `NamedLockProperties` | DB NamedLock 설정 바인딩 |
+| `RedissonLockProperties` | Redisson 락 설정 바인딩 |
 
-> 변경 요약
-> - `LockManualConfig`, `NamedLockAutoConfig`, `RedissonLockAutoConfig`를 **`LockInfraConfig` 하나**로 통합했습니다.
-> - 전역 스위치(`lock.enabled`)가 `false`이면 어떤 Bean도 등록되지 않습니다.
-> - 실행기별 스위치(`lock.named.enabled`, `lock.redisson.enabled`)로 개별 실행기를 선택적으로 로딩합니다.
-> - Redisson 주소는 `lock.redisson.address` → `lock.redisson.uri` → `spring.data.redis.host/port` 우선순위로 결정합니다.
+변경 요약
+- 여러 개의 락 설정 클래스를 **LockInfraConfig 하나로 통합**
+- 전역 enable 스위치 제거
+- 실행기별 스위치만 사용
+  - `lock.named.enabled`
+  - `lock.redisson.enabled`
+- Redisson 설정은 **lock.redisson.* 만 사용** (spring.redis.* 미사용)
 
----
-
+--------------------------------------------------------------------------------
 ## 2) 동작 모드
 
 ### 2.1 OFF (기본)
 
+아무 실행기도 활성화하지 않으면 락 인프라는 로딩되지 않습니다.
+
     lock:
-      enabled: false
+      named:
+        enabled: false
+      redisson:
+        enabled: false
 
-- 어떤 빈도 등록되지 않음(Aspect/Factory/Executor 전부 미로딩)
+- Aspect / Factory / Executor 전부 미등록
+- 애노테이션 사용 시 즉시 예외 발생
 
+--------------------------------------------------------------------------------
 ### 2.2 NamedLock(DB) 모드
 
     lock:
-      enabled: true
-      named:
-        enabled: true
-        wait-time: 3000       # ms
-        retry-interval: 150   # ms
-      redisson:
-        enabled: false
-
-- MySQL/MariaDB 의 `GET_LOCK`, `RELEASE_LOCK` 사용
-- `DataSource` 빈 필수
-
-### 2.3 RedissonLock(REDIS) 모드
-
-    lock:
-      enabled: true
-      named:
-        enabled: false
-      redisson:
-        enabled: true
-        address: redis://127.0.0.1:6379
-        database: 0
-        wait-time: 3000       # ms (획득 대기 상한)
-        lease-time: 10000     # ms (임대 시간)
-        retry-interval: 150   # ms (재시도 간격)
-
-- `RedissonClient`를 설정에서 직접 구성(Starter 유무와 무관)
-- TLS 사용 시 `rediss://host:port`
-
-> 전역 스위치: `lock.enabled=false`면 어떤 실행기도 등록되지 않습니다.  
-> 세부 스위치: `lock.named.enabled`, `lock.redisson.enabled` 로 실행기 선택/병행 활성화 가능(메서드별 `type`으로 분기).
-
----
-
-## 3) 동작 흐름
-
-    Caller (@DistributedLock or @DistributedLockT)
-     └─ DistributedLockAspect
-         1) annotation 파라미터 추출(key, type, keyStrategy, waitTime, leaseTime)
-         2) LockKeyGeneratorFactory.getGenerator(keyStrategy) → 키 생성
-         3) LockExecutorFactory.getExecutor(type) → 실행기 선택
-         4) executor.execute(key, wait, lease, callback)
-               └─ callback: TransactionalOperator.runWith(REQUIRED or REQUIRES_NEW)
-
-- `@DistributedLock`  → 기존 트랜잭션(REQUIRED)
-- `@DistributedLockT` → 새 트랜잭션(REQUIRES_NEW)
-
----
-
-## 4) 빠른 시작 (설정 기반 + @Import 조립)
-
-### 4.1 의존성 (예: Gradle)
-
-    dependencies {
-      implementation "org.springframework.boot:spring-boot-starter-aop"     // Aspect 동작 필수
-      implementation "org.springframework.boot:spring-boot-starter-jdbc"    // NamedLock(DB)
-      implementation "org.redisson:redisson:3.27.2"                         // Redisson 클라이언트
-      // redisson-spring-boot-starter를 쓰는 경우, 테스트 환경에서 자동구성 충돌을 피하려면 exclude 고려
-    }
-
-### 4.2 구성 조립
-
-    // @SpringBootApplication 클래스 혹은 별도 설정 클래스
-    @Import(org.example.order.core.infra.lock.config.LockInfraConfig.class)
-    public class App {}
-
-### 4.3 설정(YAML)
-
-    lock:
-      enabled: true
       named:
         enabled: true
         wait-time: 3000
         retry-interval: 150
       redisson:
+        enabled: false
+
+- MySQL / MariaDB 의 `GET_LOCK`, `RELEASE_LOCK` 사용
+- `DataSource` 빈 필수
+- 커넥션은 `DataSourceUtils` 로 획득/반납
+- 재시도 기반 획득 로직 내장
+
+--------------------------------------------------------------------------------
+### 2.3 RedissonLock(REDIS) 모드
+
+    lock:
+      named:
+        enabled: false
+      redisson:
         enabled: true
-        address: redis://127.0.0.1:6379
+        host: 127.0.0.1
+        port: 6379
+        database: 0
+        password:
+        wait-time: 3000
+        lease-time: 10000
+        retry-interval: 150
+
+- RedissonClient 를 **직접 생성**
+- `lock.redisson.host + port` 필수
+- `redis://`, `rediss://` 자동 보정
+- Spring Redis AutoConfiguration 과 완전히 분리
+
+--------------------------------------------------------------------------------
+## 3) 동작 흐름
+
+    Caller (@DistributedLock / @DistributedLockT)
+     └─ DistributedLockAspect
+         1) 애노테이션 파라미터 추출
+            - key
+            - type
+            - keyStrategy
+            - waitTime
+            - leaseTime
+         2) LockKeyGeneratorFactory.getGenerator(keyStrategy)
+         3) LockExecutorFactory.getExecutor(type)
+         4) executor.execute(key, wait, lease, callback)
+               └─ callback
+                   ├─ @DistributedLock  → TransactionalOperator.runWithExistingTransaction
+                   └─ @DistributedLockT → TransactionalOperator.runWithNewTransaction
+
+- `@DistributedLock`  → 기존 트랜잭션(REQUIRED)
+- `@DistributedLockT` → 새 트랜잭션(REQUIRES_NEW)
+
+--------------------------------------------------------------------------------
+## 4) 빠른 시작 (설정 기반 + @Import 조립)
+
+### 4.1 의존성 (Gradle)
+
+    dependencies {
+      implementation "org.springframework.boot:spring-boot-starter-aop"
+      implementation "org.springframework.boot:spring-boot-starter-jdbc"
+      implementation "org.redisson:redisson:3.27.2"
+    }
+
+--------------------------------------------------------------------------------
+### 4.2 구성 조립
+
+    @Import(org.example.order.core.infra.lock.config.LockInfraConfig.class)
+    public class App {
+    }
+
+--------------------------------------------------------------------------------
+### 4.3 설정(YAML)
+
+    lock:
+      named:
+        enabled: true
+        wait-time: 3000
+        retry-interval: 150
+
+      redisson:
+        enabled: true
+        host: 127.0.0.1
+        port: 6379
         database: 0
         wait-time: 3000
         lease-time: 10000
         retry-interval: 150
 
----
-
+--------------------------------------------------------------------------------
 ## 5) 사용 예시 (애노테이션 한 줄)
 
-### 5.1 NamedLock + 기존 트랜잭션 유지(REQUIRED)
+### 5.1 NamedLock + 기존 트랜잭션(REQUIRED)
 
     @DistributedLock(
       key = "'ORD:' + #orderId",
       type = "namedLock",
-      keyStrategy = "spell",     // spell|sha256|simple
+      keyStrategy = "spell",
       waitTime = 3000,
       leaseTime = 10000
     )
     public void processOrder(String orderId) {
-      // 임계 구역 (현재 트랜잭션에서 실행)
+        // 임계영역
     }
 
+--------------------------------------------------------------------------------
 ### 5.2 RedissonLock + 새 트랜잭션(REQUIRES_NEW)
 
     @DistributedLockT(
@@ -152,151 +171,94 @@ Spring Boot에서 **DB 기반 NamedLock** 또는 **Redis 기반 RedissonLock** �
       leaseTime = 15000
     )
     public void settleInvoice(String invoiceId) {
-      // 임계 구역 (새 트랜잭션으로 실행)
+        // 임계영역
     }
 
+--------------------------------------------------------------------------------
 ### 5.3 키 전략 선택 가이드
-- `spell`  : SpEL. 예) `"'USER:' + #userId"`
-- `sha256` : 메서드 인자들을 이어붙여 해시(SHA-256). 길이 고정, 키 노출 방지에 유리
-- `simple` : `"prefix_arg1_arg2"` 형식 단순 결합. 로그/디버깅 가독성 우수
 
-> 실무 팁: 외부 노출 위험이 있다면 `sha256`, 내부/디버깅 편의가 우선이면 `simple`, 파라미터 조합이 복잡하면 `spell` 권장.
+- spell
+  - SpEL 기반
+  - 복잡한 키 조합, 가독성 우수
 
----
+- sha256
+  - 키 길이 고정
+  - 외부 노출 최소화
 
-## 6) 고급 설정/운영 팁
+- simple
+  - 리터럴 문자열 결합 전용
+  - 디버깅/로그 가독성 최우선
 
-### 6.1 Redisson 엔드포인트 우선순위
-- 주소 선택 순서: `lock.redisson.address` → `lock.redisson.uri` → `spring.data.redis.host/port`
-- 단일 서버 예시:
+--------------------------------------------------------------------------------
+## 6) 고급 설정 / 운영 팁
 
-        lock:
-          redisson:
-            enabled: true
-            address: redis://cache.example.com:6379
-            database: 1
-            wait-time: 2000
-            lease-time: 8000
-            retry-interval: 100
+### 6.1 NamedLock 주의사항
+- MySQL / MariaDB 전용
+- DB 커넥션 점유 시간 = 락 보유 시간
+- 키 네임스페이스 명확히 분리 권장
+  - 예: `order:payment:123`
 
-- TLS:
+--------------------------------------------------------------------------------
+### 6.2 RedissonLock 주의사항
+- lease-time 초과 시 자동 해제
+- 긴 비즈니스 로직은 분리 권장
+- retry-interval 은 너무 작지 않게 설정
 
-        lock:
-          redisson:
-            enabled: true
-            address: rediss://cache.example.com:6380
-            database: 0
+--------------------------------------------------------------------------------
+### 6.3 트랜잭션 경계
+- 락 외부에서 트랜잭션 시작하지 말 것
+- 락 내부에서 명확한 경계 유지
 
-- Redisson Starter를 사용하는 경우, 테스트에서 자동구성이 로컬 6379로 붙으면서 충돌할 수 있습니다.  
-  필요 시 테스트 프로파일에 다음과 같이 제외합니다:
+--------------------------------------------------------------------------------
+## 7) 예외 / 오류
 
-        spring:
-          autoconfigure:
-            exclude:
-              - org.redisson.spring.starter.RedissonAutoConfigurationV2
-              - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-              - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
-              - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+- `LockAcquisitionException`
+  - 대기 시간 초과
+  - 재시도 실패
+  - 인터럽트 발생
 
-### 6.2 NamedLock 주의사항
-- MySQL/MariaDB에서 `GET_LOCK(name, timeoutSeconds)` / `RELEASE_LOCK(name)` 사용
-- H2로 대체 테스트 시 `MODE=MySQL` 등 호환 모드 사용 권장
-- 키 네임스페이스: `서비스:도메인:리소스ID` 형태(예: `ord:payment:123`)
+- `IllegalArgumentException`
+  - 존재하지 않는 type
+  - 존재하지 않는 keyStrategy
 
-### 6.3 트랜잭션 전파
-- `@DistributedLock`  → `REQUIRED`
-- `@DistributedLockT` → `REQUIRES_NEW`
-- 임계영역의 수행 시간이 `lease-time`을 초과하지 않도록 쿼리/로직 분리 권장
+모든 예외는 로그 후 상위로 전파됩니다.
 
-### 6.4 관측성
-- 경합률/획득 실패율/재시도 횟수 등을 메트릭/로그로 관찰
-- 실패 시 원인 구분: 대기타임아웃(wait-time), 임대만료(lease-time), 외부(네트워크/DB/Redis) 문제
+--------------------------------------------------------------------------------
+## 8) 테스트 가이드
 
----
-
-## 7) 예외/오류
-
-- `LockAcquisitionException` : `waitTime` 내 락 획득 실패
-- `IllegalArgumentException` : 존재하지 않는 `type`/`keyStrategy` 요청, 실행기 미등록
-- `InterruptedException`     : 재시도 대기 중 인터럽트(플래그 복구 후 예외 전파)
-- DB/Redis 예외는 로그와 함께 상위로 전파됩니다.
-
----
-
-## 8) 테스트 가이드 (yml 기준)
-
-### 8.1 단위 테스트 기본
-
-    spring:
-      main:
-        web-application-type: none
-      datasource:
-        url: jdbc:h2:mem:unit;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
-        driver-class-name: org.h2.Driver
-        username: sa
-        password:
-      jpa:
-        hibernate:
-          ddl-auto: none
-        show-sql: false
-        properties:
-          hibernate:
-            dialect: org.hibernate.dialect.H2Dialect
+### 8.1 단위 테스트 (락 미사용)
 
     lock:
-      enabled: false   # 기본 OFF (테스트별로 필요 시 켭니다)
-
-### 8.2 통합 테스트 샘플 (Testcontainers로 엔드포인트 주입)
-
-    lock:
-      enabled: true
-
       named:
-        enabled: true
-        wait-time: 3000
-        retry-interval: 150
-
+        enabled: false
       redisson:
-        enabled: true
-        database: 0
-        wait-time: 3000
-        lease-time: 10000
-        retry-interval: 150
+        enabled: false
 
-- Redis 컨테이너 기동 후 동적으로 주소 주입(예: JUnit5 `@DynamicPropertySource`):
+--------------------------------------------------------------------------------
+### 8.2 통합 테스트
 
-        @DynamicPropertySource
-        static void redisProps(DynamicPropertyRegistry r) {
-            String host = REDIS.getHost();
-            Integer port = REDIS.getMappedPort(6379);
-            String uri = "redis://" + host + ":" + port;
+- NamedLock
+  - MySQL / MariaDB Testcontainers
+  - `GET_LOCK` 동작 검증
 
-            r.add("lock.redisson.address", () -> uri); // LockInfraConfig가 읽음
-            r.add("spring.data.redis.host", () -> host);
-            r.add("spring.data.redis.port", () -> port);
-        }
+- RedissonLock
+  - Redis Testcontainers
+  - `lock.redisson.host / port` 동적 주입
 
-- NamedLock IT는 MySQL Testcontainers(Hikari)로 구성하고, DB URL/계정은 동일하게 `@DynamicPropertySource`로 주입
+--------------------------------------------------------------------------------
+## 9) FAQ
 
----
+Q. NamedLock 과 RedissonLock 을 동시에 켤 수 있나요?  
+A. 가능합니다. 메서드 단위로 `type` 으로 선택합니다.
 
-## 9) 자주 묻는 질문(FAQ)
+Q. Redisson 은 spring.redis 설정을 사용하나요?  
+A. 사용하지 않습니다. `lock.redisson.*` 만 사용합니다.
 
-**Q1. NamedLock 과 RedissonLock 을 동시에 켤 수 있나요?**  
-A. 예. 둘 다 활성화해 두고, 메서드별로 애노테이션 `type`(namedLock/redissonLock) 으로 선택합니다.
+Q. 실행기 없이 애노테이션을 쓰면?  
+A. 즉시 `IllegalArgumentException` 이 발생합니다.
 
-**Q2. NamedLock 은 어떤 DB가 필요한가요?**  
-A. MySQL/MariaDB 처럼 `GET_LOCK/RELEASE_LOCK` 함수를 지원하는 DB가 필요합니다(H2 테스트는 호환 모드로 대체).
-
-**Q3. Redisson 주소는 어떻게 주나요?**  
-A. 우선순위: `lock.redisson.address` → `lock.redisson.uri` → `spring.data.redis.host/port`. TLS 는 `rediss://`.
-
-**Q4. 실행기를 하나도 안 켰는데 애노테이션을 붙이면?**  
-A. `IllegalArgumentException` 이 발생합니다. 적어도 하나의 실행기를 활성화하세요.
-
----
-
+--------------------------------------------------------------------------------
 ## 10) 마지막 한 줄 요약
 
-**전역/세부 토글 + 애노테이션 한 줄**로 **DB·Redis 분산락**을 손쉽게 적용합니다.  
-`LockInfraConfig` 하나만 Import 하면, 환경설정에 따라 필요한 컴포넌트가 자동 조립됩니다.
+**애노테이션 한 줄 + 실행기 스위치 설정**만으로  
+DB / Redis 분산락을 명확하고 안전하게 적용합니다.

@@ -1,370 +1,292 @@
-# 🔐 Crypto 키 관리/암호화 모듈
-
-Spring Boot에서 AES/HMAC 기반 암·복호화, 서명, 해시 기능을 제공하는 경량 모듈입니다.  
-**자동(Seed) 모드** 또는 **수동(Manual) 모드**로 동작하며, 동일한 인터페이스(Encryptor/Signer/Hasher)로 호출 코드를 단순화할 수 있도록 설계되었습니다.
-
----
-
-## 1) 구성 개요
-
-| 클래스/인터페이스                  | 설명 |
-|-------------------------------------|------|
-| `CryptoInfraConfig`                 | `crypto.enabled=true` 시 활성화(단일 구성). Encryptor/Signer/Hasher/Factory 등록, `crypto.props.seed=true`이면 설정 기반 시딩 수행 |
-| `Encryptor` (AES128/256/GCM)        | 대칭키 암·복호화 구현체 |
-| `Signer` (HmacSha256Signer)         | 메시지 서명/검증 구현체 |
-| `Hasher`                            | 단방향 해시 구현체(Bcrypt/Argon2/SHA256) |
-| `EncryptorFactory`                  | 알고리즘 타입(`CryptoAlgorithmType`) → Encryptor/Signer/Hasher 매핑 |
-| `EncryptionKeyGenerator`            | URL-safe Base64 랜덤 키 생성 유틸 |
-| `CryptoKeyRefreshBridge`(선택)      | Secrets 자동 로드시, 리프레시 이벤트를 받아 Encryptor/Signer에 키 주입 |
-
-> **빈 등록 원칙**  
-> 라이브러리 클래스에는 `@Component` 금지.  
-> 모든 빈은 **조건부(@ConditionalOnProperty, @ConditionalOnMissingBean)** 로만 등록되어 불필요한 부작용을 방지합니다.
-
----
-
-## 2) 동작 모드
-
-### 2.1 OFF (기본)
-아무 설정도 없으면 빈이 등록되지 않으며, 다른 모듈에 영향을 주지 않습니다.
-
-### 2.2 수동(Manual) 모드
-```yaml
-crypto:
-  enabled: true
-  props:
-    seed: false
-```
-- 등록 빈: Encryptor, Signer, Hasher, Factory
-- 각 빈의 `setKey(String base64Key)` 메서드로 직접 키 주입
-- `EncryptProperties` 무시
-- 로컬/개발 환경에 적합
-
-### 2.3 자동(Seed) 모드
-```yaml
-crypto:
-  enabled: true
-  props:
-    seed: true
-
-encrypt:
-  aes128:
-    key: BASE64_URL_SAFE_16B
-  aes256:
-    key: BASE64_URL_SAFE_32B
-  aesgcm:
-    key: BASE64_URL_SAFE_32B
-  hmac:
-    key: BASE64_URL_SAFE_32B
-```
-- 등록 빈: Encryptor, Signer, Hasher, Factory
-- `encrypt.*.key` 값이 자동 주입
-- 일부 속성만 지정 가능(부분 시딩 허용)
-- 운영 환경에 적합
-
-### 2.4 Core Only → Secrets 자동 로드 모드(확장)
-```yaml
-crypto:
-  enabled: true
-  props:
-    seed: false
-
-secrets:
-  enabled: true
-
-aws:
-  secrets-manager:
-    enabled: true
-    region: ap-northeast-2
-    secret-name: myapp/crypto-keyset
-    refresh-interval-millis: 300000
-    fail-fast: true
-```
-- Secrets 모듈이 AWS Secrets Manager에서 JSON 키셋을 주기적으로 로드
-- `CryptoKeyRefreshBridge`가 SecretKeyRefreshListener로서 Encryptor/Signer에 `setKey()` 호출
-- 서비스 코드는 그대로(Factory 호출 유지)
-
----
-
-## 3) 동작 흐름
-
-```
-Caller
- └─> EncryptorFactory.get("aes256")
-      └─> Aes256Encryptor.encrypt(plain)
-            ├─ key 존재 여부 확인
-            ├─ AES 암호화 수행
-            └─ 결과 Base64/JSON 페이로드로 반환
-
-[Secrets 자동 모드]
- └─> SecretsLoader(GetSecretValue)
-      ├─ JSON → CryptoKeySpec 파싱/검증
-      ├─ Resolver 저장
-      └─ SecretKeyRefreshListener 콜백 → CryptoKeyRefreshBridge → Encryptor/Signer.setKey(base64)
-```
-
-- 복호화 시 Base64 디코딩 후 동일 키로 해독
-- HMAC 서명 시 서명 문자열(Base64 URL-safe) 반환
-- Hasher 는 단방향 해시 문자열 반환
-
----
-
-## 4) 빠른 시작
-
-### 4.1 수동 모드 키 주입
-```java
-@Bean
-ApplicationRunner seedKeys(Aes128Encryptor aes128) {
-    return args -> {
-        String key = EncryptionKeyGenerator.generateKey(CryptoAlgorithmType.AES128); // 16B URL-safe
-        aes128.setKey(key);
-    };
-}
-```
-
-### 4.2 자동 모드
-```yaml
-crypto:
-  enabled: true
-  props:
-    seed: true
-
-encrypt:
-  aes256:
-    key: BASE64_URL_SAFE_32B
-  hmac:
-    key: BASE64_URL_SAFE_32B
-```
-- 설정만으로 빈이 준비됨
-- 코드에서 `setKey()` 호출 불필요
-
-### 4.3 Core Only → Secrets 자동 로드 확장(브릿지)
-```java
-@Component
-@RequiredArgsConstructor
-public class CryptoKeyRefreshBridge implements SecretKeyRefreshListener {
-
-    private final SecretsKeyClient secrets;
-    private final EncryptorFactory factory;
-
-    @PostConstruct
-    public void init() { onSecretKeyRefreshed(); }
-
-    @Override
-    public void onSecretKeyRefreshed() {
-        // 필요한 키만 골라 적용(예: aes256, hmac)
-        applyEnc(CryptoAlgorithmType.AES256, "aes256");
-        applySig(CryptoAlgorithmType.HMAC_SHA256, "hmac");
-    }
-
-    private void applyEnc(CryptoAlgorithmType type, String name) {
-        try {
-            byte[] raw = secrets.getKey(name);
-            String b64 = Base64Utils.encodeUrlSafe(raw);
-            factory.getEncryptor(type).setKey(b64);
-        } catch (Exception ignore) { /* 미제공 시 스킵 */ }
-    }
-
-    private void applySig(CryptoAlgorithmType type, String name) {
-        try {
-            byte[] raw = secrets.getKey(name);
-            String b64 = Base64Utils.encodeUrlSafe(raw);
-            factory.getSigner(type).setKey(b64);
-        } catch (Exception ignore) { /* 미제공 시 스킵 */ }
-    }
-}
-```
-
----
-
-## 5) 애플리케이션 사용 예
-
-```java
-@Component
-@RequiredArgsConstructor
-public class CryptoService {
-
-    private final Aes256Encryptor aes256;
-    private final HmacSha256Signer hmac;
-
-    public String encryptData(String plain) {
-        return aes256.encrypt(plain);
-    }
-
-    public String signData(String data) {
-        return hmac.sign(data);
-    }
-}
-```
-
-(Factory 경유 예)
-```java
-@Component
-@RequiredArgsConstructor
-public class CryptoFacade {
-
-    private final EncryptorFactory factory;
-
-    public String encrypt(String data) {
-        return factory.getEncryptor(CryptoAlgorithmType.AES256).encrypt(data);
-    }
-
-    public String sign(String payload) {
-        return factory.getSigner(CryptoAlgorithmType.HMAC_SHA256).sign(payload);
-    }
-}
-```
-
----
-
-## 6) 테스트 가이드
-
-### 6.1 수동 모드 테스트
-```java
-@Test
-void manualModeEncryptDecrypt() {
-    new ApplicationContextRunner()
-        .withPropertyValues("crypto.enabled=true", "crypto.props.seed=false")
-        .withConfiguration(UserConfigurations.of(CryptoInfraConfig.class))
-        .run(ctx -> {
-            Aes128Encryptor aes128 = ctx.getBean(Aes128Encryptor.class);
-            String key = EncryptionKeyGenerator.generateKey(CryptoAlgorithmType.AES128);
-            aes128.setKey(key);
-            String enc = aes128.encrypt("hello");
-            assertThat(aes128.decrypt(enc)).isEqualTo("hello");
-        });
-}
-```
-
-### 6.2 자동 모드 테스트
-```java
-@Test
-void autoModeKeysInjected() {
-    String key256 = EncryptionKeyGenerator.generateKey(CryptoAlgorithmType.AES256);
-    String keyHmac = EncryptionKeyGenerator.generateKey(CryptoAlgorithmType.HMAC_SHA256);
-
-    new ApplicationContextRunner()
-        .withPropertyValues(
-            "crypto.enabled=true",
-            "crypto.props.seed=true",
-            "encrypt.aes256.key=" + key256,
-            "encrypt.hmac.key=" + keyHmac
-        )
-        .withConfiguration(UserConfigurations.of(CryptoInfraConfig.class))
-        .run(ctx -> {
-            Aes256Encryptor aes256 = ctx.getBean(Aes256Encryptor.class);
-            assertThat(aes256.isReady()).isTrue();
-        });
-}
-```
-
----
-
-## 7) 보안 권장사항
-- 키는 **URL-safe Base64** 필수
-- AES128=16B, AES256/AESGCM/HMAC=32B 키 길이 준수
-- 키 원문/Base64 값 로그·출력 금지
-- 운영 환경은 Secrets Manager/Vault 등 외부 보안 저장소 사용 권장
-- 키 로테이션 시 이전 키 자동 백업 → 필요 시 즉시 롤백 가능
-
----
-
-## 8) 에러/예외 메시지
-- `IllegalStateException`: 키 길이 불일치 또는 미설정
-- `IllegalArgumentException`: 잘못된 키 길이/포맷(Base64 오류)
-- `EncryptException/DecryptException/HashException`: 암·복호화/해시 실패
-
----
-
-## 9) 설정 레퍼런스
-
-### 9.1 수동 모드
-```yaml
-crypto:
-  enabled: true
-  props:
-    seed: false
-```
-
-### 9.2 자동 모드
-```yaml
-crypto:
-  enabled: true
-  props:
-    seed: true
-
-encrypt:
-  aes256:
-    key: BASE64_URL_SAFE_32B
-  hmac:
-    key: BASE64_URL_SAFE_32B
-```
-
-### 9.3 Secrets 자동 로드
-```yaml
-crypto:
-  enabled: true
-  props:
-    seed: false
-
-secrets:
-  enabled: true
-
-aws:
-  secrets-manager:
-    enabled: true
-    region: ap-northeast-2
-    secret-name: myapp/crypto-keyset
-```
-
----
-
-## 10) 설계 원칙
-- 기본은 OFF
-- 필수 조건 만족 시에만 빈 등록
-- 라이브러리 클래스에는 `@Component` 금지
-- 로컬/테스트 환경에서 전역 차단 가능(설정 OFF)
-- 호출부는 Factory 기반으로 통일해 모드 전환 시 코드 변경 최소화
-
----
-
-## 11) 클래스 다이어그램 (개념)
-
-```
-CryptoInfraConfig ─┬─> EncryptProperties(seed=true일 때만)
-                   ├─> Encryptor (AES128/256/GCM)
-                   ├─> Signer (HMAC-SHA256)
-                   ├─> Hasher (Bcrypt/Argon2/SHA256)
-                   └─> EncryptorFactory
-```
-
----
-
-## 12) FAQ
-**Q1. 수동/자동/Secrets 모드를 동시에 켤 수 있나요?**  
-A. 가능합니다. 일부는 Seed, 일부는 Secrets, 나머지는 수동 주입처럼 부분 시딩을 허용합니다. 미시딩 알고리즘은 `isReady=false` 상태로 남습니다.
-
-**Q2. Core Only에서 Secrets로 전환 시 서비스 코드 변경이 필요한가요?**  
-A. 아닙니다. 서비스는 `EncryptorFactory`만 호출하므로 브릿지 컴포넌트 추가/설정 변경만으로 전환됩니다.
-
----
-
-## 13) 샘플 코드 모음
-
-### 13.1 AES256 암·복호화
-```java
-String enc = aes256.encrypt("data");
-String dec = aes256.decrypt(enc);
-```
-
-### 13.2 HMAC 서명
-```java
-String sig = hmac.sign("message");
-boolean valid = hmac.verify("message", sig);
-```
-
----
-
-## 14) 마지막 한 줄 요약
-필요할 때만 켜지고, 켜지면 AES/HMAC을 포함한 다양한 암호화 기능을 안전하게 제공하는 모듈.  
-Core Only → Seed → Secrets 자동 로드까지 **설정만으로 확장**할 수 있습니다.
+# 🔐 Crypto 키 관리 / 암호화 모듈 (order-core / infra.crypto)
+
+본 문서는 `org.example.order.core.infra.crypto` 패키지의 **현재 코드 상태를 기준**으로 작성된
+**공식 README.md** 이다.  
+기존 분석 문서의 **구조·밀도·설계 관점**을 유지하되, 실제 구현과 어긋난 내용은 모두 제거·현행화하였다.
+
+-------------------------------------------------------------------------------
+
+## 1. 모듈 목적 및 위치
+
+### 1.1 목적
+
+- AES / HMAC 기반 **암·복호화, 서명, 해시 기능 표준화**
+- Secrets, TSID, Kafka, Web, S3 인프라와 **동일한 구성 패턴**
+- **설정 기반 ON/OFF** 및 환경별 동작 전환
+- 서비스 코드에서 암호 알고리즘 변경 시 **코드 수정 최소화**
+
+### 1.2 패키지 위치
+
+    org.example.order.core.infra.crypto
+    ├─ algorithm
+    │  ├─ encryptor
+    │  ├─ hasher
+    │  └─ signer
+    ├─ config
+    ├─ constant
+    ├─ contract
+    ├─ exception
+    ├─ factory
+    ├─ props
+    └─ util
+
+-------------------------------------------------------------------------------
+
+## 2. 전체 구성 개요
+
+| 구성 요소 | 설명 |
+|----------|------|
+| CryptoInfraConfig | crypto 인프라 단일 진입점 |
+| Encryptor | AES128 / AES256 / AES-GCM 암·복호화 |
+| Signer | HMAC-SHA256 서명/검증 |
+| Hasher | Bcrypt / Argon2 / SHA256 |
+| EncryptorFactory | CryptoAlgorithmType → 구현체 매핑 |
+| EncryptProperties | encrypt.* 설정 바인딩 |
+| EncryptionKeyGenerator | SecureRandom 기반 키 생성 |
+
+-------------------------------------------------------------------------------
+
+## 3. 활성 조건 및 전역 원칙
+
+### 3.1 활성 조건
+
+    crypto.enabled=true
+
+위 조건이 만족되지 않으면 **Crypto 관련 빈은 단 하나도 생성되지 않는다.**
+
+### 3.2 설계 원칙 (강제 규칙)
+
+- 기본은 **OFF**
+- 라이브러리 모듈에서 `@Component`, `@Service` 사용 **금지**
+- 모든 빈은 `@Configuration + @Bean` 기반
+- 반드시 조건부 등록
+    - `@ConditionalOnProperty`
+    - `@ConditionalOnMissingBean`
+- Secrets 인프라와 **직접 의존 금지**
+- 키(Base64 포함)는 **절대 로그 출력 금지**
+
+-------------------------------------------------------------------------------
+
+## 4. CryptoInfraConfig 상세
+
+### 4.1 구성 역할
+
+- crypto.enabled=true 시 전체 블록 활성화
+- Encryptor / Hasher / Signer 빈 등록
+- EncryptorFactory 제공
+- SeedConfig 서브 구성 포함
+
+### 4.2 구성 요약
+
+    CryptoInfraConfig
+     ├─ Encryptor Beans
+     │  ├─ Aes128Encryptor
+     │  ├─ Aes256Encryptor
+     │  └─ AesGcmEncryptor
+     ├─ Hasher Beans
+     │  ├─ BcryptHasher
+     │  ├─ Argon2Hasher
+     │  └─ Sha256Hasher
+     ├─ Signer Beans
+     │  └─ HmacSha256Signer
+     ├─ EncryptorFactory
+     └─ SeedConfig (crypto.props.seed=true)
+
+-------------------------------------------------------------------------------
+
+## 5. 동작 모드
+
+### 5.1 OFF (기본)
+
+- crypto.enabled=false (기본값)
+- Crypto 인프라 완전 비활성
+- 다른 모듈에 영향 없음
+
+-------------------------------------------------------------------------------
+
+### 5.2 수동(Manual) 모드
+
+    crypto:
+      enabled: true
+      props:
+        seed: false
+
+- Encryptor / Signer / Hasher / Factory 빈 등록
+- 키는 코드에서 직접 `setKey(base64)` 호출
+- EncryptProperties 무시
+- 로컬 / 테스트 / 특수 환경에 적합
+
+-------------------------------------------------------------------------------
+
+### 5.3 자동(Seed) 모드
+
+    crypto:
+      enabled: true
+      props:
+        seed: true
+
+    encrypt:
+      aes128:
+        key: BASE64_URL_SAFE_16B
+      aes256:
+        key: BASE64_URL_SAFE_32B
+      aesgcm:
+        key: BASE64_URL_SAFE_32B
+      hmac:
+        key: BASE64_URL_SAFE_32B
+
+- InitializingBean 기반 자동 시딩
+- 일부 알고리즘만 지정해도 허용(부분 시딩)
+- 운영 환경 기본 권장 모드
+
+-------------------------------------------------------------------------------
+
+### 5.4 Secrets 연동 확장 (Core Only + Bridge)
+
+- Crypto 모듈 자체는 Secrets에 의존하지 않음
+- 별도 Bridge 컴포넌트에서 연동
+
+동작 개념:
+
+    SecretsLoader
+      └─ SecretKeyRefreshListener
+           └─ (Bridge)
+                ├─ secrets.getKey(alias)
+                ├─ Base64 변환
+                └─ encryptor/signer.setKey()
+
+-------------------------------------------------------------------------------
+
+## 6. 암호 알고리즘 상세
+
+### 6.1 Encryptor (대칭키)
+
+#### 공통 규칙
+
+- 외부 Base64 키 주입
+- 준비되지 않으면 즉시 예외
+- 결과 포맷 통일
+
+암호문 포맷:
+
+    v1:Base64(IV || CIPHER)
+
+#### 알고리즘별 사양
+
+| 알고리즘 | Key | IV | Mode |
+|--------|-----|----|------|
+| AES128 | 16B | 16B | CBC |
+| AES256 | 32B | 16B | CBC |
+| AES-GCM | 32B | 12B | GCM |
+
+-------------------------------------------------------------------------------
+
+### 6.2 Signer (HMAC)
+
+- HmacSha256Signer
+- 최소 16바이트 키 요구
+- MessageDigest.isEqual 기반 상수시간 비교
+
+-------------------------------------------------------------------------------
+
+### 6.3 Hasher (단방향)
+
+| 구현체 | 특징 |
+|------|------|
+| BcryptHasher | Spring Security BCrypt |
+| Argon2Hasher | 메모리 64MB, iteration 2 |
+| Sha256Hasher | SHA-256 + Base64 |
+
+- Stateless
+- 항상 isReady() = true
+
+-------------------------------------------------------------------------------
+
+## 7. EncryptorFactory
+
+### 7.1 역할
+
+- CryptoAlgorithmType 기반 구현체 제공
+- 알고리즘 변경 시 서비스 코드 수정 최소화
+
+### 7.2 사용 예
+
+    Encryptor enc = factory.getEncryptor(AES256);
+    Signer sig = factory.getSigner(HMAC_SHA256);
+    Hasher hasher = factory.getHasher(BCRYPT);
+
+-------------------------------------------------------------------------------
+
+## 8. 키 생성 유틸
+
+    String key = EncryptionKeyGenerator.generateKey(AES256);
+
+- SecureRandom 기반
+- Base64 URL-safe 인코딩
+- 알고리즘별 안전한 길이 자동 적용
+
+-------------------------------------------------------------------------------
+
+## 9. 테스트 가이드
+
+### 9.1 수동 모드 테스트
+
+- crypto.props.seed=false
+- setKey() 직접 호출
+- encrypt → decrypt 동일성 검증
+
+-------------------------------------------------------------------------------
+
+### 9.2 자동 모드 테스트
+
+- crypto.props.seed=true
+- encrypt.*.key 설정
+- isReady() 검증
+
+-------------------------------------------------------------------------------
+
+## 10. 보안 권장사항 (강제)
+
+- 키는 반드시 Base64 URL-safe
+- 키 길이 엄격 준수
+    - AES128 = 16B
+    - AES256 / AESGCM / HMAC = 32B
+- 키 값/원문/Base64 로그 출력 금지
+- 운영 환경은 Secrets Manager 사용 권장
+- 키 교체 시 이전 키 즉시 롤백 가능 구조 유지
+
+-------------------------------------------------------------------------------
+
+## 11. 클래스 관계도 (개념)
+
+    CryptoInfraConfig
+     ├─ EncryptProperties (seed=true)
+     ├─ Encryptor
+     │   ├─ Aes128Encryptor
+     │   ├─ Aes256Encryptor
+     │   └─ AesGcmEncryptor
+     ├─ Signer
+     │   └─ HmacSha256Signer
+     ├─ Hasher
+     │   ├─ BcryptHasher
+     │   ├─ Argon2Hasher
+     │   └─ Sha256Hasher
+     └─ EncryptorFactory
+
+-------------------------------------------------------------------------------
+
+## 12. FAQ
+
+Q1. Manual / Seed / Secrets를 동시에 사용할 수 있는가?  
+A. 가능하다. 일부는 Seed, 일부는 Secrets, 나머지는 수동 주입 가능하며, 미시딩 알고리즘은 isReady=false 상태로 유지된다.
+
+Q2. Secrets 연동 시 서비스 코드 변경이 필요한가?  
+A. 아니다. Factory 기반 호출을 유지하면 Bridge 추가만으로 전환된다.
+
+-------------------------------------------------------------------------------
+
+## 13. 최종 한 줄 요약
+
+이 모듈은 **필요할 때만 활성화되고**,  
+활성화되면 **AES/HMAC/Hash를 표준화된 방식으로 안전하게 제공**하며,  
+설정만으로 **Manual → Seed → Secrets 연동까지 자연스럽게 확장**된다.

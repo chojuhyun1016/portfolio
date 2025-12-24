@@ -66,7 +66,10 @@ public class TsidConfig {
      * - 잘못된 zoneId 가 들어오면 시스템 기본으로 대체
      */
     private ZoneId resolveZone(String zoneId) {
-        if (zoneId == null || zoneId.isBlank()) return ZoneId.systemDefault();
+        if (zoneId == null || zoneId.isBlank()) {
+            return ZoneId.systemDefault();
+        }
+
         try {
             return ZoneId.of(zoneId);
         } catch (Exception e) {
