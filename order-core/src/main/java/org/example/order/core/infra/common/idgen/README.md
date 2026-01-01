@@ -66,7 +66,7 @@ Spring Boot + Hibernate/JPA 기반의 **TSID(Time-Sorted ID) 표준 인프라 �
     public class OrderEntity {
 
         @Id
-        @org.example.order.core.infra.common.idgen.tsid.annotation.CustomTsid
+        @CustomTsid
         private Long id;
 
         private Long orderId;
@@ -85,7 +85,7 @@ Spring Boot + Hibernate/JPA 기반의 **TSID(Time-Sorted ID) 표준 인프라 �
     @RequiredArgsConstructor
     public class OrderIdService {
 
-        private final org.example.order.domain.common.id.IdGenerator idGenerator;
+        private final IdGenerator idGenerator;
 
         public long nextId() {
             return idGenerator.nextId();
